@@ -1,31 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Square, Send, Keyboard, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
 import { fadeInUp } from '@/constants/animation';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 type LogState = 'idle' | 'recording' | 'processing' | 'confirming' | 'success';
 
 interface ParsedLog {
   client?: string;
+  client_id?: string | null;
   activity_type?: string;
-  duration?: number;
+  duration_minutes?: number;
   notes?: string;
+  revenue?: number;
+  summary?: string;
+  confidence?: number;
 }
 
 export const LogScreen = () => {
+  const { user } = useAuth();
   const [state, setState] = useState<LogState>('idle');
   const [showTextInput, setShowTextInput] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [transcript, setTranscript] = useState('');
   const [parsedLog, setParsedLog] = useState<ParsedLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const processingBlobRef = useRef<Blob | null>(null);
 
   const {
     isRecording,
@@ -39,12 +49,28 @@ export const LogScreen = () => {
   } = useVoiceRecording({
     maxDuration: 180000,
     onSilenceDetected: () => {
-      // Auto-stop after 10 seconds of silence
-      if (isRecording) {
-        handleStopRecording();
-      }
+      if (isRecording) handleStopRecording();
     },
   });
+
+  // FIX BUG-12: Use useEffect to watch audioBlob instead of setTimeout
+  useEffect(() => {
+    if (audioBlob && state === 'processing' && processingBlobRef.current !== audioBlob) {
+      processingBlobRef.current = audioBlob;
+      processAudio(audioBlob);
+    }
+  }, [audioBlob, state]);
+
+  // Load user's clients for matching
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('clients')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .then(({ data }) => setClients(data || []));
+  }, [user?.id]);
 
   const formatDuration = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -58,21 +84,15 @@ export const LogScreen = () => {
     await startRecording();
   };
 
-  const handleStopRecording = async () => {
+  const handleStopRecording = () => {
     stopRecording();
     setState('processing');
-    
-    // Wait a moment for the blob to be ready
-    setTimeout(async () => {
-      if (audioBlob) {
-        await processAudio(audioBlob);
-      }
-    }, 100);
+    // audioBlob will be set async by useVoiceRecording's onstop handler
+    // useEffect above will catch it when it updates
   };
 
   const processAudio = async (blob: Blob) => {
     try {
-      // Convert blob to base64
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onloadend = () => {
@@ -84,26 +104,16 @@ export const LogScreen = () => {
       reader.readAsDataURL(blob);
       const audioBase64 = await base64Promise;
 
-      // Call transcribe edge function
       const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
         body: { audio: audioBase64, format: 'webm' },
       });
 
       if (transcribeError) throw transcribeError;
-      
+
       const transcriptText = transcribeData.transcript;
       setTranscript(transcriptText);
 
-      // Call parse-voice-log edge function
-      const { data: parseData, error: parseError } = await supabase.functions.invoke('parse-voice-log', {
-        body: { transcript: transcriptText },
-      });
-
-      if (parseError) throw parseError;
-
-      setParsedLog(parseData);
-      setState('confirming');
-
+      await parseTranscript(transcriptText);
     } catch (err) {
       console.error('Error processing audio:', err);
       toast.error('Failed to process recording. Please try again.');
@@ -112,52 +122,97 @@ export const LogScreen = () => {
     }
   };
 
-  const handleTextSubmit = async () => {
-    if (!textInput.trim()) return;
-
-    setState('processing');
-    setTranscript(textInput);
-
+  const parseTranscript = async (transcriptText: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('parse-voice-log', {
-        body: { transcript: textInput },
+      // FIX BUG-03: pass client names for context so AI can match
+      const clientNames = clients.map(c => c.name);
+
+      const { data: parseData, error: parseError } = await supabase.functions.invoke('parse-voice-log', {
+        body: { transcript: transcriptText, available_clients: clientNames },
       });
 
-      if (error) throw error;
+      if (parseError) throw parseError;
 
-      setParsedLog(data);
+      // FIX BUG-03: edge fn returns { parsed: {...}, raw_transcript: "..." }
+      const parsed: ParsedLog = parseData.parsed || parseData;
+
+      // FIX BUG-13: resolve client name to client_id
+      if (parsed.client && clients.length > 0) {
+        const match = clients.find(
+          c => c.name.toLowerCase().includes(parsed.client!.toLowerCase()) ||
+               parsed.client!.toLowerCase().includes(c.name.toLowerCase())
+        );
+        parsed.client_id = match?.id || null;
+        if (match) setSelectedClientId(match.id);
+      }
+
+      setParsedLog(parsed);
       setState('confirming');
-
     } catch (err) {
-      console.error('Error parsing text:', err);
-      toast.error('Failed to process text. Please try again.');
+      console.error('Error parsing transcript:', err);
+      toast.error('Failed to understand the log. Please try again.');
       setState('idle');
+      resetRecording();
     }
   };
 
+  const handleTextSubmit = async () => {
+    if (!textInput.trim()) return;
+    setState('processing');
+    setTranscript(textInput);
+    await parseTranscript(textInput);
+  };
+
+  // FIX BUG-01: handleConfirm actually saves to database
   const handleConfirm = async () => {
+    if (!user?.id || !parsedLog) return;
     setIsSubmitting(true);
     try {
-      // Here you would save the log to the database
-      // For now, just show success
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      const clientId = selectedClientId || parsedLog.client_id || null;
+
+      const { error: insertError } = await supabase
+        .from('activity_logs')
+        .insert({
+          user_id: user.id,
+          client_id: clientId,
+          activity_type: parsedLog.activity_type || 'work',
+          summary: parsedLog.summary || transcript,
+          notes: parsedLog.notes || null,
+          duration_minutes: parsedLog.duration_minutes || null,
+          revenue: parsedLog.revenue || null,
+          transcript_raw: transcript,
+          created_via_voice: !showTextInput,
+          logged_at: new Date().toISOString(),
+        });
+
+      if (insertError) throw insertError;
+
+      // Update client's last_activity_date
+      if (clientId) {
+        await supabase
+          .from('clients')
+          .update({ last_activity_date: new Date().toISOString() })
+          .eq('id', clientId)
+          .eq('user_id', user.id);
+      }
+
       setState('success');
-      toast.success('Activity logged successfully!');
-      
-      // Reset after showing success
+      toast.success('Activity logged!');
+
       setTimeout(() => {
         setState('idle');
         setTranscript('');
         setParsedLog(null);
         setTextInput('');
         setShowTextInput(false);
+        setSelectedClientId(null);
+        processingBlobRef.current = null;
         resetRecording();
       }, 2000);
 
     } catch (err) {
       console.error('Error saving log:', err);
-      toast.error('Failed to save log. Please try again.');
+      toast.error('Failed to save. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -168,6 +223,8 @@ export const LogScreen = () => {
     setTranscript('');
     setParsedLog(null);
     setTextInput('');
+    setSelectedClientId(null);
+    processingBlobRef.current = null;
     resetRecording();
   };
 
@@ -188,7 +245,6 @@ export const LogScreen = () => {
               </p>
             </div>
 
-            {/* Recording Button */}
             <motion.button
               onClick={handleStartRecording}
               whileTap={{ scale: 0.95 }}
@@ -234,7 +290,7 @@ export const LogScreen = () => {
             <Textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="e.g., Spent 2 hours on strategy call with TechCorp discussing Q1 roadmap..."
+              placeholder="e.g., 2-hour strategy call with TechCorp on Q1 roadmap, billed $400..."
               className="min-h-32 bg-input border-border text-foreground"
               autoFocus
             />
@@ -273,16 +329,13 @@ export const LogScreen = () => {
               </p>
             </div>
 
-            {/* Waveform Visualization */}
             <div className="flex items-end justify-center gap-1 h-20">
               {waveformData.map((value, index) => (
                 <motion.div
                   key={index}
                   className="waveform-bar"
                   style={{ height: `${value * 100}%` }}
-                  animate={{ 
-                    scaleY: [0.3, 1, 0.3],
-                  }}
+                  animate={{ scaleY: [0.3, 1, 0.3] }}
                   transition={{
                     duration: 0.8,
                     repeat: Infinity,
@@ -293,19 +346,11 @@ export const LogScreen = () => {
               ))}
             </div>
 
-            {/* Stop Button */}
             <motion.button
               onClick={handleStopRecording}
               whileTap={{ scale: 0.95 }}
-              animate={{ 
-                scale: [1, 1.1, 1],
-                opacity: [1, 0.8, 1],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: 'easeInOut' as const,
-              }}
+              animate={{ scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' as const }}
               className={cn(
                 "w-24 h-24 rounded-full",
                 "bg-destructive flex items-center justify-center",
@@ -363,28 +408,51 @@ export const LogScreen = () => {
 
             <Card className="bg-background-elevated border-border">
               <CardContent className="p-4 space-y-4">
-                {parsedLog.client && (
-                  <div className="flex justify-between">
-                    <span className="text-foreground-secondary">Client</span>
-                    <span className="text-foreground font-medium">{parsedLog.client}</span>
-                  </div>
-                )}
+                {/* Client — with dropdown override if no match */}
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-secondary">Client</span>
+                  {clients.length > 0 ? (
+                    <Select
+                      value={selectedClientId || 'none'}
+                      onValueChange={(v) => setSelectedClientId(v === 'none' ? null : v)}
+                    >
+                      <SelectTrigger className="w-40 h-8 text-sm">
+                        <SelectValue placeholder="Select client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No client</SelectItem>
+                        {clients.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-foreground font-medium">{parsedLog.client || '—'}</span>
+                  )}
+                </div>
+
                 {parsedLog.activity_type && (
                   <div className="flex justify-between">
                     <span className="text-foreground-secondary">Activity</span>
-                    <span className="text-foreground font-medium">{parsedLog.activity_type}</span>
+                    <span className="text-foreground font-medium capitalize">{parsedLog.activity_type}</span>
                   </div>
                 )}
-                {parsedLog.duration && (
+                {parsedLog.duration_minutes && (
                   <div className="flex justify-between">
                     <span className="text-foreground-secondary">Duration</span>
-                    <span className="text-foreground font-medium">{parsedLog.duration} min</span>
+                    <span className="text-foreground font-medium">{parsedLog.duration_minutes} min</span>
+                  </div>
+                )}
+                {parsedLog.revenue && (
+                  <div className="flex justify-between">
+                    <span className="text-foreground-secondary">Revenue</span>
+                    <span className="text-foreground font-medium text-green-400">${parsedLog.revenue.toLocaleString()}</span>
                   </div>
                 )}
                 {parsedLog.notes && (
                   <div className="pt-2 border-t border-border">
                     <span className="text-foreground-secondary text-caption">Notes</span>
-                    <p className="text-foreground mt-1">{parsedLog.notes}</p>
+                    <p className="text-foreground mt-1 text-sm">{parsedLog.notes}</p>
                   </div>
                 )}
               </CardContent>
