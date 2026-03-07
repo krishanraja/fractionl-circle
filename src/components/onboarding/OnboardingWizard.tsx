@@ -146,7 +146,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <User className="w-8 h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Welcome to Portfolio Pro</CardTitle>
+                    <CardTitle className="text-2xl">Welcome to Circle</CardTitle>
                     <CardDescription className="text-base">
                       Let's personalize your experience. First, tell us a bit about yourself.
                     </CardDescription>
@@ -300,7 +300,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                     </div>
                     <CardTitle className="text-2xl">Your Goals</CardTitle>
                     <CardDescription className="text-base">
-                      What are you hoping to achieve with Portfolio Pro?
+                      What are you hoping to achieve with Circle?
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
