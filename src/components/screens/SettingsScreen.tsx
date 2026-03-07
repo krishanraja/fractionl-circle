@@ -10,10 +10,32 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const SettingsScreen = () => {
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile();
+
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [emailDigest, setEmailDigest] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+
+  const handleToggle = async (key: string, value: boolean) => {
+    if (!user?.id) return;
+    try {
+      await supabase
+        .from('user_preferences')
+        .upsert({ 
+          user_id: user.id,
+          [key]: value,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+    } catch {
+      toast.error('Failed to save preference');
+    }
+  };
 
   const settingsSections = [
     {
@@ -33,7 +55,7 @@ export const SettingsScreen = () => {
         {
           icon: Calendar,
           label: 'Work Week',
-          description: 'Monday - Friday',
+          description: 'Monday – Friday',
           action: 'chevron',
         },
         {
@@ -58,14 +80,16 @@ export const SettingsScreen = () => {
           label: 'Push Notifications',
           description: 'Get reminders to log activity',
           action: 'toggle',
-          defaultValue: true,
+          value: pushNotifications,
+          onChange: (v: boolean) => { setPushNotifications(v); handleToggle('browser_notifications', v); },
         },
         {
           icon: Bell,
           label: 'Email Digest',
           description: 'Weekly summary via email',
           action: 'toggle',
-          defaultValue: false,
+          value: emailDigest,
+          onChange: (v: boolean) => { setEmailDigest(v); handleToggle('email_notifications', v); },
         },
       ],
     },
@@ -77,7 +101,8 @@ export const SettingsScreen = () => {
           label: 'Dark Mode',
           description: 'Use dark theme',
           action: 'toggle',
-          defaultValue: true,
+          value: darkMode,
+          onChange: (v: boolean) => { setDarkMode(v); handleToggle('theme', v ? 'dark' : 'light'); },
         },
       ],
     },
@@ -96,7 +121,7 @@ export const SettingsScreen = () => {
           <User className="w-10 h-10 text-primary" />
         </div>
         <h1 className="text-title-2 text-foreground">
-          {profile?.full_name || 'User'}
+          {profile?.full_name || 'Your Profile'}
         </h1>
         <p className="text-caption text-foreground-secondary">
           {user?.email}
@@ -117,11 +142,11 @@ export const SettingsScreen = () => {
                 const isLast = index === section.items.length - 1;
                 
                 return (
-                  <button
+                  <div
                     key={item.label}
                     className={cn(
                       "w-full flex items-center gap-3 p-4",
-                      "hover:bg-secondary/50 transition-colors",
+                      item.action === 'chevron' && "hover:bg-secondary/50 transition-colors cursor-pointer",
                       !isLast && "border-b border-border"
                     )}
                   >
@@ -142,9 +167,12 @@ export const SettingsScreen = () => {
                       <ChevronRight className="w-5 h-5 text-foreground-muted" />
                     )}
                     {item.action === 'toggle' && (
-                      <Switch defaultChecked={item.defaultValue} />
+                      <Switch 
+                        checked={item.value} 
+                        onCheckedChange={item.onChange}
+                      />
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </CardContent>
@@ -169,7 +197,7 @@ export const SettingsScreen = () => {
         variants={staggerItem}
         className="text-center text-caption text-foreground-muted pt-4"
       >
-        <p>Pulse by Fractionl.AI</p>
+        <p>Circle by Fractionl</p>
         <p className="mt-1">Version 1.0.0</p>
       </motion.div>
     </motion.div>
