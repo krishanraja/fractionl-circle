@@ -1,4 +1,4 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
@@ -250,10 +250,16 @@ serve(async (req) => {
                 console.log('JSON parsing failed, using text parsing:', parseError);
                 // Fallback to text parsing
                 parsedContext = {
-                  business_type: businessContextText.match(/business type[:\s]*(.*?)(?:\n|\.)/i)?.[1]?.trim() || '',
-                  target_market: businessContextText.match(/target market[:\s]*(.*?)(?:\n|\.)/i)?.[1]?.trim() || '',
-                  main_challenges: businessContextText.match(/challenges?[:\s]*(.*?)(?:\n\n|\. [A-Z])/i)?.[1]?.split(/[,;]/).map(c => c.trim()).filter(Boolean) || [],
-                  priorities: businessContextText.match(/priorities?[:\s]*(.*?)(?:\n\n|\. [A-Z])/i)?.[1]?.split(/[,;]/).map(p => p.trim()).filter(Boolean) || [],
+                  business_type: businessContextText.match(/business type[:\s]*(.*?)(?:
+|\.)/i)?.[1]?.trim() || '',
+                  target_market: businessContextText.match(/target market[:\s]*(.*?)(?:
+|\.)/i)?.[1]?.trim() || '',
+                  main_challenges: businessContextText.match(/challenges?[:\s]*(.*?)(?:
+
+|\. [A-Z])/i)?.[1]?.split(/[,;]/).map(c => c.trim()).filter(Boolean) || [],
+                  priorities: businessContextText.match(/priorities?[:\s]*(.*?)(?:
+
+|\. [A-Z])/i)?.[1]?.split(/[,;]/).map(p => p.trim()).filter(Boolean) || [],
                 };
               }
 
@@ -374,7 +380,9 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             role: 'user',
-            content: `${question}\n\nContext: ${JSON.stringify(context)}`,
+            content: `${question}
+
+Context: ${JSON.stringify(context)}`,
           }),
         });
 
@@ -472,7 +480,8 @@ serve(async (req) => {
           Current Metrics: ${JSON.stringify(context?.currentMetrics || {})}
           Monthly Goals: ${JSON.stringify(context?.monthlyGoals || {})}
           
-          Recent Conversation: ${context?.conversationHistory?.map(msg => `${msg.role}: ${msg.content}`).join('\n') || 'No recent context'}
+          Recent Conversation: ${context?.conversationHistory?.map(msg => `${msg.role}: ${msg.content}`).join('
+') || 'No recent context'}
           
           Current User Message: ${question}
         `;
@@ -603,7 +612,7 @@ serve(async (req) => {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question }
