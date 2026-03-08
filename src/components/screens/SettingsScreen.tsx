@@ -110,7 +110,7 @@ export const SettingsScreen = () => {
 
   return (
     <motion.div 
-      className="flex flex-col gap-6 p-4 pb-8"
+      className="flex flex-col gap-6 p-4 pb-28"
       variants={staggerContainer}
       initial="initial"
       animate="animate"
