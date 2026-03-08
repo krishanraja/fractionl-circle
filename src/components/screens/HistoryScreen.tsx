@@ -1,193 +1,252 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, ChevronRight, Search } from 'lucide-react';
+import { Mic, Keyboard, Clock, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
-interface TimelineEntry {
+interface ActivityLog {
   id: string;
-  client: string;
-  clientColor: string;
-  activity: string;
-  notes: string;
-  duration: number;
-  timestamp: Date;
+  summary: string;
+  activity_type: string;
+  duration_minutes: number | null;
+  revenue: number | null;
+  created_via_voice: boolean | null;
+  logged_at: string;
+  client: { name: string; color: string | null } | null;
 }
 
-// Mock data - will be replaced with real data
-const mockEntries: TimelineEntry[] = [
-  {
-    id: '1',
-    client: 'TechCorp',
-    clientColor: '#8B5CF6',
-    activity: 'Strategy Call',
-    notes: 'Discussed Q1 roadmap and budget allocation',
-    duration: 60,
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: '2',
-    client: 'FinanceHub',
-    clientColor: '#3B82F6',
-    activity: 'Workshop',
-    notes: 'Leadership training session with exec team',
-    duration: 120,
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
-  },
-  {
-    id: '3',
-    client: 'StartupXYZ',
-    clientColor: '#10B981',
-    activity: 'Advisory',
-    notes: 'Reviewed pitch deck for Series A',
-    duration: 45,
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-  {
-    id: '4',
-    client: 'TechCorp',
-    clientColor: '#8B5CF6',
-    activity: 'Email Follow-up',
-    notes: 'Sent proposal for Q2 engagement',
-    duration: 15,
-    timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000),
-  },
-];
+interface DayGroup {
+  date: string;
+  label: string;
+  entries: ActivityLog[];
+}
 
-const formatRelativeTime = (date: Date) => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffHours < 1) return 'Just now';
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'Yesterday';
-  return `${diffDays} days ago`;
+const activityTypeLabel: Record<string, string> = {
+  meeting: 'Meeting',
+  call: 'Call',
+  work: 'Deep Work',
+  email: 'Email',
+  admin: 'Admin',
+  networking: 'Networking',
+  other: 'Activity',
 };
 
-const groupEntriesByDay = (entries: TimelineEntry[]) => {
-  const groups: { [key: string]: TimelineEntry[] } = {};
-  
-  entries.forEach((entry) => {
-    const date = entry.timestamp.toDateString();
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-    
-    let key: string;
-    if (date === today) key = 'Today';
-    else if (date === yesterday) key = 'Yesterday';
-    else key = entry.timestamp.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-    
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(entry);
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return 'Today';
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+};
+
+const groupByDay = (logs: ActivityLog[]): DayGroup[] => {
+  const groups: Record<string, ActivityLog[]> = {};
+  logs.forEach(log => {
+    const day = new Date(log.logged_at).toDateString();
+    if (!groups[day]) groups[day] = [];
+    groups[day].push(log);
   });
-  
-  return groups;
+
+  return Object.entries(groups).map(([date, entries]) => ({
+    date,
+    label: formatDate(entries[0].logged_at),
+    entries,
+  }));
 };
 
 export const HistoryScreen = () => {
-  const groupedEntries = groupEntriesByDay(mockEntries);
+  const { user } = useAuth();
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchLogs = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('activity_logs')
+          .select(`
+            id,
+            summary,
+            activity_type,
+            duration_minutes,
+            revenue,
+            created_via_voice,
+            logged_at,
+            clients (
+              name,
+              color
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('logged_at', { ascending: false })
+          .limit(100);
+
+        if (fetchError) throw fetchError;
+
+        setLogs((data || []).map((log: any) => ({
+          ...log,
+          client: log.clients || null,
+        })));
+      } catch (err) {
+        console.error('History fetch error:', err);
+        setError('Failed to load activity history');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLogs();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('history-changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'activity_logs',
+        filter: `user_id=eq.${user.id}`,
+      }, () => fetchLogs())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id]);
+
+  const dayGroups = groupByDay(logs);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 p-4 pb-8">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <Skeleton className="h-20 w-full rounded-xl" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-4 text-center">
+        <p className="text-foreground-secondary">{error}</p>
+      </div>
+    );
+  }
+
+  if (logs.length === 0) {
+    return (
+      <motion.div
+        className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] gap-4 p-4 text-center"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="w-16 h-16 rounded-full bg-primary-muted flex items-center justify-center">
+          <Clock className="w-8 h-8 text-primary" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-title-2 text-foreground">No activity yet</h2>
+          <p className="text-body text-foreground-secondary max-w-xs">
+            Log your first activity using voice or text to see your history here
+          </p>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-4 p-4 pb-8">
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
-        <Input
-          placeholder="Search activities..."
-          className="pl-10 bg-input border-border"
-        />
-      </div>
+    <motion.div
+      className="flex flex-col gap-6 p-4 pb-8"
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+    >
+      {dayGroups.map((group) => (
+        <motion.div key={group.date} variants={staggerItem} className="space-y-2">
+          {/* Day header */}
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-caption-bold text-foreground-secondary uppercase tracking-wider">
+              {group.label}
+            </h2>
+            <span className="text-caption text-foreground-muted">
+              {group.entries.length} {group.entries.length === 1 ? 'entry' : 'entries'}
+            </span>
+          </div>
 
-      {/* Timeline */}
-      <motion.div 
-        className="space-y-6"
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-      >
-        {Object.entries(groupedEntries).map(([day, entries]) => (
-          <motion.div key={day} variants={staggerItem} className="space-y-3">
-            {/* Day Header */}
-            <div className="flex items-center gap-2 px-1">
-              <Clock className="w-4 h-4 text-foreground-muted" />
-              <h2 className="text-caption-bold text-foreground-secondary uppercase tracking-wider">
-                {day}
-              </h2>
-            </div>
+          {/* Activity entries */}
+          {group.entries.map((entry) => (
+            <Card key={entry.id} className="card-interactive">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  {/* Client colour dot */}
+                  <div
+                    className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0"
+                    style={{ backgroundColor: entry.client?.color || '#8B5CF6' }}
+                  />
 
-            {/* Entries */}
-            <div className="space-y-2">
-              {entries.map((entry, index) => (
-                <motion.div
-                  key={entry.id}
-                  variants={staggerItem}
-                  custom={index}
-                >
-                  <Card className="card-interactive">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        {/* Client Color Indicator */}
-                        <div 
-                          className="w-1 h-full min-h-[3rem] rounded-full"
-                          style={{ backgroundColor: entry.clientColor }}
-                        />
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              <span 
-                                className="text-caption-bold"
-                                style={{ color: entry.clientColor }}
-                              >
-                                {entry.client}
-                              </span>
-                              <span className="text-foreground-muted">•</span>
-                              <span className="text-caption text-foreground-secondary">
-                                {entry.activity}
-                              </span>
-                            </div>
-                            <span className="text-micro text-foreground-muted">
-                              {formatRelativeTime(entry.timestamp)}
-                            </span>
-                          </div>
-                          
-                          <p className="text-body text-foreground line-clamp-2">
-                            {entry.notes}
-                          </p>
-                          
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-caption text-foreground-secondary">
-                              {entry.duration} min
-                            </span>
-                            <ChevronRight className="w-4 h-4 text-foreground-muted" />
-                          </div>
-                        </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-body-bold text-foreground leading-snug">
+                        {entry.summary}
+                      </p>
+                      {/* Voice/text indicator */}
+                      <div className="flex-shrink-0 mt-0.5">
+                        {entry.created_via_voice ? (
+                          <Mic className="w-3.5 h-3.5 text-foreground-muted" />
+                        ) : (
+                          <Keyboard className="w-3.5 h-3.5 text-foreground-muted" />
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
+                    </div>
 
-        {/* Empty State */}
-        {Object.keys(groupedEntries).length === 0 && (
-          <motion.div
-            variants={staggerItem}
-            className="flex flex-col items-center justify-center py-16 text-center"
-          >
-            <Clock className="w-12 h-12 text-foreground-muted mb-4" />
-            <h2 className="text-title-3 text-foreground mb-2">No Activities Yet</h2>
-            <p className="text-body text-foreground-secondary max-w-xs">
-              Start logging your work to see your activity history here
-            </p>
-          </motion.div>
-        )}
-      </motion.div>
-    </div>
+                    {/* Meta row */}
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      {entry.client && (
+                        <span
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `${entry.client.color || '#8B5CF6'}20`,
+                            color: entry.client.color || '#8B5CF6',
+                          }}
+                        >
+                          {entry.client.name}
+                        </span>
+                      )}
+                      <span className="text-caption text-foreground-secondary">
+                        {activityTypeLabel[entry.activity_type] || 'Activity'}
+                      </span>
+                      {entry.duration_minutes && (
+                        <span className="text-caption text-foreground-secondary">
+                          · {entry.duration_minutes >= 60
+                            ? `${Math.floor(entry.duration_minutes / 60)}h ${entry.duration_minutes % 60 > 0 ? `${entry.duration_minutes % 60}m` : ''}`
+                            : `${entry.duration_minutes}m`}
+                        </span>
+                      )}
+                      {entry.revenue && entry.revenue > 0 && (
+                        <span className="text-caption text-success font-medium">
+                          · ${entry.revenue.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </motion.div>
+      ))}
+    </motion.div>
   );
 };
