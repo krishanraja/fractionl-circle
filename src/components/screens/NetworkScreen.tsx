@@ -1,253 +1,200 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Users, Filter, Search, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Plus, Mic, Users, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
 import { TalentContactCard } from '@/components/talent/TalentContactCard';
+import { QuickAddSheet } from '@/components/talent/QuickAddSheet';
 import { TalentContactForm } from '@/components/talent/TalentContactForm';
-import { ReferralForm } from '@/components/talent/ReferralForm';
-import { useTalentContacts, type TalentContactWithSkills } from '@/hooks/useTalentContacts';
+import { useTalentContacts } from '@/hooks/useTalentContacts';
 import { useSkills } from '@/hooks/useSkills';
-import { useTalentReferrals } from '@/hooks/useTalentReferrals';
 
-interface NetworkScreenProps {
-  className?: string;
-}
+const SKILL_CATEGORIES = [
+  'All', 'Design', 'Development', 'Product', 'Marketing',
+  'Content', 'Data', 'Operations', 'Strategy', 'Sales',
+  'Creative', 'Research', 'Finance', 'Legal',
+];
 
-export const NetworkScreen = ({ className }: NetworkScreenProps) => {
-  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [contactFormOpen, setContactFormOpen] = useState(false);
-  const [referralFormOpen, setReferralFormOpen] = useState(false);
-  const [editingContact, setEditingContact] = useState<TalentContactWithSkills | undefined>();
-  const [referralContact, setReferralContact] = useState<TalentContactWithSkills | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [contactToDelete, setContactToDelete] = useState<TalentContactWithSkills | undefined>();
+const AVAILABILITY_COLORS: Record<string, string> = {
+  available: '#10B981',
+  busy: '#F59E0B',
+  unavailable: '#6B7280',
+};
 
-  const { contacts, loading, createContact, updateContact, deleteContact } = useTalentContacts(selectedSkill);
-  const { skills, getCategories } = useSkills();
-  const { createReferral } = useTalentReferrals();
+export const NetworkScreen = () => {
+  const { contacts, isLoading, deleteContact } = useTalentContacts();
+  const { skills } = useSkills();
 
-  // Filter contacts by search query
-  const filteredContacts = contacts.filter(contact => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      contact.name.toLowerCase().includes(query) ||
-      contact.email?.toLowerCase().includes(query) ||
-      contact.specialty_summary?.toLowerCase().includes(query) ||
-      contact.skills.some(skill => skill.name.toLowerCase().includes(query))
-    );
-  });
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [availableOnly, setAvailableOnly] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showFullForm, setShowFullForm] = useState(false);
+  const [editingContact, setEditingContact] = useState<any>(null);
 
-  const handleAddContact = () => {
-    setEditingContact(undefined);
-    setContactFormOpen(true);
-  };
+  const filtered = useMemo(() => {
+    return contacts.filter(contact => {
+      const matchesSearch = !search ||
+        contact.name.toLowerCase().includes(search.toLowerCase()) ||
+        contact.specialty_summary?.toLowerCase().includes(search.toLowerCase()) ||
+        contact.company?.toLowerCase().includes(search.toLowerCase()) ||
+        contact.city?.toLowerCase().includes(search.toLowerCase());
 
-  const handleEditContact = (contact: TalentContactWithSkills) => {
-    setEditingContact(contact);
-    setContactFormOpen(true);
-  };
+      const matchesCategory = activeCategory === 'All' ||
+        contact.talent_skills?.some((ts: any) =>
+          skills.find(s => s.id === ts.skill_id)?.category === activeCategory
+        );
 
-  const handleDeleteContact = (contact: TalentContactWithSkills) => {
-    setContactToDelete(contact);
-    setDeleteDialogOpen(true);
-  };
+      const matchesAvailability = !availableOnly ||
+        contact.availability_status === 'available';
 
-  const confirmDelete = async () => {
-    if (contactToDelete) {
-      await deleteContact(contactToDelete.id);
-      setDeleteDialogOpen(false);
-      setContactToDelete(undefined);
-    }
-  };
+      return matchesSearch && matchesCategory && matchesAvailability;
+    });
+  }, [contacts, search, activeCategory, availableOnly, skills]);
 
-  const handleLogReferral = (contact: TalentContactWithSkills) => {
-    setReferralContact(contact);
-    setReferralFormOpen(true);
-  };
-
-  const handleContactFormSubmit = async (contactData: any, skillIds: string[]) => {
-    if (editingContact) {
-      await updateContact(editingContact.id, contactData, skillIds);
-    } else {
-      await createContact(contactData, skillIds);
-    }
-  };
-
-  const handleReferralFormSubmit = async (referralData: any) => {
-    await createReferral(referralData);
-  };
-
-  // Get unique categories with contact counts
-  const categories = getCategories();
-  const skillCounts = skills.reduce((acc, skill) => {
-    const count = contacts.filter(c => c.skills.some(s => s.id === skill.id)).length;
-    acc[skill.id] = count;
-    return acc;
-  }, {} as Record<string, number>);
+  // Sort by warmth (most recently interacted first, then by created_at)
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const aDate = a.last_interaction_date || a.created_at;
+      const bDate = b.last_interaction_date || b.created_at;
+      return new Date(bDate).getTime() - new Date(aDate).getTime();
+    });
+  }, [filtered]);
 
   return (
-    <>
-      <motion.div
-        className={cn('flex flex-col gap-4 p-4 pb-24', className)}
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-      >
-        {/* Header */}
-        <motion.div variants={staggerItem} className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Network</h1>
-            <p className="text-sm text-muted-foreground">
-              {contacts.length} contact{contacts.length !== 1 ? 's' : ''} in your network
-            </p>
-          </div>
-          <Button onClick={handleAddContact} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contact
-          </Button>
-        </motion.div>
-
-        {/* Search Bar */}
-        <motion.div variants={staggerItem}>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <motion.div
+      className="flex flex-col h-full"
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+    >
+      {/* Search + filter row */}
+      <motion.div variants={staggerItem} className="px-4 pt-4 space-y-3">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
             <Input
-              placeholder="Search by name, email, or skill..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search name, skill, company, city..."
+              className="pl-10 bg-input border-border text-foreground h-11"
             />
           </div>
-        </motion.div>
-
-        {/* Skill Filter Chips */}
-        <motion.div variants={staggerItem}>
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex gap-2 pb-2">
-              <Badge
-                variant={selectedSkill === null ? 'default' : 'outline'}
-                className="cursor-pointer px-4 py-2"
-                onClick={() => setSelectedSkill(null)}
-              >
-                All ({contacts.length})
-              </Badge>
-              {skills
-                .filter(skill => skillCounts[skill.id] > 0)
-                .map(skill => (
-                  <Badge
-                    key={skill.id}
-                    variant={selectedSkill === skill.id ? 'default' : 'outline'}
-                    className="cursor-pointer px-4 py-2"
-                    onClick={() => setSelectedSkill(skill.id)}
-                  >
-                    {skill.name} ({skillCounts[skill.id]})
-                  </Badge>
-                ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </motion.div>
-
-        {/* Contact Grid */}
-        {loading ? (
-          <motion.div variants={staggerItem} className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-2 animate-pulse" />
-              <p className="text-muted-foreground">Loading contacts...</p>
-            </div>
-          </motion.div>
-        ) : filteredContacts.length === 0 ? (
-          <motion.div variants={staggerItem} className="flex items-center justify-center py-12">
-            <div className="text-center max-w-md">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                {searchQuery || selectedSkill ? 'No contacts found' : 'No contacts yet'}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery || selectedSkill
-                  ? 'Try adjusting your filters'
-                  : 'Start building your network by adding your first contact'}
-              </p>
-              {!searchQuery && !selectedSkill && (
-                <Button onClick={handleAddContact}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Contact
-                </Button>
-              )}
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          <Button
+            variant={availableOnly ? "default" : "outline"}
+            size="icon"
+            className="h-11 w-11 flex-shrink-0"
+            onClick={() => setAvailableOnly(!availableOnly)}
+            title="Available only"
           >
-            {filteredContacts.map(contact => (
-              <motion.div key={contact.id} variants={staggerItem}>
-                <TalentContactCard
-                  contact={contact}
-                  onEdit={handleEditContact}
-                  onDelete={handleDeleteContact}
-                  onLogReferral={handleLogReferral}
-                />
-              </motion.div>
+            <Filter className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Category chips */}
+        <ScrollArea className="w-full">
+          <div className="flex gap-2 pb-1">
+            {SKILL_CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={cn(
+                  "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                  activeCategory === cat
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-foreground-secondary hover:bg-secondary/80"
+                )}
+              >
+                {cat}
+              </button>
             ))}
-          </motion.div>
-        )}
+          </div>
+          <ScrollBar orientation="horizontal" className="h-0" />
+        </ScrollArea>
       </motion.div>
 
-      {/* Contact Form Dialog */}
-      <TalentContactForm
-        open={contactFormOpen}
-        onOpenChange={setContactFormOpen}
-        onSubmit={handleContactFormSubmit}
-        contact={editingContact}
+      {/* Contact list */}
+      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-24 space-y-2">
+        <AnimatePresence>
+          {isLoading ? (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="h-[88px] rounded-xl bg-background-elevated animate-pulse" />
+            ))
+          ) : sorted.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-16 gap-3 text-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary-muted flex items-center justify-center">
+                <Users className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <p className="text-body-bold text-foreground">
+                  {search || activeCategory !== 'All' ? 'No matches' : 'Your Black Book is empty'}
+                </p>
+                <p className="text-caption text-foreground-secondary mt-1">
+                  {search || activeCategory !== 'All'
+                    ? 'Try a different search or filter'
+                    : 'Tap + to add someone you want to remember'}
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            sorted.map((contact, i) => (
+              <motion.div
+                key={contact.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: i * 0.03 }}
+              >
+                <TalentContactCard
+                  contact={contact}
+                  onEdit={() => { setEditingContact(contact); setShowFullForm(true); }}
+                  onDelete={() => deleteContact(contact.id)}
+                />
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* FAB row: voice add + quick add */}
+      <div className="fixed bottom-20 right-4 flex flex-col gap-2 items-end" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        {/* Voice add */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => { /* TODO: voice add contact */ }}
+          className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center shadow-lg"
+        >
+          <Mic className="w-5 h-5 text-foreground-secondary" />
+        </motion.button>
+
+        {/* Quick add */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowQuickAdd(true)}
+          className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30"
+        >
+          <Plus className="w-6 h-6 text-primary-foreground" />
+        </motion.button>
+      </div>
+
+      {/* Sheets */}
+      <QuickAddSheet
+        open={showQuickAdd}
+        onOpenChange={setShowQuickAdd}
+        onOpenFullForm={() => { setShowQuickAdd(false); setShowFullForm(true); }}
       />
-
-      {/* Referral Form Dialog */}
-      {referralContact && (
-        <ReferralForm
-          open={referralFormOpen}
-          onOpenChange={setReferralFormOpen}
-          onSubmit={handleReferralFormSubmit}
-          contact={referralContact}
-        />
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Contact</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete {contactToDelete?.name}? This action cannot be undone.
-              All referrals associated with this contact will also be deleted.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+      <TalentContactForm
+        open={showFullForm}
+        onOpenChange={(open) => { setShowFullForm(open); if (!open) setEditingContact(null); }}
+        editContact={editingContact}
+      />
+    </motion.div>
   );
 };
