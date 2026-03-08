@@ -112,10 +112,10 @@ const WelcomeContent = ({
     <div className="text-center">
       <img 
         src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png" 
-        alt="Pulse" 
+        alt="Circle" 
         className="h-12 mx-auto mb-6"
       />
-      <h1 className="text-title-1 text-foreground mb-2">Welcome to Pulse</h1>
+      <h1 className="text-title-1 text-foreground mb-2">Welcome to Circle</h1>
       <p className="text-body text-foreground-secondary">
         Track your portfolio, one voice note at a time
       </p>
@@ -217,7 +217,7 @@ const SignInContent = ({
     <div className="text-center">
       <img 
         src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png" 
-        alt="Pulse" 
+        alt="Circle" 
         className="h-8 mx-auto mb-4"
       />
       <h1 className="text-title-2 text-foreground mb-1">Welcome back</h1>
@@ -331,7 +331,7 @@ const SignUpContent = ({
     <div className="text-center">
       <img 
         src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png" 
-        alt="Pulse" 
+        alt="Circle" 
         className="h-8 mx-auto mb-4"
       />
       <h1 className="text-title-2 text-foreground mb-1">Create your account</h1>
