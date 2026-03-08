@@ -126,7 +126,7 @@ export const HistoryScreen = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 p-4 pb-8">
+      <div className="flex flex-col gap-6 p-4 pb-28">
         {[1, 2, 3].map(i => (
           <div key={i} className="space-y-2">
             <Skeleton className="h-4 w-24" />
@@ -168,7 +168,7 @@ export const HistoryScreen = () => {
 
   return (
     <motion.div
-      className="flex flex-col gap-6 p-4 pb-8"
+      className="flex flex-col gap-6 p-4 pb-28"
       variants={staggerContainer}
       initial="initial"
       animate="animate"
