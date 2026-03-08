@@ -1,7 +1,7 @@
 {
-  "name": "Fractionl AI Co-Pilot",
-  "short_name": "Fractionl",
-  "description": "Strategic Intelligence for Portfolio Leaders",
+  "name": "Circle by Fractionl",
+  "short_name": "Circle",
+  "description": "Command Centre for Fractional Executives",
   "icons": [
     {
       "src": "/favicon.png",
@@ -23,6 +23,9 @@
   "theme_color": "#4C2882",
   "background_color": "#0F0A1A",
   "display": "standalone",
+  "orientation": "portrait",
   "start_url": "/",
-  "scope": "/"
+  "scope": "/",
+  "categories": ["business", "productivity"],
+  "screenshots": []
 }
