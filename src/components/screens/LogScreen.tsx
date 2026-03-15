@@ -16,6 +16,8 @@ type LogState = 'idle' | 'recording' | 'processing' | 'confirming' | 'success';
 
 interface ParsedLog {
   client?: string;
+  client_name?: string;
+  client_mentioned?: string;
   client_id?: string | null;
   activity_type?: string;
   duration_minutes?: number;
@@ -33,7 +35,7 @@ export const LogScreen = () => {
   const [transcript, setTranscript] = useState('');
   const [parsedLog, setParsedLog] = useState<ParsedLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [clients, setClients] = useState<{ id: string; name: string; engagement_type?: string | null }[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const processingBlobRef = useRef<Blob | null>(null);
 
@@ -66,7 +68,7 @@ export const LogScreen = () => {
     if (!user?.id) return;
     supabase
       .from('clients')
-      .select('id, name')
+      .select('id, name, engagement_type')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .then(({ data }) => setClients(data || []));
@@ -124,25 +126,30 @@ export const LogScreen = () => {
 
   const parseTranscript = async (transcriptText: string) => {
     try {
-      // FIX BUG-03: pass client names for context so AI can match
-      const clientNames = clients.map(c => c.name);
-
+      // Pass full client objects for better AI matching context
       const { data: parseData, error: parseError } = await supabase.functions.invoke('parse-voice-log', {
-        body: { transcript: transcriptText, available_clients: clientNames },
+        body: { transcript: transcriptText, clients: clients },
       });
 
       if (parseError) throw parseError;
 
-      // FIX BUG-03: edge fn returns { parsed: {...}, raw_transcript: "..." }
+      // Edge fn returns { parsed: {...}, raw_transcript: "..." }
       const parsed: ParsedLog = parseData.parsed || parseData;
 
-      // FIX BUG-13: resolve client name to client_id
-      if (parsed.client && clients.length > 0) {
-        const match = clients.find(
-          c => c.name.toLowerCase().includes(parsed.client!.toLowerCase()) ||
-               parsed.client!.toLowerCase().includes(c.name.toLowerCase())
-        );
+      // Resolve client name to client_id - edge function now returns exact client_name match
+      const clientName = parsed.client_name || parsed.client;
+      if (clientName && clients.length > 0) {
+        // First try exact match (edge function should return exact known client name)
+        let match = clients.find(c => c.name === clientName);
+        // Fallback to fuzzy match if no exact match
+        if (!match) {
+          match = clients.find(
+            c => c.name.toLowerCase().includes(clientName.toLowerCase()) ||
+                 clientName.toLowerCase().includes(c.name.toLowerCase())
+          );
+        }
         parsed.client_id = match?.id || null;
+        parsed.client = match?.name || clientName;
         if (match) setSelectedClientId(match.id);
       }
 

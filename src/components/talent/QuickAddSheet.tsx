@@ -15,7 +15,7 @@ interface QuickAddSheetProps {
 }
 
 export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSheetProps) => {
-  const { addContact } = useTalentContacts();
+  const { createContact } = useTalentContacts();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ name: '', specialty: '', linkedin_url: '' });
 
@@ -23,15 +23,16 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     if (!form.name.trim()) return;
     setIsSubmitting(true);
     try {
-      await addContact({
+      await createContact({
         name: form.name.trim(),
         specialty_summary: form.specialty.trim() || null,
         linkedin_url: form.linkedin_url.trim() || null,
-        // Enrichment happens async after save via enrich-contact edge fn
-      });
+      }, []);
       toast.success(`${form.name} added to your Black Book`);
       setForm({ name: '', specialty: '', linkedin_url: '' });
       onOpenChange(false);
+    } catch (err) {
+      // Error toast is handled by the hook
     } finally {
       setIsSubmitting(false);
     }

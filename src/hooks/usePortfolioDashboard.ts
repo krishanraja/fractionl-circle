@@ -57,20 +57,35 @@ export function usePortfolioDashboard(): PortfolioDashboard {
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
+      // Calculate month boundaries for activity log revenue
+      const monthStart = `${currentMonth}-01T00:00:00.000Z`;
+      const nextMonth = new Date(currentMonth + '-01');
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      const monthEnd = nextMonth.toISOString();
+
       const [
         revenueRes,
+        activityRevenueRes,
         clientsRes,
         pipelineRes,
         activityRes,
         goalsRes,
         weeklyRes,
       ] = await Promise.all([
-        // Current month revenue
+        // Current month revenue from revenue_entries
         supabase
           .from('revenue_entries')
           .select('amount')
           .eq('user_id', user.id)
           .eq('month', currentMonth),
+
+        // Current month revenue from activity_logs
+        supabase
+          .from('activity_logs')
+          .select('revenue')
+          .eq('user_id', user.id)
+          .gte('logged_at', monthStart)
+          .lt('logged_at', monthEnd),
 
         // Active clients
         supabase
@@ -112,8 +127,10 @@ export function usePortfolioDashboard(): PortfolioDashboard {
           .maybeSingle(),
       ]);
 
-      // Revenue
-      const currentRevenue = (revenueRes.data || []).reduce((sum, r) => sum + (r.amount || 0), 0);
+      // Revenue from both revenue_entries and activity_logs
+      const revenueEntriesTotal = (revenueRes.data || []).reduce((sum, r) => sum + (r.amount || 0), 0);
+      const activityRevenueTotal = (activityRevenueRes.data || []).reduce((sum, r) => sum + (r.revenue || 0), 0);
+      const currentRevenue = revenueEntriesTotal + activityRevenueTotal;
       const revenueTarget = goalsRes.data?.total_revenue_target || goalsRes.data?.revenue_forecast || 0;
 
       // Activity counts per client

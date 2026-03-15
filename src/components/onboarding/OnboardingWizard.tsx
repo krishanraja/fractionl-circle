@@ -97,23 +97,23 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 sm:p-4">
       <div className="w-full max-w-2xl">
         {/* Progress */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-muted-foreground mb-2">
+        <div className="mb-4 sm:mb-8">
+          <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mb-1.5">
             <span>Step {currentStep + 1} of {totalSteps}</span>
             <span>{Math.round(progress)}% complete</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-1.5 sm:h-2" />
         </div>
 
         {/* Steps Indicator */}
-        <div className="flex justify-center gap-2 mb-8">
+        <div className="flex justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-8">
           {[User, Briefcase, Target, Sparkles].map((Icon, index) => (
             <div
               key={index}
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
                 index < currentStep
                   ? 'bg-primary text-primary-foreground'
                   : index === currentStep
@@ -122,9 +122,9 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
               }`}
             >
               {index < currentStep ? (
-                <Check className="w-5 h-5" />
+                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
               ) : (
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </div>
           ))}
@@ -142,27 +142,27 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             <Card className="shadow-lg">
               {currentStep === 0 && (
                 <>
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <User className="w-8 h-8 text-primary" />
+                  <CardHeader className="text-center pb-2 sm:pb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                      <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Welcome to Circle</CardTitle>
-                    <CardDescription className="text-base">
+                    <CardTitle className="text-xl sm:text-2xl">Welcome to Circle</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
                       Let's personalize your experience. First, tell us a bit about yourself.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
+                  <CardContent className="space-y-4 sm:space-y-6">
+                    <div className="space-y-1.5">
                       <Label htmlFor="name">Your Name</Label>
                       <Input
                         id="name"
                         placeholder="Enter your full name"
                         value={formData.full_name}
                         onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                        className="text-lg"
+                        className="text-base sm:text-lg"
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label htmlFor="industry">Your Industry</Label>
                       <Input
                         id="industry"
@@ -171,7 +171,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                         onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label htmlFor="experience">Years of Experience</Label>
                       <Input
                         id="experience"
@@ -187,17 +187,17 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
               {currentStep === 1 && (
                 <>
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <Briefcase className="w-8 h-8 text-primary" />
+                  <CardHeader className="text-center pb-2 sm:pb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                      <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Your Business Model</CardTitle>
-                    <CardDescription className="text-base">
+                    <CardTitle className="text-xl sm:text-2xl">Your Business Model</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
                       How would you best describe your portfolio business?
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-2 sm:gap-4 sm:grid-cols-2">
                       {BUSINESS_TYPES.map((type) => {
                         const Icon = type.icon;
                         const isSelected = formData.business_type === type.id;
@@ -205,21 +205,21 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                           <button
                             key={type.id}
                             onClick={() => setFormData(prev => ({ ...prev, business_type: type.id }))}
-                            className={`p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ${
+                            className={`p-3 sm:p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ${
                               isSelected
                                 ? 'border-primary bg-primary/5'
                                 : 'border-border hover:border-primary/50'
                             }`}
                           >
-                            <div className="flex items-start gap-3">
-                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            <div className="flex items-start gap-2 sm:gap-3">
+                              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
                               }`}>
-                                <Icon className="w-5 h-5" />
+                                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                               </div>
-                              <div>
-                                <h4 className="font-semibold">{type.label}</h4>
-                                <p className="text-sm text-muted-foreground">{type.description}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm sm:text-base">{type.label}</h4>
+                                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{type.description}</p>
                               </div>
                             </div>
                           </button>
@@ -232,24 +232,24 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
               {currentStep === 2 && (
                 <>
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <DollarSign className="w-8 h-8 text-primary" />
+                  <CardHeader className="text-center pb-2 sm:pb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                      <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Revenue & Services</CardTitle>
-                    <CardDescription className="text-base">
+                    <CardTitle className="text-xl sm:text-2xl">Revenue & Services</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
                       Help us understand your business scale and service offerings.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-8">
-                    <div className="space-y-4">
-                      <Label>Annual Revenue Range</Label>
-                      <div className="flex flex-wrap gap-2">
+                  <CardContent className="space-y-4 sm:space-y-8">
+                    <div className="space-y-2 sm:space-y-4">
+                      <Label className="text-sm">Annual Revenue Range</Label>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {REVENUE_RANGES.map((range) => (
                           <button
                             key={range.id}
                             onClick={() => setFormData(prev => ({ ...prev, revenue_range: range.id }))}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                               formData.revenue_range === range.id
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted hover:bg-muted/80'
@@ -260,28 +260,28 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                         ))}
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <Label>Services You Offer (select all that apply)</Label>
-                      <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2 sm:space-y-4">
+                      <Label className="text-sm">Services You Offer (select all that apply)</Label>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
                         {SERVICE_TYPES.map((service) => {
                           const isSelected = formData.service_types.includes(service.id);
                           return (
                             <button
                               key={service.id}
                               onClick={() => toggleServiceType(service.id)}
-                              className={`p-3 rounded-lg border-2 text-left transition-all ${
+                              className={`p-2 sm:p-3 rounded-lg border-2 text-left transition-all ${
                                 isSelected
                                   ? 'border-primary bg-primary/5'
                                   : 'border-border hover:border-primary/50'
                               }`}
                             >
-                              <div className="flex items-center gap-2">
-                                <div className={`w-5 h-5 rounded flex items-center justify-center ${
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded flex items-center justify-center flex-shrink-0 ${
                                   isSelected ? 'bg-primary text-primary-foreground' : 'border border-border'
                                 }`}>
-                                  {isSelected && <Check className="w-3 h-3" />}
+                                  {isSelected && <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                                 </div>
-                                <span className="font-medium text-sm">{service.label}</span>
+                                <span className="font-medium text-xs sm:text-sm">{service.label}</span>
                               </div>
                             </button>
                           );
@@ -294,46 +294,47 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
               {currentStep === 3 && (
                 <>
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <Target className="w-8 h-8 text-primary" />
+                  <CardHeader className="text-center pb-2 sm:pb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                      <Target className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">Your Goals</CardTitle>
-                    <CardDescription className="text-base">
+                    <CardTitle className="text-xl sm:text-2xl">Your Goals</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
                       What are you hoping to achieve with Circle?
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
+                  <CardContent className="space-y-4 sm:space-y-6">
+                    <div className="space-y-1.5">
                       <Label htmlFor="target_market">Target Market</Label>
                       <Textarea
                         id="target_market"
                         placeholder="Describe your ideal clients or target market..."
                         value={formData.target_market}
                         onChange={(e) => setFormData(prev => ({ ...prev, target_market: e.target.value }))}
-                        rows={4}
+                        rows={3}
+                        className="resize-none"
                       />
                     </div>
-                    <div className="bg-primary/5 rounded-xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 text-primary font-semibold">
-                        <Sparkles className="w-5 h-5" />
+                    <div className="bg-primary/5 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
+                      <div className="flex items-center gap-2 text-primary font-semibold text-sm sm:text-base">
+                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span>What you'll get</span>
                       </div>
-                      <ul className="space-y-2 text-sm">
+                      <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                         <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-primary" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                           <span>AI-powered insights tailored to your business</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-primary" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                           <span>Smart goal tracking that learns from your patterns</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-primary" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                           <span>Pipeline management designed for portfolio workers</span>
                         </li>
                         <li className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-primary" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                           <span>Revenue optimization recommendations</span>
                         </li>
                       </ul>
@@ -343,7 +344,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
               )}
 
               {/* Navigation */}
-              <div className="flex justify-between p-6 pt-0">
+              <div className="flex justify-between p-4 sm:p-6 pt-0">
                 <Button
                   variant="ghost"
                   onClick={handleBack}

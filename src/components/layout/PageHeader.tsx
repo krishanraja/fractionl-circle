@@ -16,6 +16,7 @@ interface PageHeaderProps {
 const desktopNavItems: { id: TabId; label: string }[] = [
   { id: 'pulse', label: 'Pulse' },
   { id: 'log', label: 'Log Activity' },
+  { id: 'network', label: 'Network' },
   { id: 'history', label: 'History' },
   { id: 'settings', label: 'Settings' },
 ];
