@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ResponsiveDialog } from '@/components/navigation/ResponsiveDialog';
 import {
   Form,
   FormControl,
@@ -20,13 +14,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -88,7 +75,6 @@ export function ReferralForm({
     },
   });
 
-  // Load referral data when editing
   useEffect(() => {
     if (referral) {
       form.reset({
@@ -142,252 +128,249 @@ export function ReferralForm({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {referral ? 'Edit Referral' : `Log Referral for ${contact.name}`}
-          </DialogTitle>
-          <DialogDescription>
-            Track when you send work to {contact.name}
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Referral Details */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="referred_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Referral Date *</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="client_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Client Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Acme Corp" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="project_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project Type</FormLabel>
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+        {/* Referral Details */}
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="referred_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Referral Date *</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
                     <FormControl>
-                      <Input placeholder="Website redesign, mobile app, etc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="estimated_value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estimated Value ($)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="5000" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="commission_fee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Commission Fee ($)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="500" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Additional details about the referral..."
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="follow_up_date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Follow-up Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP')
-                            ) : (
-                              <span>Set a reminder (optional)</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Outcome Tracking */}
-            <div className="space-y-4 pt-4 border-t">
-              <h4 className="text-sm font-medium">Outcome Tracking</h4>
-
-              <FormField
-                control={form.control}
-                name="outcome_delivered"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Did they deliver successfully?</FormLabel>
-                    <div className="flex gap-2">
                       <Button
-                        type="button"
-                        variant={field.value === true ? 'default' : 'outline'}
-                        className="flex-1"
-                        onClick={() => field.onChange(true)}
+                        variant="outline"
+                        className={cn(
+                          'w-full pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground'
+                        )}
                       >
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Yes, delivered well
+                        {field.value ? (
+                          format(field.value, 'PPP')
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
-                      <Button
-                        type="button"
-                        variant={field.value === false ? 'destructive' : 'outline'}
-                        className="flex-1"
-                        onClick={() => field.onChange(false)}
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        No, issues occurred
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {form.watch('outcome_delivered') !== undefined && (
-                <FormField
-                  control={form.control}
-                  name="outcome_notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Outcome Notes</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Details about how the project went..."
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <FormField
+            control={form.control}
+            name="client_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Client Name *</FormLabel>
+                <FormControl>
+                  <Input placeholder="Acme Corp" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="project_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Project Type</FormLabel>
+                <FormControl>
+                  <Input placeholder="Website redesign, mobile app, etc." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="estimated_value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estimated Value ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="5000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : referral ? 'Update Referral' : 'Log Referral'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+            <FormField
+              control={form.control}
+              name="commission_fee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Commission Fee ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="500" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notes</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Additional details about the referral..."
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="follow_up_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Follow-up Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, 'PPP')
+                        ) : (
+                          <span>Set a reminder (optional)</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Outcome Tracking */}
+        <div className="space-y-4 pt-4 border-t">
+          <h4 className="text-sm font-medium">Outcome Tracking</h4>
+
+          <FormField
+            control={form.control}
+            name="outcome_delivered"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Did they deliver successfully?</FormLabel>
+                <div className="flex flex-col md:flex-row gap-2">
+                  <Button
+                    type="button"
+                    variant={field.value === true ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => field.onChange(true)}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Yes, delivered well
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={field.value === false ? 'destructive' : 'outline'}
+                    className="flex-1"
+                    onClick={() => field.onChange(false)}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    No, issues occurred
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {form.watch('outcome_delivered') !== undefined && (
+            <FormField
+              control={form.control}
+              name="outcome_notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Outcome Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Details about how the project went..."
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col md:flex-row gap-3 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+            className="md:flex-1"
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="md:flex-1">
+            {isSubmitting ? 'Saving...' : referral ? 'Update Referral' : 'Log Referral'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+
+  return (
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={referral ? 'Edit Referral' : `Log Referral for ${contact.name}`}
+      description={`Track when you send work to ${contact.name}`}
+    >
+      {formContent}
+    </ResponsiveDialog>
   );
 }

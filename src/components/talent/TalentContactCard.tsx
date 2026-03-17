@@ -103,7 +103,7 @@ export function TalentContactCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ duration: 0.2 }}
     >
       <Card className="overflow-hidden hover:shadow-lg transition-all">
@@ -129,8 +129,8 @@ export function TalentContactCard({
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-11 w-11 -mt-1 -mr-2">
+                      <MoreVertical className="h-5 w-5" />
                       <span className="sr-only">More options</span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -200,7 +200,7 @@ export function TalentContactCard({
                   <Star
                     key={i}
                     className={cn(
-                      'h-3.5 w-3.5',
+                      'h-4 w-4',
                       i < contact.trust_rating!
                         ? 'fill-yellow-400 text-yellow-400'
                         : 'text-gray-300'
@@ -212,71 +212,59 @@ export function TalentContactCard({
           </div>
 
           {/* Quick action buttons */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {contact.email && (
               <Button
                 variant="outline"
-                size="icon"
-                className="h-10 w-full"
+                className="h-12 w-full gap-2 active:scale-95 transition-transform"
                 onClick={() => sendEmail(contact.email, contact.name)}
-                {...handleLongPress(() => copyEmail(contact.email))}
-                title="Click to email, long-press to copy"
               >
                 <Mail className="h-4 w-4" />
-                <span className="sr-only">Email</span>
+                <span className="text-xs">Email</span>
               </Button>
             )}
 
             {contact.phone && (
               <Button
                 variant="outline"
-                size="icon"
-                className="h-10 w-full"
+                className="h-12 w-full gap-2 active:scale-95 transition-transform"
                 onClick={() => callPhone(contact.phone)}
-                {...handleLongPress(() => copyPhone(contact.phone))}
-                title="Click to call, long-press to copy"
               >
                 <Phone className="h-4 w-4" />
-                <span className="sr-only">Call</span>
+                <span className="text-xs">Call</span>
               </Button>
             )}
 
             {contact.phone && (
               <Button
                 variant="outline"
-                size="icon"
-                className="h-10 w-full"
+                className="h-12 w-full gap-2 active:scale-95 transition-transform"
                 onClick={() => openWhatsApp(contact.phone, contact.name)}
-                title="Open WhatsApp"
               >
                 <MessageCircle className="h-4 w-4" />
-                <span className="sr-only">WhatsApp</span>
+                <span className="text-xs">WhatsApp</span>
               </Button>
             )}
 
             {contact.linkedin_url && (
               <Button
                 variant="outline"
-                size="icon"
-                className="h-10 w-full"
+                className="h-12 w-full gap-2 active:scale-95 transition-transform"
                 onClick={() => openLinkedIn(contact.linkedin_url)}
-                title="Open LinkedIn profile"
               >
                 <Linkedin className="h-4 w-4" />
-                <span className="sr-only">LinkedIn</span>
+                <span className="text-xs">LinkedIn</span>
               </Button>
             )}
 
             {contact.portfolio_url && (
               <Button
                 variant="outline"
-                size="icon"
-                className="h-10 w-full"
+                className="h-12 w-full gap-2 active:scale-95 transition-transform"
                 onClick={() => openPortfolio(contact.portfolio_url)}
-                title="Open portfolio"
               >
                 <Globe className="h-4 w-4" />
-                <span className="sr-only">Portfolio</span>
+                <span className="text-xs">Portfolio</span>
               </Button>
             )}
           </div>

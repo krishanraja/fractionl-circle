@@ -468,3 +468,49 @@
   transform: translateX(-20px);
   transition: all var(--transition-fast) ease-in;
 }
+
+/* Mobile-native haptic button feedback */
+.btn-haptic {
+  transition: transform 100ms ease, box-shadow 100ms ease;
+}
+.btn-haptic:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 1px 3px hsl(0 0% 0% / 0.3);
+}
+
+/* Shimmer glow for AI-powered features */
+@keyframes shimmer-glow {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-border {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary) / 0.1) 0%,
+    hsl(var(--primary) / 0.4) 50%,
+    hsl(var(--primary) / 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-glow 3s ease-in-out infinite;
+}
+
+/* Shadow glow utility */
+.shadow-glow {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.25), 0 0 60px hsl(var(--primary) / 0.1);
+}
+
+/* Purple shadow for primary buttons */
+.shadow-purple {
+  box-shadow: 0 4px 14px hsl(var(--primary) / 0.35);
+}
+
+/* Safe area bottom padding */
+.pb-safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
+}
+
+/* Smooth overlay backdrop */
+.overlay-smooth {
+  transition: backdrop-filter var(--transition-normal) ease;
+}

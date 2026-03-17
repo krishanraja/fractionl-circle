@@ -36,7 +36,7 @@ export const MobileBottomNav = ({ currentView, onViewChange }: MobileBottomNavPr
               )}
             >
               <div className="relative">
-                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                <Icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
                 {isActive && (
                   <motion.div
                     layoutId="nav-indicator"
@@ -46,7 +46,7 @@ export const MobileBottomNav = ({ currentView, onViewChange }: MobileBottomNavPr
                 )}
               </div>
               <span className={cn(
-                "text-[10px] mt-1 font-medium",
+                "text-[11px] mt-1 font-medium",
                 isActive ? "text-primary" : "text-foreground-muted"
               )}>
                 {item.label}

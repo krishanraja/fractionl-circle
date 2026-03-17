@@ -83,7 +83,7 @@ export const ClientSheet = ({ open, onOpenChange, editClient }: ClientSheetProps
                   key={color}
                   onClick={() => setForm(f => ({ ...f, color }))}
                   className={cn(
-                    "w-9 h-9 rounded-lg transition-all",
+                    "w-11 h-11 rounded-xl transition-all active:scale-90",
                     form.color === color && "ring-2 ring-white ring-offset-2 ring-offset-background scale-110"
                   )}
                   style={{ backgroundColor: color }}

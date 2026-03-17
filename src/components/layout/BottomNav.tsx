@@ -66,14 +66,14 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
                   )}
                   <Icon
                     className={cn(
-                      "w-5 h-5 relative z-10 transition-colors",
+                      "w-6 h-6 relative z-10 transition-colors",
                       isActive ? "text-primary" : "text-foreground-secondary"
                     )}
                   />
                   <span
                     className={cn(
-                      "text-[10px] relative z-10 transition-colors",
-                      isActive ? "text-primary font-medium" : "text-foreground-secondary"
+                      "text-[11px] relative z-10 transition-colors font-medium",
+                      isActive ? "text-primary" : "text-foreground-secondary"
                     )}
                   >
                     {item.label}
