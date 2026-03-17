@@ -145,8 +145,8 @@ export const SettingsScreen = () => {
                   <div
                     key={item.label}
                     className={cn(
-                      "w-full flex items-center gap-3 p-4",
-                      item.action === 'chevron' && "hover:bg-secondary/50 transition-colors cursor-pointer",
+                      "w-full flex items-center gap-3 p-4 min-h-[56px]",
+                      item.action === 'chevron' && "hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer",
                       !isLast && "border-b border-border"
                     )}
                   >

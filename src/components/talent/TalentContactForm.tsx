@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ResponsiveDialog } from '@/components/navigation/ResponsiveDialog';
 import {
   Form,
   FormControl,
@@ -29,8 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Star, X } from 'lucide-react';
+import { Star, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSkills } from '@/hooks/useSkills';
 import type { TalentContactWithSkills } from '@/hooks/useTalentContacts';
@@ -71,6 +64,7 @@ export function TalentContactForm({
   const { skills, skillsByCategory, loading: skillsLoading } = useSkills();
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -90,7 +84,6 @@ export function TalentContactForm({
     },
   });
 
-  // Load contact data when editing
   useEffect(() => {
     if (contact) {
       form.reset({
@@ -162,304 +155,327 @@ export function TalentContactForm({
     );
   };
 
-  const getSelectedSkillNames = () => {
-    return selectedSkills
-      .map(id => skills.find(s => s.id === id)?.name)
-      .filter(Boolean);
-  };
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+        {/* Basic Info */}
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name *</FormLabel>
+                <FormControl>
+                  <Input placeholder="John Doe" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="john@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone</FormLabel>
+                <FormControl>
+                  <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="linkedin_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>LinkedIn URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://linkedin.com/in/..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="portfolio_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Portfolio URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Skills Selection */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <FormLabel>Skills</FormLabel>
+            <button
+              type="button"
+              onClick={() => setSkillsExpanded(!skillsExpanded)}
+              className="text-xs text-primary flex items-center gap-1"
+            >
+              {skillsExpanded ? 'Collapse' : 'Expand'}
+              {skillsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+          </div>
+
+          {/* Selected skills chips */}
+          {selectedSkills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedSkills.map(id => {
+                const skill = skills.find(s => s.id === id);
+                return skill ? (
+                  <Badge
+                    key={id}
+                    variant="default"
+                    className="cursor-pointer gap-1 py-1.5 px-3"
+                    onClick={() => toggleSkill(id)}
+                  >
+                    {skill.name}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          )}
+
+          {/* Expandable skills list */}
+          {skillsExpanded && (
+            <div className="space-y-4 rounded-xl border border-border p-3 max-h-60 overflow-y-auto">
+              {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+                <div key={category}>
+                  <h4 className="text-xs font-medium mb-2 text-foreground-secondary uppercase tracking-wider">{category}</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {categorySkills.map(skill => (
+                      <Badge
+                        key={skill.id}
+                        variant={selectedSkills.includes(skill.id) ? 'default' : 'outline'}
+                        className="cursor-pointer py-1.5 px-3 active:scale-95 transition-transform"
+                        onClick={() => toggleSkill(skill.id)}
+                      >
+                        {skill.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedSkills.length > 0 && (
+            <FormDescription>
+              {selectedSkills.length} skill{selectedSkills.length > 1 ? 's' : ''} selected
+            </FormDescription>
+          )}
+        </div>
+
+        {/* Professional Details */}
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="specialty_summary"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Specialty Summary</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Brief description of their specialty..."
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="working_style_notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Working Style Notes</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Notes about their working style..."
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Rate & Availability — single column on mobile */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="rate_min"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Min Rate</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="150" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="rate_max"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Rate</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="200" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="rate_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rate Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="project">Project</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="trust_rating"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trust Rating</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map(rating => (
+                        <Button
+                          key={rating}
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-12 w-12"
+                          onClick={() => field.onChange(rating)}
+                        >
+                          <Star
+                            className={cn(
+                              'h-7 w-7',
+                              field.value && rating <= field.value
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-gray-300'
+                            )}
+                          />
+                        </Button>
+                      ))}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="availability_status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Availability</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="available">Available</SelectItem>
+                      <SelectItem value="busy">Busy</SelectItem>
+                      <SelectItem value="unavailable">Unavailable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Actions — sticky on mobile */}
+        <div className="flex flex-col md:flex-row gap-3 pt-4 border-t sticky bottom-0 bg-background pb-safe-bottom">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+            className="md:flex-1"
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="md:flex-1">
+            {isSubmitting ? 'Saving...' : contact ? 'Update Contact' : 'Add Contact'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{contact ? 'Edit Contact' : 'Add Contact'}</DialogTitle>
-          <DialogDescription>
-            {contact ? 'Update contact information' : 'Add a new contact to your network'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Basic Info */}
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="john@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone</FormLabel>
-                      <FormControl>
-                        <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="linkedin_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>LinkedIn URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://linkedin.com/in/..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="portfolio_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Portfolio URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Skills Selection */}
-            <div className="space-y-3">
-              <FormLabel>Skills</FormLabel>
-              <ScrollArea className="h-48 border rounded-md p-4">
-                <div className="space-y-4">
-                  {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
-                    <div key={category}>
-                      <h4 className="text-sm font-medium mb-2">{category}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {categorySkills.map(skill => (
-                          <Badge
-                            key={skill.id}
-                            variant={selectedSkills.includes(skill.id) ? 'default' : 'outline'}
-                            className="cursor-pointer hover:bg-primary/80"
-                            onClick={() => toggleSkill(skill.id)}
-                          >
-                            {skill.name}
-                            {selectedSkills.includes(skill.id) && (
-                              <X className="ml-1 h-3 w-3" />
-                            )}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-              {selectedSkills.length > 0 && (
-                <FormDescription>
-                  {selectedSkills.length} skill{selectedSkills.length > 1 ? 's' : ''} selected
-                </FormDescription>
-              )}
-            </div>
-
-            {/* Professional Details */}
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="specialty_summary"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Specialty Summary</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Brief description of their specialty..."
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="working_style_notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Working Style Notes</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Notes about their working style..."
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Rate & Availability */}
-            <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="rate_min"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Min Rate</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="150" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="rate_max"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Max Rate</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="200" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="rate_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rate Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="hourly">Hourly</SelectItem>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="project">Project</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="trust_rating"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trust Rating</FormLabel>
-                    <FormControl>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map(rating => (
-                          <Button
-                            key={rating}
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10"
-                            onClick={() => field.onChange(rating)}
-                          >
-                            <Star
-                              className={cn(
-                                'h-5 w-5',
-                                field.value && rating <= field.value
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              )}
-                            />
-                          </Button>
-                        ))}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="availability_status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Availability</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="available">Available</SelectItem>
-                        <SelectItem value="busy">Busy</SelectItem>
-                        <SelectItem value="unavailable">Unavailable</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : contact ? 'Update Contact' : 'Add Contact'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={contact ? 'Edit Contact' : 'Add Contact'}
+      description={contact ? 'Update contact information' : 'Add a new contact to your network'}
+    >
+      {formContent}
+    </ResponsiveDialog>
   );
 }
