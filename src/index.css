@@ -510,6 +510,14 @@
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
 }
 
+/* Mobile keyboard-aware drawer: use dvh units so the drawer
+   resizes with the visual viewport when the virtual keyboard opens */
+@supports (height: 1dvh) {
+  [vaul-drawer] {
+    max-height: 85dvh;
+  }
+}
+
 /* Smooth overlay backdrop */
 .overlay-smooth {
   transition: backdrop-filter var(--transition-normal) ease;
