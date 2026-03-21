@@ -13,18 +13,34 @@ interface EnrichmentResult {
   photo_url?: string;
   city?: string;
   specialty_summary?: string;
+  phone?: string;
+  email?: string;
+  carrier?: string;
+  line_type?: string;
+}
+
+interface LinkedInSearchResult {
+  name: string;
+  headline: string;
+  url: string;
+  photo_url?: string;
+  company?: string;
+  title?: string;
+  city?: string;
 }
 
 /**
  * Contact enrichment edge function.
  *
- * Accepts an email address and returns enriched contact data.
- * Supports multiple providers with fallback:
- *   1. Clearbit (CLEARBIT_API_KEY) — free tier available
- *   2. Apollo.io (APOLLO_API_KEY) — generous free tier
- *   3. Google search fallback — no key needed
+ * Modes:
+ *   1. { email } — enrich from email via Clearbit or Apollo
+ *   2. { phone } — enrich from phone via Twilio Lookup
+ *   3. { name, linkedin_search: true } — search LinkedIn profiles by name via Apollo
  *
- * Set whichever API key you have in Supabase secrets.
+ * Required secrets (set whichever you have):
+ *   - APOLLO_API_KEY — email enrichment + LinkedIn search
+ *   - CLEARBIT_API_KEY — email enrichment (fallback)
+ *   - TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN — phone lookup
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -32,36 +48,43 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
+    const body = await req.json();
 
-    if (!email || !email.includes('@')) {
-      return new Response(
-        JSON.stringify({ enriched: null, provider: null }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Mode 1: LinkedIn search by name
+    if (body.linkedin_search && body.name) {
+      const results = await searchLinkedInByName(body.name.trim());
+      return jsonResponse({ results });
     }
 
-    const trimmedEmail = email.trim().toLowerCase();
+    // Mode 2: Phone enrichment via Twilio
+    if (body.phone) {
+      const result = await enrichFromPhone(body.phone.trim());
+      return jsonResponse({ enriched: result, provider: result ? 'twilio' : null });
+    }
 
-    // Try Clearbit first
-    const clearbitKey = Deno.env.get('CLEARBIT_API_KEY');
-    if (clearbitKey) {
-      const result = await tryClearbit(trimmedEmail, clearbitKey);
-      if (result) {
-        return jsonResponse({ enriched: result, provider: 'clearbit' });
+    // Mode 3: Email enrichment
+    if (body.email && body.email.includes('@')) {
+      const trimmedEmail = body.email.trim().toLowerCase();
+
+      // Try Clearbit first
+      const clearbitKey = Deno.env.get('CLEARBIT_API_KEY');
+      if (clearbitKey) {
+        const result = await tryClearbit(trimmedEmail, clearbitKey);
+        if (result) {
+          return jsonResponse({ enriched: result, provider: 'clearbit' });
+        }
+      }
+
+      // Try Apollo
+      const apolloKey = Deno.env.get('APOLLO_API_KEY');
+      if (apolloKey) {
+        const result = await tryApollo(trimmedEmail, apolloKey);
+        if (result) {
+          return jsonResponse({ enriched: result, provider: 'apollo' });
+        }
       }
     }
 
-    // Try Apollo
-    const apolloKey = Deno.env.get('APOLLO_API_KEY');
-    if (apolloKey) {
-      const result = await tryApollo(trimmedEmail, apolloKey);
-      if (result) {
-        return jsonResponse({ enriched: result, provider: 'apollo' });
-      }
-    }
-
-    // No enrichment available — return null so the client knows
     return jsonResponse({ enriched: null, provider: null });
   } catch (error) {
     console.error('Contact enrichment error:', error);
@@ -78,6 +101,111 @@ function jsonResponse(data: Record<string, unknown>) {
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }
+
+// ── LinkedIn search by name (via Apollo) ──────────────────────────────
+
+async function searchLinkedInByName(name: string): Promise<LinkedInSearchResult[]> {
+  const apolloKey = Deno.env.get('APOLLO_API_KEY');
+  if (!apolloKey) return [];
+
+  try {
+    // Split name into first/last for better matching
+    const parts = name.split(/\s+/);
+    const firstName = parts[0] || '';
+    const lastName = parts.slice(1).join(' ') || '';
+
+    const res = await fetch('https://api.apollo.io/v1/mixed_people/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': apolloKey,
+      },
+      body: JSON.stringify({
+        q_keywords: name,
+        person_titles: [],
+        person_locations: [],
+        per_page: 5,
+        ...(firstName && lastName ? {
+          person_name_first: firstName,
+          person_name_last: lastName,
+        } : {}),
+      }),
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const people = data.people || [];
+
+    return people
+      .filter((p: any) => p.linkedin_url)
+      .map((p: any) => ({
+        name: [p.first_name, p.last_name].filter(Boolean).join(' ') || name,
+        headline: [p.title, p.organization?.name].filter(Boolean).join(' at ') || '',
+        url: p.linkedin_url,
+        photo_url: p.photo_url || undefined,
+        company: p.organization?.name || undefined,
+        title: p.title || undefined,
+        city: p.city || undefined,
+      }))
+      .slice(0, 5);
+  } catch {
+    return [];
+  }
+}
+
+// ── Phone enrichment (via Twilio Lookup v2) ──────────────────────────
+
+async function enrichFromPhone(phone: string): Promise<EnrichmentResult | null> {
+  const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+  const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+  if (!accountSid || !authToken) return null;
+
+  try {
+    // Clean phone number — ensure E.164 format
+    let cleaned = phone.replace(/[^\d+]/g, '');
+    if (!cleaned.startsWith('+')) {
+      // Assume US if no country code
+      if (cleaned.length === 10) cleaned = '+1' + cleaned;
+      else if (cleaned.length === 11 && cleaned.startsWith('1')) cleaned = '+' + cleaned;
+      else cleaned = '+' + cleaned;
+    }
+
+    // Twilio Lookup v2 with caller name and line type
+    const url = `https://lookups.twilio.com/v2/PhoneNumbers/${encodeURIComponent(cleaned)}?Fields=caller_name,line_type_intelligence`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: 'Basic ' + btoa(`${accountSid}:${authToken}`),
+      },
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const result: EnrichmentResult = {};
+
+    // Caller name
+    if (data.caller_name?.caller_name) {
+      result.name = data.caller_name.caller_name;
+    }
+
+    // Line type (mobile, landline, voip, etc.)
+    if (data.line_type_intelligence?.type) {
+      result.line_type = data.line_type_intelligence.type;
+    }
+
+    // Carrier info
+    if (data.line_type_intelligence?.carrier_name) {
+      result.carrier = data.line_type_intelligence.carrier_name;
+    }
+
+    return Object.keys(result).length > 0 ? result : null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Email enrichment providers ────────────────────────────────────────
 
 async function tryClearbit(email: string, apiKey: string): Promise<EnrichmentResult | null> {
   try {
@@ -101,7 +229,6 @@ async function tryClearbit(email: string, apiKey: string): Promise<EnrichmentRes
     if (data.geo?.city && data.geo?.state) result.city = `${data.geo.city}, ${data.geo.state}`;
     else if (data.geo?.city) result.city = data.geo.city;
 
-    // Build specialty summary from title + company
     if (result.title && result.company) {
       result.specialty_summary = `${result.title} at ${result.company}`;
     } else if (result.title) {
