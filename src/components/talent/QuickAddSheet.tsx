@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Loader2, Linkedin, ArrowRight, Sparkles, Check, Search, X, ExternalLink } from 'lucide-react';
+import { Loader2, ArrowRight, Sparkles, Check, Phone, Mail, Linkedin, Search, X, ExternalLink } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -14,12 +14,26 @@ import { useKeyboardVisible } from '@/hooks/useKeyboardVisible';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import { isValidEmail, isValidPhone } from '@/utils/contactActions';
+
+interface EnrichmentResult {
+  name?: string;
+  company?: string;
+  title?: string;
+  linkedin_url?: string;
+  photo_url?: string;
+  city?: string;
+  specialty_summary?: string;
+}
 
 interface LinkedInResult {
   name: string;
   headline: string;
   url: string;
-  image?: string;
+  photo_url?: string;
+  company?: string;
+  title?: string;
+  city?: string;
 }
 
 interface QuickAddSheetProps {
@@ -33,14 +47,20 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
   const { isKeyboardVisible } = useKeyboardVisible();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [form, setForm] = useState({ name: '', specialty: '', linkedin_url: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', specialty: '' });
+
+  // Enrichment state
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichedData, setEnrichedData] = useState<EnrichmentResult | null>(null);
+  const [enrichedEmail, setEnrichedEmail] = useState('');
+  const [enrichedPhone, setEnrichedPhone] = useState('');
 
   // LinkedIn search state
-  const [linkedinMode, setLinkedinMode] = useState<'url' | 'search'>('url');
-  const [linkedinQuery, setLinkedinQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<LinkedInResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const [showLinkedinSearch, setShowLinkedinSearch] = useState(false);
+  const [linkedinResults, setLinkedinResults] = useState<LinkedInResult[]>([]);
+  const [isSearchingLinkedin, setIsSearchingLinkedin] = useState(false);
+  const [selectedLinkedin, setSelectedLinkedin] = useState<LinkedInResult | null>(null);
+
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Scroll focused input into view when keyboard opens
@@ -48,7 +68,6 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     if (isKeyboardVisible && contentRef.current) {
       const activeEl = document.activeElement as HTMLElement;
       if (activeEl && contentRef.current.contains(activeEl)) {
-        // Small delay to let the viewport settle
         setTimeout(() => {
           activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
@@ -56,58 +75,162 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     }
   }, [isKeyboardVisible]);
 
-  const searchLinkedIn = useCallback(async (query: string) => {
-    if (query.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
+  // ── Email enrichment ──────────────────────────────────────────────
 
-    setIsSearching(true);
+  const enrichFromEmail = useCallback(async (email: string) => {
+    if (!isValidEmail(email) || email === enrichedEmail) return;
+
+    setIsEnriching(true);
     try {
-      const { data, error } = await supabase.functions.invoke('linkedin-search', {
-        body: { query: query.trim() },
+      const { data, error } = await supabase.functions.invoke('contact-enrich', {
+        body: { email: email.trim() },
       });
 
       if (error) throw error;
-      setSearchResults(data?.results || []);
-    } catch {
-      // Silently fail - search is best-effort
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
 
-  const handleLinkedinQueryChange = (value: string) => {
-    setLinkedinQuery(value);
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => searchLinkedIn(value), 400);
+      const enriched = data?.enriched as EnrichmentResult | null;
+      if (enriched) {
+        setEnrichedData(prev => ({ ...prev, ...enriched }));
+        setEnrichedEmail(email);
+
+        // Auto-fill empty fields
+        setForm(f => ({
+          ...f,
+          name: f.name || enriched.name || f.name,
+          specialty: f.specialty || enriched.specialty_summary || f.specialty,
+        }));
+
+        // If enrichment found LinkedIn, select it
+        if (enriched.linkedin_url) {
+          setSelectedLinkedin({
+            name: enriched.name || '',
+            headline: enriched.specialty_summary || '',
+            url: enriched.linkedin_url,
+            photo_url: enriched.photo_url,
+          });
+        }
+
+        toast.success('Contact details found', { duration: 2000 });
+      }
+    } catch {
+      // Enrichment is best-effort
+    } finally {
+      setIsEnriching(false);
+    }
+  }, [enrichedEmail]);
+
+  const handleEmailBlur = () => {
+    const email = form.email.trim();
+    if (email && isValidEmail(email)) {
+      enrichFromEmail(email);
+    }
   };
+
+  // ── Phone enrichment ──────────────────────────────────────────────
+
+  const enrichFromPhone = useCallback(async (phone: string) => {
+    if (!isValidPhone(phone) || phone === enrichedPhone) return;
+
+    setIsEnriching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-enrich', {
+        body: { phone: phone.trim() },
+      });
+
+      if (error) throw error;
+
+      const enriched = data?.enriched as EnrichmentResult | null;
+      if (enriched) {
+        setEnrichedData(prev => ({ ...prev, ...enriched }));
+        setEnrichedPhone(phone);
+
+        // Auto-fill name if Twilio returned caller name
+        if (enriched.name && !form.name) {
+          setForm(f => ({ ...f, name: enriched.name || f.name }));
+        }
+
+        toast.success('Caller info found', { duration: 2000 });
+      }
+    } catch {
+      // Best-effort
+    } finally {
+      setIsEnriching(false);
+    }
+  }, [enrichedPhone, form.name]);
+
+  const handlePhoneBlur = () => {
+    const phone = form.phone.trim();
+    if (phone && isValidPhone(phone)) {
+      enrichFromPhone(phone);
+    }
+  };
+
+  // ── LinkedIn search by name ───────────────────────────────────────
+
+  const searchLinkedIn = useCallback(async () => {
+    const name = form.name.trim();
+    if (name.length < 2) return;
+
+    setIsSearchingLinkedin(true);
+    setShowLinkedinSearch(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-enrich', {
+        body: { name, linkedin_search: true },
+      });
+
+      if (error) throw error;
+      setLinkedinResults(data?.results || []);
+    } catch {
+      setLinkedinResults([]);
+    } finally {
+      setIsSearchingLinkedin(false);
+    }
+  }, [form.name]);
 
   const selectLinkedInResult = (result: LinkedInResult) => {
-    setForm(f => ({ ...f, linkedin_url: result.url }));
-    setLinkedinMode('url');
-    setLinkedinQuery('');
-    setSearchResults([]);
+    setSelectedLinkedin(result);
+    setShowLinkedinSearch(false);
+    setLinkedinResults([]);
+
+    // Auto-fill empty fields from the LinkedIn result
+    setForm(f => ({
+      ...f,
+      specialty: f.specialty || [result.title, result.company].filter(Boolean).join(' at ') || f.specialty,
+    }));
+
+    // Merge into enrichment data
+    setEnrichedData(prev => ({
+      ...prev,
+      linkedin_url: result.url,
+      photo_url: result.photo_url || prev?.photo_url,
+      company: result.company || prev?.company,
+      title: result.title || prev?.title,
+      city: result.city || prev?.city,
+    }));
   };
 
+  // ── Save ──────────────────────────────────────────────────────────
+
   const handleSave = async () => {
-    if (!form.name.trim()) return;
+    if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return;
     setIsSubmitting(true);
     try {
       await createContact({
-        name: form.name.trim(),
+        name: form.name.trim() || enrichedData?.name || form.email.trim() || form.phone.trim(),
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
         specialty_summary: form.specialty.trim() || null,
-        linkedin_url: form.linkedin_url.trim() || null,
+        linkedin_url: selectedLinkedin?.url || enrichedData?.linkedin_url || null,
+        photo_url: enrichedData?.photo_url || selectedLinkedin?.photo_url || null,
+        company: enrichedData?.company || null,
+        title: enrichedData?.title || null,
+        city: enrichedData?.city || null,
       }, []);
       setShowSuccess(true);
-      toast.success(`${form.name} added to your Black Book`);
+      const displayName = form.name.trim() || enrichedData?.name || 'Contact';
+      toast.success(`${displayName} added to your Black Book`);
       setTimeout(() => {
-        setForm({ name: '', specialty: '', linkedin_url: '' });
-        setShowSuccess(false);
-        setLinkedinMode('url');
-        setLinkedinQuery('');
-        setSearchResults([]);
+        resetForm();
         onOpenChange(false);
       }, 800);
     } catch {
@@ -117,14 +240,23 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     }
   };
 
+  const resetForm = () => {
+    setForm({ name: '', phone: '', email: '', specialty: '' });
+    setEnrichedData(null);
+    setEnrichedEmail('');
+    setEnrichedPhone('');
+    setSelectedLinkedin(null);
+    setShowLinkedinSearch(false);
+    setLinkedinResults([]);
+    setShowSuccess(false);
+  };
+
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setLinkedinMode('url');
-      setLinkedinQuery('');
-      setSearchResults([]);
-    }
+    if (!isOpen) resetForm();
     onOpenChange(isOpen);
   };
+
+  const hasMinimumInfo = form.name.trim() || form.phone.trim() || form.email.trim();
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -153,129 +285,98 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
             >
               <DrawerHeader className="pb-1 pt-2">
                 <DrawerTitle className="text-foreground text-xl">Quick Add</DrawerTitle>
-                <p className="text-caption text-foreground-secondary">3 fields. Done in seconds.</p>
+                <p className="text-caption text-foreground-secondary">Add a contact in seconds.</p>
               </DrawerHeader>
 
               <div className="space-y-4 px-4 pb-2">
-                {/* Name */}
+                {/* Name + LinkedIn search */}
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
                 >
-                  <Input
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    placeholder="Name *"
-                    className="bg-input border-border text-foreground text-base"
-                    autoFocus
-                  />
-                </motion.div>
-
-                {/* What they do */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <Input
-                    value={form.specialty}
-                    onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
-                    placeholder="What they do — role, rate, location"
-                    className="bg-input border-border text-foreground text-base"
-                  />
-                </motion.div>
-
-                {/* LinkedIn URL / Search */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                >
-                  <AnimatePresence mode="wait">
-                    {linkedinMode === 'url' ? (
-                      <motion.div
-                        key="url-mode"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                  <div className="relative">
+                    <Input
+                      value={form.name}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="Name"
+                      className="bg-input border-border text-foreground text-base pr-28"
+                      autoFocus
+                    />
+                    {form.name.trim().length >= 2 && !selectedLinkedin && (
+                      <button
+                        type="button"
+                        onClick={searchLinkedIn}
+                        disabled={isSearchingLinkedin}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[#0A66C2] text-[11px] font-medium active:opacity-70 transition-opacity"
                       >
-                        <div className="relative">
-                          <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
-                          <Input
-                            value={form.linkedin_url}
-                            onChange={e => setForm(f => ({ ...f, linkedin_url: e.target.value }))}
-                            placeholder="LinkedIn URL"
-                            className="pl-11 pr-24 bg-input border-border text-foreground text-base"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setLinkedinMode('search')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-primary text-[11px] font-medium active:opacity-70 transition-opacity"
-                          >
-                            <Search className="w-3 h-3" />
-                            <span>Search</span>
-                          </button>
-                        </div>
-                        {form.linkedin_url && (
-                          <div className="flex items-center gap-1.5 mt-1.5 ml-1">
-                            <Check className="w-3 h-3 text-success" />
-                            <span className="text-[11px] text-foreground-secondary truncate">
-                              {form.linkedin_url}
-                            </span>
-                          </div>
+                        {isSearchingLinkedin ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Linkedin className="w-3 h-3" />
                         )}
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="search-mode"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="space-y-2"
-                      >
-                        <div className="relative">
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
-                          <Input
-                            value={linkedinQuery}
-                            onChange={e => handleLinkedinQueryChange(e.target.value)}
-                            placeholder="Search by name..."
-                            className="pl-11 pr-10 bg-input border-border text-foreground text-base border-primary/50 focus:border-primary"
-                            autoFocus
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setLinkedinMode('url');
-                              setLinkedinQuery('');
-                              setSearchResults([]);
-                            }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted active:text-foreground transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <span>Find LinkedIn</span>
+                      </button>
+                    )}
+                  </div>
 
-                        {/* Search results */}
-                        {isSearching && (
+                  {/* Selected LinkedIn profile */}
+                  {selectedLinkedin && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="flex items-center gap-2 mt-1.5 ml-1"
+                    >
+                      <Linkedin className="w-3 h-3 text-[#0A66C2]" />
+                      <span className="text-[11px] text-foreground-secondary truncate flex-1">
+                        {selectedLinkedin.headline || selectedLinkedin.url}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLinkedin(null)}
+                        className="text-foreground-muted active:text-foreground"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {/* LinkedIn search results */}
+                  <AnimatePresence>
+                    {showLinkedinSearch && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-2"
+                      >
+                        {isSearchingLinkedin && (
                           <div className="flex items-center justify-center py-3">
-                            <Loader2 className="w-4 h-4 animate-spin text-primary mr-2" />
+                            <Loader2 className="w-4 h-4 animate-spin text-[#0A66C2] mr-2" />
                             <span className="text-caption text-foreground-secondary">Searching LinkedIn...</span>
                           </div>
                         )}
 
-                        {!isSearching && searchResults.length > 0 && (
-                          <div className="space-y-1 max-h-40 overflow-y-auto overscroll-contain rounded-xl border border-border bg-input/50">
-                            {searchResults.map((result, i) => (
+                        {!isSearchingLinkedin && linkedinResults.length > 0 && (
+                          <div className="space-y-1 max-h-48 overflow-y-auto overscroll-contain rounded-xl border border-border bg-input/50">
+                            {linkedinResults.map((result, i) => (
                               <button
                                 key={i}
                                 type="button"
                                 onClick={() => selectLinkedInResult(result)}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 text-left active:bg-primary/10 transition-colors"
                               >
-                                <div className="w-8 h-8 rounded-full bg-[#0A66C2]/20 flex items-center justify-center shrink-0">
-                                  <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-                                </div>
+                                {result.photo_url ? (
+                                  <img
+                                    src={result.photo_url}
+                                    alt=""
+                                    className="w-8 h-8 rounded-full object-cover shrink-0"
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-full bg-[#0A66C2]/20 flex items-center justify-center shrink-0">
+                                    <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                                  </div>
+                                )}
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium text-foreground truncate">{result.name}</p>
                                   {result.headline && (
@@ -288,14 +389,95 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                           </div>
                         )}
 
-                        {!isSearching && linkedinQuery.length >= 2 && searchResults.length === 0 && (
+                        {!isSearchingLinkedin && linkedinResults.length === 0 && (
                           <p className="text-caption text-foreground-secondary text-center py-2">
-                            No profiles found. Try a different name or paste a URL.
+                            No LinkedIn profiles found for "{form.name.trim()}"
                           </p>
+                        )}
+
+                        {!isSearchingLinkedin && (
+                          <button
+                            type="button"
+                            onClick={() => { setShowLinkedinSearch(false); setLinkedinResults([]); }}
+                            className="w-full text-caption text-foreground-muted text-center py-1.5 active:text-foreground transition-colors"
+                          >
+                            Dismiss
+                          </button>
                         )}
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </motion.div>
+
+                {/* Phone */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
+                    <Input
+                      value={form.phone}
+                      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                      onBlur={handlePhoneBlur}
+                      placeholder="Phone number"
+                      type="tel"
+                      className="pl-11 bg-input border-border text-foreground text-base"
+                    />
+                    {isEnriching && enrichedPhone !== form.phone.trim() && form.phone.trim() && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                    )}
+                  </div>
+                </motion.div>
+
+                {/* Email */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
+                    <Input
+                      value={form.email}
+                      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                      onBlur={handleEmailBlur}
+                      placeholder="Email address"
+                      type="email"
+                      className="pl-11 pr-10 bg-input border-border text-foreground text-base"
+                    />
+                    {isEnriching && enrichedEmail !== form.email.trim() && form.email.trim() && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                    )}
+                  </div>
+                  {enrichedData && (enrichedEmail || enrichedPhone) && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="flex items-center gap-1.5 mt-1.5 ml-1"
+                    >
+                      <Sparkles className="w-3 h-3 text-primary" />
+                      <span className="text-[11px] text-foreground-secondary">
+                        Auto-filled
+                        {enrichedData.company && ` — ${enrichedData.company}`}
+                      </span>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                {/* What they do */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Input
+                    value={form.specialty}
+                    onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
+                    placeholder="What they do — role, rate, location"
+                    className="bg-input border-border text-foreground text-base"
+                  />
                 </motion.div>
               </div>
 
@@ -303,12 +485,12 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.25 }}
                   className="w-full"
                 >
                   <Button
                     onClick={handleSave}
-                    disabled={!form.name.trim() || isSubmitting}
+                    disabled={!hasMinimumInfo || isSubmitting}
                     size="xl"
                     className="w-full gap-2 shadow-glow"
                   >
