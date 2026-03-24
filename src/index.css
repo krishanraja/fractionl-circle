@@ -522,3 +522,82 @@
 .overlay-smooth {
   transition: backdrop-filter var(--transition-normal) ease;
 }
+
+/* ============================================
+   AMBIENT INTELLIGENCE - 2027 UI Signals
+   ============================================ */
+
+/* Attention glow on cards needing action */
+.card-attention {
+  animation: attention-pulse 3s ease-in-out infinite;
+}
+@keyframes attention-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(38 92% 50% / 0); }
+  50% { box-shadow: 0 0 12px 2px hsl(38 92% 50% / 0.15); }
+}
+
+/* Skeleton shimmer with purple tint */
+.skeleton-purple {
+  background: linear-gradient(
+    90deg,
+    hsl(263 50% 15% / 0.4) 0%,
+    hsl(263 50% 25% / 0.3) 50%,
+    hsl(263 50% 15% / 0.4) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Blur-up content transition */
+.blur-up-enter {
+  filter: blur(4px);
+  opacity: 0;
+  animation: blur-up 0.4s ease-out forwards;
+}
+@keyframes blur-up {
+  to { filter: blur(0); opacity: 1; }
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ambient gradient mesh background */
+.ambient-healthy {
+  background: radial-gradient(ellipse at 20% 50%, hsl(142 71% 45% / 0.03), transparent 70%),
+              radial-gradient(ellipse at 80% 20%, hsl(263 70% 58% / 0.03), transparent 70%);
+}
+.ambient-attention {
+  background: radial-gradient(ellipse at 20% 50%, hsl(38 92% 50% / 0.04), transparent 70%),
+              radial-gradient(ellipse at 80% 20%, hsl(263 70% 58% / 0.03), transparent 70%);
+}
+
+/* Micro-interaction: softer card press */
+.card-press:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Voice recording glow ring */
+.voice-glow {
+  box-shadow: 0 0 0 0 hsl(263 70% 58% / 0.4);
+  animation: voice-ring 1.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes voice-ring {
+  0% { box-shadow: 0 0 0 0 hsl(263 70% 58% / 0.4); }
+  100% { box-shadow: 0 0 0 20px hsl(263 70% 58% / 0); }
+}
+
+/* Tabular numbers for counters */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

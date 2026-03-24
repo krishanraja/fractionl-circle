@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Keyboard, Clock, ChevronRight } from 'lucide-react';
+import { Mic, Keyboard, Clock, Edit3, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import { SwipeableRow } from '@/components/ui/swipeable-row';
+import { UpgradePrompt } from '@/components/billing/UpgradePrompt';
+import { haptics } from '@/utils/haptics';
+import { toast } from 'sonner';
 
 interface ActivityLog {
   id: string;
@@ -63,9 +68,12 @@ const groupByDay = (logs: ActivityLog[]): DayGroup[] => {
 
 export const HistoryScreen = () => {
   const { user } = useAuth();
+  const { getLimit, effectiveTier } = useSubscription();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const historyDays = getLimit('history_days');
 
   useEffect(() => {
     if (!user?.id) return;
@@ -73,7 +81,7 @@ export const HistoryScreen = () => {
     const fetchLogs = async () => {
       setIsLoading(true);
       try {
-        const { data, error: fetchError } = await supabase
+        let query = supabase
           .from('activity_logs')
           .select(`
             id,
@@ -92,6 +100,14 @@ export const HistoryScreen = () => {
           .order('logged_at', { ascending: false })
           .limit(100);
 
+        // Apply history limit for free users
+        if (historyDays !== Infinity) {
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - historyDays);
+          query = query.gte('logged_at', cutoff.toISOString());
+        }
+
+        const { data, error: fetchError } = await query;
         if (fetchError) throw fetchError;
 
         setLogs((data || []).map((log: any) => ({
@@ -108,7 +124,6 @@ export const HistoryScreen = () => {
 
     fetchLogs();
 
-    // Real-time subscription
     const channel = supabase
       .channel('history-changes')
       .on('postgres_changes', {
@@ -120,7 +135,24 @@ export const HistoryScreen = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id]);
+  }, [user?.id, historyDays]);
+
+  const handleDelete = async (id: string) => {
+    haptics.medium();
+    try {
+      const { error } = await supabase
+        .from('activity_logs')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user!.id);
+
+      if (error) throw error;
+      setLogs(prev => prev.filter(l => l.id !== id));
+      toast.success('Activity deleted');
+    } catch {
+      toast.error('Failed to delete');
+    }
+  };
 
   const dayGroups = groupByDay(logs);
 
@@ -173,6 +205,15 @@ export const HistoryScreen = () => {
       initial="initial"
       animate="animate"
     >
+      {/* History limit notice for free users */}
+      {historyDays !== Infinity && (
+        <UpgradePrompt
+          feature="Full History"
+          message={`Showing last ${historyDays} days. Upgrade to Pro for unlimited history.`}
+          compact
+        />
+      )}
+
       {dayGroups.map((group) => (
         <motion.div key={group.date} variants={staggerItem} className="space-y-2">
           {/* Day header */}
@@ -185,65 +226,74 @@ export const HistoryScreen = () => {
             </span>
           </div>
 
-          {/* Activity entries */}
+          {/* Activity entries with swipe actions */}
           {group.entries.map((entry) => (
-            <Card key={entry.id} className="card-interactive">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  {/* Client colour dot */}
-                  <div
-                    className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0"
-                    style={{ backgroundColor: entry.client?.color || '#8B5CF6' }}
-                  />
+            <SwipeableRow
+              key={entry.id}
+              rightActions={[
+                {
+                  label: 'Delete',
+                  icon: <Trash2 className="w-4 h-4" />,
+                  color: '#ef4444',
+                  onClick: () => handleDelete(entry.id),
+                },
+              ]}
+            >
+              <Card className="card-interactive rounded-none border-x-0">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0"
+                      style={{ backgroundColor: entry.client?.color || '#8B5CF6' }}
+                    />
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-body-bold text-foreground leading-snug">
-                        {entry.summary}
-                      </p>
-                      {/* Voice/text indicator */}
-                      <div className="flex-shrink-0 mt-0.5">
-                        {entry.created_via_voice ? (
-                          <Mic className="w-3.5 h-3.5 text-foreground-muted" />
-                        ) : (
-                          <Keyboard className="w-3.5 h-3.5 text-foreground-muted" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-body-bold text-foreground leading-snug">
+                          {entry.summary}
+                        </p>
+                        <div className="flex-shrink-0 mt-0.5">
+                          {entry.created_via_voice ? (
+                            <Mic className="w-3.5 h-3.5 text-foreground-muted" />
+                          ) : (
+                            <Keyboard className="w-3.5 h-3.5 text-foreground-muted" />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        {entry.client && (
+                          <span
+                            className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                            style={{
+                              backgroundColor: `${entry.client.color || '#8B5CF6'}20`,
+                              color: entry.client.color || '#8B5CF6',
+                            }}
+                          >
+                            {entry.client.name}
+                          </span>
+                        )}
+                        <span className="text-caption text-foreground-secondary">
+                          {activityTypeLabel[entry.activity_type] || 'Activity'}
+                        </span>
+                        {entry.duration_minutes && (
+                          <span className="text-caption text-foreground-secondary">
+                            · {entry.duration_minutes >= 60
+                              ? `${Math.floor(entry.duration_minutes / 60)}h ${entry.duration_minutes % 60 > 0 ? `${entry.duration_minutes % 60}m` : ''}`
+                              : `${entry.duration_minutes}m`}
+                          </span>
+                        )}
+                        {entry.revenue && entry.revenue > 0 && (
+                          <span className="text-caption text-success font-medium">
+                            · ${entry.revenue.toLocaleString()}
+                          </span>
                         )}
                       </div>
                     </div>
-
-                    {/* Meta row */}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      {entry.client && (
-                        <span
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                          style={{
-                            backgroundColor: `${entry.client.color || '#8B5CF6'}20`,
-                            color: entry.client.color || '#8B5CF6',
-                          }}
-                        >
-                          {entry.client.name}
-                        </span>
-                      )}
-                      <span className="text-caption text-foreground-secondary">
-                        {activityTypeLabel[entry.activity_type] || 'Activity'}
-                      </span>
-                      {entry.duration_minutes && (
-                        <span className="text-caption text-foreground-secondary">
-                          · {entry.duration_minutes >= 60
-                            ? `${Math.floor(entry.duration_minutes / 60)}h ${entry.duration_minutes % 60 > 0 ? `${entry.duration_minutes % 60}m` : ''}`
-                            : `${entry.duration_minutes}m`}
-                        </span>
-                      )}
-                      {entry.revenue && entry.revenue > 0 && (
-                        <span className="text-caption text-success font-medium">
-                          · ${entry.revenue.toLocaleString()}
-                        </span>
-                      )}
-                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </SwipeableRow>
           ))}
         </motion.div>
       ))}

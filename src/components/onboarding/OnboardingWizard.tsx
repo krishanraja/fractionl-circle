@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { 
-  User, Briefcase, Target, Sparkles, ArrowRight, ArrowLeft, 
-  Check, Building2, DollarSign, Users, Lightbulb
+import {
+  User, Briefcase, Target, Sparkles, ArrowRight, ArrowLeft,
+  Check, Building2, DollarSign, Users, Lightbulb, Mic, Crown, Zap, Brain
 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useBehaviorTracking } from '@/hooks/useBehaviorTracking';
+import { haptics } from '@/utils/haptics';
 
 interface OnboardingWizardProps {
   onComplete: () => void;
@@ -55,7 +56,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   const handleNext = async () => {
@@ -110,7 +111,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
         {/* Steps Indicator */}
         <div className="flex justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-8">
-          {[User, Briefcase, Target, Sparkles].map((Icon, index) => (
+          {[User, Briefcase, DollarSign, Target, Sparkles].map((Icon, index) => (
             <div
               key={index}
               className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
@@ -315,29 +316,53 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                         className="resize-none"
                       />
                     </div>
-                    <div className="bg-primary/5 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
-                      <div className="flex items-center gap-2 text-primary font-semibold text-sm sm:text-base">
-                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span>What you'll get</span>
+                  </CardContent>
+                </>
+              )}
+
+              {currentStep === 4 && (
+                <>
+                  <CardHeader className="text-center pb-2 sm:pb-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4">
+                      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl sm:text-2xl">You're All Set!</CardTitle>
+                    <CardDescription className="text-sm sm:text-base">
+                      You have a 14-day Pro trial. Here's what's unlocked:
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 sm:space-y-6">
+                    <div className="bg-primary/5 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-primary font-semibold">
+                        <Crown className="w-5 h-5" />
+                        <span>Pro Features - 14 Days Free</span>
                       </div>
-                      <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                        <li className="flex items-center gap-2">
-                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                          <span>AI-powered insights tailored to your business</span>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-center gap-2.5">
+                          <Brain className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span>AI Morning Briefing & Smart Nudges</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                          <span>Smart goal tracking that learns from your patterns</span>
+                        <li className="flex items-center gap-2.5">
+                          <Mic className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span>Unlimited voice logging & voice commands</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                          <span>Pipeline management designed for portfolio workers</span>
+                        <li className="flex items-center gap-2.5">
+                          <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span>Unlimited clients & relationship health scores</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                          <span>Revenue optimization recommendations</span>
+                        <li className="flex items-center gap-2.5">
+                          <Zap className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span>Full desktop dashboard & data export</span>
                         </li>
                       </ul>
+                    </div>
+
+                    <div className="bg-secondary/30 rounded-xl p-4 space-y-2">
+                      <p className="text-caption font-medium text-foreground">After your trial:</p>
+                      <p className="text-caption text-foreground-secondary">
+                        Continue free with up to 3 clients, 20 voice logs/month, and basic features.
+                        Or upgrade to Pro for $29/mo to keep everything unlocked.
+                      </p>
                     </div>
                   </CardContent>
                 </>

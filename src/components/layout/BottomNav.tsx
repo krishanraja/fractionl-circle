@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Home, Plus, Clock, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { haptics } from '@/utils/haptics';
 
 export type TabId = 'pulse' | 'log' | 'history' | 'network' | 'settings';
 
@@ -18,8 +19,13 @@ const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
 ];
 
 export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
+  const handleTabChange = (tab: TabId) => {
+    haptics.tap();
+    onTabChange(tab);
+  };
+
   return (
-    <nav 
+    <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
         "bg-background/95 backdrop-blur-xl",
@@ -37,7 +43,7 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => handleTabChange(item.id)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1",
                 "relative transition-all duration-200",

@@ -9,7 +9,7 @@ const Index = () => {
   const renderScreen = () => {
     switch (currentTab) {
       case 'pulse':
-        return <PulseScreen />;
+        return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} />;
       case 'log':
         return <LogScreen />;
       case 'history':
@@ -19,7 +19,7 @@ const Index = () => {
       case 'settings':
         return <SettingsScreen />;
       default:
-        return <PulseScreen />;
+        return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} />;
     }
   };
 
