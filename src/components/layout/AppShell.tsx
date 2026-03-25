@@ -76,7 +76,7 @@ export const AppShell = ({
       )}
 
       {/* Floating Voice Command Bar */}
-      <VoiceCommandBar onNavigate={handleVoiceNavigate} />
+      <VoiceCommandBar onNavigate={handleVoiceNavigate} currentTab={currentTab} />
     </div>
   );
 };

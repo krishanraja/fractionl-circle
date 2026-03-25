@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Mic, Users, Filter } from 'lucide-react';
+import { Search, Plus, Users, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -163,26 +163,15 @@ export const NetworkScreen = () => {
         </AnimatePresence>
       </div>
 
-      {/* FAB row: voice add + quick add */}
-      <div className="fixed bottom-20 right-4 flex flex-col gap-2 items-end" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        {/* Voice add */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => { /* TODO: voice add contact */ }}
-          className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center shadow-lg"
-        >
-          <Mic className="w-5 h-5 text-foreground-secondary" />
-        </motion.button>
-
-        {/* Quick add */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowQuickAdd(true)}
-          className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30"
-        >
-          <Plus className="w-6 h-6 text-primary-foreground" />
-        </motion.button>
-      </div>
+      {/* Quick add FAB — positioned above global VoiceCommandBar */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowQuickAdd(true)}
+        className="fixed bottom-36 right-4 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <Plus className="w-6 h-6 text-primary-foreground" />
+      </motion.button>
 
       {/* Sheets */}
       <QuickAddSheet
