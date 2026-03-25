@@ -1010,7 +1010,7 @@ async function handleExportCrm(body: any, supabase: any, userId: string) {
       spreadsheetId = integration.google_sheet_id;
     }
   } catch {
-    // No integration — we'll create a new spreadsheet or just email summary
+    // No integration - we'll create a new spreadsheet or just email summary
   }
 
   // If connected, create/update spreadsheet with CRM data
@@ -1035,7 +1035,7 @@ async function handleExportCrm(body: any, supabase: any, userId: string) {
           }
         );
       } catch {
-        // Sheets may already exist — continue
+        // Sheets may already exist - continue
       }
     }
 
@@ -1136,7 +1136,7 @@ async function handleExportCrm(body: any, supabase: any, userId: string) {
     );
   }
 
-  // No Google Sheets connected — return info so frontend can guide user
+  // No Google Sheets connected - return info so frontend can guide user
   return new Response(
     JSON.stringify({
       success: false,

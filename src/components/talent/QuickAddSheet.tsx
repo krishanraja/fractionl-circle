@@ -460,7 +460,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                       <Sparkles className="w-3 h-3 text-primary" />
                       <span className="text-[11px] text-foreground-secondary">
                         Auto-filled
-                        {enrichedData.company && ` — ${enrichedData.company}`}
+                        {enrichedData.company && `, ${enrichedData.company}`}
                       </span>
                     </motion.div>
                   )}
@@ -475,7 +475,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                   <Input
                     value={form.specialty}
                     onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
-                    placeholder="What they do — role, rate, location"
+                    placeholder="What they do, e.g. role, rate, location"
                     className="bg-input border-border text-foreground text-base"
                   />
                 </motion.div>

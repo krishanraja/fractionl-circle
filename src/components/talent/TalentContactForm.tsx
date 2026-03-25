@@ -338,7 +338,7 @@ export function TalentContactForm({
           />
         </div>
 
-        {/* Rate & Availability — single column on mobile */}
+        {/* Rate & Availability - single column on mobile */}
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
@@ -453,7 +453,7 @@ export function TalentContactForm({
           </div>
         </div>
 
-        {/* Actions — sticky on mobile */}
+        {/* Actions - sticky on mobile */}
         <div className="flex flex-col md:flex-row gap-3 pt-4 border-t sticky bottom-0 bg-background pb-safe-bottom">
           <Button
             type="button"
