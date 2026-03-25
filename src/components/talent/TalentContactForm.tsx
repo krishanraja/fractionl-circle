@@ -28,13 +28,17 @@ import { cn } from '@/lib/utils';
 import { useSkills } from '@/hooks/useSkills';
 import type { TalentContactWithSkills } from '@/hooks/useTalentContacts';
 import type { Database } from '@/integrations/supabase/types';
+import { isValidPhone, normalizePhoneToE164 } from '@/utils/contactActions';
 
 type TalentContactInsert = Database['public']['Tables']['talent_contacts']['Insert'];
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
-  phone: z.string().optional(),
+  phone: z.string().optional().refine(
+    (val) => !val || isValidPhone(val),
+    { message: 'Enter a valid phone number (e.g. +44 20 7946 0958)' }
+  ),
   linkedin_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   portfolio_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   specialty_summary: z.string().optional(),
@@ -126,7 +130,7 @@ export function TalentContactForm({
       const contactData: TalentContactInsert = {
         name: data.name,
         email: data.email || null,
-        phone: data.phone || null,
+        phone: data.phone ? (normalizePhoneToE164(data.phone) || data.phone) : null,
         linkedin_url: data.linkedin_url || null,
         portfolio_url: data.portfolio_url || null,
         specialty_summary: data.specialty_summary || null,
@@ -195,7 +199,7 @@ export function TalentContactForm({
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
+                  <Input type="tel" placeholder="+1 555 123 4567" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
