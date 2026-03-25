@@ -11,6 +11,7 @@ import { QuickAddSheet } from '@/components/talent/QuickAddSheet';
 import { TalentContactForm } from '@/components/talent/TalentContactForm';
 import { useTalentContacts } from '@/hooks/useTalentContacts';
 import { useSkills } from '@/hooks/useSkills';
+import { RecentActivity } from '@/components/activity/RecentActivity';
 
 const SKILL_CATEGORIES = [
   'All', 'Design', 'Development', 'Product', 'Marketing',
@@ -163,7 +164,12 @@ export const NetworkScreen = () => {
         </AnimatePresence>
       </div>
 
-      {/* Quick add FAB — positioned above global VoiceCommandBar */}
+      {/* Recent networking activity */}
+      <div className="px-4 pt-4 pb-4">
+        <RecentActivity contactsOnly initialCount={3} />
+      </div>
+
+      {/* Quick add FAB */}
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => setShowQuickAdd(true)}

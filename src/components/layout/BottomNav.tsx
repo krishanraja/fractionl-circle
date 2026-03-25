@@ -1,20 +1,18 @@
 import { motion } from 'framer-motion';
-import { Home, Plus, Clock, Users, Settings } from 'lucide-react';
+import { Users, BookUser, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 
-export type TabId = 'pulse' | 'log' | 'history' | 'network' | 'settings';
+export type TabId = 'customers' | 'contacts' | 'settings';
 
 interface BottomNavProps {
   currentTab: TabId;
   onTabChange: (tab: TabId) => void;
 }
 
-const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
-  { id: 'pulse', label: 'Pulse', icon: Home },
-  { id: 'network', label: 'Network', icon: Users },
-  { id: 'log', label: 'Log', icon: Plus },
-  { id: 'history', label: 'History', icon: Clock },
+const navItems: { id: TabId; label: string; icon: typeof Users }[] = [
+  { id: 'customers', label: 'Customers', icon: Users },
+  { id: 'contacts', label: 'Contacts', icon: BookUser },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -38,7 +36,6 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
-          const isLog = item.id === 'log';
 
           return (
             <button
@@ -47,45 +44,30 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
               className={cn(
                 "flex flex-col items-center justify-center gap-1",
                 "relative transition-all duration-200",
-                isLog ? "w-14 h-14 -mt-4" : "flex-1 h-full py-2",
+                "flex-1 h-full py-2",
               )}
             >
-              {isLog ? (
+              {isActive && (
                 <motion.div
-                  whileTap={{ scale: 0.9 }}
-                  className={cn(
-                    "w-14 h-14 rounded-full flex items-center justify-center",
-                    "bg-primary shadow-lg shadow-primary/30",
-                    isActive && "ring-2 ring-primary/50 ring-offset-2 ring-offset-background"
-                  )}
-                >
-                  <Icon className="w-6 h-6 text-primary-foreground" />
-                </motion.div>
-              ) : (
-                <>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-primary/10 rounded-xl"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <Icon
-                    className={cn(
-                      "w-6 h-6 relative z-10 transition-colors",
-                      isActive ? "text-primary" : "text-foreground-secondary"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "text-[11px] relative z-10 transition-colors font-medium",
-                      isActive ? "text-primary" : "text-foreground-secondary"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </>
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-primary/10 rounded-xl"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
               )}
+              <Icon
+                className={cn(
+                  "w-6 h-6 relative z-10 transition-colors",
+                  isActive ? "text-primary" : "text-foreground-secondary"
+                )}
+              />
+              <span
+                className={cn(
+                  "text-[11px] relative z-10 transition-colors font-medium",
+                  isActive ? "text-primary" : "text-foreground-secondary"
+                )}
+              >
+                {item.label}
+              </span>
             </button>
           );
         })}

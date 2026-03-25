@@ -68,7 +68,7 @@ export function useSmartNudges() {
           id: nudgeId,
           type: 'revenue_momentum',
           priority: 'high',
-          message: `Revenue is at ${actualPacing.toFixed(0)}% of goal — ${(expectedPacing - actualPacing).toFixed(0)}% behind pace. Focus on closing pipeline.`,
+          message: `Revenue is at ${actualPacing.toFixed(0)}% of goal, ${(expectedPacing - actualPacing).toFixed(0)}% behind pace. Focus on closing pipeline.`,
         });
       }
     }

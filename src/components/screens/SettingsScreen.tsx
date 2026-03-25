@@ -32,7 +32,7 @@ export const SettingsScreen = () => {
 
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailDigest, setEmailDigest] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [showPricing, setShowPricing] = useState(false);
   const [showSheetsExport, setShowSheetsExport] = useState(false);
 
@@ -121,7 +121,11 @@ export const SettingsScreen = () => {
           description: 'Use dark theme',
           action: 'toggle' as const,
           value: darkMode,
-          onChange: (v: boolean) => { setDarkMode(v); handleToggle('theme', v); },
+          onChange: (v: boolean) => {
+            setDarkMode(v);
+            document.documentElement.classList.toggle('dark', v);
+            handleToggle('dark_mode', v);
+          },
         },
       ],
     },

@@ -22,7 +22,7 @@
 
 ## Executive Summary
 
-**Portfolio Pro** is a holistic business intelligence and operations management platform specifically designed for the growing population of portfolio workers—professionals who balance multiple clients, revenue streams, and service offerings simultaneously.
+**Portfolio Pro** is a holistic business intelligence and operations management platform specifically designed for the growing population of portfolio workers -professionals who balance multiple clients, revenue streams, and service offerings simultaneously.
 
 ### The Problem
 
@@ -56,7 +56,7 @@ To provide portfolio workers with a **single source of truth** for their busines
 
 **"The operating system for the portfolio economy."**
 
-As the gig economy evolves into the "portfolio economy"—where highly skilled professionals build sustainable businesses from multiple income streams—Portfolio Pro aims to become the definitive platform for:
+As the gig economy evolves into the "portfolio economy" -where highly skilled professionals build sustainable businesses from multiple income streams -Portfolio Pro aims to become the definitive platform for:
 
 1. **Operational Excellence**: Automated workflows, smart scheduling, and resource optimization
 2. **Financial Intelligence**: Predictive analytics, cash flow forecasting, and pricing optimization

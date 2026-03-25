@@ -34,8 +34,7 @@ export const VoiceCommandBar = ({ onNavigate, currentTab, className }: VoiceComm
 
   const isActive = state !== 'idle';
 
-  // Hide on Log screen (has its own dedicated mic)
-  if (currentTab === 'log') return null;
+  // Voice command bar is always visible now (Log Activity is a modal)
 
   return (
     <>

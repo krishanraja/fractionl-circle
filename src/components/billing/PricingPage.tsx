@@ -28,11 +28,11 @@ const features = [
   { name: 'Morning briefing', free: 'Basic', pro: 'Full + actions', exec: 'Full + voice' },
   { name: 'Smart nudges', free: '3 / day', pro: 'Unlimited', exec: 'Custom rules' },
   { name: 'Network contacts', free: '25', pro: 'Unlimited', exec: 'Unlimited' },
-  { name: 'Relationship health', free: '—', pro: true, exec: 'Predictions' },
+  { name: 'Relationship health', free: '-', pro: true, exec: 'Predictions' },
   { name: 'Voice commands', free: 'Log only', pro: 'All commands', exec: 'Custom' },
   { name: 'Desktop dashboard', free: 'Basic', pro: 'Full', exec: 'Full + reports' },
-  { name: 'Data export', free: '—', pro: 'CSV', exec: 'CSV + PDF' },
-  { name: 'Integrations', free: '—', pro: 'Google Sheets', exec: 'Sheets + Calendar' },
+  { name: 'Data export', free: '-', pro: 'CSV', exec: 'CSV + PDF' },
+  { name: 'Integrations', free: '-', pro: 'Google Sheets', exec: 'Sheets + Calendar' },
   { name: 'Support', free: 'Community', pro: 'Email', exec: 'Priority' },
 ];
 
@@ -248,6 +248,6 @@ export const PricingPage = ({ onClose }: PricingPageProps) => {
 
 function renderFeatureValue(value: string | boolean) {
   if (value === true) return <Check className="w-4 h-4 text-success mx-auto" />;
-  if (value === '—') return <span className="text-foreground-muted">—</span>;
+  if (value === '-') return <span className="text-foreground-muted">-</span>;
   return value;
 }

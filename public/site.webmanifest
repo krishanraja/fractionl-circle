@@ -1,7 +1,7 @@
 {
   "name": "Circle by Fractionl",
   "short_name": "Circle",
-  "description": "Command centre for fractional executives — track clients, log activity, manage your portfolio",
+  "description": "The smart CRM for fractional executives. Manage customers, grow your network, track your business.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -21,8 +21,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#4C2882",
-  "background_color": "#0F0A1A",
+  "theme_color": "#7C3AED",
+  "background_color": "#FCFCFD",
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "/",

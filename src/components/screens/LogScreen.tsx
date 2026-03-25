@@ -27,7 +27,11 @@ interface ParsedLog {
   confidence?: number;
 }
 
-export const LogScreen = () => {
+interface LogScreenProps {
+  onClose?: () => void;
+}
+
+export const LogScreen = ({ onClose }: LogScreenProps) => {
   const { user } = useAuth();
   const [state, setState] = useState<LogState>('idle');
   const [showTextInput, setShowTextInput] = useState(false);
@@ -215,6 +219,7 @@ export const LogScreen = () => {
         setSelectedClientId(null);
         processingBlobRef.current = null;
         resetRecording();
+        onClose?.();
       }, 2000);
 
     } catch (err) {
@@ -236,7 +241,7 @@ export const LogScreen = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4">
+    <div className="flex flex-col items-center justify-center min-h-[40vh] p-6">
       <AnimatePresence mode="wait">
         {/* Idle State */}
         {state === 'idle' && !showTextInput && (
@@ -415,7 +420,7 @@ export const LogScreen = () => {
 
             <Card className="bg-background-elevated border-border">
               <CardContent className="p-4 space-y-4">
-                {/* Client — with dropdown override if no match */}
+                {/* Client - with dropdown override if no match */}
                 <div className="flex justify-between items-center">
                   <span className="text-foreground-secondary">Client</span>
                   {clients.length > 0 ? (
@@ -434,7 +439,7 @@ export const LogScreen = () => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <span className="text-foreground font-medium">{parsedLog.client || '—'}</span>
+                    <span className="text-foreground font-medium">{parsedLog.client || '-'}</span>
                   )}
                 </div>
 

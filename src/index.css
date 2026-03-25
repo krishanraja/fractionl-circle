@@ -2,126 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PULSE Design System - Dark-First Mobile Experience
-   Near-black backgrounds, purple accents, iOS-native feel
+/* Circle Design System - Light-First Professional Experience
+   Clean whites, subtle shadows, purple accents
 */
 
 @layer base {
   :root {
-    /* PULSE Dark Theme (Default) */
+    /* Light Theme (Default) */
+    --background: 0 0% 99%;
+    --background-elevated: 0 0% 100%;
+    --background-card: 0 0% 100%;
+
+    --foreground: 240 10% 8%;
+    --foreground-secondary: 240 5% 42%;
+    --foreground-muted: 240 5% 58%;
+
+    /* Purple Accent - Core Brand */
+    --primary: 263 70% 50%;
+    --primary-light: 263 65% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-muted: 263 30% 93%;
+
+    --accent: 263 70% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Semantic Colors */
+    --success: 142 71% 40%;
+    --success-muted: 142 40% 92%;
+    --warning: 38 92% 50%;
+    --warning-muted: 38 50% 92%;
+    --destructive: 0 72% 51%;
+    --destructive-muted: 0 50% 93%;
+
+    /* Surfaces */
+    --surface: 0 0% 100%;
+    --surface-muted: 0 0% 97%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 8%;
+
+    /* Form Elements */
+    --border: 240 6% 90%;
+    --input: 240 5% 95%;
+    --ring: 263 70% 50%;
+
+    /* Legacy Mappings */
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 8%;
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 5% 42%;
+
+    /* Layout */
+    --radius: 0.875rem;
+    --radius-lg: 1.25rem;
+    --radius-xl: 1.5rem;
+
+    /* Shadows for light mode */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.04), 0 1px 3px 0 hsl(0 0% 0% / 0.03);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.08), 0 2px 6px -1px hsl(0 0% 0% / 0.04);
+    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.12), 0 4px 8px -2px hsl(0 0% 0% / 0.05);
+    --shadow-glow: 0 0 20px hsl(263 70% 50% / 0.15);
+
+    /* Transitions */
+    --transition-fast: 150ms;
+    --transition-normal: 250ms;
+    --transition-slow: 400ms;
+
+    /* Typography */
+    --font-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Mobile Layout */
+    --header-height: 3.5rem;
+    --bottom-nav-height: 5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-top: env(safe-area-inset-top, 0px);
+
+    /* Sidebar (for desktop) */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 5% 42%;
+    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 10% 8%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 263 70% 50%;
+  }
+
+  /* Dark mode override */
+  .dark {
     --background: 240 6% 6%;
     --background-elevated: 240 5% 10%;
     --background-card: 240 5% 8%;
-    
+
     --foreground: 0 0% 94%;
     --foreground-secondary: 240 5% 60%;
     --foreground-muted: 240 5% 45%;
-    
-    /* Purple Accent - Core Brand */
+
     --primary: 263 70% 58%;
     --primary-light: 263 65% 68%;
-    --primary-foreground: 0 0% 100%;
     --primary-muted: 263 50% 25%;
-    
-    --accent: 263 70% 58%;
-    --accent-foreground: 0 0% 100%;
-    
-    /* Semantic Colors */
-    --success: 142 71% 45%;
+
     --success-muted: 142 50% 20%;
-    --warning: 38 92% 50%;
     --warning-muted: 38 50% 20%;
-    --destructive: 0 72% 51%;
     --destructive-muted: 0 50% 20%;
-    
-    /* Surfaces */
+
     --surface: 240 5% 10%;
     --surface-muted: 240 5% 8%;
     --card: 240 5% 10%;
     --card-foreground: 0 0% 94%;
     --popover: 240 5% 12%;
     --popover-foreground: 0 0% 94%;
-    
-    /* Form Elements */
+
     --border: 240 5% 18%;
     --input: 240 5% 14%;
-    --ring: 263 70% 58%;
-    
-    /* Legacy Mappings */
+
     --secondary: 240 5% 14%;
     --secondary-foreground: 0 0% 94%;
     --muted: 240 5% 18%;
     --muted-foreground: 240 5% 55%;
-    
-    /* Layout */
-    --radius: 0.875rem;
-    --radius-lg: 1.25rem;
-    --radius-xl: 1.5rem;
-    
-    /* Shadows for dark mode */
+
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.4);
     --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.5);
     --shadow-glow: 0 0 20px hsl(263 70% 58% / 0.3);
-    
-    /* Transitions */
-    --transition-fast: 150ms;
-    --transition-normal: 250ms;
-    --transition-slow: 400ms;
-    
-    /* Typography */
-    --font-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-    
-    /* Mobile Layout */
-    --header-height: 3.5rem;
-    --bottom-nav-height: 5rem;
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-area-top: env(safe-area-inset-top, 0px);
-    
-    /* Sidebar (for desktop) */
+
     --sidebar-background: 240 5% 8%;
     --sidebar-foreground: 240 5% 60%;
-    --sidebar-primary: 263 70% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 5% 14%;
     --sidebar-accent-foreground: 0 0% 94%;
     --sidebar-border: 240 5% 18%;
-    --sidebar-ring: 263 70% 58%;
-  }
-
-  /* Light mode override (if needed) */
-  .light {
-    --background: 0 0% 98%;
-    --background-elevated: 0 0% 100%;
-    --background-card: 0 0% 100%;
-    
-    --foreground: 240 10% 8%;
-    --foreground-secondary: 240 5% 45%;
-    --foreground-muted: 240 5% 60%;
-    
-    --primary: 263 70% 50%;
-    --primary-light: 263 65% 60%;
-    --primary-muted: 263 30% 90%;
-    
-    --surface: 0 0% 100%;
-    --surface-muted: 0 0% 96%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 8%;
-    
-    --border: 240 5% 88%;
-    --input: 240 5% 92%;
-    
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 8%;
-    --muted: 240 5% 94%;
-    --muted-foreground: 240 5% 45%;
-    
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 12px 24px -4px hsl(0 0% 0% / 0.15);
   }
 }
 
@@ -502,7 +513,7 @@
 
 /* Purple shadow for primary buttons */
 .shadow-purple {
-  box-shadow: 0 4px 14px hsl(var(--primary) / 0.35);
+  box-shadow: 0 4px 14px hsl(var(--primary) / 0.2);
 }
 
 /* Safe area bottom padding */

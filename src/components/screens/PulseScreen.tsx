@@ -19,10 +19,12 @@ import { useSmartNudges } from '@/hooks/useSmartNudges';
 import { useSubscription } from '@/hooks/useSubscription';
 import { calculateRelationshipHealth } from '@/utils/relationshipHealth';
 import { haptics } from '@/utils/haptics';
+import { RecentActivity } from '@/components/activity/RecentActivity';
 
 interface PulseScreenProps {
   className?: string;
   onNavigate?: (tab: string) => void;
+  onOpenLog?: () => void;
 }
 
 const formatCurrency = (amount: number) =>
@@ -39,7 +41,7 @@ const timeAgo = (dateStr: string | null) => {
   return `${days}d ago`;
 };
 
-export const PulseScreen = ({ className, onNavigate }: PulseScreenProps) => {
+export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenProps) => {
   const { revenue, clients, pipeline, isLoading, error } = usePortfolioDashboard();
   const { nudges, dismiss: dismissNudge } = useSmartNudges();
   const { canUse, effectiveTier, getLimit } = useSubscription();
@@ -67,9 +69,9 @@ export const PulseScreen = ({ className, onNavigate }: PulseScreenProps) => {
 
   const handleBriefingAction = (type: string) => {
     haptics.light();
-    if (type === 'log') onNavigate?.('log');
-    if (type === 'review') onNavigate?.('history');
-    if (type === 'plan') onNavigate?.('network');
+    if (type === 'log') onOpenLog?.();
+    if (type === 'review') { /* history is now inline */ }
+    if (type === 'plan') onNavigate?.('contacts');
   };
 
   const clientLimit = getLimit('clients');
@@ -115,7 +117,7 @@ export const PulseScreen = ({ className, onNavigate }: PulseScreenProps) => {
                     onClick={() => { setShowLogRevenue(true); haptics.light(); }}
                     className="flex items-center gap-1 text-caption text-primary bg-primary/10 rounded-lg px-2.5 py-1 btn-haptic"
                   >
-                    <Plus className="w-3 h-3" />
+                    <DollarSign className="w-3 h-3" />
                     Log
                   </button>
                 </div>
@@ -305,6 +307,11 @@ export const PulseScreen = ({ className, onNavigate }: PulseScreenProps) => {
           )}
         </motion.div>
 
+        {/* Recent Activity */}
+        <motion.div variants={staggerItem}>
+          <RecentActivity initialCount={3} />
+        </motion.div>
+
         {/* Pipeline Snapshot */}
         <motion.div variants={staggerItem}>
           {isLoading ? (
@@ -367,7 +374,7 @@ export const PulseScreen = ({ className, onNavigate }: PulseScreenProps) => {
                 <div className="text-title-2 text-foreground">
                   {revenue.target > 0 ? (
                     <AnimatedPercent value={Math.round(progressPercent)} />
-                  ) : '—'}
+                  ) : '-'}
                 </div>
               )}
               <div className="text-caption text-foreground-secondary">Goal Progress</div>

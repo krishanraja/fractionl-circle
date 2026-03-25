@@ -34,14 +34,14 @@ interface LinkedInSearchResult {
  * Contact enrichment edge function.
  *
  * Modes:
- *   1. { email } — enrich from email via Clearbit or Apollo
- *   2. { phone } — enrich from phone via Twilio Lookup
- *   3. { name, linkedin_search: true } — search LinkedIn profiles by name via Apollo
+ *   1. { email } - enrich from email via Clearbit or Apollo
+ *   2. { phone } - enrich from phone via Twilio Lookup
+ *   3. { name, linkedin_search: true } - search LinkedIn profiles by name via Apollo
  *
  * Required secrets (set whichever you have):
- *   - APOLLO_API_KEY — email enrichment + LinkedIn search
- *   - CLEARBIT_API_KEY — email enrichment (fallback)
- *   - TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN — phone lookup
+ *   - APOLLO_API_KEY - email enrichment + LinkedIn search
+ *   - CLEARBIT_API_KEY - email enrichment (fallback)
+ *   - TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN - phone lookup
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -163,7 +163,7 @@ async function enrichFromPhone(phone: string): Promise<EnrichmentResult | null> 
   if (!accountSid || !authToken) return null;
 
   try {
-    // Clean phone number — ensure E.164 format (international-aware)
+    // Clean phone number - ensure E.164 format (international-aware)
     let cleaned: string;
     const parsed = parsePhoneNumberFromString(phone, 'US');
     if (parsed?.isValid()) {
