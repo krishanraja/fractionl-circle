@@ -14,7 +14,7 @@ import { useKeyboardVisible } from '@/hooks/useKeyboardVisible';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import { isValidEmail, isValidPhone } from '@/utils/contactActions';
+import { isValidEmail, isValidPhone, normalizePhoneToE164 } from '@/utils/contactActions';
 
 interface EnrichmentResult {
   name?: string;
@@ -217,7 +217,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     try {
       await createContact({
         name: form.name.trim() || enrichedData?.name || form.email.trim() || form.phone.trim(),
-        phone: form.phone.trim() || null,
+        phone: form.phone.trim() ? (normalizePhoneToE164(form.phone.trim()) || form.phone.trim()) : null,
         email: form.email.trim() || null,
         specialty_summary: form.specialty.trim() || null,
         linkedin_url: selectedLinkedin?.url || enrichedData?.linkedin_url || null,
@@ -421,7 +421,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                       value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       onBlur={handlePhoneBlur}
-                      placeholder="Phone number"
+                      placeholder="+1 555 123 4567"
                       type="tel"
                       className="pl-11 bg-input border-border text-foreground text-base"
                     />

@@ -278,6 +278,8 @@ Deno.serve(async (req) => {
           });
         }
         return await handleRefreshAllData(body, supabase, userId);
+      case 'export_crm':
+        return await handleExportCrm(body, supabase, userId);
       case 'import_data':
         return await handleImportData(body, supabase, userId);
       default:
@@ -963,6 +965,192 @@ async function handleRefreshAllData(body: any, supabase: any, userId: string) {
   return new Response(
     JSON.stringify({ success: true, message: 'All data refreshed successfully' }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function handleExportCrm(body: any, supabase: any, userId: string) {
+  const { email } = body;
+
+  // Fetch all CRM data in parallel
+  const [
+    contactsRes, clientsRes, activitiesRes,
+    revenueRes, opportunitiesRes, goalsRes
+  ] = await Promise.all([
+    supabase.from('talent_contacts').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
+    supabase.from('clients').select('*').eq('user_id', userId).order('name'),
+    supabase.from('activity_logs').select('*, clients(name)').eq('user_id', userId).order('logged_at', { ascending: false }).limit(500),
+    supabase.from('revenue_entries').select('*').eq('user_id', userId).order('date', { ascending: false }),
+    supabase.from('opportunities').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+    supabase.from('monthly_goals').select('*').eq('user_id', userId).order('month', { ascending: false }),
+  ]);
+
+  const contacts = contactsRes.data || [];
+  const clients = clientsRes.data || [];
+  const activities = activitiesRes.data || [];
+  const revenue = revenueRes.data || [];
+  const opportunities = opportunitiesRes.data || [];
+  const goals = goalsRes.data || [];
+
+  // Check if user has Google Sheets connected
+  let accessToken: string | null = null;
+  let spreadsheetId: string | null = null;
+
+  try {
+    const { data: tokens } = await supabase
+      .rpc('get_user_google_tokens', { target_user_id: userId });
+
+    const { data: integration } = await supabase
+      .from('sheets_integrations')
+      .select('google_sheet_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (tokens?.length > 0 && integration?.google_sheet_id) {
+      accessToken = await decryptToken(tokens[0].access_token);
+      spreadsheetId = integration.google_sheet_id;
+    }
+  } catch {
+    // No integration — we'll create a new spreadsheet or just email summary
+  }
+
+  // If connected, create/update spreadsheet with CRM data
+  if (accessToken) {
+    // Add new CRM sheets to existing spreadsheet if needed
+    if (spreadsheetId) {
+      // Try to add new sheets (will fail silently if they already exist)
+      const addSheetsBody = {
+        requests: [
+          { addSheet: { properties: { title: 'Contacts CRM' } } },
+          { addSheet: { properties: { title: 'Clients' } } },
+          { addSheet: { properties: { title: 'Activity Log' } } },
+        ]
+      };
+      try {
+        await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(addSheetsBody),
+          }
+        );
+      } catch {
+        // Sheets may already exist — continue
+      }
+    }
+
+    // Build CRM data
+    const crmRequests = [];
+
+    // Contacts CRM sheet
+    const contactsValues = [
+      ['Name', 'Email', 'Phone', 'Company', 'Title', 'City', 'LinkedIn', 'Availability', 'Trust Rating', 'Rate Range', 'Specialty', 'Last Updated'],
+      ...contacts.map((c: any) => [
+        c.name || '',
+        c.email || '',
+        c.phone || '',
+        c.company || '',
+        c.title || '',
+        c.city || '',
+        c.linkedin_url || '',
+        c.availability_status || '',
+        c.trust_rating || '',
+        c.rate_min && c.rate_max ? `$${c.rate_min}-$${c.rate_max} ${c.rate_type || ''}` : c.rate_min ? `$${c.rate_min}+` : '',
+        c.specialty_summary || '',
+        c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '',
+      ])
+    ];
+    crmRequests.push({ range: 'Contacts CRM!A1', values: contactsValues });
+
+    // Clients sheet
+    const clientsValues = [
+      ['Name', 'Status', 'Engagement Type', 'Hours/Week', 'Monthly Revenue Target', 'Last Activity', 'Notes'],
+      ...clients.map((c: any) => [
+        c.name || '',
+        c.status || '',
+        c.engagement_type || '',
+        c.hours_weekly || '',
+        c.monthly_revenue_target || '',
+        c.last_activity_date ? new Date(c.last_activity_date).toLocaleDateString() : '',
+        c.notes || '',
+      ])
+    ];
+    crmRequests.push({ range: 'Clients!A1', values: clientsValues });
+
+    // Activity Log sheet
+    const activityValues = [
+      ['Date', 'Type', 'Client', 'Duration (min)', 'Revenue', 'Summary', 'Notes', 'Via Voice'],
+      ...activities.map((a: any) => [
+        a.logged_at ? new Date(a.logged_at).toLocaleDateString() : '',
+        a.activity_type || '',
+        a.clients?.name || '',
+        a.duration_minutes || '',
+        a.revenue || '',
+        a.summary || '',
+        a.notes || '',
+        a.created_via_voice ? 'Yes' : 'No',
+      ])
+    ];
+    crmRequests.push({ range: 'Activity Log!A1', values: activityValues });
+
+    // Also refresh existing sheets
+    await populateAllSheets(accessToken, spreadsheetId!, supabase, userId);
+
+    // Write CRM sheets
+    if (crmRequests.length > 0) {
+      await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchUpdate`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: crmRequests }),
+        }
+      );
+    }
+
+    // Format all sheets
+    await formatSpreadsheet(accessToken, spreadsheetId!);
+
+    // Update sync timestamp
+    await supabase
+      .from('sheets_integrations')
+      .update({ last_sync_at: new Date().toISOString() })
+      .eq('user_id', userId);
+
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}`;
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        sheet_url: sheetUrl,
+        stats: {
+          contacts: contacts.length,
+          clients: clients.length,
+          activities: activities.length,
+          revenue_entries: revenue.length,
+          opportunities: opportunities.length,
+        },
+        message: 'CRM exported successfully',
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // No Google Sheets connected — return info so frontend can guide user
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: 'no_integration',
+      message: 'Google Sheets not connected. Connect in Settings to enable export.',
+      stats: {
+        contacts: contacts.length,
+        clients: clients.length,
+        activities: activities.length,
+        revenue_entries: revenue.length,
+        opportunities: opportunities.length,
+      },
+    }),
+    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }
 

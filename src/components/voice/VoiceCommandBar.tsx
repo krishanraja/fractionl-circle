@@ -8,10 +8,11 @@ import { haptics } from '@/utils/haptics';
 
 interface VoiceCommandBarProps {
   onNavigate?: (tab: string) => void;
+  currentTab?: string;
   className?: string;
 }
 
-export const VoiceCommandBar = ({ onNavigate, className }: VoiceCommandBarProps) => {
+export const VoiceCommandBar = ({ onNavigate, currentTab, className }: VoiceCommandBarProps) => {
   const { canUse } = useSubscription();
   const {
     state,
@@ -32,6 +33,9 @@ export const VoiceCommandBar = ({ onNavigate, className }: VoiceCommandBarProps)
   }, [audioBlob, state, processCommand]);
 
   const isActive = state !== 'idle';
+
+  // Hide on Log screen (has its own dedicated mic)
+  if (currentTab === 'log') return null;
 
   return (
     <>

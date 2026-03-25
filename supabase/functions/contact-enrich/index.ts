@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { parsePhoneNumberFromString } from 'https://esm.sh/libphonenumber-js@1.11.18';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -162,13 +163,19 @@ async function enrichFromPhone(phone: string): Promise<EnrichmentResult | null> 
   if (!accountSid || !authToken) return null;
 
   try {
-    // Clean phone number — ensure E.164 format
-    let cleaned = phone.replace(/[^\d+]/g, '');
-    if (!cleaned.startsWith('+')) {
-      // Assume US if no country code
-      if (cleaned.length === 10) cleaned = '+1' + cleaned;
-      else if (cleaned.length === 11 && cleaned.startsWith('1')) cleaned = '+' + cleaned;
-      else cleaned = '+' + cleaned;
+    // Clean phone number — ensure E.164 format (international-aware)
+    let cleaned: string;
+    const parsed = parsePhoneNumberFromString(phone, 'US');
+    if (parsed?.isValid()) {
+      cleaned = parsed.number as string;
+    } else {
+      // Fallback: manual normalization
+      cleaned = phone.replace(/[^\d+]/g, '');
+      if (!cleaned.startsWith('+')) {
+        if (cleaned.length === 10) cleaned = '+1' + cleaned;
+        else if (cleaned.length === 11 && cleaned.startsWith('1')) cleaned = '+' + cleaned;
+        else cleaned = '+' + cleaned;
+      }
     }
 
     // Twilio Lookup v2 with caller name and line type

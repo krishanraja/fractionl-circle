@@ -78,7 +78,7 @@ export const PulseScreen = ({ className, onNavigate }: PulseScreenProps) => {
   return (
     <>
       <motion.div
-        className={cn("flex flex-col gap-5 p-4 pb-8", className)}
+        className={cn("flex flex-col gap-5 p-4 pb-28", className)}
         variants={staggerContainer}
         initial="initial"
         animate="animate"

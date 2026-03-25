@@ -4,6 +4,7 @@
  */
 
 import { toast } from "sonner";
+import { parsePhoneNumberFromString, type PhoneNumber } from 'libphonenumber-js';
 
 /**
  * Opens email client with pre-filled recipient
@@ -19,6 +20,23 @@ export const sendEmail = (email: string | null | undefined, name?: string) => {
 };
 
 /**
+ * Parse a phone number string, defaulting to US if no country code provided
+ */
+function parsePhone(phone: string): PhoneNumber | undefined {
+  return parsePhoneNumberFromString(phone, 'US');
+}
+
+/**
+ * Normalize a phone number to E.164 format for storage
+ * Returns null if the number is invalid
+ */
+export const normalizePhoneToE164 = (phone: string): string | null => {
+  const parsed = parsePhone(phone);
+  if (!parsed?.isValid()) return null;
+  return parsed.number;
+};
+
+/**
  * Opens phone dialer with number
  */
 export const callPhone = (phone: string | null | undefined) => {
@@ -27,9 +45,9 @@ export const callPhone = (phone: string | null | undefined) => {
     return;
   }
 
-  // Remove any non-digit characters except + for international numbers
-  const cleanPhone = phone.replace(/[^\d+]/g, '');
-  window.location.href = `tel:${cleanPhone}`;
+  const parsed = parsePhone(phone);
+  const telUri = parsed?.getURI() ?? `tel:${phone.replace(/[^\d+]/g, '')}`;
+  window.location.href = telUri;
 };
 
 /**
@@ -42,11 +60,11 @@ export const openWhatsApp = (phone: string | null | undefined, name?: string) =>
     return;
   }
 
-  // Remove any non-digit characters except +
-  const cleanPhone = phone.replace(/[^\d+]/g, '');
-
-  // Remove + if present and any leading zeros
-  const whatsappNumber = cleanPhone.replace(/^\+/, '').replace(/^0+/, '');
+  const parsed = parsePhone(phone);
+  // WhatsApp wants country code + number, no + prefix
+  const whatsappNumber = parsed
+    ? parsed.number.replace(/^\+/, '')
+    : phone.replace(/[^\d]/g, '').replace(/^0+/, '');
 
   const message = name ? `Hi ${name},` : 'Hi,';
   const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -110,7 +128,7 @@ export const copyEmail = (email: string | null | undefined) => {
  * Copy phone to clipboard
  */
 export const copyPhone = (phone: string | null | undefined) => {
-  return copyToClipboard(phone, "Phone number");
+  return copyToClipboard(formatPhoneNumber(phone) || phone, "Phone number");
 };
 
 /**
@@ -156,26 +174,18 @@ ${contact.linkedinUrl ? `LinkedIn: ${contact.linkedinUrl}\n` : ''}
 };
 
 /**
- * Format phone number for display (US format)
+ * Format phone number for display (international-aware)
  */
 export const formatPhoneNumber = (phone: string | null | undefined): string => {
   if (!phone) return '';
 
-  // Remove all non-digit characters
-  const cleaned = phone.replace(/\D/g, '');
+  const parsed = parsePhone(phone);
+  if (!parsed) return phone;
 
-  // Format US numbers as (XXX) XXX-XXXX
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-
-  // Format international numbers with + prefix
-  if (cleaned.length > 10) {
-    return `+${cleaned}`;
-  }
-
-  // Return as-is if format not recognized
-  return phone;
+  // Use national format for US numbers, international for others
+  return parsed.country === 'US'
+    ? parsed.formatNational()
+    : parsed.formatInternational();
 };
 
 /**
@@ -187,11 +197,11 @@ export const isValidEmail = (email: string): boolean => {
 };
 
 /**
- * Validate phone number format (basic check)
+ * Validate phone number format (international-aware)
  */
 export const isValidPhone = (phone: string): boolean => {
-  const cleaned = phone.replace(/\D/g, '');
-  return cleaned.length >= 10; // Minimum 10 digits
+  const parsed = parsePhone(phone);
+  return parsed?.isValid() ?? false;
 };
 
 /**

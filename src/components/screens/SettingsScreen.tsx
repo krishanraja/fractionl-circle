@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Calendar, Bell, ChevronRight,
-  LogOut, Moon, CreditCard, Sparkles, Crown, ExternalLink, BarChart3
+  LogOut, Moon, CreditCard, Sparkles, Crown, ExternalLink, BarChart3, FileSpreadsheet
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +14,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionBadge } from '@/components/billing/SubscriptionBadge';
 import { PricingPage } from '@/components/billing/PricingPage';
+import { GoogleSheetsExportSheet } from '@/components/settings/GoogleSheetsExportSheet';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,6 +34,7 @@ export const SettingsScreen = () => {
   const [emailDigest, setEmailDigest] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [showPricing, setShowPricing] = useState(false);
+  const [showSheetsExport, setShowSheetsExport] = useState(false);
 
   const handleToggle = async (key: string, value: boolean) => {
     haptics.tap();
@@ -82,21 +85,9 @@ export const SettingsScreen = () => {
       items: [
         {
           icon: Calendar,
-          label: 'Work Week',
-          description: 'Monday – Friday',
-          action: 'chevron' as const,
-        },
-        {
-          icon: Calendar,
-          label: 'Check-in Time',
-          description: '9:00 AM',
-          action: 'chevron' as const,
-        },
-        {
-          icon: Calendar,
-          label: 'Weekly Summary',
-          description: 'Sunday evening',
-          action: 'chevron' as const,
+          label: 'Schedule & Reminders',
+          description: 'Work week, check-ins, weekly summary',
+          action: 'badge' as const,
         },
       ],
     },
@@ -288,6 +279,7 @@ export const SettingsScreen = () => {
                     className={cn(
                       "w-full flex items-center gap-3 p-4 min-h-[56px]",
                       item.action === 'chevron' && "hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer",
+                      item.action === 'badge' && "opacity-60",
                       !isLast && "border-b border-border"
                     )}
                   >
@@ -307,6 +299,11 @@ export const SettingsScreen = () => {
                     {item.action === 'chevron' && (
                       <ChevronRight className="w-5 h-5 text-foreground-muted" />
                     )}
+                    {item.action === 'badge' && (
+                      <Badge variant="secondary" className="text-[10px] text-foreground-muted font-normal">
+                        Coming soon
+                      </Badge>
+                    )}
                     {item.action === 'toggle' && (
                       <Switch
                         checked={item.value}
@@ -321,6 +318,32 @@ export const SettingsScreen = () => {
         </motion.div>
       ))}
 
+      {/* Data Export */}
+      <motion.div variants={staggerItem} className="space-y-2">
+        <h2 className="text-caption-bold text-foreground-secondary uppercase tracking-wider px-1">
+          Data
+        </h2>
+        <Card className="bg-background-elevated border-border overflow-hidden">
+          <CardContent className="p-0">
+            <div
+              className="w-full flex items-center gap-3 p-4 min-h-[56px] hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer"
+              onClick={() => { setShowSheetsExport(true); haptics.light(); }}
+            >
+              <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
+                <FileSpreadsheet className="w-5 h-5 text-foreground-secondary" />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="text-body-bold text-foreground">Export to Google Sheets</div>
+                <div className="text-caption text-foreground-secondary">
+                  Get a beautiful CRM spreadsheet
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-foreground-muted" />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Sign Out */}
       <motion.div variants={staggerItem}>
         <Button
@@ -332,6 +355,12 @@ export const SettingsScreen = () => {
           Sign Out
         </Button>
       </motion.div>
+
+      {/* Google Sheets Export Sheet */}
+      <GoogleSheetsExportSheet
+        open={showSheetsExport}
+        onOpenChange={setShowSheetsExport}
+      />
 
       {/* Footer */}
       <motion.div
