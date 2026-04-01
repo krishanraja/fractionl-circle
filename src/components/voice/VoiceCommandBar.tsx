@@ -10,9 +10,10 @@ interface VoiceCommandBarProps {
   onNavigate?: (tab: string) => void;
   currentTab?: string;
   className?: string;
+  hidden?: boolean;
 }
 
-export const VoiceCommandBar = ({ onNavigate, currentTab, className }: VoiceCommandBarProps) => {
+export const VoiceCommandBar = ({ onNavigate, currentTab, className, hidden }: VoiceCommandBarProps) => {
   const { canUse } = useSubscription();
   const {
     state,
@@ -34,7 +35,7 @@ export const VoiceCommandBar = ({ onNavigate, currentTab, className }: VoiceComm
 
   const isActive = state !== 'idle';
 
-  // Voice command bar is always visible now (Log Activity is a modal)
+  if (hidden) return null;
 
   return (
     <>
