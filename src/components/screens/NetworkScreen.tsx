@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Users, Filter } from 'lucide-react';
+import { Search, Users, Filter, Keyboard, Mic, Camera, Instagram, Linkedin, Smartphone } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -9,6 +9,12 @@ import { staggerContainer, staggerItem } from '@/constants/animation';
 import { TalentContactCard } from '@/components/talent/TalentContactCard';
 import { QuickAddSheet } from '@/components/talent/QuickAddSheet';
 import { TalentContactForm } from '@/components/talent/TalentContactForm';
+import { ContactFABMenu } from '@/components/talent/ContactFABMenu';
+import { VoiceAddContact } from '@/components/talent/VoiceAddContact';
+import { PhotoImportSheet } from '@/components/talent/PhotoImportSheet';
+import { InstagramImportSheet } from '@/components/talent/InstagramImportSheet';
+import { PhoneContactsImport } from '@/components/talent/PhoneContactsImport';
+import { LinkedInImportSheet } from '@/components/talent/LinkedInImportSheet';
 import { useTalentContacts } from '@/hooks/useTalentContacts';
 import { useSkills } from '@/hooks/useSkills';
 import { RecentActivity } from '@/components/activity/RecentActivity';
@@ -32,8 +38,15 @@ export const NetworkScreen = () => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [availableOnly, setAvailableOnly] = useState(false);
+
+  // Sheet states
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showFullForm, setShowFullForm] = useState(false);
+  const [showVoiceAdd, setShowVoiceAdd] = useState(false);
+  const [showPhotoImport, setShowPhotoImport] = useState(false);
+  const [showInstagramImport, setShowInstagramImport] = useState(false);
+  const [showPhoneImport, setShowPhoneImport] = useState(false);
+  const [showLinkedInImport, setShowLinkedInImport] = useState(false);
   const [editingContact, setEditingContact] = useState<any>(null);
 
   const filtered = useMemo(() => {
@@ -64,6 +77,9 @@ export const NetworkScreen = () => {
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
   }, [filtered]);
+
+  const isEmptyState = !isLoading && contacts.length === 0 && !search && activeCategory === 'All';
+  const isFilteredEmpty = !isLoading && sorted.length === 0 && !isEmptyState;
 
   return (
     <motion.div
@@ -124,7 +140,73 @@ export const NetworkScreen = () => {
             [...Array(4)].map((_, i) => (
               <div key={i} className="h-[88px] rounded-xl bg-background-elevated animate-pulse" />
             ))
-          ) : sorted.length === 0 ? (
+          ) : isEmptyState ? (
+            /* Rich empty state with import options */
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="py-8"
+            >
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-8 h-8 text-primary" />
+                </div>
+                <h2 className="text-lg font-semibold text-foreground">Your Black Book is empty</h2>
+                <p className="text-sm text-foreground-secondary mt-1">Add people you want to remember</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <ImportOptionCard
+                  icon={<Smartphone className="w-5 h-5" />}
+                  label="Phone Contacts"
+                  description="Import from your phone"
+                  color="bg-emerald-500/12 text-emerald-600"
+                  onClick={() => setShowPhoneImport(true)}
+                  delay={0}
+                />
+                <ImportOptionCard
+                  icon={<Camera className="w-5 h-5" />}
+                  label="Scan Card"
+                  description="Photo or screenshot"
+                  color="bg-amber-500/12 text-amber-600"
+                  onClick={() => setShowPhotoImport(true)}
+                  delay={0.05}
+                />
+                <ImportOptionCard
+                  icon={<Mic className="w-5 h-5" />}
+                  label="Voice Add"
+                  description="Say their details"
+                  color="bg-rose-500/12 text-rose-600"
+                  onClick={() => setShowVoiceAdd(true)}
+                  delay={0.1}
+                />
+                <ImportOptionCard
+                  icon={<Keyboard className="w-5 h-5" />}
+                  label="Quick Add"
+                  description="Type it in"
+                  color="bg-primary/12 text-primary"
+                  onClick={() => setShowQuickAdd(true)}
+                  delay={0.15}
+                />
+                <ImportOptionCard
+                  icon={<Linkedin className="w-5 h-5" />}
+                  label="LinkedIn"
+                  description="URL or CSV import"
+                  color="bg-[#0A66C2]/12 text-[#0A66C2]"
+                  onClick={() => setShowLinkedInImport(true)}
+                  delay={0.2}
+                />
+                <ImportOptionCard
+                  icon={<Instagram className="w-5 h-5" />}
+                  label="Instagram"
+                  description="Add by handle"
+                  color="bg-[#E1306C]/12 text-[#E1306C]"
+                  onClick={() => setShowInstagramImport(true)}
+                  delay={0.25}
+                />
+              </div>
+            </motion.div>
+          ) : isFilteredEmpty ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -134,13 +216,9 @@ export const NetworkScreen = () => {
                 <Users className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <p className="text-body-bold text-foreground">
-                  {search || activeCategory !== 'All' ? 'No matches' : 'Your Black Book is empty'}
-                </p>
+                <p className="text-body-bold text-foreground">No matches</p>
                 <p className="text-caption text-foreground-secondary mt-1">
-                  {search || activeCategory !== 'All'
-                    ? 'Try a different search or filter'
-                    : 'Tap + to add someone you want to remember'}
+                  Try a different search or filter
                 </p>
               </div>
             </motion.div>
@@ -169,17 +247,17 @@ export const NetworkScreen = () => {
         <RecentActivity contactsOnly initialCount={3} />
       </div>
 
-      {/* Quick add FAB */}
-      <motion.button
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setShowQuickAdd(true)}
-        className="fixed bottom-36 right-4 w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <Plus className="w-6 h-6 text-primary-foreground" />
-      </motion.button>
+      {/* Expandable FAB menu (replaces old single + button) */}
+      <ContactFABMenu
+        onQuickAdd={() => setShowQuickAdd(true)}
+        onVoiceAdd={() => setShowVoiceAdd(true)}
+        onPhotoImport={() => setShowPhotoImport(true)}
+        onInstagramImport={() => setShowInstagramImport(true)}
+        onLinkedInImport={() => setShowLinkedInImport(true)}
+        onPhoneImport={() => setShowPhoneImport(true)}
+      />
 
-      {/* Sheets */}
+      {/* All sheets / drawers */}
       <QuickAddSheet
         open={showQuickAdd}
         onOpenChange={setShowQuickAdd}
@@ -190,6 +268,55 @@ export const NetworkScreen = () => {
         onOpenChange={(open) => { setShowFullForm(open); if (!open) setEditingContact(null); }}
         editContact={editingContact}
       />
+      <VoiceAddContact
+        open={showVoiceAdd}
+        onOpenChange={setShowVoiceAdd}
+      />
+      <PhotoImportSheet
+        open={showPhotoImport}
+        onOpenChange={setShowPhotoImport}
+      />
+      <InstagramImportSheet
+        open={showInstagramImport}
+        onOpenChange={setShowInstagramImport}
+        onScanScreenshot={() => setShowPhotoImport(true)}
+      />
+      <PhoneContactsImport
+        open={showPhoneImport}
+        onOpenChange={setShowPhoneImport}
+      />
+      <LinkedInImportSheet
+        open={showLinkedInImport}
+        onOpenChange={setShowLinkedInImport}
+      />
     </motion.div>
   );
 };
+
+// Import option card for the empty state
+function ImportOptionCard({ icon, label, description, color, onClick, delay }: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  color: string;
+  onClick: () => void;
+  delay: number;
+}) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      onClick={onClick}
+      className="flex items-center gap-3 p-3.5 rounded-2xl bg-secondary/40 border border-border text-left active:bg-secondary transition-colors"
+    >
+      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", color)}>
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="text-[11px] text-foreground-secondary">{description}</p>
+      </div>
+    </motion.button>
+  );
+}
