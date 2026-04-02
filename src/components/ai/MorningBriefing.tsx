@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
 import { useDailyBriefing, type DailyBriefing } from '@/hooks/useDailyBriefing';
 import { haptics } from '@/utils/haptics';
+import { getGreeting } from '@/utils/greeting';
 
 interface MorningBriefingProps {
   onAction?: (type: string) => void;
@@ -67,7 +68,9 @@ export const MorningBriefing = ({ onAction, className }: MorningBriefingProps) =
               <Compass className="w-[18px] h-[18px] text-primary" strokeWidth={1.75} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-title-3 text-foreground leading-snug">{briefing.greeting}</p>
+              <p className="text-title-3 text-foreground leading-snug">
+                {briefing.greeting.replace(/^Good (morning|afternoon|evening)/i, getGreeting())}
+              </p>
               <p className="text-caption text-foreground-muted mt-1 leading-relaxed">
                 {briefing.headline}
               </p>
