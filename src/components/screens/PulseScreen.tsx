@@ -42,7 +42,7 @@ const timeAgo = (dateStr: string | null) => {
 };
 
 export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenProps) => {
-  const { revenue, clients, pipeline, isLoading, error } = usePortfolioDashboard();
+  const { revenue, clients, pipeline, weeklyInsight, isLoading, error } = usePortfolioDashboard();
   const { nudges, dismiss: dismissNudge } = useSmartNudges();
   const { canUse, effectiveTier, getLimit } = useSubscription();
   const [showAddClient, setShowAddClient] = useState(false);

@@ -1,4 +1,4 @@
-import { Home, PenLine, Clock, Users, Settings } from 'lucide-react';
+import { Home, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 
@@ -10,10 +10,8 @@ interface BottomNavProps {
 }
 
 const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
-  { id: 'pulse', label: 'Pulse', icon: Home },
-  { id: 'network', label: 'Network', icon: Users },
-  { id: 'log', label: 'Log', icon: PenLine },
-  { id: 'history', label: 'History', icon: Clock },
+  { id: 'customers', label: 'Customers', icon: Home },
+  { id: 'contacts', label: 'Contacts', icon: Users },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
