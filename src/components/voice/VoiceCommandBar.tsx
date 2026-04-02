@@ -8,12 +8,14 @@ import { haptics } from '@/utils/haptics';
 
 interface VoiceCommandBarProps {
   onNavigate?: (tab: string) => void;
+  onOpenLog?: () => void;
+  onSetReminder?: (prefill?: { title?: string; clientId?: string }) => void;
   currentTab?: string;
   className?: string;
   hidden?: boolean;
 }
 
-export const VoiceCommandBar = ({ onNavigate, currentTab, className, hidden }: VoiceCommandBarProps) => {
+export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentTab, className, hidden }: VoiceCommandBarProps) => {
   const { canUse } = useSubscription();
   const {
     state,
@@ -24,7 +26,11 @@ export const VoiceCommandBar = ({ onNavigate, currentTab, className, hidden }: V
     stopListening,
     processCommand,
     dismiss,
-  } = useVoiceCommands(onNavigate);
+  } = useVoiceCommands({
+    onNavigate,
+    onOpenLog,
+    onSetReminder,
+  });
 
   // Process audio when blob is ready
   useEffect(() => {
@@ -110,7 +116,7 @@ export const VoiceCommandBar = ({ onNavigate, currentTab, className, hidden }: V
                     ))}
                   </div>
                   <p className="text-caption text-foreground-muted">
-                    Try: "How's my revenue?" or "Show stale deals"
+                    Try: "Log $5000 revenue" or "Show my pipeline"
                   </p>
                 </div>
               )}

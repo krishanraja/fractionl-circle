@@ -12,7 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ResponsiveDialog } from '@/components/navigation';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Plus, TrendingUp, DollarSign, Target, Users, Megaphone, Presentation, Edit, Trash2 } from 'lucide-react';
+import { CalendarIcon, CalendarPlus, Plus, TrendingUp, DollarSign, Target, Users, Megaphone, Presentation, Edit, Trash2 } from 'lucide-react';
+import { addToCalendar } from '@/utils/calendarUtils';
 import { Opportunity } from '@/types/tracking';
 
 interface OpportunityPipelineProps {
@@ -280,6 +281,27 @@ export const OpportunityPipeline = ({
                               )}
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => addToCalendar({
+                                  title: opportunity.title,
+                                  description: [
+                                    opportunity.company && `Company: ${opportunity.company}`,
+                                    opportunity.contact_person && `Contact: ${opportunity.contact_person}`,
+                                    `Value: $${opportunity.estimated_value?.toLocaleString() || 0}`,
+                                    `Stage: ${getStageInfo(opportunity.stage).label}`,
+                                    opportunity.notes,
+                                  ].filter(Boolean).join('\n'),
+                                  startDate: opportunity.estimated_close_date
+                                    ? new Date(opportunity.estimated_close_date + 'T10:00:00').toISOString()
+                                    : new Date().toISOString(),
+                                })}
+                                className="h-8 w-8 p-0 touch-target text-primary hover:text-primary"
+                                title="Add to calendar"
+                              >
+                                <CalendarPlus className="h-3.5 w-3.5" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"

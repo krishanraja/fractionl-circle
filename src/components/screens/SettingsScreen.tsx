@@ -81,6 +81,7 @@ export const SettingsScreen = () => {
           label: 'Account',
           description: user?.email || 'Not signed in',
           action: 'chevron' as const,
+          onClick: () => toast.info('Profile editing coming soon'),
         },
       ],
     },
@@ -104,12 +105,22 @@ export const SettingsScreen = () => {
           description: 'Get reminders to log activity',
           action: 'toggle' as const,
           value: pushNotifications,
-          onChange: (v: boolean) => { setPushNotifications(v); handleToggle('browser_notifications', v); },
+          onChange: async (v: boolean) => {
+            if (v && 'Notification' in window) {
+              const permission = await Notification.requestPermission();
+              if (permission !== 'granted') {
+                toast.error('Notification permission was denied. Enable it in your browser settings.');
+                return;
+              }
+            }
+            setPushNotifications(v);
+            handleToggle('browser_notifications', v);
+          },
         },
         {
           icon: Bell,
           label: 'Email Digest',
-          description: 'Weekly summary via email',
+          description: 'Weekly summary via email (coming soon)',
           action: 'toggle' as const,
           value: emailDigest,
           onChange: (v: boolean) => { setEmailDigest(v); handleToggle('email_notifications', v); },
@@ -280,6 +291,12 @@ export const SettingsScreen = () => {
                 return (
                   <div
                     key={item.label}
+                    onClick={() => {
+                      if (item.action === 'chevron' && (item as any).onClick) {
+                        haptics.light();
+                        (item as any).onClick();
+                      }
+                    }}
                     className={cn(
                       "w-full flex items-center gap-3 p-4 min-h-[52px]",
                       item.action === 'chevron' && "hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer",

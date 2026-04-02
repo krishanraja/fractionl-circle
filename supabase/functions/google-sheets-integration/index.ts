@@ -282,6 +282,8 @@ Deno.serve(async (req) => {
         return await handleExportCrm(body, supabase, userId);
       case 'import_data':
         return await handleImportData(body, supabase, userId);
+      case 'create_calendar_event':
+        return await handleCreateCalendarEvent(body, supabase, userId);
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), {
           status: 400,
@@ -326,7 +328,7 @@ function handleAuthUrl(body: any, supabase: any, userId: string) {
   const authUrl = new URL(credentials.web.auth_uri);
   authUrl.searchParams.set('client_id', credentials.web.client_id);
   authUrl.searchParams.set('redirect_uri', credentials.web.redirect_uris[0]);
-  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file');
+  authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar.events');
   authUrl.searchParams.set('response_type', 'code');
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'consent');
@@ -1158,6 +1160,87 @@ async function handleImportData(body: any, supabase: any, userId: string) {
   // Implementation for importing data from Google Sheets
   return new Response(
     JSON.stringify({ success: true, message: 'Import functionality coming soon' }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+/**
+ * Create a Google Calendar event from an opportunity or reminder.
+ * Body: { title, description?, start_date, end_date?, location?, attendees?: string[] }
+ */
+async function handleCreateCalendarEvent(body: any, supabase: any, userId: string) {
+  const { title, description, start_date, end_date, location, attendees } = body;
+
+  if (!title || !start_date) {
+    return new Response(
+      JSON.stringify({ error: 'Missing title or start_date' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Get user's Google tokens
+  const { data: tokens } = await supabase.rpc('get_user_google_tokens', { p_user_id: userId });
+
+  if (!tokens?.access_token) {
+    return new Response(
+      JSON.stringify({ error: 'no_integration', message: 'Google not connected. Connect via Settings > Google Sheets to enable calendar sync.' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const encryptionKey = Deno.env.get('TOKEN_ENCRYPTION_KEY');
+  if (!encryptionKey) {
+    return new Response(
+      JSON.stringify({ error: 'Server configuration error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const accessToken = await decryptToken(tokens.access_token, encryptionKey);
+
+  // Build event object
+  const startDateTime = new Date(start_date);
+  const endDateTime = end_date ? new Date(end_date) : new Date(startDateTime.getTime() + 3600000); // default 1 hour
+
+  const event: Record<string, unknown> = {
+    summary: title,
+    description: description || '',
+    start: {
+      dateTime: startDateTime.toISOString(),
+      timeZone: 'UTC',
+    },
+    end: {
+      dateTime: endDateTime.toISOString(),
+      timeZone: 'UTC',
+    },
+  };
+
+  if (location) event.location = location;
+  if (attendees?.length) {
+    event.attendees = attendees.map((email: string) => ({ email }));
+  }
+
+  const calRes = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(event),
+  });
+
+  if (!calRes.ok) {
+    const errorData = await calRes.json().catch(() => ({}));
+    console.error('Google Calendar error:', errorData);
+    return new Response(
+      JSON.stringify({ error: 'Failed to create calendar event', details: errorData }),
+      { status: calRes.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const created = await calRes.json();
+  return new Response(
+    JSON.stringify({ success: true, event_id: created.id, html_link: created.htmlLink }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   );
 }

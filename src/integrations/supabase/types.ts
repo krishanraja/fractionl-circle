@@ -624,6 +624,51 @@ export type Database = {
         }
         Relationships: []
       }
+      reminders: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          scheduled_at: string
+          completed_at: string | null
+          client_id: string | null
+          contact_id: string | null
+          repeat_pattern: string | null
+          active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          title: string
+          description?: string | null
+          scheduled_at: string
+          completed_at?: string | null
+          client_id?: string | null
+          contact_id?: string | null
+          repeat_pattern?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          scheduled_at?: string
+          completed_at?: string | null
+          client_id?: string | null
+          contact_id?: string | null
+          repeat_pattern?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       revenue_entries: {
         Row: {
           amount: number

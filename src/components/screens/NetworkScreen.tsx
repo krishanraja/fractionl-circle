@@ -32,7 +32,7 @@ const AVAILABILITY_COLORS: Record<string, string> = {
 };
 
 export const NetworkScreen = () => {
-  const { contacts, loading: isLoading, deleteContact } = useTalentContacts();
+  const { contacts, loading: isLoading, deleteContact, createContact, updateContact } = useTalentContacts();
   const { skills } = useSkills();
 
   const [search, setSearch] = useState('');
@@ -266,7 +266,14 @@ export const NetworkScreen = () => {
       <TalentContactForm
         open={showFullForm}
         onOpenChange={(open) => { setShowFullForm(open); if (!open) setEditingContact(null); }}
-        editContact={editingContact}
+        contact={editingContact}
+        onSubmit={async (contactData, skillIds) => {
+          if (editingContact) {
+            await updateContact(editingContact.id, contactData, skillIds);
+          } else {
+            await createContact(contactData, skillIds);
+          }
+        }}
       />
       <VoiceAddContact
         open={showVoiceAdd}

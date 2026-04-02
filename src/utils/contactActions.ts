@@ -73,6 +73,23 @@ export const openWhatsApp = (phone: string | null | undefined, name?: string) =>
 };
 
 /**
+ * Opens SMS compose via native sms: protocol
+ * Falls back to the device's messaging app
+ */
+export const sendSMS = (phone: string | null | undefined, name?: string) => {
+  if (!phone) {
+    toast.error("No phone number available");
+    return;
+  }
+
+  const parsed = parsePhone(phone);
+  const number = parsed?.number ?? phone.replace(/[^\d+]/g, '');
+  const body = name ? `Hi ${name},` : '';
+  // sms: protocol works on both iOS and Android
+  window.location.href = `sms:${number}${body ? `?body=${encodeURIComponent(body)}` : ''}`;
+};
+
+/**
  * Opens LinkedIn profile
  */
 export const openLinkedIn = (linkedinUrl: string | null | undefined) => {

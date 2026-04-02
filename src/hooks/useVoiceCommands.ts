@@ -13,7 +13,16 @@ interface CommandResult {
   data?: Record<string, unknown>;
 }
 
-export function useVoiceCommands(onNavigate?: (tab: string) => void) {
+interface VoiceCommandCallbacks {
+  onNavigate?: (tab: string) => void;
+  onOpenLog?: () => void;
+  onOpenRevenue?: (prefill?: { amount?: string; client_id?: string }) => void;
+  onOpenAddContact?: (prefill?: { name?: string }) => void;
+  onSetReminder?: (prefill?: { title?: string; clientId?: string }) => void;
+}
+
+export function useVoiceCommands(callbacks: VoiceCommandCallbacks = {}) {
+  const { onNavigate, onOpenLog, onOpenRevenue, onOpenAddContact, onSetReminder } = callbacks;
   const [state, setState] = useState<CommandState>('idle');
   const [result, setResult] = useState<CommandResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +52,55 @@ export function useVoiceCommands(onNavigate?: (tab: string) => void) {
     // Wait for audioBlob to be available
     await new Promise(resolve => setTimeout(resolve, 300));
   }, [stopRecording]);
+
+  const executeAction = useCallback((cmdResult: CommandResult) => {
+    const { action, navigate_to, data } = cmdResult;
+
+    // Execute structured actions
+    switch (action) {
+      case 'log_activity':
+        onOpenLog?.();
+        return;
+      case 'show_revenue':
+      case 'add_revenue': {
+        const amount = data?.amount as string | undefined;
+        const clientId = data?.client_id as string | undefined;
+        onOpenRevenue?.({ amount, client_id: clientId });
+        return;
+      }
+      case 'add_contact': {
+        const name = data?.name as string | undefined;
+        onOpenAddContact?.({ name });
+        return;
+      }
+      case 'show_pipeline':
+        onNavigate?.('customers');
+        setTimeout(() => {
+          document.getElementById('pipeline-card')?.scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+        return;
+      case 'set_reminder': {
+        const reminderTitle = data?.title as string | undefined;
+        const reminderClient = data?.client_name as string | undefined;
+        onSetReminder?.({ title: reminderTitle, clientId: reminderClient });
+        return;
+      }
+      case 'show_clients':
+        onNavigate?.('customers');
+        setTimeout(() => {
+          document.getElementById('portfolio-section')?.scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+        return;
+      case 'navigate_tab':
+        if (navigate_to) onNavigate?.(navigate_to);
+        return;
+      default:
+        // Fallback: navigate if specified
+        if (navigate_to) {
+          setTimeout(() => onNavigate?.(navigate_to), 1500);
+        }
+    }
+  }, [onNavigate, onOpenLog, onOpenRevenue, onOpenAddContact, onSetReminder]);
 
   const processCommand = useCallback(async (blob: Blob) => {
     try {
@@ -76,12 +134,8 @@ export function useVoiceCommands(onNavigate?: (tab: string) => void) {
       setState('responding');
       haptics.success();
 
-      // Auto-navigate if needed
-      if (cmdResult.navigate_to) {
-        setTimeout(() => {
-          onNavigate?.(cmdResult.navigate_to!);
-        }, 1500);
-      }
+      // Execute the action
+      executeAction(cmdResult);
 
       // Auto-dismiss after showing response
       setTimeout(() => {
@@ -97,7 +151,7 @@ export function useVoiceCommands(onNavigate?: (tab: string) => void) {
       setState('idle');
       resetRecording();
     }
-  }, [onNavigate, resetRecording]);
+  }, [executeAction, resetRecording]);
 
   const dismiss = useCallback(() => {
     setState('idle');

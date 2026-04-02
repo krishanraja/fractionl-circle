@@ -45,6 +45,7 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
   const { canUse, effectiveTier, getLimit } = useSubscription();
   const [showAddClient, setShowAddClient] = useState(false);
   const [showLogRevenue, setShowLogRevenue] = useState(false);
+  const [editingClient, setEditingClient] = useState<typeof clients[number] | null>(null);
 
   const progressPercent = revenue.target > 0
     ? Math.min((revenue.current / revenue.target) * 100, 100)
@@ -67,15 +68,19 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
   const handleBriefingAction = (type: string) => {
     haptics.light();
     if (type === 'log') onOpenLog?.();
-    if (type === 'review') { /* history is now inline */ }
+    if (type === 'review') {
+      // Scroll to portfolio section on the same page
+      document.getElementById('portfolio-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
     if (type === 'plan') onNavigate?.('contacts');
+    if (type === 'call') onOpenLog?.();
   };
 
   const clientLimit = getLimit('clients');
   const isAtClientLimit = clients.length >= clientLimit && clientLimit !== Infinity;
 
   // Build unified action items (max 3)
-  const actionItems: Array<{ icon: typeof Clock; accentColor: string; text: string }> = [];
+  const actionItems: Array<{ icon: typeof Clock; accentColor: string; text: string; onTap: () => void }> = [];
   const now = Date.now();
   const staleClients = clients.filter((c) => {
     if (!c.last_activity_date) return true;
@@ -93,6 +98,7 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
       text: days
         ? `Reach out to ${client.name} — ${days} days since last interaction.`
         : `Reach out to ${client.name} — no recent activity on file.`,
+      onTap: () => { onOpenLog?.(); },
     });
   }
   if (pipeline.active > 0) {
@@ -100,6 +106,7 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
       icon: Target,
       accentColor: 'hsl(var(--primary))',
       text: `${pipeline.active} deal${pipeline.active === 1 ? '' : 's'} in pipeline worth ${formatCurrency(pipeline.totalValue)}.`,
+      onTap: () => { document.getElementById('pipeline-card')?.scrollIntoView({ behavior: 'smooth' }); },
     });
   }
   if (weeklyInsight && weeklyInsight.highlights.length > 0) {
@@ -107,6 +114,7 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
       icon: TrendingUp,
       accentColor: 'hsl(var(--success))',
       text: `Top win this week: ${weeklyInsight.highlights[0]}`,
+      onTap: () => { onOpenLog?.(); },
     });
   }
   const visibleActions = actionItems.slice(0, 3);
@@ -186,7 +194,9 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-background-elevated border border-border/30 border-l-2"
+                    role="button"
+                    onClick={() => { haptics.tap(); item.onTap(); }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-background-elevated border border-border/30 border-l-2 cursor-pointer active:bg-secondary/40 transition-colors"
                     style={{ borderLeftColor: item.accentColor }}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0 text-foreground-muted" />
@@ -200,7 +210,7 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
         )}
 
         {/* Section C: Portfolio */}
-        <motion.div variants={staggerItem} className="space-y-3">
+        <motion.div id="portfolio-section" variants={staggerItem} className="space-y-3">
           <div className="flex items-center justify-between px-0.5">
             <h2 className="text-label text-foreground-muted">Portfolio</h2>
             <button
@@ -251,7 +261,11 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
 
                 return (
                   <motion.div key={client.id} variants={staggerItem} custom={index}>
-                    <Card className="card-interactive">
+                    <Card className="card-interactive" onClick={() => {
+                      haptics.tap();
+                      setEditingClient(client);
+                      setShowAddClient(true);
+                    }}>
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="relative flex-shrink-0">
@@ -318,7 +332,7 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
 
           {/* Pipeline — integrated into portfolio section */}
           {!isLoading && (
-            <Card className="card-interactive" onClick={() => { haptics.tap(); }}>
+            <Card id="pipeline-card" className="card-interactive" onClick={() => { haptics.tap(); onOpenLog?.(); }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary-muted flex items-center justify-center flex-shrink-0">
@@ -349,7 +363,19 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
         </motion.div>
       </motion.div>
 
-      <ClientSheet open={showAddClient} onOpenChange={setShowAddClient} />
+      <ClientSheet
+        open={showAddClient}
+        onOpenChange={(open) => { setShowAddClient(open); if (!open) setEditingClient(null); }}
+        editClient={editingClient ? {
+          id: editingClient.id,
+          name: editingClient.name,
+          color: editingClient.color || '#8B5CF6',
+          engagement_type: (editingClient.engagement_type as 'retainer' | 'project' | 'advisory') || 'retainer',
+          monthly_revenue_target: editingClient.monthly_revenue_target ?? null,
+          hours_weekly: editingClient.hours_weekly ?? null,
+          notes: null,
+        } : undefined}
+      />
       <RevenueSheet open={showLogRevenue} onOpenChange={setShowLogRevenue} />
     </>
   );
