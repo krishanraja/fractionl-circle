@@ -92,7 +92,7 @@ export const AppShell = ({
       )}
 
       {/* Floating Voice Command Bar (hidden on contacts tab where ContactFABMenu provides its own) */}
-      <VoiceCommandBar onNavigate={handleVoiceNavigate} currentTab={currentTab} hidden={currentTab === 'contacts'} />
+      <VoiceCommandBar onNavigate={handleVoiceNavigate} onOpenLog={onOpenLog} currentTab={currentTab} hidden={currentTab === 'contacts'} />
     </div>
   );
 };

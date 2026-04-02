@@ -29,6 +29,9 @@ import { useSkills } from '@/hooks/useSkills';
 import type { TalentContactWithSkills } from '@/hooks/useTalentContacts';
 import type { Database } from '@/integrations/supabase/types';
 import { isValidPhone, normalizePhoneToE164 } from '@/utils/contactActions';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 type TalentContactInsert = Database['public']['Tables']['talent_contacts']['Insert'];
 
@@ -69,6 +72,33 @@ export function TalentContactForm({
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [skillsExpanded, setSkillsExpanded] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichedEmail, setEnrichedEmail] = useState<string | null>(null);
+
+  const enrichFromEmail = async (email: string) => {
+    if (!email || !email.includes('@') || email === enrichedEmail) return;
+    setIsEnriching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-enrich', {
+        body: { email: email.trim() },
+      });
+      if (error) throw error;
+      const enriched = data?.enriched;
+      if (enriched) {
+        setEnrichedEmail(email);
+        const currentValues = form.getValues();
+        // Only fill empty fields
+        if (!currentValues.name && enriched.name) form.setValue('name', enriched.name);
+        if (!currentValues.linkedin_url && enriched.linkedin_url) form.setValue('linkedin_url', enriched.linkedin_url);
+        if (!currentValues.specialty_summary && enriched.specialty_summary) form.setValue('specialty_summary', enriched.specialty_summary);
+        toast.success('Contact details auto-filled', { duration: 2000 });
+      }
+    } catch {
+      // Enrichment is best-effort, don't show errors
+    } finally {
+      setIsEnriching(false);
+    }
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -183,9 +213,20 @@ export function TalentContactForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  Email
+                  {isEnriching && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
+                </FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="john@example.com"
+                    {...field}
+                    onBlur={(e) => {
+                      field.onBlur();
+                      enrichFromEmail(e.target.value.trim());
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

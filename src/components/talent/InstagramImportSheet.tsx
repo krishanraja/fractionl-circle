@@ -155,12 +155,23 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Contact'}
                 </Button>
 
+                <div className="relative flex items-center my-2">
+                  <div className="flex-1 border-t border-border/50" />
+                  <span className="px-3 text-[11px] text-foreground-muted uppercase">or faster</span>
+                  <div className="flex-1 border-t border-border/50" />
+                </div>
+
                 <button
                   onClick={handleScanInstead}
-                  className="flex items-center justify-center gap-2 text-foreground-secondary text-caption py-2 active:text-foreground transition-colors"
+                  className="flex items-center gap-3 w-full p-3 rounded-xl bg-primary/8 border border-primary/20 active:bg-primary/15 transition-colors"
                 >
-                  <Camera className="w-3.5 h-3.5" />
-                  <span>Or scan a screenshot of their profile</span>
+                  <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                    <Camera className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-foreground">Scan their profile screenshot</p>
+                    <p className="text-[11px] text-foreground-secondary">AI extracts name, bio & details automatically</p>
+                  </div>
                 </button>
               </DrawerFooter>
             </motion.div>
