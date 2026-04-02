@@ -14,6 +14,7 @@ interface AppShellProps {
   currentTab: TabId;
   onTabChange: (tab: TabId) => void;
   onOpenLog: () => void;
+  onSetReminder?: (prefill?: { title?: string; clientId?: string }) => void;
   title?: string;
   showHeader?: boolean;
   headerActions?: ReactNode;
@@ -24,6 +25,7 @@ export const AppShell = ({
   currentTab,
   onTabChange,
   onOpenLog,
+  onSetReminder,
   title,
   showHeader = true,
   headerActions,
@@ -92,7 +94,7 @@ export const AppShell = ({
       )}
 
       {/* Floating Voice Command Bar (hidden on contacts tab where ContactFABMenu provides its own) */}
-      <VoiceCommandBar onNavigate={handleVoiceNavigate} onOpenLog={onOpenLog} currentTab={currentTab} hidden={currentTab === 'contacts'} />
+      <VoiceCommandBar onNavigate={handleVoiceNavigate} onOpenLog={onOpenLog} onSetReminder={onSetReminder} currentTab={currentTab} hidden={currentTab === 'contacts'} />
     </div>
   );
 };

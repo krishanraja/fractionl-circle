@@ -9,12 +9,13 @@ import { haptics } from '@/utils/haptics';
 interface VoiceCommandBarProps {
   onNavigate?: (tab: string) => void;
   onOpenLog?: () => void;
+  onSetReminder?: (prefill?: { title?: string; clientId?: string }) => void;
   currentTab?: string;
   className?: string;
   hidden?: boolean;
 }
 
-export const VoiceCommandBar = ({ onNavigate, onOpenLog, currentTab, className, hidden }: VoiceCommandBarProps) => {
+export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentTab, className, hidden }: VoiceCommandBarProps) => {
   const { canUse } = useSubscription();
   const {
     state,
@@ -28,6 +29,7 @@ export const VoiceCommandBar = ({ onNavigate, onOpenLog, currentTab, className, 
   } = useVoiceCommands({
     onNavigate,
     onOpenLog,
+    onSetReminder,
   });
 
   // Process audio when blob is ready

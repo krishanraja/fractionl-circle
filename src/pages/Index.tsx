@@ -4,11 +4,14 @@ import { PulseScreen, LogScreen, SettingsScreen, NetworkScreen } from '@/compone
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
+import { ReminderSheet } from '@/components/reminders/ReminderSheet';
 import type { TabId } from '@/components/layout/BottomNav';
 
 const Index = () => {
   const [currentTab, setCurrentTab] = useState<TabId>('customers');
   const [showLogActivity, setShowLogActivity] = useState(false);
+  const [showReminder, setShowReminder] = useState(false);
+  const [reminderPrefill, setReminderPrefill] = useState<{ title?: string; clientId?: string } | undefined>();
   const isMobile = useIsMobile();
 
   const renderScreen = () => {
@@ -32,6 +35,7 @@ const Index = () => {
         currentTab={currentTab}
         onTabChange={setCurrentTab}
         onOpenLog={() => setShowLogActivity(true)}
+        onSetReminder={(prefill) => { setReminderPrefill(prefill); setShowReminder(true); }}
       >
         {renderScreen()}
       </AppShell>
@@ -52,6 +56,13 @@ const Index = () => {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Reminder Sheet */}
+      <ReminderSheet
+        open={showReminder}
+        onOpenChange={setShowReminder}
+        prefill={reminderPrefill}
+      />
     </>
   );
 };

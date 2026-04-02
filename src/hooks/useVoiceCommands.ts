@@ -18,10 +18,11 @@ interface VoiceCommandCallbacks {
   onOpenLog?: () => void;
   onOpenRevenue?: (prefill?: { amount?: string; client_id?: string }) => void;
   onOpenAddContact?: (prefill?: { name?: string }) => void;
+  onSetReminder?: (prefill?: { title?: string; clientId?: string }) => void;
 }
 
 export function useVoiceCommands(callbacks: VoiceCommandCallbacks = {}) {
-  const { onNavigate, onOpenLog, onOpenRevenue, onOpenAddContact } = callbacks;
+  const { onNavigate, onOpenLog, onOpenRevenue, onOpenAddContact, onSetReminder } = callbacks;
   const [state, setState] = useState<CommandState>('idle');
   const [result, setResult] = useState<CommandResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +79,12 @@ export function useVoiceCommands(callbacks: VoiceCommandCallbacks = {}) {
           document.getElementById('pipeline-card')?.scrollIntoView({ behavior: 'smooth' });
         }, 500);
         return;
+      case 'set_reminder': {
+        const reminderTitle = data?.title as string | undefined;
+        const reminderClient = data?.client_name as string | undefined;
+        onSetReminder?.({ title: reminderTitle, clientId: reminderClient });
+        return;
+      }
       case 'show_clients':
         onNavigate?.('customers');
         setTimeout(() => {
@@ -93,7 +100,7 @@ export function useVoiceCommands(callbacks: VoiceCommandCallbacks = {}) {
           setTimeout(() => onNavigate?.(navigate_to), 1500);
         }
     }
-  }, [onNavigate, onOpenLog, onOpenRevenue, onOpenAddContact]);
+  }, [onNavigate, onOpenLog, onOpenRevenue, onOpenAddContact, onSetReminder]);
 
   const processCommand = useCallback(async (blob: Blob) => {
     try {

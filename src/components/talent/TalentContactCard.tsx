@@ -5,6 +5,7 @@ import {
   Linkedin,
   Globe,
   MessageCircle,
+  MessageSquare,
   Copy,
   Star,
   MoreVertical,
@@ -26,6 +27,7 @@ import { cn } from '@/lib/utils';
 import type { TalentContactWithSkills } from '@/hooks/useTalentContacts';
 import {
   sendEmail,
+  sendSMS,
   callPhone,
   openWhatsApp,
   openLinkedIn,
@@ -232,6 +234,17 @@ export function TalentContactCard({
               >
                 <Phone className="h-4 w-4" />
                 <span className="text-xs">Call</span>
+              </Button>
+            )}
+
+            {contact.phone && (
+              <Button
+                variant="outline"
+                className="h-12 w-full gap-2 active:scale-95 transition-transform"
+                onClick={() => sendSMS(contact.phone, contact.name)}
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span className="text-xs">SMS</span>
               </Button>
             )}
 
