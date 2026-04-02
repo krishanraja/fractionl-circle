@@ -60,6 +60,7 @@ For clients, include any companies, projects, or engagements mentioned.`;
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3,
+        store: false,
       }),
     });
 

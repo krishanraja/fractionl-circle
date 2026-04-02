@@ -504,6 +504,7 @@ Context: ${JSON.stringify(context)}`,
             ],
             max_tokens: 800,
             temperature: 0.7,
+            store: false,
           }),
         });
 
@@ -561,6 +562,7 @@ Context: ${JSON.stringify(context)}`,
             ],
             max_tokens: 200,
             temperature: 0.3,
+            store: false,
           }),
         });
 

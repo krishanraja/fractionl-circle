@@ -118,6 +118,7 @@ Deno.serve(async (req) => {
         model: 'gpt-4o-mini',
         response_format: { type: 'json_object' },
         max_tokens: 500,
+        store: false,
         messages: [
           {
             role: 'system',

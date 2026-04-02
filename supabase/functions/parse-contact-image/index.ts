@@ -82,6 +82,7 @@ Be thorough - check all text in the image including small print, URLs, and socia
         response_format: { type: 'json_object' },
         temperature: 0.1,
         max_tokens: 500,
+        store: false,
       }),
     });
 

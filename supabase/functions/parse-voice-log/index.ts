@@ -76,6 +76,7 @@ Be conservative with client matching - only match if you're confident.`;
         ],
         response_format: { type: 'json_object' },
         temperature: 0.3,
+        store: false,
       }),
     });
 
