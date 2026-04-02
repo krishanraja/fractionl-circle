@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ChevronDown, ChevronUp, AlertTriangle, TrendingUp, Users, Zap, RefreshCw } from 'lucide-react';
+import { Compass, ChevronDown, ChevronUp, AlertTriangle, TrendingUp, Users, BarChart3, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,45 +17,40 @@ interface MorningBriefingProps {
 const alertIcons = {
   client_stale: Users,
   revenue: TrendingUp,
-  pipeline: Zap,
+  pipeline: BarChart3,
   momentum: TrendingUp,
 };
 
-const priorityColors = {
-  high: 'text-destructive bg-destructive/10 border-destructive/20',
-  medium: 'text-warning bg-warning/10 border-warning/20',
-  low: 'text-primary bg-primary/10 border-primary/20',
+const priorityAccents = {
+  high: 'border-l-destructive/60',
+  medium: 'border-l-warning/60',
+  low: 'border-l-primary/40',
 };
 
-const moodGradients = {
-  positive: 'from-success/5 via-transparent to-transparent',
-  neutral: 'from-primary/5 via-transparent to-transparent',
-  attention: 'from-warning/5 via-transparent to-transparent',
+const priorityTextColors = {
+  high: 'text-foreground-secondary',
+  medium: 'text-foreground-secondary',
+  low: 'text-foreground-secondary',
 };
 
 export const MorningBriefing = ({ onAction, className }: MorningBriefingProps) => {
   const { briefing, loading, refresh } = useDailyBriefing();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   if (loading) {
     return (
       <Card className={cn("overflow-hidden", className)}>
         <CardContent className="p-5 space-y-3">
-          <div className="flex items-center gap-3">
-            <Skeleton className="w-8 h-8 rounded-lg" />
-            <Skeleton className="h-5 w-48" />
-          </div>
-          <Skeleton className="h-4 w-64" />
-          <div className="space-y-2 pt-2">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-          </div>
+          <Skeleton className="h-5 w-56" />
+          <Skeleton className="h-4 w-72" />
         </CardContent>
       </Card>
     );
   }
 
   if (!briefing) return null;
+
+  const hasDetails = briefing.alerts.length > 0 || briefing.actions.length > 0;
 
   return (
     <motion.div
@@ -64,32 +59,30 @@ export const MorningBriefing = ({ onAction, className }: MorningBriefingProps) =
       animate="animate"
       className={className}
     >
-      <Card className={cn(
-        "overflow-hidden border-border/50",
-        `bg-gradient-to-b ${moodGradients[briefing.mood]}`
-      )}>
-        <CardContent className="p-5">
-          <motion.div variants={staggerItem}>
-            {/* Header */}
-            <div className="flex items-start justify-between mb-1">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-body-bold text-foreground">{briefing.greeting}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => { refresh(); haptics.light(); }}
-                  className="p-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5 text-foreground-muted" />
-                </button>
+      <Card className="overflow-hidden border-border/40">
+        <CardContent className="p-0">
+          {/* Compact header */}
+          <div className="flex items-start gap-3 px-5 pt-5 pb-4">
+            <div className="flex-shrink-0 mt-0.5">
+              <Compass className="w-[18px] h-[18px] text-primary" strokeWidth={1.75} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-title-3 text-foreground leading-snug">{briefing.greeting}</p>
+              <p className="text-caption text-foreground-muted mt-1 leading-relaxed">
+                {briefing.headline}
+              </p>
+            </div>
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <button
+                onClick={() => { refresh(); haptics.light(); }}
+                className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-foreground-muted" />
+              </button>
+              {hasDetails && (
                 <button
                   onClick={() => { setExpanded(!expanded); haptics.tap(); }}
-                  className="p-1.5 rounded-lg hover:bg-secondary/50 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
                 >
                   {expanded ? (
                     <ChevronUp className="w-4 h-4 text-foreground-muted" />
@@ -97,61 +90,62 @@ export const MorningBriefing = ({ onAction, className }: MorningBriefingProps) =
                     <ChevronDown className="w-4 h-4 text-foreground-muted" />
                   )}
                 </button>
-              </div>
+              )}
             </div>
-
-            <p className="text-caption text-foreground-secondary ml-[42px] mb-3">
-              {briefing.headline}
-            </p>
-          </motion.div>
+          </div>
 
           <AnimatePresence>
-            {expanded && (
+            {expanded && hasDetails && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
+                transition={{ duration: 0.2, ease: [0, 0, 0.2, 1] }}
                 className="overflow-hidden"
               >
+                <div className="border-t border-border/30 mx-5" />
+
                 {/* Alerts */}
                 {briefing.alerts.length > 0 && (
-                  <motion.div variants={staggerItem} className="space-y-2 mb-4">
+                  <div className="px-5 pt-4 space-y-2">
                     {briefing.alerts.map((alert, i) => {
                       const Icon = alertIcons[alert.type] || AlertTriangle;
                       return (
-                        <motion.div
+                        <div
                           key={i}
-                          variants={staggerItem}
                           className={cn(
-                            "flex items-center gap-2.5 px-3 py-2.5 rounded-xl border",
-                            priorityColors[alert.priority]
+                            "flex items-center gap-2.5 pl-3 pr-3 py-2.5 rounded-lg border-l-2 bg-secondary/30",
+                            priorityAccents[alert.priority]
                           )}
                         >
-                          <Icon className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-caption flex-1">{alert.message}</span>
-                        </motion.div>
+                          <Icon className="w-3.5 h-3.5 flex-shrink-0 text-foreground-muted" />
+                          <span className={cn("text-caption flex-1", priorityTextColors[alert.priority])}>
+                            {alert.message}
+                          </span>
+                        </div>
                       );
                     })}
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Quick Actions */}
                 {briefing.actions.length > 0 && (
-                  <motion.div variants={staggerItem} className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap px-5 pt-3 pb-5">
                     {briefing.actions.map((action, i) => (
                       <Button
                         key={i}
-                        variant={i === 0 ? 'default' : 'outline'}
+                        variant="outline"
                         size="sm"
-                        className="text-caption rounded-xl"
+                        className="text-caption"
                         onClick={() => { onAction?.(action.type); haptics.light(); }}
                       >
                         {action.label}
                       </Button>
                     ))}
-                  </motion.div>
+                  </div>
                 )}
+
+                {briefing.actions.length === 0 && <div className="pb-4" />}
               </motion.div>
             )}
           </AnimatePresence>

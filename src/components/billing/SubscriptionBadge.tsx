@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sparkles, Crown, Zap } from 'lucide-react';
+import { Layers, Crown, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscription, type SubscriptionTier } from '@/hooks/useSubscription';
 
@@ -10,14 +10,14 @@ interface SubscriptionBadgeProps {
 
 const tierConfig = {
   free: {
-    icon: Zap,
+    icon: CircleDot,
     label: 'Free',
     colors: 'bg-secondary text-foreground-secondary',
   },
   pro: {
-    icon: Sparkles,
+    icon: Layers,
     label: 'Pro',
-    colors: 'bg-primary/15 text-primary',
+    colors: 'bg-primary/10 text-primary',
   },
   executive: {
     icon: Crown,
@@ -73,7 +73,7 @@ export const TrialBanner = ({ onUpgrade }: { onUpgrade?: () => void }) => {
           : "bg-primary/10 text-primary border-b border-primary/20"
       )}
     >
-      <Sparkles className="w-3.5 h-3.5" />
+      <Layers className="w-3.5 h-3.5" />
       <span>
         {urgent
           ? `Your Pro trial ends in ${trialDaysRemaining} day${trialDaysRemaining === 1 ? '' : 's'}!`

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, TrendingUp, Users, Zap, Clock, ArrowRight } from 'lucide-react';
+import { X, TrendingUp, Users, ArrowUpRight, Clock, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 
@@ -22,7 +22,7 @@ const nudgeIcons = {
   client_stale: Users,
   revenue_momentum: TrendingUp,
   pipeline_stuck: Clock,
-  follow_up: Zap,
+  follow_up: ArrowUpRight,
   milestone: TrendingUp,
 };
 
@@ -47,7 +47,7 @@ export const SmartNudgeStrip = ({ nudges, onDismiss, className }: SmartNudgeProp
 };
 
 const SmartNudgeCard = ({ nudge, onDismiss }: { nudge: Nudge; onDismiss: (id: string) => void }) => {
-  const Icon = nudgeIcons[nudge.type] || Zap;
+  const Icon = nudgeIcons[nudge.type] || ArrowUpRight;
 
   return (
     <motion.div
@@ -57,7 +57,7 @@ const SmartNudgeCard = ({ nudge, onDismiss }: { nudge: Nudge; onDismiss: (id: st
       exit={{ opacity: 0, scale: 0.9, x: -20 }}
       transition={{ duration: 0.2, ease: [0, 0, 0.2, 1] }}
       className={cn(
-        "flex-shrink-0 w-[280px] rounded-2xl border p-3.5",
+        "flex-shrink-0 w-[260px] rounded-xl border p-3",
         nudgeColors[nudge.priority]
       )}
     >
