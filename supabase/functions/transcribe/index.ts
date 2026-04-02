@@ -1,37 +1,51 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Require authentication
+    const { userId } = await requireAuth(req);
+
+    // Rate limit: 20 transcriptions per minute per user
+    checkRateLimit(`transcribe:${userId}`, 20, 60_000);
+
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
       console.error('OPENAI_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Transcription service unavailable' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const { audio, format = 'webm' } = await req.json();
-    
+
     if (!audio) {
-      console.error('No audio data provided');
       return new Response(
         JSON.stringify({ error: 'No audio data provided' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Received audio data, format:', format);
+    // Validate audio size (max 25MB base64 ≈ ~19MB raw)
+    enforceMaxLength(audio, 25 * 1024 * 1024, 'audio');
+
+    // Validate format
+    const allowedFormats = ['webm', 'mp3', 'mp4', 'wav', 'ogg', 'm4a'];
+    if (!allowedFormats.includes(format)) {
+      return new Response(
+        JSON.stringify({ error: 'Unsupported audio format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Received audio data, format:', format, 'user:', userId);
 
     // Decode base64 audio
     const binaryString = atob(audio);
@@ -47,8 +61,6 @@ Deno.serve(async (req) => {
     formData.append('model', 'whisper-1');
     formData.append('language', 'en');
 
-    console.log('Sending to OpenAI Whisper API...');
-
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
@@ -58,11 +70,10 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status);
       return new Response(
-        JSON.stringify({ error: `OpenAI API error: ${response.status}` }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Transcription failed' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -74,10 +85,6 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Transcription error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Transcription failed' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, getCorsHeaders(req));
   }
 });

@@ -1,37 +1,36 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Require authentication
+    const { userId } = await requireAuth(req);
+    checkRateLimit(`parse-onboarding:${userId}`, 10, 60_000);
+
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
-      console.error('OPENAI_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Service unavailable' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const { transcript } = await req.json();
-    
+
     if (!transcript) {
-      console.error('No transcript provided');
       return new Response(
         JSON.stringify({ error: 'No transcript provided' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Parsing onboarding transcript:', transcript.substring(0, 100) + '...');
+    enforceMaxLength(transcript, 15_000, 'transcript');
 
     const systemPrompt = `You are an AI assistant helping set up a portfolio management app for a fractional executive or consultant.
 Parse the user's voice introduction to extract key information about their work.
@@ -65,31 +64,24 @@ For clients, include any companies, projects, or engagements mentioned.`;
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status);
       return new Response(
-        JSON.stringify({ error: `OpenAI API error: ${response.status}` }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'AI processing failed' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const result = await response.json();
     const parsedContent = JSON.parse(result.choices[0].message.content);
-    
-    console.log('Parsed onboarding:', JSON.stringify(parsedContent));
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         parsed: parsedContent,
-        raw_transcript: transcript 
+        raw_transcript: transcript
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Parse error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Parsing failed' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, getCorsHeaders(req));
   }
 });

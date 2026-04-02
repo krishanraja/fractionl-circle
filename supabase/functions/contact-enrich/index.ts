@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { parsePhoneNumberFromString } from 'https://esm.sh/libphonenumber-js@1.11.18';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
 
 interface EnrichmentResult {
   name?: string;
@@ -44,27 +40,38 @@ interface LinkedInSearchResult {
  *   - TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN - phone lookup
  */
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Require authentication — prevents abuse of external API credits
+    const { userId } = await requireAuth(req);
+
+    // Rate limit: 30 enrichments per minute per user
+    checkRateLimit(`enrich:${userId}`, 30, 60_000);
+
     const body = await req.json();
 
     // Mode 1: LinkedIn search by name
     if (body.linkedin_search && body.name) {
+      enforceMaxLength(body.name, 200, 'name');
       const results = await searchLinkedInByName(body.name.trim());
-      return jsonResponse({ results });
+      return jsonResponse({ results }, corsHeaders);
     }
 
     // Mode 2: Phone enrichment via Twilio
     if (body.phone) {
+      enforceMaxLength(body.phone, 20, 'phone');
       const result = await enrichFromPhone(body.phone.trim());
-      return jsonResponse({ enriched: result, provider: result ? 'twilio' : null });
+      return jsonResponse({ enriched: result, provider: result ? 'twilio' : null }, corsHeaders);
     }
 
     // Mode 3: Email enrichment
     if (body.email && body.email.includes('@')) {
+      enforceMaxLength(body.email, 254, 'email');
       const trimmedEmail = body.email.trim().toLowerCase();
 
       // Try Clearbit first
@@ -72,7 +79,7 @@ Deno.serve(async (req) => {
       if (clearbitKey) {
         const result = await tryClearbit(trimmedEmail, clearbitKey);
         if (result) {
-          return jsonResponse({ enriched: result, provider: 'clearbit' });
+          return jsonResponse({ enriched: result, provider: 'clearbit' }, corsHeaders);
         }
       }
 
@@ -81,22 +88,18 @@ Deno.serve(async (req) => {
       if (apolloKey) {
         const result = await tryApollo(trimmedEmail, apolloKey);
         if (result) {
-          return jsonResponse({ enriched: result, provider: 'apollo' });
+          return jsonResponse({ enriched: result, provider: 'apollo' }, corsHeaders);
         }
       }
     }
 
-    return jsonResponse({ enriched: null, provider: null });
+    return jsonResponse({ enriched: null, provider: null }, corsHeaders);
   } catch (error) {
-    console.error('Contact enrichment error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Enrichment failed', enriched: null }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, corsHeaders);
   }
 });
 
-function jsonResponse(data: Record<string, unknown>) {
+function jsonResponse(data: Record<string, unknown>, corsHeaders: Record<string, string>) {
   return new Response(
     JSON.stringify(data),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

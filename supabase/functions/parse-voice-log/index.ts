@@ -1,40 +1,39 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Require authentication
+    const { userId } = await requireAuth(req);
+    checkRateLimit(`parse-voice-log:${userId}`, 20, 60_000);
+
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
-      console.error('OPENAI_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Service unavailable' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const { transcript, clients = [], context = {} } = await req.json();
-    
+
     if (!transcript) {
-      console.error('No transcript provided');
       return new Response(
         JSON.stringify({ error: 'No transcript provided' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Parsing transcript:', transcript.substring(0, 100) + '...');
+    enforceMaxLength(transcript, 10_000, 'transcript');
 
     // Build client matching context with more detail
-    const clientContext = clients.length > 0 
+    const clientContext = clients.length > 0
       ? clients.map((c: any) => `"${c.name}"${c.engagement_type ? ` (${c.engagement_type})` : ''}`).join(', ')
       : 'None specified yet';
 
@@ -81,31 +80,24 @@ Be conservative with client matching - only match if you're confident.`;
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status);
       return new Response(
-        JSON.stringify({ error: `OpenAI API error: ${response.status}` }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'AI processing failed' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const result = await response.json();
     const parsedContent = JSON.parse(result.choices[0].message.content);
-    
-    console.log('Parsed activity:', JSON.stringify(parsedContent));
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         parsed: parsedContent,
-        raw_transcript: transcript 
+        raw_transcript: transcript
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Parse error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Parsing failed' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, getCorsHeaders(req));
   }
 });

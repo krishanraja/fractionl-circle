@@ -1,9 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
 
 interface LinkedInResult {
   name: string;
@@ -13,11 +9,17 @@ interface LinkedInResult {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Require authentication
+    const { userId } = await requireAuth(req);
+    checkRateLimit(`linkedin-search:${userId}`, 20, 60_000);
+
     const { query } = await req.json();
 
     if (!query || query.trim().length < 2) {
@@ -26,6 +28,8 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    enforceMaxLength(query, 200, 'query');
 
     const searchQuery = `${query.trim()} site:linkedin.com/in/`;
 
@@ -80,10 +84,6 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('LinkedIn search error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Search failed', results: [] }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return safeErrorResponse(error, getCorsHeaders(req));
   }
 });
