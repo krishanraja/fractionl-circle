@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import {
-  User, Briefcase, Target, Sparkles, ArrowRight, ArrowLeft,
+  User, Briefcase, Target, CheckCircle, ArrowRight, ArrowLeft,
   Check, Building2, DollarSign, Users, Lightbulb, Mic, Crown, Zap, Brain
 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -111,7 +111,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
         {/* Steps Indicator */}
         <div className="flex justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-8">
-          {[User, Briefcase, DollarSign, Target, Sparkles].map((Icon, index) => (
+          {[User, Briefcase, DollarSign, Target, CheckCircle].map((Icon, index) => (
             <div
               key={index}
               className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
@@ -324,7 +324,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                 <>
                   <CardHeader className="text-center pb-2 sm:pb-4">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 sm:mb-4">
-                      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                      <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                     </div>
                     <CardTitle className="text-xl sm:text-2xl">You're All Set!</CardTitle>
                     <CardDescription className="text-sm sm:text-base">
@@ -389,7 +389,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                   ) : currentStep === totalSteps - 1 ? (
                     <>
                       Get Started
-                      <Sparkles className="w-4 h-4" />
+                      <CheckCircle className="w-4 h-4" />
                     </>
                   ) : (
                     <>

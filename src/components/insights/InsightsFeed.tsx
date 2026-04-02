@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, RefreshCw, Filter, SlidersHorizontal } from 'lucide-react';
+import { Lightbulb, RefreshCw, Filter, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { InsightCard } from './InsightCard';
@@ -79,7 +79,7 @@ export function InsightsFeed() {
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
+                <Lightbulb className="h-4 w-4" />
                 Generate Insights
               </>
             )}
@@ -146,7 +146,7 @@ export function InsightsFeed() {
             className="flex flex-col items-center justify-center py-16 text-center"
           >
             <div className="p-4 rounded-full bg-muted mb-4">
-              <Sparkles className="h-12 w-12 text-muted-foreground" />
+              <Lightbulb className="h-12 w-12 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
               {selectedCategory === 'all' ? "No insights yet" : `No ${selectedCategory.replace('_', ' ')} insights`}
@@ -157,7 +157,7 @@ export function InsightsFeed() {
                 : "No insights in this category. Try viewing all insights or generate new ones."}
             </p>
             <Button onClick={generateInsights} disabled={generating}>
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Lightbulb className="h-4 w-4 mr-2" />
               Generate Insights
             </Button>
           </motion.div>

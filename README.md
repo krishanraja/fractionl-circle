@@ -1,73 +1,51 @@
-# Welcome to your Lovable project
+# Circle by Fractionl
 
-## Project info
+**Your network is your net worth. Circle makes it work.**
 
-**URL**: https://lovable.dev/projects/b607d8f8-1a6a-4f79-b815-2a9dc687f2f3
+Circle is a relationship intelligence platform built for fractional executives and portfolio professionals. Capture leads on mobile between meetings. Manage your pipeline on desktop Sunday nights. Let AI surface the connections you'd otherwise miss.
 
-## How can I edit this code?
+## The Problem
 
-There are several ways of editing your application.
+Fractional CMOs, CFOs, and CTOs juggle 3-7 clients, a network of hundreds of professionals, and a pipeline that lives in their heads. Their "CRM" is a neglected spreadsheet. Their follow-up system is memory. Their revenue forecast is optimism.
 
-**Use Lovable**
+## The Solution
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b607d8f8-1a6a-4f79-b815-2a9dc687f2f3) and start prompting.
+Circle gives portfolio executives the infrastructure their business deserves:
 
-Changes made via Lovable will be committed automatically to this repo.
+- **30-second mobile logging** -- Voice-record a meeting recap, and AI extracts the client, duration, and next steps
+- **Talent black book** -- Every professional contact, searchable by skill, availability, and trust rating
+- **Pipeline clarity** -- See every opportunity by stage, probability, and weighted value
+- **Revenue accountability** -- Track actuals vs. targets across all engagements
+- **AI that connects dots** -- Weekly summaries, strategic chat, and proactive nudges
 
-**Use your preferred IDE**
+## How It Works
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+**On mobile (between meetings):**
+Tap. Speak. Done. Circle captures your activity, parses it with AI, and keeps your network growing.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**On desktop (weekly planning):**
+Review your pipeline, check revenue vs. goals, ask AI for strategic advice, and plan your week with full context.
 
-Follow these steps:
+## Tech Stack
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui + Supabase + OpenAI
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Frontend:** Mobile-first PWA with responsive desktop views
+- **Backend:** Supabase (PostgreSQL + Auth + Edge Functions + Realtime)
+- **AI:** OpenAI GPT for strategy, Whisper for voice transcription
+- **Deployment:** Lovable Cloud with auto-deploy
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Quick Start
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Documentation
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+See [DOCS.md](./DOCS.md) for comprehensive product documentation, architecture, database schema, and roadmap.
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b607d8f8-1a6a-4f79-b815-2a9dc687f2f3) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Built by [Fractionl](https://fractionl.com) for the portfolio economy.

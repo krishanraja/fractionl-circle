@@ -1,4 +1,4 @@
-import { Home, Target, BarChart3, Sparkles, Settings } from 'lucide-react';
+import { Home, Target, BarChart3, MessageSquare, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -13,7 +13,7 @@ const navItems = [
   { id: 'pipeline' as const, label: 'Home', icon: Home },
   { id: 'planning' as const, label: 'Goals', icon: Target },
   { id: 'customer-analytics' as const, label: 'Analytics', icon: BarChart3 },
-  { id: 'ai-strategy' as const, label: 'AI', icon: Sparkles },
+  { id: 'ai-strategy' as const, label: 'AI', icon: MessageSquare },
   { id: 'sheets' as const, label: 'Settings', icon: Settings },
 ];
 

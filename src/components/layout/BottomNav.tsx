@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { Users, BookUser, Settings } from 'lucide-react';
+import { Home, PenLine, Clock, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 
@@ -10,9 +9,11 @@ interface BottomNavProps {
   onTabChange: (tab: TabId) => void;
 }
 
-const navItems: { id: TabId; label: string; icon: typeof Users }[] = [
-  { id: 'customers', label: 'Customers', icon: Users },
-  { id: 'contacts', label: 'Contacts', icon: BookUser },
+const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
+  { id: 'pulse', label: 'Pulse', icon: Home },
+  { id: 'network', label: 'Network', icon: Users },
+  { id: 'log', label: 'Log', icon: PenLine },
+  { id: 'history', label: 'History', icon: Clock },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -27,7 +28,6 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
         "bg-background/95 backdrop-blur-xl",
-        "border-t border-border",
         "safe-bottom"
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
@@ -43,27 +43,27 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
               onClick={() => handleTabChange(item.id)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1",
-                "relative transition-all duration-200",
-                "flex-1 h-full py-2",
+                "relative flex-1 h-full py-2",
+                "transition-colors duration-200",
               )}
             >
+              {/* Active top indicator line */}
               {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-primary/10 rounded-xl"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                <span
+                  className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-primary rounded-full"
                 />
               )}
               <Icon
                 className={cn(
-                  "w-6 h-6 relative z-10 transition-colors",
-                  isActive ? "text-primary" : "text-foreground-secondary"
+                  "w-5 h-5 transition-colors",
+                  isActive ? "text-primary" : "text-foreground-muted"
                 )}
+                strokeWidth={isActive ? 2.5 : 1.75}
               />
               <span
                 className={cn(
-                  "text-[11px] relative z-10 transition-colors font-medium",
-                  isActive ? "text-primary" : "text-foreground-secondary"
+                  "text-[11px] font-medium transition-colors",
+                  isActive ? "text-primary" : "text-foreground-muted"
                 )}
               >
                 {item.label}

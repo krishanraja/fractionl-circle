@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -150,7 +150,7 @@ export const QuickAIInsight = ({ currentMetrics }: QuickAIInsightProps) => {
     <Card className="p-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium text-primary">
-          <Sparkles className="h-4 w-4" />
+          <Zap className="h-4 w-4" />
           Quick AI Guidance
         </div>
         
@@ -180,7 +180,7 @@ export const QuickAIInsight = ({ currentMetrics }: QuickAIInsightProps) => {
         {response && (
           <div className="p-3 bg-card rounded-lg border text-sm">
             <div className="flex items-center gap-2 mb-2 text-primary font-medium">
-              <Sparkles className="h-4 w-4" />
+              <Zap className="h-4 w-4" />
               AI Recommendation
             </div>
             <p className="text-muted-foreground leading-relaxed">{response}</p>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, Briefcase, ChevronRight, AlertCircle, Plus, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, Briefcase, ChevronRight, Lightbulb, AlertCircle, Plus, DollarSign, ArrowRight, UserCheck, Clock, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -346,6 +346,93 @@ export const PulseScreen = ({ className, onNavigate, onOpenLog }: PulseScreenPro
             </Card>
           )}
         </motion.div>
+
+        {/* For You — Smart Nudges */}
+        {!isLoading && (() => {
+          const nudges: Array<{ icon: typeof Clock; color: string; text: string }> = [];
+
+          // Nudge: clients with no recent activity (>7 days or null)
+          const now = Date.now();
+          const staleClients = clients.filter((c) => {
+            if (!c.last_activity_date) return true;
+            const daysSince = Math.floor((now - new Date(c.last_activity_date).getTime()) / 86400000);
+            return daysSince > 7;
+          });
+          if (staleClients.length > 0) {
+            const client = staleClients[0];
+            const days = client.last_activity_date
+              ? Math.floor((now - new Date(client.last_activity_date).getTime()) / 86400000)
+              : null;
+            nudges.push({
+              icon: UserCheck,
+              color: '#F59E0B',
+              text: days
+                ? `Reach out to ${client.name} — it's been ${days} days since your last interaction.`
+                : `Reach out to ${client.name} — no recent activity on file.`,
+            });
+          }
+
+          // Nudge: active pipeline deals
+          if (pipeline.active > 0) {
+            nudges.push({
+              icon: Target,
+              color: '#8B5CF6',
+              text: `${pipeline.active} deal${pipeline.active === 1 ? '' : 's'} in your pipeline worth ${formatCurrency(pipeline.totalValue)}. Any updates to log?`,
+            });
+          }
+
+          // Nudge: weekly insight highlight
+          if (weeklyInsight && weeklyInsight.highlights.length > 0) {
+            nudges.push({
+              icon: Lightbulb,
+              color: '#10B981',
+              text: `Your top win this week: ${weeklyInsight.highlights[0]}`,
+            });
+          }
+
+          // Nudge: progress-based encouragement (only if no highlight nudge filled the slot)
+          if (nudges.length < 3 && revenue.target > 0) {
+            if (progressPercent >= 75) {
+              nudges.push({
+                icon: Target,
+                color: '#10B981',
+                text: `You're ${progressPercent.toFixed(0)}% to your revenue goal — the finish line is in sight.`,
+              });
+            } else if (progressPercent >= 40) {
+              nudges.push({
+                icon: Clock,
+                color: '#3B82F6',
+                text: `${progressPercent.toFixed(0)}% of your monthly goal reached. Solid momentum — keep it going.`,
+              });
+            }
+          }
+
+          const visibleNudges = nudges.slice(0, 3);
+
+          if (visibleNudges.length === 0) return null;
+
+          return (
+            <motion.div variants={staggerItem} className="space-y-2">
+              <h2 className="text-title-3 text-foreground px-1">For You</h2>
+              <div className="space-y-2">
+                {visibleNudges.map((nudge, i) => {
+                  const Icon = nudge.icon;
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-background-elevated border-l-2"
+                      style={{ borderColor: nudge.color }}
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" style={{ color: nudge.color }} />
+                      <p className="text-caption text-foreground-secondary flex-1">{nudge.text}</p>
+                      <ArrowRight className="w-3.5 h-3.5 text-foreground-muted flex-shrink-0" />
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* Quick Stats */}
         <motion.div variants={staggerItem} className="grid grid-cols-2 gap-3">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InsightCard } from './InsightCard';
 import { useUserInsights } from '@/hooks/useUserInsights';

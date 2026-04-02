@@ -32,7 +32,7 @@ const AVAILABILITY_COLORS: Record<string, string> = {
 };
 
 export const NetworkScreen = () => {
-  const { contacts, isLoading, deleteContact } = useTalentContacts();
+  const { contacts, loading: isLoading, deleteContact } = useTalentContacts();
   const { skills } = useSkills();
 
   const [search, setSearch] = useState('');

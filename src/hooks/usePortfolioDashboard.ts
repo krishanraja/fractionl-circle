@@ -100,7 +100,7 @@ export function usePortfolioDashboard(): PortfolioDashboard {
           .from('opportunities')
           .select('id, estimated_value, stage')
           .eq('user_id', user.id)
-          .not('stage', 'eq', 'closed_lost'),
+          .in('stage', ['lead', 'qualified', 'proposal', 'negotiation']),
 
         // Activity counts per client (last 30 days)
         supabase

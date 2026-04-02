@@ -32,7 +32,6 @@ const Index = () => {
         currentTab={currentTab}
         onTabChange={setCurrentTab}
         onOpenLog={() => setShowLogActivity(true)}
-        title={tabTitle}
       >
         {renderScreen()}
       </AppShell>

@@ -1,206 +1,251 @@
-# Portfolio Pro - Fractional Worker Operations Hub
+# Circle by Fractionl - The Relationship Intelligence Platform for Portfolio Executives
 
-> A comprehensive management platform designed for portfolio workers, fractional executives, and independent consultants to normalize their operations, track goals, and optimize revenue streams.
-
----
-
-## 📋 Table of Contents
-
-1. [Executive Summary](#executive-summary)
-2. [Purpose & Vision](#purpose--vision)
-3. [Ideal Customer Profile (ICP)](#ideal-customer-profile-icp)
-4. [Value Proposition](#value-proposition)
-5. [Features](#features)
-6. [Architecture](#architecture)
-7. [Design System](#design-system)
-8. [Deployment](#deployment)
-9. [Roadmap & Future Vision](#roadmap--future-vision)
-10. [Common Issues](#common-issues)
-11. [Decisions Log](#decisions-log)
+> Circle is the relationship-powered operating system that helps fractional executives, consultants, and portfolio professionals turn their network into revenue. Log leads on mobile. Manage your pipeline on desktop. Let AI connect the dots.
 
 ---
 
-## Executive Summary
+## Table of Contents
 
-**Portfolio Pro** is a holistic business intelligence and operations management platform specifically designed for the growing population of portfolio workers -professionals who balance multiple clients, revenue streams, and service offerings simultaneously.
-
-### The Problem
-
-Portfolio workers (fractional executives, consultants, coaches, speakers, and multi-service professionals) face unique operational challenges:
-
-- **Fragmented Tracking**: Revenue, goals, and client work spread across multiple tools
-- **Lack of Visibility**: No unified view of business health across all revenue streams
-- **Manual Reconciliation**: Hours spent consolidating data from various sources
-- **Goal Misalignment**: Difficulty tracking progress against multi-faceted business objectives
-- **Pipeline Chaos**: Managing opportunities across different service types without dropping balls
-
-### The Solution
-
-A unified command center that brings together:
-- Revenue tracking across multiple service types (workshops, advisory, lectures, PR)
-- Goal setting and daily progress monitoring
-- Opportunity pipeline management
-- AI-powered strategic insights
-- Spreadsheet integration for data flexibility
-- Customer tool analytics for lead generation tracking
+1. [Why Circle Exists](#why-circle-exists)
+2. [Who Circle Is For](#who-circle-is-for)
+3. [What Circle Delivers](#what-circle-delivers)
+4. [Product Overview](#product-overview)
+5. [Mobile Experience](#mobile-experience)
+6. [Desktop Experience](#desktop-experience)
+7. [AI Intelligence Layer](#ai-intelligence-layer)
+8. [Architecture](#architecture)
+9. [Design System](#design-system)
+10. [Roadmap](#roadmap)
+11. [Technical Reference](#technical-reference)
 
 ---
 
-## Purpose & Vision
+## Why Circle Exists
 
-### Current Purpose
+### The Portfolio Economy Is Broken Without Infrastructure
 
-To provide portfolio workers with a **single source of truth** for their business operations, eliminating the need to context-switch between multiple tools and manually reconcile data.
+The fastest-growing segment of the professional workforce isn't employees or freelancers -- it's **portfolio executives**: fractional CMOs, CFOs, CTOs, and senior consultants who build sustainable six- and seven-figure businesses by serving multiple clients simultaneously.
 
-### Long-Term Vision
+These professionals are exceptional at their craft. But their **operational infrastructure** is a mess:
 
-**"The operating system for the portfolio economy."**
+- **Relationships live in their heads.** They meet brilliant people at conferences, on LinkedIn, through client introductions -- and forget to follow up because there's no system.
+- **Revenue is invisible until it arrives.** With 3-7 active engagements across advisory, workshops, and project work, they can't see what's coming until it hits the bank account.
+- **Pipeline management means a spreadsheet they haven't updated in weeks.** Opportunities fall through the cracks because context-switching between clients leaves no bandwidth for BD discipline.
+- **Their network is their moat, but it's unmanaged.** They know someone who could help with every project -- if only they could remember who, and when they last spoke.
 
-As the gig economy evolves into the "portfolio economy" -where highly skilled professionals build sustainable businesses from multiple income streams -Portfolio Pro aims to become the definitive platform for:
+### The Insight
 
-1. **Operational Excellence**: Automated workflows, smart scheduling, and resource optimization
-2. **Financial Intelligence**: Predictive analytics, cash flow forecasting, and pricing optimization
-3. **Client Relationship Management**: Integrated CRM tailored for multi-engagement professionals
-4. **Community & Marketplace**: Network effects connecting portfolio workers with opportunities
-5. **Professional Development**: Skills tracking, certification management, and learning paths
+Portfolio executives don't need another CRM. They don't need another project management tool. They need a **relationship intelligence layer** that sits between their network and their revenue -- capturing interactions on the go, surfacing connections they'd otherwise miss, and holding them accountable to the business development habits that drive growth.
 
----
-
-## Ideal Customer Profile (ICP)
-
-### Primary Personas
-
-#### 1. The Fractional Executive
-- **Role**: Fractional CMO, CFO, CTO, or COO
-- **Challenge**: Managing 2-5 concurrent client engagements with varying scopes
-- **Need**: Clear visibility into time allocation, deliverables, and revenue by client
-- **Value Driver**: Pipeline management and revenue forecasting
-
-#### 2. The Portfolio Consultant
-- **Role**: Strategy consultant, business advisor, or specialized expert
-- **Challenge**: Balancing project work, advisory retainers, and speaking opportunities
-- **Need**: Unified tracking of diverse engagement types
-- **Value Driver**: Goal tracking and progress visualization
-
-#### 3. The Thought Leader
-- **Role**: Author, speaker, workshop facilitator, or content creator
-- **Challenge**: Multiple revenue streams from different IP monetization channels
-- **Need**: Analytics on which content/services drive the most value
-- **Value Driver**: Customer tool analytics and conversion tracking
-
-#### 4. The Multi-Service Professional
-- **Role**: Coach + consultant + trainer combinations
-- **Challenge**: Different pricing models, delivery methods, and client expectations
-- **Need**: Normalized view across service types
-- **Value Driver**: Revenue tracking and daily progress monitoring
-
-### Demographic Characteristics
-
-- **Experience Level**: 10+ years in their field
-- **Revenue Range**: $100K - $1M+ annually
-- **Tech Savviness**: Comfortable with digital tools but value simplicity
-- **Work Style**: Autonomous, results-oriented, time-conscious
-- **Pain Point Intensity**: Currently using 5+ tools to run their business
+**Circle is that layer.**
 
 ---
 
-## Value Proposition
+## Who Circle Is For
 
-### Core Value Statement
+### Primary: The Fractional Executive (ICP)
 
-> "Stop juggling spreadsheets. Start building your portfolio business with clarity and confidence."
+| Attribute | Detail |
+|-----------|--------|
+| **Title** | Fractional CMO, CFO, CTO, COO, CHRO |
+| **Experience** | 15+ years, typically ex-VP/C-suite from high-growth companies |
+| **Revenue** | $150K - $1.5M annually across 2-7 concurrent engagements |
+| **Work style** | Mobile-first during the day (between client meetings), desktop for weekly planning |
+| **Current tools** | LinkedIn, Apple Notes, a neglected Google Sheet, maybe HubSpot they hate |
+| **Core pain** | "I know I should follow up with people, but I don't have a system that works on the move" |
+| **Buying trigger** | Missed a referral opportunity, lost track of a warm lead, or had a slow quarter and realized their pipeline was empty |
 
-### Key Benefits
+### Secondary Personas
 
-| Benefit | Description | Metric |
-|---------|-------------|--------|
-| **Unified Visibility** | See all revenue streams, goals, and opportunities in one dashboard | 80% reduction in tool switching |
-| **Proactive Insights** | AI-powered analysis identifies trends and risks before they impact you | 3x faster decision making |
-| **Goal Achievement** | Daily progress tracking keeps you accountable and on-track | 40% improvement in goal completion |
-| **Pipeline Clarity** | Never lose an opportunity with structured stage management | 25% increase in conversion rate |
-| **Time Savings** | Automated data sync eliminates manual reconciliation | 5+ hours saved per week |
+**The Portfolio Consultant** -- Strategy consultants and specialized advisors juggling retainers, project work, and speaking gigs. Needs unified revenue visibility and pipeline tracking across service types.
 
-### Competitive Differentiation
+**The Thought Leader** -- Authors, keynote speakers, and workshop facilitators monetizing IP through multiple channels. Needs to connect audience engagement to revenue outcomes.
 
-| Aspect | Generic Tools | Portfolio Pro |
-|--------|---------------|---------------|
-| Revenue Tracking | Single-stream focus | Multi-stream native |
-| Goal Setting | Annual/quarterly only | Daily progress granularity |
-| Pipeline | Sales-focused | Service-type aware |
-| Analytics | Backward-looking | AI-powered forward insights |
-| Integration | Broad but shallow | Deep spreadsheet sync |
+**The Emerging Fractional** -- Senior professionals transitioning from full-time to fractional. Needs structure, accountability, and confidence in their first year of independent work.
+
+### What They All Share
+
+- Their **network is their business**
+- They're **time-starved** and need tools that work in 30-second bursts
+- They value **relationships over transactions**
+- They need **accountability** more than automation
+- They'll pay for a tool that makes them **feel organized and in control**
 
 ---
 
-## Features
+## What Circle Delivers
 
-### Current Features (v1.0)
+### Outcomes, Not Features
 
-#### 🎯 Goal Management
-- **Monthly Goals Setting**: Define targets for revenue, costs, and business development activities
-- **Activity Targets**: Set monthly targets for workshops, advisory sessions, lectures, and PR activities
-- **Flexible Configuration**: Adjust targets based on seasonal variations or strategic shifts
+| Outcome | How Circle Delivers It |
+|---------|----------------------|
+| **Never lose a lead again** | Mobile-first logging with voice input -- capture a contact or opportunity in under 10 seconds between meetings |
+| **See your revenue before it arrives** | Pipeline view with weighted probability shows your forecast, not just your actuals |
+| **Stay accountable to BD habits** | Daily pulse dashboard tracks streaks, surfaces what needs attention, celebrates wins |
+| **Activate your dormant network** | AI identifies contacts you haven't engaged recently who match current opportunities |
+| **Find the right person for any project** | Talent network with skill-based search, trust ratings, and referral tracking |
+| **Know your numbers at a glance** | Revenue vs. target, active clients, pipeline value -- all on one mobile screen |
+| **Turn weekly reviews into strategy sessions** | AI-generated weekly summaries highlight patterns and suggest next moves |
 
-#### 📊 Daily Progress Tracking
-- **Activity Logging**: Record daily progress against each goal category
-- **Notes & Context**: Add qualitative notes to quantitative tracking
-- **Visual Progress**: See current vs. target with clear status indicators
+### The 30-Second Loop (Mobile)
 
-#### 💰 Revenue Tracking
-- **Multi-Source Revenue**: Log revenue by source (workshop, advisory, lecture, other)
-- **Monthly Aggregation**: Automatic rollup of daily entries into monthly views
-- **Forecast vs. Actual**: Compare actual revenue against monthly forecasts
+1. **Between meetings:** Open Circle, tap Log, voice-record "Just met Sarah Chen, she's a fractional CFO, great for the Acme project"
+2. **AI parses it:** Client, contact type, project link -- all extracted automatically
+3. **Your network grows:** Sarah appears in your talent network with skills and context
+4. **Circle nudges you:** "You haven't followed up with Sarah in 7 days. She'd be perfect for the TechCorp engagement."
 
-#### 📈 Opportunity Pipeline
-- **Stage Management**: Track opportunities through lead → qualified → proposal → negotiation → won/lost
-- **Probability Weighting**: Weighted pipeline value for accurate forecasting
-- **Service Type Categorization**: Opportunities tagged by type for balanced pipeline view
+### The Sunday Night Review (Desktop)
 
-#### 🤖 AI Strategic Insights
-- **Conversation Interface**: Natural language interaction for strategic questions
-- **Context-Aware Analysis**: AI considers your goals, progress, and pipeline data
-- **Actionable Recommendations**: Specific suggestions based on your business context
+1. **Open Pipeline:** See all opportunities by stage, weighted value, and close dates
+2. **Check Pulse:** Revenue vs. target, weekly AI summary, client activity heatmap
+3. **Plan the week:** AI suggests who to reach out to, which deals need attention, where revenue is at risk
+4. **Update goals:** Adjust monthly targets based on what you've learned
 
-#### 📋 Metrics Overview
-- **Current State Tracking**: Monitor site visits and social followers
-- **Business Development KPIs**: Visual progress against activity targets
-- **Trend Visualization**: Historical comparison for pattern recognition
+---
 
-#### 🔗 Google Sheets Integration
-- **Bidirectional Sync**: Connect existing spreadsheets for data import/export
-- **Flexible Mapping**: Configure which data flows where
-- **Real-Time Updates**: Changes sync automatically based on configured frequency
+## Product Overview
 
-#### 👥 Customer Tool Analytics
-- **Session Tracking**: Monitor usage of customer-facing tools
-- **Lead Scoring**: Automatic scoring based on engagement signals
-- **Conversion Funnel**: Track journey from tool user to customer
+### Mobile: Your Pocket Relationship Logger
 
-### Planned Features (Roadmap)
+Circle mobile is designed for one thing: **capturing information fast when you're on the move.**
 
-#### Phase 2: Financial Intelligence
-- [ ] Expense tracking and categorization
-- [ ] Cash flow forecasting
-- [ ] Invoice management integration
-- [ ] Tax optimization insights
+Five tabs, zero friction:
 
-#### Phase 3: Client Management
-- [ ] Client profiles with engagement history
-- [ ] Contract and scope management
-- [ ] Deliverable tracking
-- [ ] Client health scoring
+| Tab | Purpose | Key Actions |
+|-----|---------|-------------|
+| **Pulse** | Your daily dashboard | See revenue progress, active clients, pipeline snapshot, weekly AI insight |
+| **Log** | Voice and text activity logging | Record meetings, calls, and interactions with AI-powered parsing |
+| **History** | Activity timeline | Review past logs grouped by date, filter by type |
+| **Network** | Your talent black book | Search contacts by skill, availability, trust rating; quick-add new contacts |
+| **Settings** | Preferences and account | Theme, notifications, profile management |
 
-#### Phase 4: Time & Resource Management
-- [ ] Time tracking with client allocation
-- [ ] Capacity planning
-- [ ] Resource utilization analytics
-- [ ] Smart scheduling suggestions
+### Desktop: Your Strategic Command Center
 
-#### Phase 5: Community & Marketplace
-- [ ] Portfolio worker network
-- [ ] Opportunity sharing
-- [ ] Subcontracting marketplace
-- [ ] Peer benchmarking (anonymized)
+Circle desktop expands into a full relationship CRM and planning tool:
+
+| View | Purpose | Key Actions |
+|------|---------|-------------|
+| **Pipeline** | Opportunity management | Kanban board with stages: Lead > Qualified > Proposal > Negotiation > Won/Lost |
+| **Planning** | Monthly goal setting | Revenue forecasts, cost budgets, BD activity targets, financial overview |
+| **AI Strategy** | Strategic advisor chat | Context-aware AI that knows your goals, pipeline, and business context |
+| **Analytics** | Performance insights | Customer tool engagement, lead scoring, conversion funnels |
+| **Settings** | Integration management | Google Sheets sync, data configuration |
+
+---
+
+## Mobile Experience
+
+### Pulse Screen
+The heartbeat of your business. At a glance:
+- **Revenue progress ring** -- actual vs. monthly target with percentage
+- **Active client count** with engagement types
+- **Pipeline snapshot** -- total opportunities, weighted value
+- **Weekly AI insight** -- auto-generated summary of your week with highlights and suggestions
+- **Quick action buttons** -- Add Client, Log Revenue
+
+### Log Screen
+Voice-first activity capture:
+- Tap the microphone, speak naturally: "Had a 90-minute strategy session with Acme Corp, covered Q3 roadmap, they're interested in expanding the engagement"
+- AI extracts: client (Acme Corp), type (meeting), duration (90 min), context (expansion opportunity)
+- Review and confirm, or edit inline
+- Falls back to text input for quiet moments
+
+### History Screen
+Chronological activity feed:
+- Grouped by date with clear visual hierarchy
+- Icons per activity type (meeting, call, email, deep work, networking)
+- Duration, revenue, and client attribution per entry
+- Filter and search capabilities
+
+### Network Screen
+Your professional black book:
+- **Search** by name, skill, company, city
+- **Filter** by availability (available/busy/unavailable), category chips
+- **Sort** by engagement warmth (last interaction date)
+- **Contact cards** with specialty, trust rating, skills badges, rate range
+- **Quick-add FAB** for capturing new contacts in seconds
+- **Referral tracking** -- who you've referred where, and the outcome
+
+### Onboarding
+Guided 4-step setup:
+1. Name + business type (fractional executive, consultant, thought leader, multi-service)
+2. Industry + years of experience
+3. Revenue range + target market
+4. Service types (workshops, advisory, lectures, coaching, consulting)
+
+---
+
+## Desktop Experience
+
+### Pipeline Management
+Full Kanban pipeline with:
+- Drag-and-drop stage progression
+- Probability-weighted forecasting
+- Service type categorization (workshop, advisory, lecture, PR)
+- Contact and company attribution
+- Estimated values and close dates
+- Notes and context per opportunity
+
+### Planning Hub
+Monthly business planning:
+- Revenue forecast vs. actual tracking
+- Cost budget management
+- BD activity targets (workshops, advisory, lectures, PR)
+- Daily progress logging against targets
+- Financial overview with trend visualization
+
+### AI Strategy Hub
+Your strategic thinking partner:
+- Chat interface with full business context
+- Knows your goals, pipeline, revenue, and client data
+- Conversation sessions with history
+- Strategic and tactical question types
+- Actionable recommendations, not generic advice
+
+### Analytics Dashboard
+Performance intelligence:
+- Customer tool session tracking (leadership assessments, AI agent analysis, etc.)
+- Lead scoring with temperature indicators (hot/warm/cold)
+- Conversion funnel visualization
+- Tool performance metrics and ROI attribution
+
+---
+
+## AI Intelligence Layer
+
+### Current Capabilities
+
+**Voice Parsing (Log Screen)**
+- Whisper-powered transcription via Supabase Edge Functions
+- Natural language extraction of client, activity type, duration, revenue
+- Confidence scoring with user confirmation
+
+**Weekly Summaries (Pulse Screen)**
+- Auto-generated narrative of weekly activity
+- Highlights extraction from activity logs
+- Total hours and revenue aggregation
+- Pattern recognition and suggestions
+
+**Strategic Chat (AI Strategy Hub)**
+- OpenAI-powered conversational interface
+- Business context awareness (goals, pipeline, revenue, clients)
+- Conversation session management with history
+- Strategic and tactical question handling
+
+**Behavioral Insights (Background)**
+- User behavior tracking and pattern analysis
+- Feature usage analytics
+- Goal progress assessment
+- Pipeline health evaluation
+- Auto-generated insights with confidence scores and priority levels
+
+### Planned AI Enhancements
+
+- **Proactive nudges:** "You haven't contacted [person] in 14 days -- they'd be perfect for [opportunity]"
+- **Smart matching:** AI suggests talent contacts for open opportunities based on skills and past performance
+- **Revenue forecasting:** Predictive models based on pipeline velocity and historical patterns
+- **Conversation summarization:** Auto-summarize meeting notes from voice logs
+- **Network warmth scoring:** AI tracks relationship health across your entire network
 
 ---
 
@@ -208,112 +253,67 @@ As the gig economy evolves into the "portfolio economy" -where highly skilled pr
 
 ### Technology Stack
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Frontend (React)                        │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   Vite      │  │  TypeScript │  │  Tailwind CSS       │  │
-│  │   (Build)   │  │  (Language) │  │  (Styling)          │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  shadcn/ui  │  │  Recharts   │  │  React Query        │  │
-│  │  (UI Lib)   │  │  (Charts)   │  │  (Data Fetching)    │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Supabase Backend                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  PostgreSQL │  │  Auth       │  │  Edge Functions     │  │
-│  │  (Database) │  │  (Identity) │  │  (Serverless)       │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Row Level  │  │  Realtime   │  │  Storage            │  │
-│  │  Security   │  │  (WebSocket)│  │  (Files)            │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   External Integrations                      │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Google     │  │  OpenAI     │  │  Future: Stripe,    │  │
-│  │  Sheets API │  │  (AI)       │  │  Calendar, etc.     │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 18, TypeScript, Vite | Mobile-first PWA with responsive desktop |
+| **UI** | Tailwind CSS, shadcn/ui, Radix UI | Component library with design tokens |
+| **Animation** | Framer Motion | Fluid page transitions and micro-interactions |
+| **Data** | TanStack React Query | Server state management with real-time sync |
+| **Charts** | Recharts | Revenue and pipeline visualization |
+| **Forms** | React Hook Form + Zod | Type-safe form validation |
+| **Auth** | Supabase Auth | Email/password + OAuth (Google ready) |
+| **Database** | Supabase PostgreSQL | Row-level security, real-time subscriptions |
+| **Serverless** | Supabase Edge Functions (Deno) | AI processing, voice transcription, integrations |
+| **AI** | OpenAI (GPT + Whisper) | Strategic analysis, voice-to-text, parsing |
+| **Deployment** | Lovable Cloud | Auto-deploy on commit with edge CDN |
 
-### Database Schema Overview
+### Database Schema
 
-```
-┌─────────────────────┐     ┌─────────────────────┐
-│   monthly_goals     │     │  monthly_snapshots  │
-│─────────────────────│     │─────────────────────│
-│ user_id             │     │ user_id             │
-│ month               │     │ month               │
-│ revenue_forecast    │     │ site_visits         │
-│ cost_budget         │     │ social_followers    │
-│ workshops_target    │     └─────────────────────┘
-│ advisory_target     │
-│ lectures_target     │     ┌─────────────────────┐
-│ pr_target           │     │   daily_progress    │
-└─────────────────────┘     │─────────────────────│
-                            │ user_id             │
-┌─────────────────────┐     │ date                │
-│   revenue_entries   │     │ month               │
-│─────────────────────│     │ workshops_progress  │
-│ user_id             │     │ advisory_progress   │
-│ date                │     │ lectures_progress   │
-│ month               │     │ pr_progress         │
-│ amount              │     │ notes               │
-│ source              │     └─────────────────────┘
-│ description         │
-└─────────────────────┘     ┌─────────────────────┐
-                            │    opportunities    │
-┌─────────────────────┐     │─────────────────────│
-│ customer_tool_      │     │ user_id             │
-│    sessions         │     │ type                │
-│─────────────────────│     │ title               │
-│ user_id             │     │ company             │
-│ customer_email      │     │ contact_person      │
-│ tool_type           │     │ stage               │
-│ session_duration    │     │ probability         │
-│ completion_%        │     │ estimated_value     │
-│ return_visit        │     │ estimated_close_date│
-│ quality_score       │     │ notes               │
-└─────────────────────┘     │ month               │
-                            └─────────────────────┘
-```
+**Core Tables:**
+- `user_profiles` -- Account data, business context, onboarding state
+- `user_preferences` -- Theme, notifications, AI personality settings
+- `clients` -- Active engagements with revenue targets and engagement types
+- `activity_logs` -- Voice and manual activity records with AI parsing
+- `revenue_entries` -- Revenue by source, linked to clients
+- `opportunities` -- Pipeline with stages, probability, and value
+- `monthly_goals` -- Revenue, cost, and BD targets by month
+- `daily_progress` -- BD activity tracking against monthly goals
+- `weekly_summaries` -- AI-generated weekly narratives
 
-### Component Structure
+**Talent Network Tables:**
+- `talent_contacts` -- Professional contacts with skills, rates, trust ratings
+- `talent_skills` -- Many-to-many contact-skill relationships
+- `talent_referrals` -- Referral tracking with outcomes
+- `talent_interactions` -- Interaction history for warmth scoring
+- `talent_opportunities` -- Contact-opportunity linkage
+- `skills` -- Predefined taxonomy (50+ skills across 11 categories)
 
-```
-src/
-├── components/
-│   ├── ui/                    # shadcn/ui components
-│   ├── Dashboard.tsx          # Main dashboard container
-│   ├── AuthPage.tsx           # Authentication
-│   ├── MetricsOverview.tsx    # KPI cards
-│   ├── DailyProgressTracker.tsx
-│   ├── RevenueTracker.tsx
-│   ├── CostTracker.tsx
-│   ├── OpportunityPipeline.tsx
-│   ├── AIStrategyHub.tsx
-│   ├── ChatInterface.tsx
-│   ├── GoogleSheetsIntegration.tsx
-│   └── CustomerToolAnalytics.tsx
-├── hooks/
-│   ├── useAuth.tsx
-│   ├── useTrackingData.ts
-│   ├── useOpportunityData.ts
-│   └── useCustomerAnalytics.ts
-├── types/
-│   ├── tracking.ts
-│   └── customerTracking.ts
-└── utils/
-    └── monthUtils.ts
-```
+**AI & Analytics Tables:**
+- `ai_conversations` -- Chat history with context
+- `conversation_sessions` -- Chat session management
+- `chat_messages` -- Individual messages within sessions
+- `user_business_context` -- Business profile for AI personalization
+- `user_insights` -- AI-generated insights with confidence scores
+- `user_behavior_logs` -- Behavioral analytics
+- `feature_usage` -- Feature adoption tracking
+- `user_sessions` -- Session analytics
+
+**Security:**
+- Row-Level Security on all tables (user_id scoped)
+- SECURITY DEFINER functions for privileged operations
+- OAuth token encryption with SHA256 integrity hashing
+- Security audit logging
+
+### Edge Functions
+
+| Function | Purpose |
+|----------|---------|
+| `transcribe` | Whisper-powered audio-to-text |
+| `parse-voice-log` | Extract structured activity data from transcripts |
+| `parse-onboarding` | Parse voice onboarding for client/revenue setup |
+| `ai-strategic-analysis` | GPT-powered strategic chat with business context |
+| `generate-user-insights` | Rule-based + AI insight generation from behavior data |
+| `google-sheets-integration` | Bidirectional Google Sheets sync |
 
 ---
 
@@ -321,297 +321,114 @@ src/
 
 ### Brand Identity
 
-**Name**: Portfolio Pro
-**Tagline**: "Your portfolio business, optimized."
-**Personality**: Professional, intelligent, supportive, efficient
+| Element | Value |
+|---------|-------|
+| **Product name** | Circle |
+| **Parent brand** | Fractionl |
+| **Full name** | Circle by Fractionl |
+| **Tagline** | "Your network is your net worth. Circle makes it work." |
+| **Personality** | Professional, intelligent, warm, confident |
+| **Voice** | Peer-to-peer (not corporate), action-oriented, encouraging without being patronizing |
 
-### Color Palette
+### Visual Language
 
-| Token | HSL Value | Usage |
-|-------|-----------|-------|
-| `--primary` | `287 45% 55%` | Primary actions, key accents |
-| `--primary-light` | `287 50% 65%` | Hover states, gradients |
-| `--background` | `0 0% 98%` | Page backgrounds |
-| `--card` | `0 0% 100%` | Card surfaces |
-| `--foreground` | `0 0% 6.7%` | Primary text |
-| `--muted` | `0 0% 60%` | Secondary text |
+| Token | Value | Usage |
+|-------|-------|-------|
+| **Primary** | `#994CCC` / HSL 287 45% 55% | Key actions, active states, brand accents |
+| **Background** | Near-white (light) / Deep charcoal (dark) | Page backgrounds |
+| **Cards** | White (light) / Elevated dark (dark) | Content containers |
+| **Typography display** | Space Grotesk | Headings, numbers, emphasis |
+| **Typography body** | Inter | Body text, labels, descriptions |
 
-### Typography
+### Interaction Patterns
 
-- **Display Font**: Space Grotesk (geometric, modern)
-- **Body Font**: Inter (clean, readable)
-- **Scale**: Based on Tailwind default with custom heading sizes
-
-### Visual Style
-
-- **Approach**: Clean, professional with subtle depth
-- **Cards**: Rounded corners with soft shadows
-- **Gradients**: Purple-toned gradients for emphasis
-- **Animation**: Subtle transitions, pulse effects for attention
-- **Glass Effects**: Backdrop blur for overlays
+- **Cards** with soft shadows and subtle hover lift
+- **Bottom sheets** for mobile forms (not modals)
+- **Stagger animations** for list rendering
+- **Spring easing** for natural motion feel
+- **Skeleton loaders** for async content
+- **Toast notifications** for action confirmations
+- **Real-time subscriptions** for live data updates
 
 ---
 
-## Deployment
+## Roadmap
 
-### Current Deployment
+### Now: Relationship Intelligence MVP
+- [x] Mobile-first PWA with 5-tab navigation
+- [x] Voice-powered activity logging with AI parsing
+- [x] Talent network with skill-based search and referral tracking
+- [x] Pipeline management with probability weighting
+- [x] Client management with engagement tracking
+- [x] Weekly AI summaries
+- [x] Onboarding wizard
+- [ ] Proactive follow-up nudges
+- [ ] AI-powered talent-to-opportunity matching
+- [ ] Network warmth scoring and decay alerts
 
-- **Platform**: Lovable Cloud
-- **Frontend**: Automatic deployment on commit
-- **Backend**: Supabase (managed PostgreSQL + Edge Functions)
-- **CDN**: Automatic edge caching
+### Next: Growth Intelligence
+- [ ] Revenue forecasting with ML models
+- [ ] Smart weekly planning assistant
+- [ ] LinkedIn import for network building
+- [ ] Expense tracking and profitability analysis
+- [ ] Invoice generation with Stripe integration
+- [ ] PDF export for pipeline reports and client summaries
 
-### Environment Configuration
+### Later: Platform Effects
+- [ ] Circle Connect -- opt-in network for fractional executives to discover each other
+- [ ] Opportunity sharing marketplace
+- [ ] Benchmarking (anonymized revenue, rates, win rates by industry)
+- [ ] Client portal (read-only engagement view for your clients)
+- [ ] Team mode for fractional executive collectives
+- [ ] API for custom integrations
+
+---
+
+## Technical Reference
+
+### Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Environment Variables
 
 ```env
-# Supabase Configuration
-SUPABASE_URL=<project-url>
-SUPABASE_ANON_KEY=<anon-key>
-
-# Google Integration (Edge Functions)
-GOOGLE_SERVICE_ACCOUNT_KEY=<service-account-json>
-
-# AI Integration (Edge Functions)
-LOVABLE_API_KEY=<auto-provisioned>
+VITE_SUPABASE_URL=https://ksyuwacuigshvcyptlhe.supabase.co
+VITE_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
-### Deployment Process
+### Key Patterns
 
-1. Code changes pushed to main branch
-2. Automatic build triggered
-3. Type checking and linting
-4. Bundle optimization
-5. Edge deployment
-6. Cache invalidation
+**Real-time subscriptions:** All major tables use Supabase real-time for instant UI updates.
 
----
+**Auth-scoped queries:** Every data fetch filters by `auth.uid()` via RLS -- no user can see another's data.
 
-## Roadmap & Future Vision
+**Voice pipeline:** Audio (WebM) > Base64 > Edge Function (Whisper) > Transcript > Edge Function (GPT) > Structured Data > User Confirmation > Database Insert.
 
-### Q1 2026: Foundation Strengthening
-- [ ] Enhanced onboarding flow
-- [ ] Mobile-responsive optimization
-- [ ] Export capabilities (PDF reports, CSV)
-- [ ] Email notifications for goal milestones
+**Monthly/Daily granularity:** Goals are set monthly; progress is tracked daily. Revenue rolls up by month. This enables both high-level forecasting and daily accountability.
 
-### Q2 2026: Financial Depth
-- [ ] Expense tracking
-- [ ] Invoice generation
-- [ ] Stripe integration for payments
-- [ ] Financial forecasting models
+### Project History
 
-### Q3 2026: Client Management
-- [ ] Client profiles
-- [ ] Engagement tracking
-- [ ] Contract templates
-- [ ] Client portal (read-only view)
-
-### Q4 2026: Intelligence Layer
-- [ ] Predictive analytics
-- [ ] Automated insights
-- [ ] Benchmarking (anonymized)
-- [ ] Smart recommendations
-
-### 2027 & Beyond: Platform Evolution
-
-#### The Portfolio Worker Ecosystem
-
-```
-                    ┌─────────────────────────┐
-                    │   Portfolio Pro Core    │
-                    │   (Operations Hub)      │
-                    └───────────┬─────────────┘
-                                │
-        ┌───────────────────────┼───────────────────────┐
-        │                       │                       │
-        ▼                       ▼                       ▼
-┌───────────────┐      ┌───────────────┐      ┌───────────────┐
-│  Financial    │      │    Client     │      │   Knowledge   │
-│  Intelligence │      │   Management  │      │   Management  │
-│   Module      │      │    Module     │      │    Module     │
-└───────────────┘      └───────────────┘      └───────────────┘
-        │                       │                       │
-        └───────────────────────┼───────────────────────┘
-                                │
-                    ┌───────────┴───────────┐
-                    │                       │
-                    ▼                       ▼
-           ┌───────────────┐      ┌───────────────┐
-           │  Community    │      │  Marketplace  │
-           │   Network     │      │  (Opps/Subs)  │
-           └───────────────┘      └───────────────┘
-```
-
-#### Potential Monetization Models
-
-1. **Freemium SaaS**: Basic tracking free, advanced features paid
-2. **Tiered Subscriptions**: Solo ($19/mo), Pro ($49/mo), Team ($99/mo)
-3. **Marketplace Commission**: % on opportunities/subcontracting
-4. **Add-on Modules**: Financial, Client, Knowledge as separate purchases
-5. **White-Label/API**: For agencies serving portfolio workers
+| Period | Milestone |
+|--------|-----------|
+| 2024 Q1-Q3 | Core tracking, AI chat, pipeline, Google Sheets integration |
+| 2024 Q4 | Design system overhaul, purple brand identity |
+| 2025 Q1 | Rebrand to Circle by Fractionl, mobile-first PWA, voice logging |
+| 2025 Q1 | Talent network (black book), client management, onboarding wizard |
+| 2025 Q1 | Sprint series: Network screen, Quick-add, Revenue sheets, Error boundaries |
 
 ---
 
-## Common Issues
-
-### Data Sync Issues
-
-**Problem**: Google Sheets sync not updating
-**Solution**: Check OAuth tokens, verify sheet permissions, review sync frequency settings
-
-### Goal Tracking Gaps
-
-**Problem**: Daily progress not reflecting in monthly totals
-**Solution**: Ensure date format is correct (YYYY-MM-DD), verify month field matches
-
-### Pipeline Stage Confusion
-
-**Problem**: Opportunities stuck in wrong stage
-**Solution**: Review stage definitions, use probability as guidance (Lead: 10%, Qualified: 25%, Proposal: 50%, Negotiation: 75%, Won: 100%)
-
-### Performance on Large Datasets
-
-**Problem**: Dashboard slow with many entries
-**Solution**: Leverage month-based filtering, consider archiving old data
-
----
-
-## Decisions Log
-
-### 2024-01: Database Structure
-**Decision**: Separate tables for monthly goals, daily progress, and revenue entries
-**Rationale**: Allows for granular tracking while maintaining clean aggregation paths
-**Alternatives Considered**: Single denormalized table (rejected for flexibility reasons)
-
-### 2024-02: AI Integration Approach
-**Decision**: Conversational AI interface rather than automated insights
-**Rationale**: Users want agency in strategic thinking, AI as collaborator not dictator
-**Alternatives Considered**: Push-based AI alerts (deferred to later phase)
-
-### 2024-03: Spreadsheet Integration First
-**Decision**: Google Sheets as primary external integration
-**Rationale**: Most portfolio workers already have data in sheets, low friction adoption
-**Alternatives Considered**: Accounting software first (higher complexity, lower reach)
-
-### 2024-04: Service Type Taxonomy
-**Decision**: Four core types: Workshop, Advisory, Lecture, PR
-**Rationale**: Covers most portfolio worker revenue streams while remaining simple
-**Alternatives Considered**: Fully custom types (added complexity, deferred)
-
-### 2025-01: Design System Update
-**Decision**: Purple-gradient modern aesthetic with Space Grotesk typography
-**Rationale**: Professional yet distinctive, stands out from typical business tools
-**Color Updated**: Primary changed to `#994CCC` for more sophisticated tone
-
----
-
-## Replication Guide
-
-### For Developers
-
-This project can serve as a template for building similar niche operations platforms:
-
-1. **Clone the repository**
-2. **Set up Supabase project**
-3. **Configure environment variables**
-4. **Customize domain model** (types/tracking.ts)
-5. **Adapt UI components** to your niche
-6. **Deploy via Lovable or self-host**
-
-### Key Patterns to Reuse
-
-- **Monthly/Daily data structure**: Works for any time-based tracking
-- **Pipeline management**: Adaptable to any stage-based workflow
-- **AI integration pattern**: Edge function + conversation state
-- **Design system setup**: Semantic tokens for easy theming
-
----
-
-## Visual Guidelines
-
-### Component Styling Principles
-
-1. **Consistency**: Use design tokens, never hardcoded colors
-2. **Hierarchy**: Clear visual weight (primary actions pop)
-3. **Breathing Room**: Generous spacing, avoid crowding
-4. **Feedback**: Every interaction has visual response
-5. **Accessibility**: Contrast ratios, focus indicators, semantic HTML
-
-### Dashboard Layout
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Header: Motivational message + date context                │
-├─────────────────────────────────────────────────────────────┤
-│  Metrics Grid: 4-6 KPI cards with progress indicators       │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────┐  ┌─────────────────────────────┐  │
-│  │  Daily Progress     │  │  Revenue Tracking           │  │
-│  │  (Input focus)      │  │  (Cumulative view)          │  │
-│  └─────────────────────┘  └─────────────────────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────┐  ┌─────────────────────────────┐  │
-│  │  Pipeline           │  │  AI Strategy Hub            │  │
-│  │  (Kanban/List)      │  │  (Chat interface)           │  │
-│  └─────────────────────┘  └─────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Outcomes & Success Metrics
-
-### User Success Metrics
-
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Weekly Active Users | 80% of registered | Login frequency |
-| Goal Completion Rate | 70%+ monthly targets hit | Goals vs. achieved |
-| Pipeline Conversion | 30%+ opportunities won | Stage progression |
-| Time to Value | < 5 minutes to first insight | Onboarding tracking |
-| NPS Score | > 50 | Periodic surveys |
-
-### Business Metrics (Future)
-
-| Metric | Target | Notes |
-|--------|--------|-------|
-| Monthly Recurring Revenue | Growth phase | Subscription tracking |
-| Customer Acquisition Cost | < $100 | Marketing spend / signups |
-| Lifetime Value | > $500 | Retention * ARPU |
-| Churn Rate | < 5% monthly | Subscription cancellations |
-
----
-
-## LLM Critical Thinking Training
-
-### For AI Assistants Working on This Codebase
-
-**Context**: This is a business operations tool for portfolio workers. Key mental models:
-
-1. **Multi-stream thinking**: Users have multiple revenue sources, never assume single-focus
-2. **Time-based granularity**: Data exists at daily, monthly, and yearly levels
-3. **Stage-based workflows**: Opportunities move through defined stages
-4. **Goal-oriented design**: Everything ties back to user-defined targets
-5. **Integration-friendly**: External data sources are first-class citizens
-
-**Common Pitfalls**:
-- Don't hardcode service types (Workshop, Advisory, Lecture, PR)
-- Always consider multi-user context (RLS policies)
-- Respect the design system tokens
-- Consider mobile responsiveness for all changes
-
----
-
-## History
-
-- **2024-Q1**: Project inception, core tracking features
-- **2024-Q2**: AI integration, opportunity pipeline
-- **2024-Q3**: Customer tool analytics, Google Sheets integration
-- **2024-Q4**: Design system overhaul, UX improvements
-- **2025-Q1**: Color system refinement (#994CCC primary), documentation
-
----
-
-*This documentation is a living document. Update as features evolve.*
-
-*Last Updated: January 2025*
+*Last Updated: April 2026*
