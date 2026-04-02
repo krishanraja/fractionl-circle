@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Calendar, Bell, ChevronRight,
-  LogOut, Moon, CreditCard, Sparkles, Crown, ExternalLink, BarChart3, FileSpreadsheet
+  LogOut, Moon, CreditCard, Layers, Crown, ExternalLink, BarChart3, FileSpreadsheet
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -55,7 +55,7 @@ export const SettingsScreen = () => {
   if (showPricing) {
     return (
       <div className="pb-28">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between px-5 py-4">
           <button
             onClick={() => setShowPricing(false)}
             className="text-caption text-primary"
@@ -67,6 +67,10 @@ export const SettingsScreen = () => {
       </div>
     );
   }
+
+  const avatarInitial = profile?.full_name
+    ? profile.full_name.charAt(0).toUpperCase()
+    : '?';
 
   const settingsSections = [
     {
@@ -137,20 +141,20 @@ export const SettingsScreen = () => {
 
   return (
     <motion.div
-      className="flex flex-col gap-6 p-4 pb-28"
+      className="flex flex-col gap-7 px-5 pt-6 pb-28"
       variants={staggerContainer}
       initial="initial"
       animate="animate"
     >
-      {/* Header */}
+      {/* Header — compact profile */}
       <motion.div variants={staggerItem} className="text-center">
-        <div className="w-20 h-20 rounded-full bg-primary-muted flex items-center justify-center mx-auto mb-3">
-          <User className="w-10 h-10 text-primary" />
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+          <span className="text-title-1 font-semibold text-primary">{avatarInitial}</span>
         </div>
         <h1 className="text-title-2 text-foreground">
           {profile?.full_name || 'Your Profile'}
         </h1>
-        <p className="text-caption text-foreground-secondary mb-2">
+        <p className="text-caption text-foreground-muted mt-0.5 mb-2">
           {user?.email}
         </p>
         <SubscriptionBadge />
@@ -158,22 +162,21 @@ export const SettingsScreen = () => {
 
       {/* Subscription Section */}
       <motion.div variants={staggerItem} className="space-y-2">
-        <h2 className="text-caption-bold text-foreground-secondary uppercase tracking-wider px-1">
+        <h2 className="text-label text-foreground-muted px-0.5">
           Subscription
         </h2>
 
-        <Card className="bg-background-elevated border-border overflow-hidden">
+        <Card className="bg-background-elevated border-border/40 overflow-hidden">
           <CardContent className="p-0">
-            {/* Current Plan */}
             <div
-              className="w-full flex items-center gap-3 p-4 min-h-[56px] hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer border-b border-border"
+              className="w-full flex items-center gap-3 p-4 min-h-[52px] hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer border-b border-border/30"
               onClick={() => { setShowPricing(true); haptics.light(); }}
             >
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center">
                 {effectiveTier === 'executive' ? (
-                  <Crown className="w-5 h-5 text-primary" />
+                  <Crown className="w-4 h-4 text-primary" />
                 ) : (
-                  <Sparkles className="w-5 h-5 text-primary" />
+                  <Layers className="w-4 h-4 text-primary" />
                 )}
               </div>
               <div className="flex-1 text-left">
@@ -181,11 +184,11 @@ export const SettingsScreen = () => {
                   {effectiveTier === 'free' ? 'Free Plan' : effectiveTier === 'pro' ? 'Pro Plan' : 'Executive Plan'}
                   {isTrialing && (
                     <span className="text-caption text-warning ml-2">
-                      ({trialDaysRemaining}d trial remaining)
+                      ({trialDaysRemaining}d trial)
                     </span>
                   )}
                 </div>
-                <div className="text-caption text-foreground-secondary">
+                <div className="text-caption text-foreground-muted">
                   {effectiveTier === 'free'
                     ? 'Upgrade for unlimited access'
                     : cancelAtPeriodEnd
@@ -193,27 +196,25 @@ export const SettingsScreen = () => {
                     : 'Active subscription'}
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-foreground-muted" />
+              <ChevronRight className="w-4 h-4 text-foreground-muted" />
             </div>
 
-            {/* Past Due Warning */}
             {isPastDue && (
-              <div className="px-4 py-3 bg-destructive/10 border-b border-border">
+              <div className="px-4 py-3 bg-destructive/8 border-b border-border/30">
                 <p className="text-caption text-destructive font-medium">
-                  Payment failed. Please update your billing info to keep your subscription.
+                  Payment failed. Please update your billing info.
                 </p>
               </div>
             )}
 
-            {/* Usage Meters */}
             {showUsage && (
               <div className="p-4 space-y-3">
-                <p className="text-caption-bold text-foreground-secondary">This Month's Usage</p>
+                <p className="text-label text-foreground-muted">This Month's Usage</p>
 
                 {voiceLimit !== Infinity && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-caption">
-                      <span className="text-foreground-secondary">Voice Logs</span>
+                      <span className="text-foreground-muted">Voice Logs</span>
                       <span className={cn(
                         "font-medium",
                         isAtLimit('voice_logs') ? "text-destructive" : "text-foreground"
@@ -221,14 +222,14 @@ export const SettingsScreen = () => {
                         {usage.voice_logs} / {voiceLimit}
                       </span>
                     </div>
-                    <Progress value={getUsagePercent('voice_logs')} className="h-1.5" />
+                    <Progress value={getUsagePercent('voice_logs')} className="h-1" />
                   </div>
                 )}
 
                 {aiLimit !== Infinity && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-caption">
-                      <span className="text-foreground-secondary">AI Insights</span>
+                      <span className="text-foreground-muted">AI Insights</span>
                       <span className={cn(
                         "font-medium",
                         isAtLimit('ai_queries') ? "text-destructive" : "text-foreground"
@@ -236,28 +237,27 @@ export const SettingsScreen = () => {
                         {usage.ai_queries} / {aiLimit}
                       </span>
                     </div>
-                    <Progress value={getUsagePercent('ai_queries')} className="h-1.5" />
+                    <Progress value={getUsagePercent('ai_queries')} className="h-1" />
                   </div>
                 )}
               </div>
             )}
 
-            {/* Manage Billing */}
             {effectiveTier !== 'free' && !isTrialing && (
               <div
-                className="w-full flex items-center gap-3 p-4 min-h-[56px] hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer"
+                className="w-full flex items-center gap-3 p-4 min-h-[52px] hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer"
                 onClick={() => { openPortal(); haptics.light(); }}
               >
-                <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-foreground-secondary" />
+                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-foreground-muted" />
                 </div>
                 <div className="flex-1 text-left">
                   <div className="text-body-bold text-foreground">Manage Billing</div>
-                  <div className="text-caption text-foreground-secondary">
+                  <div className="text-caption text-foreground-muted">
                     Update payment, view invoices
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-foreground-muted" />
+                <ExternalLink className="w-3.5 h-3.5 text-foreground-muted" />
               </div>
             )}
           </CardContent>
@@ -267,11 +267,11 @@ export const SettingsScreen = () => {
       {/* Settings Sections */}
       {settingsSections.map((section) => (
         <motion.div key={section.title} variants={staggerItem} className="space-y-2">
-          <h2 className="text-caption-bold text-foreground-secondary uppercase tracking-wider px-1">
+          <h2 className="text-label text-foreground-muted px-0.5">
             {section.title}
           </h2>
 
-          <Card className="bg-background-elevated border-border overflow-hidden">
+          <Card className="bg-background-elevated border-border/40 overflow-hidden">
             <CardContent className="p-0">
               {section.items.map((item, index) => {
                 const Icon = item.icon;
@@ -281,27 +281,27 @@ export const SettingsScreen = () => {
                   <div
                     key={item.label}
                     className={cn(
-                      "w-full flex items-center gap-3 p-4 min-h-[56px]",
-                      item.action === 'chevron' && "hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer",
+                      "w-full flex items-center gap-3 p-4 min-h-[52px]",
+                      item.action === 'chevron' && "hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer",
                       item.action === 'badge' && "opacity-60",
-                      !isLast && "border-b border-border"
+                      !isLast && "border-b border-border/30"
                     )}
                   >
-                    <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-foreground-secondary" />
+                    <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-foreground-muted" />
                     </div>
 
                     <div className="flex-1 text-left">
                       <div className="text-body-bold text-foreground">
                         {item.label}
                       </div>
-                      <div className="text-caption text-foreground-secondary">
+                      <div className="text-caption text-foreground-muted">
                         {item.description}
                       </div>
                     </div>
 
                     {item.action === 'chevron' && (
-                      <ChevronRight className="w-5 h-5 text-foreground-muted" />
+                      <ChevronRight className="w-4 h-4 text-foreground-muted" />
                     )}
                     {item.action === 'badge' && (
                       <Badge variant="secondary" className="text-[10px] text-foreground-muted font-normal">
@@ -324,25 +324,25 @@ export const SettingsScreen = () => {
 
       {/* Data Export */}
       <motion.div variants={staggerItem} className="space-y-2">
-        <h2 className="text-caption-bold text-foreground-secondary uppercase tracking-wider px-1">
+        <h2 className="text-label text-foreground-muted px-0.5">
           Data
         </h2>
-        <Card className="bg-background-elevated border-border overflow-hidden">
+        <Card className="bg-background-elevated border-border/40 overflow-hidden">
           <CardContent className="p-0">
             <div
-              className="w-full flex items-center gap-3 p-4 min-h-[56px] hover:bg-secondary/50 active:bg-secondary/50 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-3 p-4 min-h-[52px] hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer"
               onClick={() => { setShowSheetsExport(true); haptics.light(); }}
             >
-              <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
-                <FileSpreadsheet className="w-5 h-5 text-foreground-secondary" />
+              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                <FileSpreadsheet className="w-4 h-4 text-foreground-muted" />
               </div>
               <div className="flex-1 text-left">
                 <div className="text-body-bold text-foreground">Export to Google Sheets</div>
-                <div className="text-caption text-foreground-secondary">
-                  Get a beautiful CRM spreadsheet
+                <div className="text-caption text-foreground-muted">
+                  Export your CRM data
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-foreground-muted" />
+              <ChevronRight className="w-4 h-4 text-foreground-muted" />
             </div>
           </CardContent>
         </Card>
@@ -353,14 +353,13 @@ export const SettingsScreen = () => {
         <Button
           variant="outline"
           onClick={() => { haptics.medium(); signOut(); }}
-          className="w-full border-destructive/50 text-destructive hover:bg-destructive/10"
+          className="w-full border-destructive/30 text-destructive hover:bg-destructive/5"
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out
         </Button>
       </motion.div>
 
-      {/* Google Sheets Export Sheet */}
       <GoogleSheetsExportSheet
         open={showSheetsExport}
         onOpenChange={setShowSheetsExport}
@@ -369,10 +368,10 @@ export const SettingsScreen = () => {
       {/* Footer */}
       <motion.div
         variants={staggerItem}
-        className="text-center text-caption text-foreground-muted pt-4"
+        className="text-center text-caption text-foreground-muted pt-2"
       >
         <p>Circle by Fractionl</p>
-        <p className="mt-1">Version 2.0.0</p>
+        <p className="mt-0.5">Version 2.0.0</p>
       </motion.div>
     </motion.div>
   );

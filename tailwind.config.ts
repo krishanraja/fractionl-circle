@@ -77,8 +77,8 @@ export default {
 				128: "32rem",
 			},
 			fontFamily: {
-				display: ["Outfit", "system-ui", "sans-serif"],
-				heading: ["Outfit", "system-ui", "sans-serif"],
+				display: ["DM Sans", "system-ui", "sans-serif"],
+				heading: ["DM Sans", "system-ui", "sans-serif"],
 				body: ["Inter", "system-ui", "sans-serif"],
 			},
 			keyframes: {

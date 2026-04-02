@@ -65,7 +65,7 @@ export const PageHeader = ({
           />
 
           {/* Contextual Greeting */}
-          <p className="text-sm font-medium text-foreground">
+          <p className="text-sm font-normal text-foreground-secondary tracking-tight">
             {firstName ? `${getGreeting()}, ${firstName}` : getGreeting()}
           </p>
 
