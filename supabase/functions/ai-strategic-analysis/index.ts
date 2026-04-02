@@ -1,13 +1,11 @@
  import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders } from '../_shared/compliance.ts';
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -506,6 +504,7 @@ Context: ${JSON.stringify(context)}`,
             ],
             max_tokens: 800,
             temperature: 0.7,
+            store: false,
           }),
         });
 
@@ -563,6 +562,7 @@ Context: ${JSON.stringify(context)}`,
             ],
             max_tokens: 200,
             temperature: 0.3,
+            store: false,
           }),
         });
 

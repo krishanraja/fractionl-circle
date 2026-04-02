@@ -1,10 +1,9 @@
 // FORCE DEPLOYMENT v4.0 - Added token encryption for security
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders } from '../_shared/compliance.ts';
+
+// CORS is now handled by getCorsHeaders() — see individual handlers below
 
 // Deployment marker for debugging
 const DEPLOYMENT_VERSION = '4.0-TOKEN-ENCRYPTION'
@@ -141,6 +140,8 @@ function getGoogleCredentials(): GoogleCredentials {
 
 // Enhanced main Deno.serve handler with security improvements
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -160,52 +161,10 @@ Deno.serve(async (req) => {
       return await handleExchangeCodeNoAuth(req);
     }
 
-    // Handle unauthenticated actions first
-    if (action === 'test_secret') {
-      const rawCredentials = Deno.env.get('GOOGLE_OAUTH_CREDENTIALS');
-      const hasSecret = !!rawCredentials;
-      const secretLength = rawCredentials?.length || 0;
-      
-      let isValidJson = false;
-      let parseError = null;
-      let credentialStructure = null;
-      
-      if (hasSecret) {
-        try { 
-          const parsed = JSON.parse(rawCredentials!); 
-          isValidJson = true;
-          credentialStructure = {
-            hasWeb: !!parsed.web,
-            hasClientId: !!parsed.web?.client_id,
-            hasClientSecret: !!parsed.web?.client_secret
-          };
-          console.log('Test endpoint - secret parsed successfully');
-        } catch (e) { 
-          parseError = e.message;
-          console.log('Test endpoint - JSON parse failed:', e.message);
-        }
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          hasSecret, 
-          secretLength, 
-          isValidJson,
-          parseError,
-          credentialStructure,
-          timestamp: new Date().toISOString(),
-          deploymentVersion: DEPLOYMENT_VERSION
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // test_secret endpoint removed — use test-google-secret function with admin auth instead
+    // exchange_code without auth removed — OAuth callback flow handles this
 
-    if (action === 'exchange_code') {
-      const body = await req.json();
-      return await handleExchangeCodeNoAuth(req);
-    }
-
-    // All other actions require authentication
+    // All actions require authentication
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Authorization header missing' }), {
@@ -292,9 +251,8 @@ Deno.serve(async (req) => {
     }
   } catch (error) {
     console.error('Error in Google Sheets integration:', error);
-    return new Response(JSON.stringify({ 
-      error: 'Internal server error',
-      details: error.message 
+    return new Response(JSON.stringify({
+      error: 'Internal server error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -361,15 +319,17 @@ async function handleExchangeCode(code: string, credentials: GoogleCredentials, 
     throw new Error(`Token exchange failed: ${tokens.error}`);
   }
 
-  // Store tokens in database
+  // Encrypt tokens before storage (CRITICAL: never store plaintext OAuth tokens)
   const expiresAt = new Date(Date.now() + (tokens.expires_in * 1000));
-  
+  const encryptedAccessToken = await encryptToken(tokens.access_token);
+  const encryptedRefreshToken = tokens.refresh_token ? await encryptToken(tokens.refresh_token) : null;
+
   const { error } = await supabase
     .from('sheets_integrations')
     .upsert({
       user_id: userId,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptedAccessToken,
+      refresh_token: encryptedRefreshToken,
       token_expires_at: expiresAt.toISOString(),
       sync_status: 'success'
     });

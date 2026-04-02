@@ -31,6 +31,11 @@ async function verifyStripeSignature(payload: string, signature: string, secret:
 
     const timestamp = timestampPart.split('=')[1];
     const expectedSig = sigPart.split('=')[1];
+
+    // Replay protection: reject signatures older than 5 minutes
+    const timestampAge = Math.abs(Date.now() / 1000 - parseInt(timestamp));
+    if (timestampAge > 300) return false;
+
     const signedPayload = `${timestamp}.${payload}`;
 
     const encoder = new TextEncoder();
