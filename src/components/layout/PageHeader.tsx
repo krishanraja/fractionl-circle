@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
+import { getGreeting } from '@/utils/greeting';
 import type { TabId } from './BottomNav';
 
 interface PageHeaderProps {
@@ -19,13 +20,6 @@ const desktopNavItems: { id: TabId; label: string }[] = [
   { id: 'contacts', label: 'Contacts' },
   { id: 'settings', label: 'Settings' },
 ];
-
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-};
 
 export const PageHeader = ({
   title,

@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
 
 Return this exact structure:
 {
-  "greeting": "Warm, personalized greeting (use their name and day of week)",
+  "greeting": "Warm, personalized greeting using their first name and day of week. Do NOT start with Good morning/afternoon/evening - the app header already shows that.",
   "headline": "One-line summary of their portfolio status (max 15 words)",
   "alerts": [
     { "type": "client_stale|revenue|pipeline|momentum", "priority": "high|medium|low", "message": "Brief actionable alert (max 20 words)", "client_name": "optional" }
