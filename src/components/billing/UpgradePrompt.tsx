@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
 import { haptics } from '@/utils/haptics';
+import { toast } from 'sonner';
 
 interface UpgradePromptProps {
   feature: string;
@@ -31,10 +32,16 @@ export const UpgradePrompt = ({ feature, message, compact = false, className, on
       onUpgradeClick();
       return;
     }
+    // Guard: if Stripe isn't configured, show coming soon message
+    if (/^price_/.test(PRICE_IDS.pro_monthly)) {
+      toast.info('Upgrade coming soon — contact us for early access');
+      return;
+    }
     setLoading(true);
     try {
       await openCheckout(PRICE_IDS.pro_monthly);
     } catch {
+      toast.error('Unable to open checkout. Please try again.');
       setLoading(false);
     }
   };

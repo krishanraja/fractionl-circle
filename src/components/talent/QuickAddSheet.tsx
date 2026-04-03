@@ -62,6 +62,8 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
   const [selectedLinkedin, setSelectedLinkedin] = useState<LinkedInResult | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [smartDetected, setSmartDetected] = useState<string | null>(null);
 
   // Scroll focused input into view when keyboard opens
   useEffect(() => {
@@ -74,6 +76,84 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
       }
     }
   }, [isKeyboardVisible]);
+
+  // ── Smart input detection on name field ───────────────────────────
+  // Detects if the user typed an email, phone, LinkedIn URL, or Instagram
+  // handle into the name field, and auto-routes to the right enrichment.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const val = form.name.trim();
+    if (!val || val.length < 3) {
+      setSmartDetected(null);
+      return;
+    }
+
+    debounceRef.current = setTimeout(() => {
+      // Email detection: contains @ with a dot after it
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        setSmartDetected('email');
+        setForm(f => ({ ...f, name: '', email: val }));
+        enrichFromEmail(val);
+        return;
+      }
+      // Phone detection: starts with + or is mostly digits (10+)
+      const digitsOnly = val.replace(/[\s\-().]/g, '');
+      if (/^\+/.test(val) || (/^\d+$/.test(digitsOnly) && digitsOnly.length >= 10)) {
+        setSmartDetected('phone');
+        setForm(f => ({ ...f, name: '', phone: val }));
+        enrichFromPhone(val);
+        return;
+      }
+      // LinkedIn URL detection
+      if (/linkedin\.com/i.test(val)) {
+        setSmartDetected('linkedin');
+        const slugMatch = val.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/i);
+        if (slugMatch) {
+          const slug = slugMatch[1];
+          const guessedName = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          setForm(f => ({ ...f, name: guessedName }));
+          // Trigger LinkedIn search with extracted name
+          setIsSearchingLinkedin(true);
+          setShowLinkedinSearch(true);
+          supabase.functions.invoke('contact-enrich', {
+            body: { name: guessedName, linkedin_search: true },
+          }).then(({ data }) => {
+            const results = data?.results || [];
+            setLinkedinResults(results);
+            // Auto-select first result if URL matches
+            const match = results.find((r: LinkedInResult) => r.url?.includes(slug));
+            if (match) selectLinkedInResult(match);
+            else if (results.length === 1) selectLinkedInResult(results[0]);
+          }).catch(() => setLinkedinResults([])).finally(() => setIsSearchingLinkedin(false));
+        }
+        return;
+      }
+      // Instagram handle detection: starts with @
+      if (/^@[a-zA-Z0-9._]+$/.test(val)) {
+        setSmartDetected('instagram');
+        const handle = val.slice(1);
+        // Convert handle to likely name
+        const cleaned = handle.replace(/\d+$/, '');
+        const parts = cleaned.split(/[._-]+/).filter(Boolean);
+        const guessedName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+        if (guessedName.length >= 2) {
+          setForm(f => ({ ...f, name: guessedName }));
+          // Search Apollo with guessed name
+          setIsSearchingLinkedin(true);
+          setShowLinkedinSearch(true);
+          supabase.functions.invoke('contact-enrich', {
+            body: { name: guessedName, linkedin_search: true },
+          }).then(({ data }) => {
+            setLinkedinResults(data?.results || []);
+          }).catch(() => setLinkedinResults([])).finally(() => setIsSearchingLinkedin(false));
+        }
+        return;
+      }
+      setSmartDetected(null);
+    }, 600);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [form.name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Email enrichment ──────────────────────────────────────────────
 
@@ -299,7 +379,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                     <Input
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                      placeholder="Name"
+                      placeholder="Name, email, phone, or @handle"
                       className="bg-input border-border text-foreground text-base pr-28"
                       autoFocus
                     />
@@ -319,6 +399,23 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                       </button>
                     )}
                   </div>
+
+                  {/* Smart detection indicator */}
+                  {smartDetected && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="flex items-center gap-1.5 mt-1 ml-1"
+                    >
+                      <Sparkles className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] text-primary font-medium">
+                        {smartDetected === 'email' && 'Detected email — searching contacts...'}
+                        {smartDetected === 'phone' && 'Detected phone — looking up caller...'}
+                        {smartDetected === 'linkedin' && 'Detected LinkedIn — finding profile...'}
+                        {smartDetected === 'instagram' && 'Detected Instagram — searching...'}
+                      </span>
+                    </motion.div>
+                  )}
 
                   {/* Selected LinkedIn profile */}
                   {selectedLinkedin && (

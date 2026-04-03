@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Instagram, Camera, Check, Loader2 } from 'lucide-react';
+import { Instagram, Camera, Check, Loader2, Sparkles } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -18,10 +18,47 @@ import { fadeInUp } from '@/constants/animation';
 
 type ImportState = 'input' | 'processing' | 'success';
 
+interface EnrichmentResult {
+  name?: string;
+  company?: string;
+  title?: string;
+  linkedin_url?: string;
+  photo_url?: string;
+  city?: string;
+  specialty_summary?: string;
+}
+
+interface LinkedInResult {
+  name: string;
+  headline: string;
+  url: string;
+  photo_url?: string;
+  company?: string;
+  title?: string;
+  city?: string;
+}
+
 interface InstagramImportSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onScanScreenshot: () => void;
+}
+
+/**
+ * Convert an Instagram handle to a likely real name by splitting on
+ * dots, underscores, and stripping trailing digits.
+ * e.g. "priya.sharma" → "Priya Sharma", "john_doe_99" → "John Doe"
+ */
+function handleToName(handle: string): string {
+  // Remove trailing digits (common pattern: "krishanraja1")
+  let cleaned = handle.replace(/\d+$/, '');
+  // Split on dots, underscores, hyphens
+  const parts = cleaned.split(/[._-]+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  // Title-case each part
+  return parts
+    .map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+    .join(' ');
 }
 
 export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: InstagramImportSheetProps) => {
@@ -31,6 +68,9 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichedData, setEnrichedData] = useState<EnrichmentResult | null>(null);
+  const [wasAutoFilled, setWasAutoFilled] = useState(false);
 
   const cleanHandle = (input: string): string => {
     let h = input.trim();
@@ -40,6 +80,63 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
     const urlMatch = h.match(/instagram\.com\/([a-zA-Z0-9._]+)/);
     if (urlMatch) h = urlMatch[1];
     return h;
+  };
+
+  const enrichFromHandle = useCallback(async (cleaned: string) => {
+    if (!cleaned || cleaned.length < 2) return;
+
+    const guessedName = handleToName(cleaned);
+    if (!guessedName || guessedName.length < 2) return;
+
+    // Auto-fill name field with our guess if empty
+    setName(prev => prev || guessedName);
+    setIsEnriching(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('contact-enrich', {
+        body: { name: guessedName, linkedin_search: true },
+      });
+
+      if (error) throw error;
+
+      const results = data?.results as LinkedInResult[] | null;
+      if (results && results.length > 0) {
+        const best = results[0];
+        const enriched: EnrichmentResult = {
+          name: best.name,
+          company: best.company,
+          title: best.title,
+          linkedin_url: best.url,
+          photo_url: best.photo_url,
+          city: best.city,
+          specialty_summary: best.headline || (best.title && best.company
+            ? `${best.title} at ${best.company}${best.city ? `, ${best.city}` : ''}`
+            : undefined),
+        };
+        setEnrichedData(enriched);
+        setWasAutoFilled(true);
+
+        // Auto-fill name with the real matched name
+        if (enriched.name) {
+          setName(enriched.name);
+        }
+        // Auto-fill notes with specialty if empty
+        if (enriched.specialty_summary) {
+          setNotes(prev => prev || enriched.specialty_summary || '');
+        }
+      }
+    } catch {
+      // Enrichment is best-effort
+    } finally {
+      setIsEnriching(false);
+    }
+  }, []);
+
+  const handleHandleBlur = () => {
+    const cleaned = cleanHandle(handle);
+    if (cleaned) {
+      enrichFromHandle(cleaned);
+    }
   };
 
   const handleSave = async () => {
@@ -54,9 +151,11 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
       const contactName = name.trim() || `@${cleaned}`;
       await createContact({
         name: contactName,
-        specialty_summary: notes.trim() || null,
+        specialty_summary: notes.trim() || enrichedData?.specialty_summary || null,
         // Store Instagram URL in portfolio_url (no dedicated instagram field in DB)
         portfolio_url: cleaned ? `https://instagram.com/${cleaned}` : null,
+        linkedin_url: enrichedData?.linkedin_url || null,
+        photo_url: enrichedData?.photo_url || null,
       }, []);
 
       setState('success');
@@ -83,6 +182,9 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
     setHandle('');
     setName('');
     setNotes('');
+    setEnrichedData(null);
+    setWasAutoFilled(false);
+    setIsEnriching(false);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -92,7 +194,7 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="bg-background border-border max-h-[85dvh]">
+      <DrawerContent className="bg-background border-border">
         <AnimatePresence mode="wait">
           {state === 'input' && (
             <motion.div key="input" {...fadeInUp}>
@@ -114,6 +216,7 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
                   <Input
                     value={handle}
                     onChange={e => setHandle(e.target.value)}
+                    onBlur={handleHandleBlur}
                     placeholder="@username or instagram.com/username"
                     className="bg-input border-border text-foreground text-base"
                     autoFocus
@@ -121,21 +224,43 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-medium text-foreground-secondary uppercase tracking-wider mb-1 block">
-                    Their Name
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-medium text-foreground-secondary uppercase tracking-wider">
+                      Their Name
+                    </label>
+                    {isEnriching && (
+                      <span className="flex items-center gap-1 text-[10px] text-primary">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Looking up...
+                      </span>
+                    )}
+                    {wasAutoFilled && !isEnriching && (
+                      <span className="flex items-center gap-1 text-[10px] text-primary">
+                        <Sparkles className="w-3 h-3" />
+                        Auto-filled
+                      </span>
+                    )}
+                  </div>
                   <Input
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={e => { setName(e.target.value); setWasAutoFilled(false); }}
                     placeholder="Full name"
                     className="bg-input border-border text-foreground text-base"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-medium text-foreground-secondary uppercase tracking-wider mb-1 block">
-                    Notes (optional)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-medium text-foreground-secondary uppercase tracking-wider">
+                      Notes (optional)
+                    </label>
+                    {wasAutoFilled && enrichedData?.specialty_summary && !isEnriching && (
+                      <span className="flex items-center gap-1 text-[10px] text-primary">
+                        <Sparkles className="w-3 h-3" />
+                        Auto-filled
+                      </span>
+                    )}
+                  </div>
                   <Input
                     value={notes}
                     onChange={e => setNotes(e.target.value)}

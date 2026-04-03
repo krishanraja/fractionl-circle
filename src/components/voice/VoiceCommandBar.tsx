@@ -45,6 +45,20 @@ export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentT
 
   return (
     <>
+      {/* Backdrop overlay when voice is active */}
+      <AnimatePresence>
+        {isActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/40"
+            onClick={() => { dismiss(); haptics.tap(); }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Floating Voice FAB */}
       <motion.button
         onClick={() => {
@@ -54,8 +68,9 @@ export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentT
         }}
         whileTap={{ scale: 0.9 }}
         className={cn(
-          "fixed z-40 w-14 h-14 rounded-full flex items-center justify-center",
+          "fixed w-14 h-14 rounded-full flex items-center justify-center",
           "shadow-lg transition-all duration-200",
+          isActive ? "z-50" : "z-40",
           state === 'listening'
             ? "bg-destructive shadow-destructive/30"
             : state === 'processing'
@@ -97,9 +112,9 @@ export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentT
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-40 md:bottom-24 left-4 right-4 md:left-auto md:right-8 md:w-80 z-30"
+            className="fixed bottom-40 md:bottom-24 left-4 right-4 md:left-auto md:right-8 md:w-80 z-50"
           >
-            <div className="bg-background-elevated border border-border rounded-2xl p-4 shadow-xl">
+            <div className="bg-background border border-border rounded-2xl p-4 shadow-xl">
               {/* Listening state */}
               {state === 'listening' && (
                 <div className="text-center">
@@ -115,8 +130,11 @@ export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentT
                       />
                     ))}
                   </div>
-                  <p className="text-caption text-foreground-muted">
+                  <p className="text-caption text-foreground-muted mb-1">
                     Try: "Log $5000 revenue" or "Show my pipeline"
+                  </p>
+                  <p className="text-[10px] text-foreground-muted/60">
+                    Tap anywhere to cancel
                   </p>
                 </div>
               )}

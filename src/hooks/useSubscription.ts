@@ -207,9 +207,10 @@ export function useSubscription() {
       body: { price_id: priceId },
     });
     if (error) throw error;
-    if (data?.url) {
-      window.location.href = data.url;
+    if (!data?.url) {
+      throw new Error('No checkout URL returned');
     }
+    window.location.href = data.url;
   }, []);
 
   const openPortal = useCallback(async () => {
