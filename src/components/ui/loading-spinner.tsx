@@ -33,14 +33,13 @@ export const LoadingSpinner = ({ size = 'md', className, label }: LoadingSpinner
 export const PageLoader = ({ message = 'Loading...' }: { message?: string }) => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
-      <img
-        src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
-        alt="Fractionl"
-        className="h-8 mb-2"
-      />
       <div className="relative">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <LoadingSpinner size="lg" />
+          <img
+            src="/lovable-uploads/63570a7c-6a51-4c13-8694-b6719861a79b.png"
+            alt="Fractionl"
+            className="w-10 h-10 rounded-lg"
+          />
         </div>
         <div className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping" />
       </div>
