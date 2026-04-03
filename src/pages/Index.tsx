@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { AppShell } from '@/components/layout';
-import { PulseScreen, LogScreen, SettingsScreen, NetworkScreen } from '@/components/screens';
+import { PulseScreen, LogScreen } from '@/components/screens';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { ReminderSheet } from '@/components/reminders/ReminderSheet';
+import { PageLoader } from '@/components/ui/loading-spinner';
 import type { TabId } from '@/components/layout/BottomNav';
+
+// Lazy-load non-primary screens for code splitting
+const NetworkScreen = lazy(() => import('@/components/screens/NetworkScreen').then(m => ({ default: m.NetworkScreen })));
+const SettingsScreen = lazy(() => import('@/components/screens/SettingsScreen').then(m => ({ default: m.SettingsScreen })));
 
 const Index = () => {
   const [currentTab, setCurrentTab] = useState<TabId>('customers');
@@ -19,9 +24,17 @@ const Index = () => {
       case 'customers':
         return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} onOpenLog={() => setShowLogActivity(true)} />;
       case 'contacts':
-        return <NetworkScreen />;
+        return (
+          <Suspense fallback={<PageLoader message="Loading contacts..." />}>
+            <NetworkScreen />
+          </Suspense>
+        );
       case 'settings':
-        return <SettingsScreen />;
+        return (
+          <Suspense fallback={<PageLoader message="Loading settings..." />}>
+            <SettingsScreen />
+          </Suspense>
+        );
       default:
         return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} onOpenLog={() => setShowLogActivity(true)} />;
     }

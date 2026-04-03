@@ -11,21 +11,12 @@ import { fadeInUp } from '@/constants/animation';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { parsedLogSchema, type ValidatedParsedLog } from '@/utils/voiceLogSchema';
+import { withRetry } from '@/utils/retry';
 
 type LogState = 'idle' | 'recording' | 'processing' | 'confirming' | 'success';
 
-interface ParsedLog {
-  client?: string;
-  client_name?: string;
-  client_mentioned?: string;
-  client_id?: string | null;
-  activity_type?: string;
-  duration_minutes?: number;
-  notes?: string;
-  revenue?: number;
-  summary?: string;
-  confidence?: number;
-}
+type ParsedLog = ValidatedParsedLog;
 
 interface LogScreenProps {
   onClose?: () => void;
@@ -110,14 +101,29 @@ export const LogScreen = ({ onClose }: LogScreenProps) => {
       reader.readAsDataURL(blob);
       const audioBase64 = await base64Promise;
 
-      const { data: transcribeData, error: transcribeError } = await supabase.functions.invoke('transcribe', {
-        body: { audio: audioBase64, format: 'webm' },
-      });
-
-      if (transcribeError) throw transcribeError;
+      // Retry transcription with exponential backoff for transient failures
+      const transcribeData = await withRetry(async () => {
+        const { data, error } = await supabase.functions.invoke('transcribe', {
+          body: { audio: audioBase64, format: 'webm' },
+        });
+        if (error) throw error;
+        return data;
+      }, { maxRetries: 2, baseDelay: 1500 });
 
       const transcriptText = transcribeData.transcript;
       setTranscript(transcriptText);
+
+      // Save transcript immediately so it's never lost, even if parsing fails
+      if (user?.id) {
+        try {
+          localStorage.setItem(
+            `circle_draft_transcript_${user.id}`,
+            JSON.stringify({ transcript: transcriptText, timestamp: Date.now() }),
+          );
+        } catch {
+          // localStorage may be full; non-critical
+        }
+      }
 
       await parseTranscript(transcriptText);
     } catch (err) {
@@ -130,15 +136,30 @@ export const LogScreen = ({ onClose }: LogScreenProps) => {
 
   const parseTranscript = async (transcriptText: string) => {
     try {
-      // Pass full client objects for better AI matching context
-      const { data: parseData, error: parseError } = await supabase.functions.invoke('parse-voice-log', {
-        body: { transcript: transcriptText, clients: clients },
-      });
-
-      if (parseError) throw parseError;
+      // Retry parsing with exponential backoff for transient failures
+      const parseData = await withRetry(async () => {
+        const { data, error } = await supabase.functions.invoke('parse-voice-log', {
+          body: { transcript: transcriptText, clients: clients },
+        });
+        if (error) throw error;
+        return data;
+      }, { maxRetries: 2, baseDelay: 1500 });
 
       // Edge fn returns { parsed: {...}, raw_transcript: "..." }
-      const parsed: ParsedLog = parseData.parsed || parseData;
+      const rawParsed = parseData.parsed || parseData;
+
+      // Validate AI output with Zod — catch malformed data before it reaches the DB
+      const validated = parsedLogSchema.safeParse(rawParsed);
+      if (!validated.success) {
+        console.warn('AI output failed validation:', validated.error.flatten());
+        toast.error('Could not parse the recording correctly. Please edit manually.');
+        // Fall back to a minimal parsed log so the user can still edit and save
+        setParsedLog({ activity_type: 'work', summary: transcriptText });
+        setState('confirming');
+        return;
+      }
+
+      const parsed: ParsedLog = validated.data;
 
       // Resolve client name to client_id - edge function now returns exact client_name match
       const clientName = parsed.client_name || parsed.client;
@@ -205,6 +226,11 @@ export const LogScreen = ({ onClose }: LogScreenProps) => {
           .update({ last_activity_date: new Date().toISOString() })
           .eq('id', clientId)
           .eq('user_id', user.id);
+      }
+
+      // Clear draft transcript on successful save
+      if (user?.id) {
+        try { localStorage.removeItem(`circle_draft_transcript_${user.id}`); } catch {}
       }
 
       setState('success');
