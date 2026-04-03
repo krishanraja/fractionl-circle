@@ -1248,59 +1248,92 @@ export type Database = {
       talent_contacts: {
         Row: {
           availability_status: string | null
+          city: string | null
+          company: string | null
           created_at: string
           email: string | null
           id: string
+          last_interaction_date: string | null
           linkedin_url: string | null
+          met_at: string | null
+          met_date: string | null
           name: string
+          notes_voice_raw: string | null
           phone: string | null
           photo_url: string | null
           portfolio_url: string | null
           rate_max: number | null
           rate_min: number | null
           rate_type: string | null
+          source: string | null
           specialty_summary: string | null
+          tags: string[] | null
+          timezone: string | null
+          title: string | null
           trust_rating: number | null
           updated_at: string
           user_id: string
+          vetted: boolean | null
           working_style_notes: string | null
         }
         Insert: {
           availability_status?: string | null
+          city?: string | null
+          company?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          last_interaction_date?: string | null
           linkedin_url?: string | null
+          met_at?: string | null
+          met_date?: string | null
           name: string
+          notes_voice_raw?: string | null
           phone?: string | null
           photo_url?: string | null
           portfolio_url?: string | null
           rate_max?: number | null
           rate_min?: number | null
           rate_type?: string | null
+          source?: string | null
           specialty_summary?: string | null
+          tags?: string[] | null
+          timezone?: string | null
+          title?: string | null
           trust_rating?: number | null
           updated_at?: string
           user_id: string
+          vetted?: boolean | null
           working_style_notes?: string | null
         }
         Update: {
           availability_status?: string | null
+          city?: string | null
+          company?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          last_interaction_date?: string | null
           linkedin_url?: string | null
+          met_at?: string | null
+          met_date?: string | null
           name?: string
+          notes_voice_raw?: string | null
           phone?: string | null
           photo_url?: string | null
           portfolio_url?: string | null
           rate_max?: number | null
           rate_min?: number | null
           rate_type?: string | null
+          source?: string | null
           specialty_summary?: string | null
+          tags?: string[] | null
+          timezone?: string | null
+          title?: string | null
           trust_rating?: number | null
           updated_at?: string
           user_id?: string
+          vetted?: boolean | null
           working_style_notes?: string | null
         }
         Relationships: []

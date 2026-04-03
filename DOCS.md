@@ -1,6 +1,6 @@
 # Circle by Fractionl - The Relationship Intelligence Platform for Portfolio Executives
 
-> Circle is the relationship-powered operating system that helps fractional executives, consultants, and portfolio professionals turn their network into revenue. Log leads on mobile. Manage your pipeline on desktop. Let AI connect the dots.
+> Circle is the relationship-powered operating system that helps fractional executives, consultants, and portfolio professionals turn their circle into revenue. Log leads on mobile. Manage your pipeline on desktop. Let AI connect the dots.
 
 ---
 
@@ -31,11 +31,11 @@ These professionals are exceptional at their craft. But their **operational infr
 - **Relationships live in their heads.** They meet brilliant people at conferences, on LinkedIn, through client introductions -- and forget to follow up because there's no system.
 - **Revenue is invisible until it arrives.** With 3-7 active engagements across advisory, workshops, and project work, they can't see what's coming until it hits the bank account.
 - **Pipeline management means a spreadsheet they haven't updated in weeks.** Opportunities fall through the cracks because context-switching between clients leaves no bandwidth for BD discipline.
-- **Their network is their moat, but it's unmanaged.** They know someone who could help with every project -- if only they could remember who, and when they last spoke.
+- **Their circle is their moat, but it's unmanaged.** They know someone who could help with every project -- if only they could remember who, and when they last spoke.
 
 ### The Insight
 
-Portfolio executives don't need another CRM. They don't need another project management tool. They need a **relationship intelligence layer** that sits between their network and their revenue -- capturing interactions on the go, surfacing connections they'd otherwise miss, and holding them accountable to the business development habits that drive growth.
+Portfolio executives don't need another CRM. They don't need another project management tool. They need a **relationship intelligence layer** that sits between their circle and their revenue -- capturing interactions on the go, surfacing connections they'd otherwise miss, and holding them accountable to the business development habits that drive growth.
 
 **Circle is that layer.**
 
@@ -65,7 +65,7 @@ Portfolio executives don't need another CRM. They don't need another project man
 
 ### What They All Share
 
-- Their **network is their business**
+- Their **circle is their business**
 - They're **time-starved** and need tools that work in 30-second bursts
 - They value **relationships over transactions**
 - They need **accountability** more than automation
@@ -82,8 +82,8 @@ Portfolio executives don't need another CRM. They don't need another project man
 | **Never lose a lead again** | Mobile-first logging with voice input -- capture a contact or opportunity in under 10 seconds between meetings |
 | **See your revenue before it arrives** | Pipeline view with weighted probability shows your forecast, not just your actuals |
 | **Stay accountable to BD habits** | Daily pulse dashboard tracks streaks, surfaces what needs attention, celebrates wins |
-| **Activate your dormant network** | AI identifies contacts you haven't engaged recently who match current opportunities |
-| **Find the right person for any project** | Talent network with skill-based search, trust ratings, and referral tracking |
+| **Activate your dormant circle** | AI identifies contacts you haven't engaged recently who match current opportunities |
+| **Find the right person for any project** | Talent circle with skill-based search, trust ratings, and referral tracking |
 | **Know your numbers at a glance** | Revenue vs. target, active clients, pipeline value -- all on one mobile screen |
 | **Turn weekly reviews into strategy sessions** | AI-generated weekly summaries highlight patterns and suggest next moves |
 
@@ -91,7 +91,7 @@ Portfolio executives don't need another CRM. They don't need another project man
 
 1. **Between meetings:** Open Circle, tap Log, voice-record "Just met Sarah Chen, she's a fractional CFO, great for the Acme project"
 2. **AI parses it:** Client, contact type, project link -- all extracted automatically
-3. **Your network grows:** Sarah appears in your talent network with skills and context
+3. **Your circle grows:** Sarah appears in your talent circle with skills and context
 4. **Circle nudges you:** "You haven't followed up with Sarah in 7 days. She'd be perfect for the TechCorp engagement."
 
 ### The Sunday Night Review (Desktop)
@@ -116,7 +116,7 @@ Five tabs, zero friction:
 | **Pulse** | Your daily dashboard | See revenue progress, active clients, pipeline snapshot, weekly AI insight |
 | **Log** | Voice and text activity logging | Record meetings, calls, and interactions with AI-powered parsing |
 | **History** | Activity timeline | Review past logs grouped by date, filter by type |
-| **Network** | Your talent black book | Search contacts by skill, availability, trust rating; quick-add new contacts |
+| **Circle** | Your talent black book | Search contacts by skill, availability, trust rating; quick-add new contacts |
 | **Settings** | Preferences and account | Theme, notifications, profile management |
 
 ### Desktop: Your Strategic Command Center
@@ -153,11 +153,11 @@ Voice-first activity capture:
 ### History Screen
 Chronological activity feed:
 - Grouped by date with clear visual hierarchy
-- Icons per activity type (meeting, call, email, deep work, networking)
+- Icons per activity type (meeting, call, email, deep work, circle)
 - Duration, revenue, and client attribution per entry
 - Filter and search capabilities
 
-### Network Screen
+### Circle Screen
 Your professional black book:
 - **Search** by name, skill, company, city
 - **Filter** by availability (available/busy/unavailable), category chips
@@ -245,7 +245,7 @@ Performance intelligence:
 - **Smart matching:** AI suggests talent contacts for open opportunities based on skills and past performance
 - **Revenue forecasting:** Predictive models based on pipeline velocity and historical patterns
 - **Conversation summarization:** Auto-summarize meeting notes from voice logs
-- **Network warmth scoring:** AI tracks relationship health across your entire network
+- **Circle warmth scoring:** AI tracks relationship health across your entire circle
 
 ---
 
@@ -280,7 +280,7 @@ Performance intelligence:
 - `daily_progress` -- BD activity tracking against monthly goals
 - `weekly_summaries` -- AI-generated weekly narratives
 
-**Talent Network Tables:**
+**Talent Circle Tables:**
 - `talent_contacts` -- Professional contacts with skills, rates, trust ratings
 - `talent_skills` -- Many-to-many contact-skill relationships
 - `talent_referrals` -- Referral tracking with outcomes
@@ -326,7 +326,7 @@ Performance intelligence:
 | **Product name** | Circle |
 | **Parent brand** | Fractionl |
 | **Full name** | Circle by Fractionl |
-| **Tagline** | "Your network is your net worth. Circle makes it work." |
+| **Tagline** | "Your circle is your net worth. Circle makes it work." |
 | **Personality** | Professional, intelligent, warm, confident |
 | **Voice** | Peer-to-peer (not corporate), action-oriented, encouraging without being patronizing |
 
@@ -357,25 +357,25 @@ Performance intelligence:
 ### Now: Relationship Intelligence MVP
 - [x] Mobile-first PWA with 5-tab navigation
 - [x] Voice-powered activity logging with AI parsing
-- [x] Talent network with skill-based search and referral tracking
+- [x] Talent circle with skill-based search and referral tracking
 - [x] Pipeline management with probability weighting
 - [x] Client management with engagement tracking
 - [x] Weekly AI summaries
 - [x] Onboarding wizard
 - [ ] Proactive follow-up nudges
 - [ ] AI-powered talent-to-opportunity matching
-- [ ] Network warmth scoring and decay alerts
+- [ ] Circle warmth scoring and decay alerts
 
 ### Next: Growth Intelligence
 - [ ] Revenue forecasting with ML models
 - [ ] Smart weekly planning assistant
-- [ ] LinkedIn import for network building
+- [ ] LinkedIn import for circle building
 - [ ] Expense tracking and profitability analysis
 - [ ] Invoice generation with Stripe integration
 - [ ] PDF export for pipeline reports and client summaries
 
 ### Later: Platform Effects
-- [ ] Circle Connect -- opt-in network for fractional executives to discover each other
+- [ ] Circle Connect -- opt-in circle for fractional executives to discover each other
 - [ ] Opportunity sharing marketplace
 - [ ] Benchmarking (anonymized revenue, rates, win rates by industry)
 - [ ] Client portal (read-only engagement view for your clients)
@@ -426,8 +426,8 @@ VITE_SUPABASE_ANON_KEY=<your-anon-key>
 | 2024 Q1-Q3 | Core tracking, AI chat, pipeline, Google Sheets integration |
 | 2024 Q4 | Design system overhaul, purple brand identity |
 | 2025 Q1 | Rebrand to Circle by Fractionl, mobile-first PWA, voice logging |
-| 2025 Q1 | Talent network (black book), client management, onboarding wizard |
-| 2025 Q1 | Sprint series: Network screen, Quick-add, Revenue sheets, Error boundaries |
+| 2025 Q1 | Talent circle (black book), client management, onboarding wizard |
+| 2025 Q1 | Sprint series: Circle screen, Quick-add, Revenue sheets, Error boundaries |
 
 ---
 

@@ -1,5 +1,5 @@
 /**
- * Contact action utilities for talent network
+ * Contact action utilities for talent circle
  * Handles email, phone, WhatsApp, LinkedIn, and clipboard operations
  */
 

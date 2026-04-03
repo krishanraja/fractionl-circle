@@ -1,12 +1,12 @@
 # Circle by Fractionl
 
-**Your network is your net worth. Circle makes it work.**
+**Your circle is your net worth. Circle makes it work.**
 
 Circle is a relationship intelligence platform built for fractional executives and portfolio professionals. Capture leads on mobile between meetings. Manage your pipeline on desktop Sunday nights. Let AI surface the connections you'd otherwise miss.
 
 ## The Problem
 
-Fractional CMOs, CFOs, and CTOs juggle 3-7 clients, a network of hundreds of professionals, and a pipeline that lives in their heads. Their "CRM" is a neglected spreadsheet. Their follow-up system is memory. Their revenue forecast is optimism.
+Fractional CMOs, CFOs, and CTOs juggle 3-7 clients, a circle of hundreds of professionals, and a pipeline that lives in their heads. Their "CRM" is a neglected spreadsheet. Their follow-up system is memory. Their revenue forecast is optimism.
 
 ## The Solution
 
@@ -21,7 +21,7 @@ Circle gives portfolio executives the infrastructure their business deserves:
 ## How It Works
 
 **On mobile (between meetings):**
-Tap. Speak. Done. Circle captures your activity, parses it with AI, and keeps your network growing.
+Tap. Speak. Done. Circle captures your activity, parses it with AI, and keeps your circle growing.
 
 **On desktop (weekly planning):**
 Review your pipeline, check revenue vs. goals, ask AI for strategic advice, and plan your week with full context.

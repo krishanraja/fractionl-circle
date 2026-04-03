@@ -33,9 +33,10 @@ export const AppShell = ({
   const isMobile = useIsMobile();
 
   const handleVoiceNavigate = (tab: string) => {
+    const mapped = tab === 'circle' ? 'contacts' : tab;
     const validTabs: TabId[] = ['customers', 'contacts', 'settings'];
-    if (validTabs.includes(tab as TabId)) {
-      onTabChange(tab as TabId);
+    if (validTabs.includes(mapped as TabId)) {
+      onTabChange(mapped as TabId);
     }
   };
 

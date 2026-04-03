@@ -88,7 +88,7 @@ Return JSON:
   "intent": "query|navigate|action|unknown",
   "action": "show_revenue|show_pipeline|show_clients|add_contact|log_activity|set_reminder|filter_pipeline|navigate_tab|unknown",
   "response": "Natural language response to speak back to the user",
-  "navigate_to": "pulse|log|history|network|settings|null",
+  "navigate_to": "pulse|log|history|circle|settings|null",
   "data": {} // Optional structured data for the UI to use
 }`
           },

@@ -11,7 +11,7 @@ interface BottomNavProps {
 
 const navItems: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'customers', label: 'Customers', icon: Home },
-  { id: 'contacts', label: 'Contacts', icon: Users },
+  { id: 'contacts', label: 'Circle', icon: Users },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 

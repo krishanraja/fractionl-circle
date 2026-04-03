@@ -24,7 +24,7 @@ interface GoogleSheetsExportSheetProps {
 }
 
 const EXPORT_ITEMS = [
-  { icon: Users, label: 'Contacts & Network', description: 'Names, emails, phones, skills, rates' },
+  { icon: Users, label: 'Contacts & Circle', description: 'Names, emails, phones, skills, rates' },
   { icon: Briefcase, label: 'Clients', description: 'Status, engagement, revenue targets' },
   { icon: TrendingUp, label: 'Revenue', description: 'Monthly revenue by source' },
   { icon: Target, label: 'Pipeline', description: 'Opportunities, stages, values' },

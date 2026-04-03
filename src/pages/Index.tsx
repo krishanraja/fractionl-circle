@@ -9,7 +9,7 @@ import { PageLoader } from '@/components/ui/loading-spinner';
 import type { TabId } from '@/components/layout/BottomNav';
 
 // Lazy-load non-primary screens for code splitting
-const NetworkScreen = lazy(() => import('@/components/screens/NetworkScreen').then(m => ({ default: m.NetworkScreen })));
+const CircleScreen = lazy(() => import('@/components/screens/NetworkScreen').then(m => ({ default: m.CircleScreen })));
 const SettingsScreen = lazy(() => import('@/components/screens/SettingsScreen').then(m => ({ default: m.SettingsScreen })));
 
 const Index = () => {
@@ -26,7 +26,7 @@ const Index = () => {
       case 'contacts':
         return (
           <Suspense fallback={<PageLoader message="Loading contacts..." />}>
-            <NetworkScreen />
+            <CircleScreen />
           </Suspense>
         );
       case 'settings':

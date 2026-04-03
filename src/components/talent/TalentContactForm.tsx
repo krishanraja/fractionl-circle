@@ -518,7 +518,7 @@ export function TalentContactForm({
       open={open}
       onOpenChange={onOpenChange}
       title={contact ? 'Edit Contact' : 'Add Contact'}
-      description={contact ? 'Update contact information' : 'Add a new contact to your network'}
+      description={contact ? 'Update contact information' : 'Add a new contact to your circle'}
     >
       {formContent}
     </ResponsiveDialog>

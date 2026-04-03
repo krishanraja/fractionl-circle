@@ -29,7 +29,7 @@ const activityTypeLabel: Record<string, string> = {
   work: 'Deep Work',
   email: 'Email',
   admin: 'Admin',
-  networking: 'Networking',
+  networking: 'Circle',
   other: 'Activity',
 };
 
@@ -46,7 +46,7 @@ const formatRelativeDate = (dateStr: string): string => {
 
 interface RecentActivityProps {
   className?: string;
-  /** Filter to only show activities for contacts (networking type) */
+  /** Filter to only show activities for contacts (circle activity type) */
   contactsOnly?: boolean;
   /** Max items to show initially */
   initialCount?: number;
@@ -159,7 +159,7 @@ export const RecentActivity = ({ className, contactsOnly = false, initialCount =
       <div className={cn("text-center py-8", className)}>
         <Clock className="w-8 h-8 text-foreground-muted mx-auto mb-2" />
         <p className="text-caption text-foreground-secondary">
-          {contactsOnly ? 'No networking activity yet' : 'No recent activity'}
+          {contactsOnly ? 'No circle activity yet' : 'No recent activity'}
         </p>
       </div>
     );

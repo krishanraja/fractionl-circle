@@ -31,7 +31,7 @@ const AVAILABILITY_COLORS: Record<string, string> = {
   unavailable: '#6B7280',
 };
 
-export const NetworkScreen = () => {
+export const CircleScreen = () => {
   const { contacts, loading: isLoading, deleteContact, createContact, updateContact } = useTalentContacts();
   const { skills } = useSkills();
 
@@ -242,7 +242,7 @@ export const NetworkScreen = () => {
         </AnimatePresence>
       </div>
 
-      {/* Recent networking activity */}
+      {/* Recent circle activity */}
       <div className="px-4 pt-4 pb-4">
         <RecentActivity contactsOnly initialCount={3} />
       </div>
