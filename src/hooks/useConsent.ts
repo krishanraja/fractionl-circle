@@ -26,7 +26,13 @@ export function useConsent() {
   const { user } = useAuth();
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasConsented, setHasConsented] = useState(false);
+  const [hasConsented, setHasConsented] = useState(() => {
+    try {
+      return !!localStorage.getItem(LOCAL_STORAGE_KEY);
+    } catch {
+      return false;
+    }
+  });
 
   // Check local storage for anonymous consent (pre-auth)
   const getLocalConsent = useCallback((): Record<ConsentType, boolean> | null => {

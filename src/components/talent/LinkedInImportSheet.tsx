@@ -256,7 +256,7 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="bg-background border-border max-h-[90dvh]">
+      <DrawerContent className="bg-background border-border">
         <div className="overflow-y-auto pb-safe-bottom">
           <input
             ref={fileInputRef}

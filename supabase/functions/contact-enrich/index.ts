@@ -240,9 +240,9 @@ async function tryClearbit(email: string, apiKey: string): Promise<EnrichmentRes
     else if (data.geo?.city) result.city = data.geo.city;
 
     if (result.title && result.company) {
-      result.specialty_summary = `${result.title} at ${result.company}`;
+      result.specialty_summary = `${result.title} at ${result.company}${result.city ? `, ${result.city}` : ''}`;
     } else if (result.title) {
-      result.specialty_summary = result.title;
+      result.specialty_summary = result.city ? `${result.title}, ${result.city}` : result.title;
     }
 
     return Object.keys(result).length > 0 ? result : null;
@@ -277,9 +277,9 @@ async function tryApollo(email: string, apiKey: string): Promise<EnrichmentResul
     if (person.city) result.city = person.city;
 
     if (result.title && result.company) {
-      result.specialty_summary = `${result.title} at ${result.company}`;
+      result.specialty_summary = `${result.title} at ${result.company}${result.city ? `, ${result.city}` : ''}`;
     } else if (result.title) {
-      result.specialty_summary = result.title;
+      result.specialty_summary = result.city ? `${result.title}, ${result.city}` : result.title;
     }
 
     return Object.keys(result).length > 0 ? result : null;
