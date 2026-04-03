@@ -27,7 +27,7 @@ const features = [
   { name: 'Activity history', free: '30 days', pro: 'Unlimited', exec: 'Unlimited' },
   { name: 'Morning briefing', free: 'Basic', pro: 'Full + actions', exec: 'Full + voice' },
   { name: 'Smart nudges', free: '3 / day', pro: 'Unlimited', exec: 'Custom rules' },
-  { name: 'Network contacts', free: '25', pro: 'Unlimited', exec: 'Unlimited' },
+  { name: 'Circle contacts', free: '25', pro: 'Unlimited', exec: 'Unlimited' },
   { name: 'Relationship health', free: '-', pro: true, exec: 'Predictions' },
   { name: 'Voice commands', free: 'Log only', pro: 'All commands', exec: 'Custom' },
   { name: 'Desktop dashboard', free: 'Basic', pro: 'Full', exec: 'Full + reports' },

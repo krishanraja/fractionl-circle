@@ -11,7 +11,7 @@ interface DesktopSidebarProps {
 
 const mainNavItems: { id: TabId; label: string; icon: typeof Users }[] = [
   { id: 'customers', label: 'Customers', icon: Users },
-  { id: 'contacts', label: 'Contacts', icon: BookUser },
+  { id: 'contacts', label: 'Circle', icon: BookUser },
 ];
 
 export const DesktopSidebar = ({ currentTab, onTabChange, onOpenLog }: DesktopSidebarProps) => {

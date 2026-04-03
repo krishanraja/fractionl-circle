@@ -36,7 +36,7 @@ const activityTypeLabel: Record<string, string> = {
   work: 'Deep Work',
   email: 'Email',
   admin: 'Admin',
-  networking: 'Networking',
+  networking: 'Circle',
   other: 'Activity',
 };
 

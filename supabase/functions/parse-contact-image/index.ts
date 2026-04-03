@@ -34,23 +34,24 @@ Deno.serve(async (req) => {
     enforceMaxLength(image, 10 * 1024 * 1024, 'image');
 
     const systemPrompt = `You are an AI that extracts contact information from images.
-The image may be a business card, a screenshot of a social media profile (LinkedIn, Instagram, Twitter), an email signature, or any image containing contact details.
+The image may be a business card, a screenshot of a social media profile or post (LinkedIn, Instagram, Twitter/X), an email signature, or any image containing contact details.
 
 Extract the following fields. Only include fields that are clearly visible or strongly implied:
 
-- name: Full name of the person (required)
+- name: Full name of the person (required). For social media posts, extract the name of the post author from the header area.
 - email: Email address
 - phone: Phone number (include country code if visible)
 - company: Company or organization name
-- title: Job title or role
+- title: Job title, role, or headline. For LinkedIn, use the text directly below the person's name.
 - city: City or location
-- specialty_summary: Brief description of what they do
-- linkedin_url: LinkedIn URL or handle
-- instagram_handle: Instagram handle
+- specialty_summary: Brief description of what they do, inferred from their title, headline, bio, or post content
+- linkedin_url: LinkedIn profile URL if visible (check browser address bar, profile links, or construct from visible profile info)
+- instagram_handle: Instagram handle (without @)
 - website: Website URL
+- platform: Identify the source platform. Must be one of: "linkedin", "instagram", "twitter", "business_card", "email_signature", or "unknown". Look for platform-specific UI elements (LinkedIn's blue navbar, Instagram's layout, Twitter/X's interface, etc.)
 
 Return a JSON object with these fields. Use null for any field not found.
-Be thorough - check all text in the image including small print, URLs, and social handles.`;
+Be thorough - check all text in the image including small print, URLs, social handles, and platform UI elements. For social media screenshots, focus on extracting the profile owner's or post author's information, not commenters or other users visible in the image.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -81,7 +82,7 @@ Be thorough - check all text in the image including small print, URLs, and socia
         ],
         response_format: { type: 'json_object' },
         temperature: 0.1,
-        max_tokens: 500,
+        max_tokens: 600,
         store: false,
       }),
     });
