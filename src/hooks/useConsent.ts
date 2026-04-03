@@ -59,10 +59,15 @@ export function useConsent() {
         setConsents(data as unknown as ConsentRecord[]);
         setHasConsented(true);
       } else {
-        setHasConsented(false);
+        // Fall back to localStorage for logged-in users whose DB records are missing
+        const local = getLocalConsent();
+        setHasConsented(!!local);
       }
     } catch (err) {
       console.error('Failed to fetch consents:', err);
+      // On DB failure, still respect localStorage consent
+      const local = getLocalConsent();
+      setHasConsented(!!local);
     } finally {
       setLoading(false);
     }
@@ -85,6 +90,12 @@ export function useConsent() {
       setHasConsented(true);
       return;
     }
+
+    // Always persist to localStorage as fallback
+    const local = getLocalConsent() || {};
+    local[consentType] = granted;
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local));
+    setHasConsented(true);
 
     try {
       const now = new Date().toISOString();
