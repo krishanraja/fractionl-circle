@@ -15,6 +15,7 @@ interface AppShellProps {
   onTabChange: (tab: TabId) => void;
   onOpenLog: () => void;
   onSetReminder?: (prefill?: { title?: string; clientId?: string }) => void;
+  onShowPricing?: () => void;
   title?: string;
   showHeader?: boolean;
   headerActions?: ReactNode;
@@ -26,6 +27,7 @@ export const AppShell = ({
   onTabChange,
   onOpenLog,
   onSetReminder,
+  onShowPricing,
   title,
   showHeader = true,
   headerActions,
@@ -56,7 +58,10 @@ export const AppShell = ({
       )}
 
       {/* Trial Banner */}
-      <TrialBanner onUpgrade={() => onTabChange('settings')} />
+      <TrialBanner onUpgrade={() => {
+        onTabChange('settings');
+        onShowPricing?.();
+      }} />
 
       {/* Mobile Header */}
       {isMobile && showHeader && (

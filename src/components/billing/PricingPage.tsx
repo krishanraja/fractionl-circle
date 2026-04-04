@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Sparkles, Crown, Zap, ArrowRight } from 'lucide-react';
+import { Check, Sparkles, Crown, Zap, ArrowRight, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
 import { useSubscription, type SubscriptionTier } from '@/hooks/useSubscription';
 import { haptics } from '@/utils/haptics';
+import { toast } from 'sonner';
 
 // These should come from env/config - placeholder price IDs
 const PRICE_IDS = {
@@ -37,7 +38,7 @@ const features = [
 ];
 
 export const PricingPage = ({ onClose }: PricingPageProps) => {
-  const { effectiveTier, isTrialing, openCheckout } = useSubscription();
+  const { effectiveTier, isTrialing, trialDaysRemaining, openCheckout, openPortal, tier } = useSubscription();
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
@@ -91,6 +92,24 @@ export const PricingPage = ({ onClose }: PricingPageProps) => {
       animate="animate"
       className="max-w-4xl mx-auto px-4 py-8"
     >
+      {/* Trial Notice */}
+      {isTrialing && trialDaysRemaining > 0 && (
+        <motion.div
+          variants={staggerItem}
+          className={cn(
+            "flex items-center justify-center gap-2 px-4 py-3 rounded-xl mb-6 text-caption font-medium",
+            trialDaysRemaining <= 3
+              ? "bg-warning/10 text-warning border border-warning/20"
+              : "bg-primary/10 text-primary border border-primary/20"
+          )}
+        >
+          <Clock className="w-4 h-4" />
+          <span>
+            Your Pro trial ends in {trialDaysRemaining} day{trialDaysRemaining === 1 ? '' : 's'}. Subscribe now to keep full access.
+          </span>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div variants={staggerItem} className="text-center mb-8">
         <h1 className="text-title-1 text-foreground mb-2">Choose Your Plan</h1>
@@ -126,80 +145,112 @@ export const PricingPage = ({ onClose }: PricingPageProps) => {
 
       {/* Tier Cards */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-        {tiers.map((tier) => {
-          const isCurrent = tier.id === effectiveTier;
-          const price = billing === 'annual' ? tier.price.annual : tier.price.monthly;
-          const monthlyEquiv = billing === 'annual' && tier.price.annual > 0
-            ? Math.round(tier.price.annual / 12)
-            : tier.price.monthly;
+        {tiers.map((planTier) => {
+          const isCurrent = planTier.id === effectiveTier && !isTrialing;
+          const isTrialTier = isTrialing && planTier.id === effectiveTier;
+          const price = billing === 'annual' ? planTier.price.annual : planTier.price.monthly;
+          const monthlyEquiv = billing === 'annual' && planTier.price.annual > 0
+            ? Math.round(planTier.price.annual / 12)
+            : planTier.price.monthly;
+
+          const renderButton = () => {
+            if (planTier.id === 'free') {
+              if (tier === 'free') {
+                return (
+                  <Button variant="outline" className="w-full rounded-xl" disabled>
+                    {isTrialing ? 'After trial ends' : 'Current Plan'}
+                  </Button>
+                );
+              }
+              return (
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl"
+                  onClick={() => {
+                    haptics.light();
+                    openPortal().catch(() => toast.error('Unable to open billing portal.'));
+                  }}
+                >
+                  Manage Billing
+                </Button>
+              );
+            }
+
+            if (isCurrent) {
+              return (
+                <Button className={cn("w-full rounded-xl", planTier.highlight && "shadow-purple")} disabled>
+                  Current Plan
+                </Button>
+              );
+            }
+
+            return (
+              <Button
+                className={cn("w-full rounded-xl", planTier.highlight && "shadow-purple")}
+                disabled={loadingTier === planTier.id}
+                onClick={() => handleUpgrade(planTier.id)}
+              >
+                {loadingTier === planTier.id ? (
+                  <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                ) : isTrialTier ? (
+                  <>
+                    Subscribe to keep {planTier.name}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    Upgrade to {planTier.name}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </>
+                )}
+              </Button>
+            );
+          };
 
           return (
             <Card
-              key={tier.id}
+              key={planTier.id}
               className={cn(
                 "relative overflow-hidden transition-all",
-                tier.highlight && "border-primary shadow-lg shadow-primary/10 scale-[1.02]",
-                isCurrent && "ring-2 ring-primary"
+                planTier.highlight && "border-primary shadow-lg shadow-primary/10 scale-[1.02]",
+                (isCurrent || isTrialTier) && "ring-2 ring-primary"
               )}
             >
-              {tier.badge && (
+              {planTier.badge && (
                 <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-xl">
-                  {tier.badge}
+                  {planTier.badge}
                 </div>
               )}
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <tier.icon className="w-5 h-5 text-primary" />
-                  <h3 className="text-title-3 text-foreground">{tier.name}</h3>
+                  <planTier.icon className="w-5 h-5 text-primary" />
+                  <h3 className="text-title-3 text-foreground">{planTier.name}</h3>
+                  {isTrialTier && (
+                    <span className="text-[10px] font-semibold bg-warning/15 text-warning px-2 py-0.5 rounded-full">
+                      Trial
+                    </span>
+                  )}
                 </div>
 
                 <div className="mb-1">
                   <span className="text-display text-foreground">
                     ${monthlyEquiv}
                   </span>
-                  {tier.price.monthly > 0 && (
+                  {planTier.price.monthly > 0 && (
                     <span className="text-caption text-foreground-secondary"> /mo</span>
                   )}
                 </div>
-                {billing === 'annual' && tier.price.annual > 0 && (
+                {billing === 'annual' && planTier.price.annual > 0 && (
                   <p className="text-caption text-foreground-muted mb-3">
                     ${price} billed annually
                   </p>
                 )}
 
                 <p className="text-caption text-foreground-secondary mb-5">
-                  {tier.description}
+                  {planTier.description}
                 </p>
 
-                {tier.id === 'free' ? (
-                  <Button
-                    variant="outline"
-                    className="w-full rounded-xl"
-                    disabled={isCurrent}
-                  >
-                    {isCurrent ? 'Current Plan' : 'Downgrade'}
-                  </Button>
-                ) : (
-                  <Button
-                    className={cn(
-                      "w-full rounded-xl",
-                      tier.highlight && "shadow-purple"
-                    )}
-                    disabled={isCurrent || loadingTier === tier.id}
-                    onClick={() => handleUpgrade(tier.id)}
-                  >
-                    {loadingTier === tier.id ? (
-                      <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    ) : isCurrent ? (
-                      'Current Plan'
-                    ) : (
-                      <>
-                        Upgrade to {tier.name}
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </>
-                    )}
-                  </Button>
-                )}
+                {renderButton()}
               </CardContent>
             </Card>
           );

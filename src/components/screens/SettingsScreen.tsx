@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Calendar, Bell, ChevronRight,
@@ -21,7 +21,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
 
-export const SettingsScreen = () => {
+interface SettingsScreenProps {
+  initialShowPricing?: boolean;
+  onPricingShown?: () => void;
+}
+
+export const SettingsScreen = ({ initialShowPricing, onPricingShown }: SettingsScreenProps = {}) => {
   const { user, signOut } = useAuth();
   const { profile } = useUserProfile();
   const {
@@ -33,8 +38,15 @@ export const SettingsScreen = () => {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailDigest, setEmailDigest] = useState(false);
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
-  const [showPricing, setShowPricing] = useState(false);
+  const [showPricing, setShowPricing] = useState(initialShowPricing ?? false);
   const [showSheetsExport, setShowSheetsExport] = useState(false);
+
+  useEffect(() => {
+    if (initialShowPricing) {
+      setShowPricing(true);
+      onPricingShown?.();
+    }
+  }, [initialShowPricing, onPricingShown]);
 
   const handleToggle = async (key: string, value: boolean) => {
     haptics.tap();

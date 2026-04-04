@@ -32,8 +32,7 @@ export const UpgradePrompt = ({ feature, message, compact = false, className, on
       onUpgradeClick();
       return;
     }
-    // Guard: if Stripe isn't configured, show coming soon message
-    if (/^price_/.test(PRICE_IDS.pro_monthly)) {
+    if (!PRICE_IDS.pro_monthly || PRICE_IDS.pro_monthly === 'price_pro_monthly') {
       toast.info('Upgrade coming soon — contact us for early access');
       return;
     }

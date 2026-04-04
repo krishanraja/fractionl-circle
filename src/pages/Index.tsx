@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppShell } from '@/components/layout';
 import { PulseScreen, LogScreen } from '@/components/screens';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { ReminderSheet } from '@/components/reminders/ReminderSheet';
 import { PageLoader } from '@/components/ui/loading-spinner';
+import { toast } from 'sonner';
 import type { TabId } from '@/components/layout/BottomNav';
 
 // Lazy-load non-primary screens for code splitting
@@ -17,7 +18,22 @@ const Index = () => {
   const [showLogActivity, setShowLogActivity] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
   const [reminderPrefill, setReminderPrefill] = useState<{ title?: string; clientId?: string } | undefined>();
+  const [openPricingOnSettings, setOpenPricingOnSettings] = useState(false);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get('checkout');
+    if (checkoutStatus === 'success') {
+      toast.success('Welcome to your new plan! Your subscription is now active.');
+      params.delete('checkout');
+      window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`);
+    } else if (checkoutStatus === 'canceled') {
+      toast.info('Checkout was canceled. You can upgrade anytime from Settings.');
+      params.delete('checkout');
+      window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`);
+    }
+  }, []);
 
   const renderScreen = () => {
     switch (currentTab) {
@@ -32,7 +48,7 @@ const Index = () => {
       case 'settings':
         return (
           <Suspense fallback={<PageLoader message="Loading settings..." />}>
-            <SettingsScreen />
+            <SettingsScreen initialShowPricing={openPricingOnSettings} onPricingShown={() => setOpenPricingOnSettings(false)} />
           </Suspense>
         );
       default:
@@ -49,6 +65,7 @@ const Index = () => {
         onTabChange={setCurrentTab}
         onOpenLog={() => setShowLogActivity(true)}
         onSetReminder={(prefill) => { setReminderPrefill(prefill); setShowReminder(true); }}
+        onShowPricing={() => setOpenPricingOnSettings(true)}
       >
         {renderScreen()}
       </AppShell>

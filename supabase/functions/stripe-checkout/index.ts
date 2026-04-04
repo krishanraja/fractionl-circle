@@ -80,15 +80,10 @@ Deno.serve(async (req) => {
       });
       customerId = customer.id;
 
-      // Store customer ID
       await supabase
         .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          stripe_customer_id: customerId,
-          tier: 'free',
-          status: 'active',
-        }, { onConflict: 'user_id' });
+        .update({ stripe_customer_id: customerId })
+        .eq('user_id', user.id);
     }
 
     // Create Checkout Session
