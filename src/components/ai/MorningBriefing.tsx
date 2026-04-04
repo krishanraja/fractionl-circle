@@ -78,6 +78,7 @@ export const MorningBriefing = ({ onAction, className }: MorningBriefingProps) =
             <div className="flex items-center gap-0.5 flex-shrink-0">
               <button
                 onClick={() => { refresh(); haptics.light(); }}
+                aria-label="Refresh briefing"
                 className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-foreground-muted" />
@@ -85,6 +86,7 @@ export const MorningBriefing = ({ onAction, className }: MorningBriefingProps) =
               {hasDetails && (
                 <button
                   onClick={() => { setExpanded(!expanded); haptics.tap(); }}
+                  aria-label={expanded ? "Collapse briefing" : "Expand briefing"}
                   className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors"
                 >
                   {expanded ? (

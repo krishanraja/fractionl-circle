@@ -66,6 +66,7 @@ export const VoiceCommandBar = ({ onNavigate, onOpenLog, onSetReminder, currentT
           else if (state === 'listening') stopListening();
           else dismiss();
         }}
+        aria-label={state === 'listening' ? 'Stop recording' : state === 'processing' ? 'Processing voice' : 'Voice command'}
         whileTap={{ scale: 0.9 }}
         className={cn(
           "fixed w-14 h-14 rounded-full flex items-center justify-center",

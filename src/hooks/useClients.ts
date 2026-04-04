@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -30,31 +31,39 @@ const CLIENT_COLORS = [
   '#EF4444', '#EC4899', '#06B6D4', '#84CC16',
 ];
 
+async function fetchClients(userId: string): Promise<Client[]> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 export function useClients() {
   const { user } = useAuth();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchClients = async () => {
-    if (!user?.id) return;
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    if (!error) setClients(data || []);
-    setIsLoading(false);
-  };
+  const { data: clients = [], isLoading } = useQuery({
+    queryKey: ['clients', user?.id],
+    queryFn: () => fetchClients(user!.id),
+    enabled: !!user?.id,
+    staleTime: 30_000,
+  });
+
+  const invalidate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['clients', user?.id] });
+  }, [queryClient, user?.id]);
 
   useEffect(() => {
-    fetchClients();
     if (!user?.id) return;
     const channel = supabase
       .channel('clients-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'clients', filter: `user_id=eq.${user.id}` }, fetchClients)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clients', filter: `user_id=eq.${user.id}` }, invalidate)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id]);
+  }, [user?.id, invalidate]);
 
   const addClient = async (input: ClientInput): Promise<Client | null> => {
     if (!user?.id) return null;
@@ -65,6 +74,7 @@ export function useClients() {
       .single();
     if (error) { toast.error('Failed to add client'); return null; }
     toast.success(`${input.name} added to your portfolio`);
+    invalidate();
     return data;
   };
 
@@ -75,6 +85,7 @@ export function useClients() {
       .eq('id', id);
     if (error) { toast.error('Failed to update client'); return false; }
     toast.success('Client updated');
+    invalidate();
     return true;
   };
 
@@ -85,10 +96,11 @@ export function useClients() {
       .eq('id', id);
     if (error) { toast.error('Failed to archive client'); return false; }
     toast.success('Client archived');
+    invalidate();
     return true;
   };
 
   const getRandomColor = () => CLIENT_COLORS[Math.floor(Math.random() * CLIENT_COLORS.length)];
 
-  return { clients, isLoading, addClient, updateClient, archiveClient, getRandomColor, refetch: fetchClients };
+  return { clients, isLoading, addClient, updateClient, archiveClient, getRandomColor, refetch: invalidate };
 }

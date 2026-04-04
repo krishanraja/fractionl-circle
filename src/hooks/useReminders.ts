@@ -13,16 +13,20 @@ export function useReminders() {
   const [loading, setLoading] = useState(true);
 
   const fetchReminders = useCallback(async () => {
-    if (!user?.id) return;
-    const { data, error } = await supabase
-      .from('reminders')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('active', true)
-      .is('completed_at', null)
-      .order('scheduled_at', { ascending: true });
+    if (!user?.id) { setLoading(false); return; }
+    try {
+      const { data, error } = await supabase
+        .from('reminders')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('active', true)
+        .is('completed_at', null)
+        .order('scheduled_at', { ascending: true });
 
-    if (!error && data) setReminders(data);
+      if (!error && data) setReminders(data);
+    } catch {
+      // Table may not exist yet -- fail silently
+    }
     setLoading(false);
   }, [user?.id]);
 

@@ -83,25 +83,16 @@ export function useConsent() {
     fetchConsents();
   }, [fetchConsents]);
 
-  // Update a single consent
   const updateConsent = useCallback(async (
     consentType: ConsentType,
     granted: boolean
-  ) => {
-    if (!user) {
-      // Store locally for pre-auth users
-      const local = getLocalConsent() || {};
-      local[consentType] = granted;
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local));
-      setHasConsented(true);
-      return;
-    }
-
-    // Always persist to localStorage as fallback
+  ): Promise<boolean> => {
     const local = getLocalConsent() || {};
     local[consentType] = granted;
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local));
     setHasConsented(true);
+
+    if (!user) return true;
 
     try {
       const now = new Date().toISOString();
@@ -119,8 +110,10 @@ export function useConsent() {
 
       if (error) throw error;
       await fetchConsents();
+      return true;
     } catch (err) {
       console.error('Failed to update consent:', err);
+      return false;
     }
   }, [user, fetchConsents, getLocalConsent]);
 
@@ -133,16 +126,19 @@ export function useConsent() {
     }
   }, [updateConsent]);
 
-  // Sync local consents to DB after login
   const syncLocalConsents = useCallback(async () => {
     if (!user) return;
     const local = getLocalConsent();
     if (!local) return;
 
+    let allSynced = true;
     for (const [type, granted] of Object.entries(local)) {
-      await updateConsent(type as ConsentType, granted as boolean);
+      const ok = await updateConsent(type as ConsentType, granted as boolean);
+      if (!ok) allSynced = false;
     }
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    if (allSynced) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
   }, [user, updateConsent, getLocalConsent]);
 
   // Check if a specific consent is granted

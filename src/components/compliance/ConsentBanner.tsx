@@ -17,6 +17,7 @@ const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; 
 
 export function ConsentBanner() {
   const { hasConsented, updateAllConsents, isConsentGranted } = useConsent();
+  const [dismissed, setDismissed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selections, setSelections] = useState<Record<ConsentType, boolean>>(() => {
     const defaults: Record<string, boolean> = {};
@@ -26,16 +27,18 @@ export function ConsentBanner() {
     return defaults as Record<ConsentType, boolean>;
   });
 
-  if (hasConsented) return null;
+  if (hasConsented || dismissed) return null;
 
   const handleAcceptAll = () => {
     const all: Partial<Record<ConsentType, boolean>> = {};
     CONSENT_OPTIONS.forEach(opt => { all[opt.type] = true; });
     updateAllConsents(all);
+    setDismissed(true);
   };
 
   const handleAcceptSelected = () => {
     updateAllConsents(selections);
+    setDismissed(true);
   };
 
   const handleRejectOptional = () => {
@@ -44,10 +47,11 @@ export function ConsentBanner() {
       minimal[opt.type] = !!opt.required;
     });
     updateAllConsents(minimal);
+    setDismissed(true);
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background/95 backdrop-blur-sm border-t shadow-lg">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+68px)] md:bottom-0 left-0 right-0 z-40 p-4 bg-background/95 backdrop-blur-sm border-t shadow-lg">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-start gap-3 mb-3">
           <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
