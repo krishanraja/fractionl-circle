@@ -135,6 +135,7 @@ export const VoiceAddContact = ({ open, onOpenChange }: VoiceAddContactProps) =>
         specialty_summary: parsed.specialty_summary?.trim() || [parsed.title, parsed.company].filter(Boolean).join(' at ') || null,
         linkedin_url: parsed.linkedin_url?.trim() || null,
         city: parsed.city?.trim() || null,
+        source: 'other' as any,
       }, []);
 
       setState('success');

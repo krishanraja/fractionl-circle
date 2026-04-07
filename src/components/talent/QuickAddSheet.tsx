@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Loader2, ArrowRight, Sparkles, Check, Phone, Mail, Linkedin, Search, X, ExternalLink } from 'lucide-react';
+import { Loader2, ArrowRight, Sparkles, Check, Phone, Mail, Linkedin, Search, X, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -9,12 +9,15 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useTalentContacts } from '@/hooks/useTalentContacts';
+import { useTalentContacts, TalentContactWithSkills } from '@/hooks/useTalentContacts';
 import { useKeyboardVisible } from '@/hooks/useKeyboardVisible';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { isValidEmail, isValidPhone, normalizePhoneToE164 } from '@/utils/contactActions';
+import { haptics } from '@/utils/haptics';
+import { useDuplicateDetection, DuplicateMatch } from '@/hooks/useDuplicateDetection';
+import { AlertTriangle } from 'lucide-react';
 
 interface EnrichmentResult {
   name?: string;
@@ -39,15 +42,35 @@ interface LinkedInResult {
 interface QuickAddSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onOpenFullForm: () => void;
+  onOpenFullForm: (contact?: TalentContactWithSkills) => void;
 }
 
+// Rotating placeholder examples
+const PLACEHOLDER_EXAMPLES = [
+  'Sarah Chen',
+  'sarah@nike.com',
+  '+1 555 123 4567',
+  'linkedin.com/in/sarah-chen',
+  '@sarahdesigns',
+];
+
+const MET_AT_SUGGESTIONS = ['Conference', 'LinkedIn', 'Referral', 'Client intro', 'Event', 'Coworking'];
+
 export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSheetProps) => {
-  const { createContact } = useTalentContacts();
+  const { createContact, updateContact, contacts, getContact } = useTalentContacts();
   const { isKeyboardVisible } = useKeyboardVisible();
+  const { findDuplicates } = useDuplicateDetection(contacts);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '', specialty: '' });
+
+  // Context fields (met_at, met_date, quick note)
+  const [showContext, setShowContext] = useState(false);
+  const [metAt, setMetAt] = useState('');
+  const [quickNote, setQuickNote] = useState('');
+
+  // Duplicate detection state
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
 
   // Enrichment state
   const [isEnriching, setIsEnriching] = useState(false);
@@ -61,9 +84,26 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
   const [isSearchingLinkedin, setIsSearchingLinkedin] = useState(false);
   const [selectedLinkedin, setSelectedLinkedin] = useState<LinkedInResult | null>(null);
 
+  // Post-save state
+  const [savedContact, setSavedContact] = useState<any>(null);
+  const [sessionCount, setSessionCount] = useState(0);
+  const isFirstContact = contacts.length === 0;
+
+  // Rotating placeholder
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [smartDetected, setSmartDetected] = useState<string | null>(null);
+
+  // Rotate placeholder every 3s when form is empty and input isn't focused
+  useEffect(() => {
+    if (!open || form.name) return;
+    const interval = setInterval(() => {
+      setPlaceholderIndex(i => (i + 1) % PLACEHOLDER_EXAMPLES.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [open, form.name]);
 
   // Scroll focused input into view when keyboard opens
   useEffect(() => {
@@ -78,8 +118,6 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
   }, [isKeyboardVisible]);
 
   // ── Smart input detection on name field ───────────────────────────
-  // Detects if the user typed an email, phone, LinkedIn URL, or Instagram
-  // handle into the name field, and auto-routes to the right enrichment.
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const val = form.name.trim();
@@ -89,14 +127,14 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     }
 
     debounceRef.current = setTimeout(() => {
-      // Email detection: contains @ with a dot after it
+      // Email detection
       if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
         setSmartDetected('email');
         setForm(f => ({ ...f, name: '', email: val }));
         enrichFromEmail(val);
         return;
       }
-      // Phone detection: starts with + or is mostly digits (10+)
+      // Phone detection
       const digitsOnly = val.replace(/[\s\-().]/g, '');
       if (/^\+/.test(val) || (/^\d+$/.test(digitsOnly) && digitsOnly.length >= 10)) {
         setSmartDetected('phone');
@@ -112,7 +150,6 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
           const slug = slugMatch[1];
           const guessedName = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
           setForm(f => ({ ...f, name: guessedName }));
-          // Trigger LinkedIn search with extracted name
           setIsSearchingLinkedin(true);
           setShowLinkedinSearch(true);
           supabase.functions.invoke('contact-enrich', {
@@ -120,7 +157,6 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
           }).then(({ data }) => {
             const results = data?.results || [];
             setLinkedinResults(results);
-            // Auto-select first result if URL matches
             const match = results.find((r: LinkedInResult) => r.url?.includes(slug));
             if (match) selectLinkedInResult(match);
             else if (results.length === 1) selectLinkedInResult(results[0]);
@@ -128,17 +164,15 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
         }
         return;
       }
-      // Instagram handle detection: starts with @
+      // Instagram handle detection
       if (/^@[a-zA-Z0-9._]+$/.test(val)) {
         setSmartDetected('instagram');
         const handle = val.slice(1);
-        // Convert handle to likely name
         const cleaned = handle.replace(/\d+$/, '');
         const parts = cleaned.split(/[._-]+/).filter(Boolean);
         const guessedName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
         if (guessedName.length >= 2) {
           setForm(f => ({ ...f, name: guessedName }));
-          // Search Apollo with guessed name
           setIsSearchingLinkedin(true);
           setShowLinkedinSearch(true);
           supabase.functions.invoke('contact-enrich', {
@@ -173,14 +207,12 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
         setEnrichedData(prev => ({ ...prev, ...enriched }));
         setEnrichedEmail(email);
 
-        // Auto-fill empty fields
         setForm(f => ({
           ...f,
           name: f.name || enriched.name || f.name,
           specialty: f.specialty || enriched.specialty_summary || f.specialty,
         }));
 
-        // If enrichment found LinkedIn, select it
         if (enriched.linkedin_url) {
           setSelectedLinkedin({
             name: enriched.name || '',
@@ -224,7 +256,6 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
         setEnrichedData(prev => ({ ...prev, ...enriched }));
         setEnrichedPhone(phone);
 
-        // Auto-fill name if Twilio returned caller name
         if (enriched.name && !form.name) {
           setForm(f => ({ ...f, name: enriched.name || f.name }));
         }
@@ -272,13 +303,11 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     setShowLinkedinSearch(false);
     setLinkedinResults([]);
 
-    // Auto-fill empty fields from the LinkedIn result
     setForm(f => ({
       ...f,
       specialty: f.specialty || [result.title, result.company].filter(Boolean).join(' at ') || f.specialty,
     }));
 
-    // Merge into enrichment data
     setEnrichedData(prev => ({
       ...prev,
       linkedin_url: result.url,
@@ -289,30 +318,55 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     }));
   };
 
+  // ── Build contact data ─────────────────────────────────────────────
+
+  const buildContactData = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return {
+      name: form.name.trim() || enrichedData?.name || form.email.trim() || form.phone.trim(),
+      phone: form.phone.trim() ? (normalizePhoneToE164(form.phone.trim()) || form.phone.trim()) : null,
+      email: form.email.trim() || null,
+      specialty_summary: form.specialty.trim() || null,
+      linkedin_url: selectedLinkedin?.url || enrichedData?.linkedin_url || null,
+      photo_url: enrichedData?.photo_url || selectedLinkedin?.photo_url || null,
+      company: enrichedData?.company || null,
+      title: enrichedData?.title || null,
+      city: enrichedData?.city || null,
+      source: 'cold' as any,
+      met_at: metAt.trim() || null,
+      met_date: metAt.trim() ? today : null,
+      notes_voice_raw: quickNote.trim() || null,
+    };
+  };
+
   // ── Save ──────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return;
+
+    // Check for duplicates before saving
+    const dupes = findDuplicates(form.name.trim(), form.email.trim(), form.phone.trim());
+    if (dupes.length > 0 && duplicateMatches.length === 0) {
+      setDuplicateMatches(dupes);
+      return; // Show duplicate warning, don't save yet
+    }
+
+    await saveAsNew();
+  };
+
+  const saveAsNew = async () => {
     setIsSubmitting(true);
+    setDuplicateMatches([]);
     try {
-      await createContact({
-        name: form.name.trim() || enrichedData?.name || form.email.trim() || form.phone.trim(),
-        phone: form.phone.trim() ? (normalizePhoneToE164(form.phone.trim()) || form.phone.trim()) : null,
-        email: form.email.trim() || null,
-        specialty_summary: form.specialty.trim() || null,
-        linkedin_url: selectedLinkedin?.url || enrichedData?.linkedin_url || null,
-        photo_url: enrichedData?.photo_url || selectedLinkedin?.photo_url || null,
-        company: enrichedData?.company || null,
-        title: enrichedData?.title || null,
-        city: enrichedData?.city || null,
-      }, []);
+      const newContact = await createContact(buildContactData(), []);
+
+      setSavedContact(newContact);
+      setSessionCount(c => c + 1);
       setShowSuccess(true);
+      haptics.success();
+
       const displayName = form.name.trim() || enrichedData?.name || 'Contact';
-      toast.success(`${displayName} added to your Black Book`);
-      setTimeout(() => {
-        resetForm();
-        onOpenChange(false);
-      }, 800);
+      toast.success(`${displayName} added to your circle`);
     } catch {
       // Error toast is handled by the hook
     } finally {
@@ -320,7 +374,68 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     }
   };
 
-  const resetForm = () => {
+  const mergeWithExisting = async (existingContact: TalentContactWithSkills) => {
+    setIsSubmitting(true);
+    setDuplicateMatches([]);
+    try {
+      const data = buildContactData();
+      // Only fill empty fields on the existing contact
+      const updates: Record<string, any> = {};
+      if (!existingContact.email && data.email) updates.email = data.email;
+      if (!existingContact.phone && data.phone) updates.phone = data.phone;
+      if (!existingContact.specialty_summary && data.specialty_summary) updates.specialty_summary = data.specialty_summary;
+      if (!existingContact.linkedin_url && data.linkedin_url) updates.linkedin_url = data.linkedin_url;
+      if (!existingContact.photo_url && data.photo_url) updates.photo_url = data.photo_url;
+      if (!existingContact.company && data.company) updates.company = data.company;
+      if (!existingContact.title && data.title) updates.title = data.title;
+      if (!existingContact.city && data.city) updates.city = data.city;
+      if (!existingContact.met_at && data.met_at) updates.met_at = data.met_at;
+      if (!existingContact.met_date && data.met_date) updates.met_date = data.met_date;
+      if (!existingContact.notes_voice_raw && data.notes_voice_raw) updates.notes_voice_raw = data.notes_voice_raw;
+
+      if (Object.keys(updates).length > 0) {
+        await updateContact(existingContact.id, updates);
+      }
+
+      setSavedContact(existingContact);
+      setSessionCount(c => c + 1);
+      setShowSuccess(true);
+      haptics.success();
+      toast.success(`Merged with ${existingContact.name}`);
+    } catch {
+      // Error handled by hook
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const dismissDuplicates = () => {
+    setDuplicateMatches([]);
+  };
+
+  // ── Post-save actions ─────────────────────────────────────────────
+
+  const handleAddAnother = () => {
+    resetFormOnly();
+    setShowSuccess(false);
+    haptics.light();
+  };
+
+  const handleAddDetails = async () => {
+    if (savedContact?.id) {
+      const fullContact = await getContact(savedContact.id);
+      onOpenFullForm(fullContact || undefined);
+    }
+    resetForm();
+    onOpenChange(false);
+  };
+
+  const handleDone = () => {
+    resetForm();
+    onOpenChange(false);
+  };
+
+  const resetFormOnly = () => {
     setForm({ name: '', phone: '', email: '', specialty: '' });
     setEnrichedData(null);
     setEnrichedEmail('');
@@ -328,7 +443,19 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
     setSelectedLinkedin(null);
     setShowLinkedinSearch(false);
     setLinkedinResults([]);
+    setSmartDetected(null);
+    setShowContext(false);
+    setMetAt('');
+    setQuickNote('');
+    setDuplicateMatches([]);
+    setSavedContact(null);
+    setPlaceholderIndex(0);
+  };
+
+  const resetForm = () => {
+    resetFormOnly();
     setShowSuccess(false);
+    setSessionCount(0);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -337,6 +464,16 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
   };
 
   const hasMinimumInfo = form.name.trim() || form.phone.trim() || form.email.trim();
+
+  // Build completeness hint for post-save
+  const getCompletenessHint = () => {
+    const saved = [];
+    if (form.name.trim()) saved.push('name');
+    if (form.email.trim()) saved.push('email');
+    if (form.phone.trim()) saved.push('phone');
+    const savedStr = saved.join(' and ');
+    return `${savedStr.charAt(0).toUpperCase() + savedStr.slice(1)} saved. Add skills and rate to make them easier to find later.`;
+  };
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -348,12 +485,53 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-12 px-6"
+              className="flex flex-col items-center justify-center py-8 px-6"
             >
-              <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center mb-3">
                 <Check className="w-8 h-8 text-success" />
               </div>
               <p className="text-lg font-semibold text-foreground">Added to your circle</p>
+
+              {sessionCount > 1 && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-caption text-primary font-medium mt-1"
+                >
+                  {sessionCount} contacts added this session
+                </motion.p>
+              )}
+
+              <p className="text-[12px] text-foreground-secondary text-center mt-2 max-w-[260px]">
+                {getCompletenessHint()}
+              </p>
+
+              {/* Post-save action buttons */}
+              <div className="w-full space-y-2 mt-5">
+                <Button
+                  onClick={handleAddDetails}
+                  variant="outline"
+                  size="lg"
+                  className="w-full gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Add skills &amp; details
+                </Button>
+                <Button
+                  onClick={handleAddAnother}
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                >
+                  Add another
+                </Button>
+                <button
+                  onClick={handleDone}
+                  className="w-full text-foreground-secondary text-caption text-center py-2 active:text-foreground transition-colors"
+                >
+                  Done
+                </button>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -379,7 +557,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                     <Input
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                      placeholder="Name, email, phone, or @handle"
+                      placeholder={PLACEHOLDER_EXAMPLES[placeholderIndex]}
                       className="bg-input border-border text-foreground text-base pr-28"
                       autoFocus
                     />
@@ -399,6 +577,20 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                       </button>
                     )}
                   </div>
+
+                  {/* Accepted input types hint (only when name is empty) */}
+                  {!form.name && !smartDetected && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="flex items-center gap-2 mt-1.5 ml-1"
+                    >
+                      <span className="text-[10px] text-foreground-muted">
+                        Accepts name, email, phone, LinkedIn URL, or @handle
+                      </span>
+                    </motion.div>
+                  )}
 
                   {/* Smart detection indicator */}
                   {smartDetected && (
@@ -438,7 +630,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                     </motion.div>
                   )}
 
-                  {/* LinkedIn search results */}
+                  {/* LinkedIn search results (fixed height, no layout shift) */}
                   <AnimatePresence>
                     {showLinkedinSearch && (
                       <motion.div
@@ -576,13 +768,136 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                     className="bg-input border-border text-foreground text-base"
                   />
                 </motion.div>
+
+                {/* Context section: How did you meet? */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setShowContext(!showContext)}
+                    className="flex items-center gap-1.5 text-[12px] text-foreground-secondary active:text-foreground transition-colors"
+                  >
+                    {showContext ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    How did you meet?
+                  </button>
+
+                  <AnimatePresence>
+                    {showContext && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-3 mt-2"
+                      >
+                        {/* Met at chip suggestions */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {MET_AT_SUGGESTIONS.map(suggestion => (
+                            <button
+                              key={suggestion}
+                              type="button"
+                              onClick={() => setMetAt(metAt === suggestion ? '' : suggestion)}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
+                                metAt === suggestion
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-secondary text-foreground-secondary active:bg-secondary/80'
+                              }`}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Custom met_at input */}
+                        <Input
+                          value={MET_AT_SUGGESTIONS.includes(metAt) ? '' : metAt}
+                          onChange={e => setMetAt(e.target.value)}
+                          placeholder="Or type where you met..."
+                          className="bg-input border-border text-foreground text-sm h-9"
+                        />
+                        {/* Quick note */}
+                        <Input
+                          value={quickNote}
+                          onChange={e => setQuickNote(e.target.value)}
+                          placeholder="Quick note, e.g. 'great React dev, knows Sarah'"
+                          className="bg-input border-border text-foreground text-sm h-9"
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
+
+              {/* Duplicate detection warning */}
+              <AnimatePresence>
+                {duplicateMatches.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="px-4 pb-2"
+                  >
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/8 p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                        <p className="text-sm font-medium text-foreground">Possible duplicate</p>
+                      </div>
+                      {duplicateMatches.slice(0, 2).map(match => (
+                        <div key={match.contact.id} className="flex items-center gap-3 py-1.5">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-medium text-primary">
+                              {match.contact.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-foreground truncate">{match.contact.name}</p>
+                            <p className="text-[11px] text-foreground-secondary truncate">
+                              {match.matchType === 'email' && `Same email: ${match.contact.email}`}
+                              {match.matchType === 'phone' && `Same phone: ${match.contact.phone}`}
+                              {match.matchType === 'name' && 'Similar name'}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="shrink-0 text-xs h-7"
+                            onClick={() => mergeWithExisting(match.contact)}
+                            disabled={isSubmitting}
+                          >
+                            Merge
+                          </Button>
+                        </div>
+                      ))}
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex-1 text-xs h-8"
+                          onClick={saveAsNew}
+                          disabled={isSubmitting}
+                        >
+                          Save as new
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex-1 text-xs h-8 text-foreground-muted"
+                          onClick={dismissDuplicates}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <DrawerFooter className="pt-2 pb-6 safe-bottom">
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25 }}
+                  transition={{ delay: 0.3 }}
                   className="w-full"
                 >
                   <Button
@@ -599,7 +914,7 @@ export const QuickAddSheet = ({ open, onOpenChange, onOpenFullForm }: QuickAddSh
                   </Button>
                 </motion.div>
                 <button
-                  onClick={onOpenFullForm}
+                  onClick={() => onOpenFullForm()}
                   className="text-foreground-secondary text-caption text-center py-2 active:text-foreground transition-colors"
                 >
                   Need more detail? Open full form

@@ -209,7 +209,7 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
         photo_url: parsed.photo_url?.trim() || null,
         city: parsed.city?.trim() || null,
         title: parsed.title?.trim() || null,
-        source: 'screenshot',
+        source: 'other' as any,
         met_at: platformLabel || null,
       }, []);
 

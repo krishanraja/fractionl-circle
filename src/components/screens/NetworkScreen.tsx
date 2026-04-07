@@ -261,7 +261,11 @@ export const CircleScreen = () => {
       <QuickAddSheet
         open={showQuickAdd}
         onOpenChange={setShowQuickAdd}
-        onOpenFullForm={() => { setShowQuickAdd(false); setShowFullForm(true); }}
+        onOpenFullForm={(contact) => {
+          setShowQuickAdd(false);
+          if (contact) setEditingContact(contact);
+          setShowFullForm(true);
+        }}
       />
       <TalentContactForm
         open={showFullForm}
