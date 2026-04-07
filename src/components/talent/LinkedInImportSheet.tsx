@@ -105,6 +105,7 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
         company: urlContact.company || null,
         specialty_summary: urlContact.title ? `${urlContact.title}${urlContact.company ? ` at ${urlContact.company}` : ''}` : null,
         linkedin_url: urlContact.linkedin_url || null,
+        source: 'linkedin' as any,
       }, []);
 
       setState('success');
@@ -223,6 +224,7 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
           company: contact.company || null,
           specialty_summary: contact.title ? `${contact.title}${contact.company ? ` at ${contact.company}` : ''}` : null,
           linkedin_url: contact.linkedin_url || null,
+          source: 'linkedin' as any,
         }, []);
         count++;
       } catch {

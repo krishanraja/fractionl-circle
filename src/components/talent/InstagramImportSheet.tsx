@@ -156,6 +156,7 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
         portfolio_url: cleaned ? `https://instagram.com/${cleaned}` : null,
         linkedin_url: enrichedData?.linkedin_url || null,
         photo_url: enrichedData?.photo_url || null,
+        source: 'other' as any,
       }, []);
 
       setState('success');

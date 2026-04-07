@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Star, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, X, ChevronDown, ChevronUp, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSkills } from '@/hooks/useSkills';
 import type { TalentContactWithSkills } from '@/hooks/useTalentContacts';
@@ -31,7 +31,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { isValidPhone, normalizePhoneToE164 } from '@/utils/contactActions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type TalentContactInsert = Database['public']['Tables']['talent_contacts']['Insert'];
 
@@ -62,18 +62,89 @@ interface TalentContactFormProps {
   contact?: TalentContactWithSkills;
 }
 
+// Collapsible section component
+function FormSection({ title, defaultOpen = false, children, helperText }: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+  helperText?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border border-border rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left active:bg-secondary/50 transition-colors"
+      >
+        <div>
+          <span className="text-sm font-medium text-foreground">{title}</span>
+          {helperText && !isOpen && (
+            <span className="text-[11px] text-foreground-muted ml-2">{helperText}</span>
+          )}
+        </div>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-foreground-muted" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-foreground-muted" />
+        )}
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="px-4 pb-4 space-y-4">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function TalentContactForm({
   open,
   onOpenChange,
   onSubmit,
   contact
 }: TalentContactFormProps) {
-  const { skills, skillsByCategory, loading: skillsLoading } = useSkills();
+  const { skills, skillsByCategory, searchSkills } = useSkills();
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [skillsExpanded, setSkillsExpanded] = useState(false);
+  const [skillSearch, setSkillSearch] = useState('');
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichedEmail, setEnrichedEmail] = useState<string | null>(null);
+
+  // Skills search results
+  const filteredSkills = useMemo(() => {
+    if (!skillSearch.trim()) return [];
+    return searchSkills(skillSearch.trim()).slice(0, 12);
+  }, [skillSearch, searchSkills]);
+
+  // Suggest skills based on specialty/title keywords
+  const suggestedSkills = useMemo(() => {
+    const text = [
+      contact?.specialty_summary,
+      contact?.title,
+      contact?.company,
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    if (!text || text.length < 3) return [];
+
+    return skills
+      .filter(s =>
+        !selectedSkills.includes(s.id) &&
+        (text.includes(s.name.toLowerCase()) ||
+         s.name.toLowerCase().split(' ').some(word => word.length >= 4 && text.includes(word)))
+      )
+      .slice(0, 6);
+  }, [skills, selectedSkills, contact?.specialty_summary, contact?.title, contact?.company]);
 
   const enrichFromEmail = async (email: string) => {
     if (!email || !email.includes('@') || email === enrichedEmail) return;
@@ -87,14 +158,13 @@ export function TalentContactForm({
       if (enriched) {
         setEnrichedEmail(email);
         const currentValues = form.getValues();
-        // Only fill empty fields
         if (!currentValues.name && enriched.name) form.setValue('name', enriched.name);
         if (!currentValues.linkedin_url && enriched.linkedin_url) form.setValue('linkedin_url', enriched.linkedin_url);
         if (!currentValues.specialty_summary && enriched.specialty_summary) form.setValue('specialty_summary', enriched.specialty_summary);
         toast.success('Contact details auto-filled', { duration: 2000 });
       }
     } catch {
-      // Enrichment is best-effort, don't show errors
+      // Enrichment is best-effort
     } finally {
       setIsEnriching(false);
     }
@@ -152,6 +222,7 @@ export function TalentContactForm({
       });
       setSelectedSkills([]);
     }
+    setSkillSearch('');
   }, [contact, form]);
 
   const handleSubmit = async (data: FormData) => {
@@ -191,8 +262,8 @@ export function TalentContactForm({
 
   const formContent = (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-        {/* Basic Info */}
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {/* Section 1: Basics (always open) */}
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -260,88 +331,10 @@ export function TalentContactForm({
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="portfolio_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Portfolio URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
-        {/* Skills Selection */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <FormLabel>Skills</FormLabel>
-            <button
-              type="button"
-              onClick={() => setSkillsExpanded(!skillsExpanded)}
-              className="text-xs text-primary flex items-center gap-1"
-            >
-              {skillsExpanded ? 'Collapse' : 'Expand'}
-              {skillsExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          </div>
-
-          {/* Selected skills chips */}
-          {selectedSkills.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {selectedSkills.map(id => {
-                const skill = skills.find(s => s.id === id);
-                return skill ? (
-                  <Badge
-                    key={id}
-                    variant="default"
-                    className="cursor-pointer gap-1 py-1.5 px-3"
-                    onClick={() => toggleSkill(id)}
-                  >
-                    {skill.name}
-                    <X className="h-3 w-3" />
-                  </Badge>
-                ) : null;
-              })}
-            </div>
-          )}
-
-          {/* Expandable skills list */}
-          {skillsExpanded && (
-            <div className="space-y-4 rounded-xl border border-border p-3 max-h-60 overflow-y-auto">
-              {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
-                <div key={category}>
-                  <h4 className="text-xs font-medium mb-2 text-foreground-secondary uppercase tracking-wider">{category}</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {categorySkills.map(skill => (
-                      <Badge
-                        key={skill.id}
-                        variant={selectedSkills.includes(skill.id) ? 'default' : 'outline'}
-                        className="cursor-pointer py-1.5 px-3 active:scale-95 transition-transform"
-                        onClick={() => toggleSkill(skill.id)}
-                      >
-                        {skill.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {selectedSkills.length > 0 && (
-            <FormDescription>
-              {selectedSkills.length} skill{selectedSkills.length > 1 ? 's' : ''} selected
-            </FormDescription>
-          )}
-        </div>
-
-        {/* Professional Details */}
-        <div className="space-y-4">
+        {/* Section 2: What they do */}
+        <FormSection title="What they do" defaultOpen={!contact}>
           <FormField
             control={form.control}
             name="specialty_summary"
@@ -360,6 +353,83 @@ export function TalentContactForm({
             )}
           />
 
+          {/* Skills search */}
+          <div className="space-y-3">
+            <FormLabel>Skills</FormLabel>
+
+            {/* Selected skills chips */}
+            {selectedSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedSkills.map(id => {
+                  const skill = skills.find(s => s.id === id);
+                  return skill ? (
+                    <Badge
+                      key={id}
+                      variant="default"
+                      className="cursor-pointer gap-1 py-1.5 px-3"
+                      onClick={() => toggleSkill(id)}
+                    >
+                      {skill.name}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  ) : null;
+                })}
+              </div>
+            )}
+
+            {/* Suggested skills */}
+            {suggestedSkills.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-[11px] text-foreground-muted">Suggested</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestedSkills.map(skill => (
+                    <Badge
+                      key={skill.id}
+                      variant="outline"
+                      className="cursor-pointer py-1 px-2.5 text-xs active:scale-95 transition-transform border-primary/30 text-primary"
+                      onClick={() => toggleSkill(skill.id)}
+                    >
+                      + {skill.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Search input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-foreground-muted" />
+              <Input
+                value={skillSearch}
+                onChange={e => setSkillSearch(e.target.value)}
+                placeholder="Search skills..."
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+
+            {/* Search results */}
+            {filteredSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {filteredSkills.map(skill => (
+                  <Badge
+                    key={skill.id}
+                    variant={selectedSkills.includes(skill.id) ? 'default' : 'outline'}
+                    className="cursor-pointer py-1.5 px-3 active:scale-95 transition-transform"
+                    onClick={() => toggleSkill(skill.id)}
+                  >
+                    {skill.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {selectedSkills.length > 0 && (
+              <FormDescription>
+                {selectedSkills.length} skill{selectedSkills.length > 1 ? 's' : ''} selected
+              </FormDescription>
+            )}
+          </div>
+
           <FormField
             control={form.control}
             name="working_style_notes"
@@ -377,17 +447,17 @@ export function TalentContactForm({
               </FormItem>
             )}
           />
-        </div>
+        </FormSection>
 
-        {/* Rate & Availability - single column on mobile */}
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Section 3: Rates */}
+        <FormSection title="Rates" helperText="Add later">
+          <div className="grid grid-cols-3 gap-3">
             <FormField
               control={form.control}
               name="rate_min"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Min Rate</FormLabel>
+                  <FormLabel>Min</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="150" {...field} />
                   </FormControl>
@@ -401,7 +471,7 @@ export function TalentContactForm({
               name="rate_max"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Max Rate</FormLabel>
+                  <FormLabel>Max</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="200" {...field} />
                   </FormControl>
@@ -415,7 +485,7 @@ export function TalentContactForm({
               name="rate_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rate Type</FormLabel>
+                  <FormLabel>Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -433,66 +503,81 @@ export function TalentContactForm({
               )}
             />
           </div>
+        </FormSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="trust_rating"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trust Rating</FormLabel>
+        {/* Section 4: Your assessment */}
+        <FormSection title="Your assessment" helperText="Rate after your first project">
+          <FormField
+            control={form.control}
+            name="trust_rating"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Trust Rating</FormLabel>
+                <FormControl>
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3, 4, 5].map(rating => (
+                      <Button
+                        key={rating}
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10"
+                        onClick={() => field.onChange(rating)}
+                      >
+                        <Star
+                          className={cn(
+                            'h-6 w-6',
+                            field.value && rating <= field.value
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300'
+                          )}
+                        />
+                      </Button>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="availability_status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Availability</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <div className="flex gap-1.5">
-                      {[1, 2, 3, 4, 5].map(rating => (
-                        <Button
-                          key={rating}
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-12 w-12"
-                          onClick={() => field.onChange(rating)}
-                        >
-                          <Star
-                            className={cn(
-                              'h-7 w-7',
-                              field.value && rating <= field.value
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                            )}
-                          />
-                        </Button>
-                      ))}
-                    </div>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="busy">Busy</SelectItem>
+                    <SelectItem value="unavailable">Unavailable</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="availability_status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Availability</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="available">Available</SelectItem>
-                      <SelectItem value="busy">Busy</SelectItem>
-                      <SelectItem value="unavailable">Unavailable</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
+          <FormField
+            control={form.control}
+            name="portfolio_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Portfolio URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </FormSection>
 
         {/* Actions - sticky on mobile */}
         <div className="flex flex-col md:flex-row gap-3 pt-4 border-t sticky bottom-0 bg-background pb-safe-bottom">
