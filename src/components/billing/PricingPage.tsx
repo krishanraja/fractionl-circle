@@ -42,16 +42,25 @@ export const PricingPage = ({ onClose }: PricingPageProps) => {
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
-  const handleUpgrade = async (tier: 'pro' | 'executive') => {
+  const handleUpgrade = async (targetTier: 'pro' | 'executive') => {
     haptics.medium();
-    setLoadingTier(tier);
+
+    const priceId = targetTier === 'pro'
+      ? (billing === 'annual' ? PRICE_IDS.pro_annual : PRICE_IDS.pro_monthly)
+      : (billing === 'annual' ? PRICE_IDS.executive_annual : PRICE_IDS.executive_monthly);
+
+    // Guard: env vars not configured — price IDs are still placeholders
+    if (!priceId || priceId.startsWith('price_pro_') || priceId.startsWith('price_exec_')) {
+      toast.error('Stripe is not configured yet. Please set VITE_STRIPE_*_PRICE_ID env vars.');
+      return;
+    }
+
+    setLoadingTier(targetTier);
     try {
-      const priceId = tier === 'pro'
-        ? (billing === 'annual' ? PRICE_IDS.pro_annual : PRICE_IDS.pro_monthly)
-        : (billing === 'annual' ? PRICE_IDS.executive_annual : PRICE_IDS.executive_monthly);
       await openCheckout(priceId);
     } catch (err) {
       console.error('Checkout error:', err);
+      toast.error('Unable to open checkout. Please try again.');
     } finally {
       setLoadingTier(null);
     }

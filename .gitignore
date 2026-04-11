@@ -29,3 +29,4 @@ dist-ssr
 
 # Seed scripts
 seed-data.ts
+supabase/.temp/
