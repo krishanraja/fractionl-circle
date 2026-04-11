@@ -1523,6 +1523,84 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          stripe_price_id: string | null
+          status: string
+          trial_ends_at: string | null
+          current_period_start: string | null
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          stripe_price_id?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          stripe_price_id?: string | null
+          status?: string
+          trial_ends_at?: string | null
+          current_period_start?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      usage_tracking: {
+        Row: {
+          id: string
+          user_id: string
+          feature: string
+          count: number
+          period_start: string
+          period_end: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          feature: string
+          count?: number
+          period_start: string
+          period_end: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          feature?: string
+          count?: number
+          period_start?: string
+          period_end?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1557,9 +1635,19 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      increment_usage: {
+        Args: {
+          p_user_id: string
+          p_feature: string
+          p_period_start: string
+          p_period_end: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      subscription_tier: "free" | "pro" | "executive"
     }
     CompositeTypes: {
       [_ in never]: never

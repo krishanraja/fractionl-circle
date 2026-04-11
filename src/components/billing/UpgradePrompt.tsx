@@ -33,7 +33,7 @@ export const UpgradePrompt = ({ feature, message, compact = false, className, on
       return;
     }
     if (!PRICE_IDS.pro_monthly || PRICE_IDS.pro_monthly === 'price_pro_monthly') {
-      toast.info('Upgrade coming soon — contact us for early access');
+      toast.error('Stripe is not configured yet. Please set VITE_STRIPE_PRO_MONTHLY_PRICE_ID env var.');
       return;
     }
     setLoading(true);
@@ -41,6 +41,7 @@ export const UpgradePrompt = ({ feature, message, compact = false, className, on
       await openCheckout(PRICE_IDS.pro_monthly);
     } catch {
       toast.error('Unable to open checkout. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
