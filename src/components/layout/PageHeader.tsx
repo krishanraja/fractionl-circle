@@ -1,5 +1,6 @@
 import { ReactNode, useMemo } from 'react';
-import { LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LogOut, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -15,15 +16,17 @@ interface PageHeaderProps {
   onTabChange?: (tab: TabId) => void;
 }
 
-const desktopNavItems: { id: TabId; label: string }[] = [
-  { id: 'customers', label: 'Customers' },
-  { id: 'contacts', label: 'Circle' },
-  { id: 'settings', label: 'Settings' },
-];
+const tabConfig: Record<string, { title: string; gradient?: boolean }> = {
+  customers: { title: '' }, // Uses greeting
+  contacts: { title: 'Circle', gradient: true },
+  activity: { title: 'Activity' },
+  settings: { title: 'Settings' },
+};
 
 export const PageHeader = ({
   title,
   actions,
+  currentTab,
   onTabChange,
 }: PageHeaderProps) => {
   const { signOut } = useAuth();
@@ -40,6 +43,9 @@ export const PageHeader = ({
     return profile.full_name.charAt(0).toUpperCase();
   }, [profile?.full_name]);
 
+  const config = tabConfig[currentTab || 'customers'] || tabConfig.customers;
+  const isCircle = currentTab === 'contacts';
+
   if (isMobile) {
     return (
       <header
@@ -47,10 +53,14 @@ export const PageHeader = ({
           "sticky top-0 z-40",
           "bg-background/95 backdrop-blur-xl",
           "shadow-sm",
-          "safe-top"
+          "safe-top",
+          isCircle && "circle-hero-bg"
         )}
       >
-        <div className="flex items-center justify-between h-14 px-4">
+        <div className={cn(
+          "flex items-center justify-between px-4",
+          isCircle ? "h-14" : "h-14"
+        )}>
           {/* Logo */}
           <img
             src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
@@ -58,10 +68,35 @@ export const PageHeader = ({
             className="h-6"
           />
 
-          {/* Contextual Greeting */}
-          <p className="text-sm font-normal text-foreground-secondary tracking-tight">
-            {firstName ? `${getGreeting()}, ${firstName}` : getGreeting()}
-          </p>
+          {/* Center: Tab-contextual title */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.15 }}
+              className="flex items-center gap-2"
+            >
+              {config.title ? (
+                <div className="flex items-center gap-1.5">
+                  {isCircle && (
+                    <Users className="w-4 h-4 text-primary" strokeWidth={2} />
+                  )}
+                  <span className={cn(
+                    "text-sm font-semibold tracking-tight",
+                    config.gradient ? "text-gradient" : "text-foreground"
+                  )}>
+                    {config.title}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-sm font-normal text-foreground-secondary tracking-tight">
+                  {firstName ? `${getGreeting()}, ${firstName}` : getGreeting()}
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Avatar Initial */}
           <div className="flex items-center gap-2">

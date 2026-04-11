@@ -1,6 +1,7 @@
-import { Users, BookUser, Settings, LogOut, Plus } from 'lucide-react';
+import { Users, BookUser, Settings, LogOut, Plus, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useCircleInsights } from '@/hooks/useCircleInsights';
 import type { TabId } from './BottomNav';
 
 interface DesktopSidebarProps {
@@ -9,13 +10,15 @@ interface DesktopSidebarProps {
   onOpenLog: () => void;
 }
 
-const mainNavItems: { id: TabId; label: string; icon: typeof Users }[] = [
+const mainNavItems: { id: TabId; label: string; icon: typeof Users; isHero?: boolean }[] = [
+  { id: 'contacts', label: 'Circle', icon: BookUser, isHero: true },
   { id: 'customers', label: 'Customers', icon: Users },
-  { id: 'contacts', label: 'Circle', icon: BookUser },
+  { id: 'activity', label: 'Activity', icon: Clock },
 ];
 
 export const DesktopSidebar = ({ currentTab, onTabChange, onOpenLog }: DesktopSidebarProps) => {
   const { signOut } = useAuth();
+  const { totalContacts, networkHealthColor, networkHealthStatus } = useCircleInsights();
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 bg-background border-r border-border flex flex-col z-40">
@@ -51,20 +54,37 @@ export const DesktopSidebar = ({ currentTab, onTabChange, onOpenLog }: DesktopSi
           {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
+            const isHero = item.isHero;
 
             return (
               <button
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-secondary text-foreground"
-                    : "text-foreground-secondary hover:text-foreground hover:bg-secondary/50"
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  isHero && isActive && "bg-primary/10 text-primary border border-primary/20",
+                  isHero && !isActive && "text-foreground hover:text-primary hover:bg-primary/5",
+                  !isHero && isActive && "bg-secondary text-foreground",
+                  !isHero && !isActive && "text-foreground-secondary hover:text-foreground hover:bg-secondary/50"
                 )}
               >
-                <Icon className="w-[18px] h-[18px]" />
-                {item.label}
+                <Icon className={cn(
+                  "w-[18px] h-[18px]",
+                  isHero && "text-primary"
+                )} />
+                <span className="flex-1 text-left">{item.label}</span>
+
+                {/* Circle: show contact count + health indicator */}
+                {isHero && totalContacts > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-foreground-muted">{totalContacts}</span>
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: networkHealthColor }}
+                      title={`Network: ${networkHealthStatus}`}
+                    />
+                  </div>
+                )}
               </button>
             );
           })}

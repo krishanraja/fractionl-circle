@@ -151,7 +151,7 @@ export const cardHover = {
 
 // Button press effect
 export const buttonPress = {
-  whileTap: { 
+  whileTap: {
     scale: 0.97,
     transition: { duration: 0.1 }
   },
@@ -163,3 +163,63 @@ export const progressBar = (value: number) => ({
   animate: { width: `${value}%` },
   transition: { duration: timing.slow / 1000, ease: easing.easeOut },
 });
+
+// Circle hero section entrance
+export const heroSection = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { opacity: 1, scale: 1 },
+  transition: {
+    type: 'spring' as const,
+    stiffness: 300,
+    damping: 25,
+  },
+};
+
+// Contact card with warmth-aware stagger
+export const contactCardStagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+export const contactCardItem = {
+  initial: { opacity: 0, y: 12, scale: 0.98 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.25, ease: easing.easeOut },
+  },
+  exit: {
+    opacity: 0,
+    x: -30,
+    transition: { duration: 0.15, ease: easing.easeIn },
+  },
+};
+
+// FAB morph animation for contextual state changes
+export const fabMorph = {
+  layout: true,
+  transition: {
+    type: 'spring' as const,
+    stiffness: 400,
+    damping: 30,
+  },
+};
+
+// Pull-to-refresh spring
+export const pullRefresh = {
+  type: 'spring' as const,
+  stiffness: 200,
+  damping: 20,
+};
+
+// Stat pill entrance
+export const statPill = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { type: 'spring' as const, stiffness: 400, damping: 25 },
+};

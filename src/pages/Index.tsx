@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { AppShell } from '@/components/layout';
-import { PulseScreen, LogScreen } from '@/components/screens';
+import { PulseScreen } from '@/components/screens';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
@@ -8,13 +8,16 @@ import { ReminderSheet } from '@/components/reminders/ReminderSheet';
 import { PageLoader } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 import type { TabId } from '@/components/layout/BottomNav';
+import { LogScreen } from '@/components/screens';
 
 // Lazy-load non-primary screens for code splitting
 const CircleScreen = lazy(() => import('@/components/screens/NetworkScreen').then(m => ({ default: m.CircleScreen })));
 const SettingsScreen = lazy(() => import('@/components/screens/SettingsScreen').then(m => ({ default: m.SettingsScreen })));
+const HistoryScreen = lazy(() => import('@/components/screens/HistoryScreen').then(m => ({ default: m.HistoryScreen })));
 
 const Index = () => {
-  const [currentTab, setCurrentTab] = useState<TabId>('customers');
+  // Circle is the hero — default landing tab
+  const [currentTab, setCurrentTab] = useState<TabId>('contacts');
   const [showLogActivity, setShowLogActivity] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
   const [reminderPrefill, setReminderPrefill] = useState<{ title?: string; clientId?: string } | undefined>();
@@ -35,14 +38,28 @@ const Index = () => {
     }
   }, []);
 
+  const handleTabChange = (tab: TabId) => {
+    setCurrentTab(tab);
+  };
+
+  const handleOpenLog = () => {
+    setShowLogActivity(true);
+  };
+
   const renderScreen = () => {
     switch (currentTab) {
       case 'customers':
-        return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} onOpenLog={() => setShowLogActivity(true)} />;
+        return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} onOpenLog={handleOpenLog} />;
       case 'contacts':
         return (
-          <Suspense fallback={<PageLoader message="Loading contacts..." />}>
+          <Suspense fallback={<PageLoader message="Loading Circle..." />}>
             <CircleScreen />
+          </Suspense>
+        );
+      case 'activity':
+        return (
+          <Suspense fallback={<PageLoader message="Loading activity..." />}>
+            <HistoryScreen />
           </Suspense>
         );
       case 'settings':
@@ -52,18 +69,20 @@ const Index = () => {
           </Suspense>
         );
       default:
-        return <PulseScreen onNavigate={(tab) => setCurrentTab(tab as TabId)} onOpenLog={() => setShowLogActivity(true)} />;
+        return (
+          <Suspense fallback={<PageLoader message="Loading Circle..." />}>
+            <CircleScreen />
+          </Suspense>
+        );
     }
   };
-
-  const tabTitle = currentTab.charAt(0).toUpperCase() + currentTab.slice(1);
 
   return (
     <>
       <AppShell
         currentTab={currentTab}
-        onTabChange={setCurrentTab}
-        onOpenLog={() => setShowLogActivity(true)}
+        onTabChange={handleTabChange}
+        onOpenLog={handleOpenLog}
         onSetReminder={(prefill) => { setReminderPrefill(prefill); setShowReminder(true); }}
         onShowPricing={() => setOpenPricingOnSettings(true)}
       >
