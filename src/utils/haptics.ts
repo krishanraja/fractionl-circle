@@ -27,4 +27,16 @@ export const haptics = {
 
   /** Recording pulse - rhythmic */
   recording: () => navigator.vibrate?.([20, 100, 20, 100, 20]),
+
+  /** Nav switch - ultra-light for tab changes */
+  navSwitch: () => navigator.vibrate?.([3, 30, 3]),
+
+  /** Hero tap - satisfying double-tap for Circle hero interactions */
+  heroTap: () => navigator.vibrate?.([8, 40, 15]),
+
+  /** Swipe action - confirms a swipe gesture completion */
+  swipeAction: () => navigator.vibrate?.([5, 20, 10, 20, 5]),
+
+  /** Pull refresh - feedback when pull-to-refresh triggers */
+  pullRefresh: () => navigator.vibrate?.([10, 30, 10]),
 };

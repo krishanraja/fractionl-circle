@@ -625,3 +625,107 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* ============================================
+   CIRCLE HERO UX — Premium Visual System
+   ============================================ */
+
+/* Circle hero gradient mesh background */
+.circle-hero-bg {
+  background:
+    radial-gradient(ellipse at 30% 0%, hsl(263 70% 50% / 0.06), transparent 60%),
+    radial-gradient(ellipse at 70% 100%, hsl(263 65% 60% / 0.04), transparent 50%);
+}
+.dark .circle-hero-bg {
+  background:
+    radial-gradient(ellipse at 30% 0%, hsl(263 70% 58% / 0.08), transparent 60%),
+    radial-gradient(ellipse at 70% 100%, hsl(263 65% 68% / 0.05), transparent 50%);
+}
+
+/* Card warmth indicators */
+.card-warm {
+  border-left: 3px solid hsl(142 71% 45%);
+}
+.card-cool {
+  border-left: 3px solid hsl(38 92% 50%);
+}
+.card-cold {
+  border-left: 3px solid hsl(0 72% 51%);
+}
+
+/* Network health ring */
+@keyframes ring-progress {
+  from { stroke-dashoffset: 283; }
+}
+
+.health-ring {
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Elevated nav center button glow */
+@keyframes nav-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(263 70% 50% / 0.3), 0 4px 16px hsl(263 70% 50% / 0.25); }
+  50% { box-shadow: 0 0 0 6px hsl(263 70% 50% / 0), 0 4px 16px hsl(263 70% 50% / 0.35); }
+}
+.animate-nav-glow {
+  animation: nav-glow 2.5s ease-in-out infinite;
+}
+
+/* Shadow depths for progressive elevation */
+.shadow-depth-1 {
+  box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.04), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+}
+.shadow-depth-2 {
+  box-shadow: 0 4px 12px -2px hsl(0 0% 0% / 0.08), 0 2px 6px -2px hsl(0 0% 0% / 0.04);
+}
+.shadow-depth-3 {
+  box-shadow: 0 10px 25px -5px hsl(0 0% 0% / 0.1), 0 4px 10px -3px hsl(0 0% 0% / 0.05);
+}
+
+.dark .shadow-depth-1 { box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.2); }
+.dark .shadow-depth-2 { box-shadow: 0 4px 12px -2px hsl(0 0% 0% / 0.3); }
+.dark .shadow-depth-3 { box-shadow: 0 10px 25px -5px hsl(0 0% 0% / 0.4); }
+
+/* Gradient mesh for hero sections */
+.gradient-mesh-hero {
+  background:
+    radial-gradient(ellipse at 20% 30%, hsl(263 70% 50% / 0.05), transparent 50%),
+    radial-gradient(ellipse at 80% 70%, hsl(142 71% 45% / 0.03), transparent 50%),
+    radial-gradient(ellipse at 50% 50%, hsl(263 65% 60% / 0.02), transparent 60%);
+}
+
+/* Reconnect suggestion card */
+.reconnect-card {
+  background: linear-gradient(135deg, hsl(var(--background-elevated)), hsl(var(--primary) / 0.03));
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+.reconnect-card:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Pull-to-refresh indicator */
+@keyframes refresh-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-refresh-spin {
+  animation: refresh-spin 0.8s linear infinite;
+}
+
+/* Floating node animation for empty state */
+@keyframes float-node {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes float-node-delayed {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float-node {
+  animation: float-node 3s ease-in-out infinite;
+}
+.animate-float-node-delayed {
+  animation: float-node-delayed 3.5s ease-in-out infinite 0.5s;
+}

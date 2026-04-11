@@ -7,7 +7,14 @@ import { VoiceCommandBar } from '@/components/voice/VoiceCommandBar';
 import { TrialBanner } from '@/components/billing/SubscriptionBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { pageTransition } from '@/constants/animation';
+
+// Tab index for directional transitions
+const TAB_ORDER: Record<TabId, number> = {
+  customers: 0,
+  contacts: 1,
+  activity: 2,
+  settings: 3,
+};
 
 interface AppShellProps {
   children: ReactNode;
@@ -36,11 +43,14 @@ export const AppShell = ({
 
   const handleVoiceNavigate = (tab: string) => {
     const mapped = tab === 'circle' ? 'contacts' : tab;
-    const validTabs: TabId[] = ['customers', 'contacts', 'settings'];
+    const validTabs: TabId[] = ['customers', 'contacts', 'activity', 'settings'];
     if (validTabs.includes(mapped as TabId)) {
       onTabChange(mapped as TabId);
     }
   };
+
+  // Directional page transition based on tab position
+  const tabIndex = TAB_ORDER[currentTab] ?? 1;
 
   return (
     <div className={cn(
@@ -78,12 +88,20 @@ export const AppShell = ({
         "flex-1 overflow-hidden",
         !isMobile && "max-w-4xl w-full mx-auto"
       )}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentTab}
-            initial={pageTransition.initial}
-            animate={pageTransition.animate}
-            exit={pageTransition.exit}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              transition: { duration: 0.22, ease: [0, 0, 0.2, 1] }
+            }}
+            exit={{
+              opacity: 0,
+              x: -20,
+              transition: { duration: 0.12, ease: [0.4, 0, 1, 1] }
+            }}
             className="h-full"
           >
             {children}
@@ -96,6 +114,7 @@ export const AppShell = ({
         <BottomNav
           currentTab={currentTab}
           onTabChange={onTabChange}
+          onOpenLog={onOpenLog}
         />
       )}
 
