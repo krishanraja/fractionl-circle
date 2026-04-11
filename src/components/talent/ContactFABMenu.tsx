@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Keyboard, Mic, Camera, Instagram, Linkedin, Users, ChevronUp } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Plus, Keyboard, Mic, Camera, Instagram, Linkedin, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 import {
@@ -35,8 +35,6 @@ export const ContactFABMenu = ({
   onPhoneImport,
 }: ContactFABMenuProps) => {
   const [showMoreSheet, setShowMoreSheet] = useState(false);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const didLongPress = useRef(false);
 
   const importHandlers: Record<string, () => void> = {
     phone: onPhoneImport,
@@ -51,64 +49,20 @@ export const ContactFABMenu = ({
     setTimeout(() => importHandlers[key]?.(), 150);
   };
 
-  const handlePointerDown = useCallback(() => {
-    didLongPress.current = false;
-    longPressTimer.current = setTimeout(() => {
-      didLongPress.current = true;
-      haptics.medium();
-      setShowMoreSheet(true);
-    }, 500);
-  }, []);
-
-  const handlePointerUp = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-    // Single tap = Quick Add (only if not a long press)
-    if (!didLongPress.current) {
-      haptics.light();
-      onQuickAdd();
-    }
-  }, [onQuickAdd]);
-
-  const handlePointerCancel = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
+  const handleFABTap = useCallback(() => {
+    haptics.light();
+    setShowMoreSheet(true);
   }, []);
 
   return (
     <>
-      {/* Main FAB - single tap = Quick Add, long press = more options */}
+      {/* Main FAB - tap to open "Add a contact" menu */}
       <div
         className="fixed bottom-36 right-4 z-40 flex flex-col items-end gap-2"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        {/* "More ways" hint */}
-        <AnimatePresence>
-          {!showMoreSheet && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ delay: 1.5, duration: 0.3 }}
-              onClick={() => { haptics.light(); setShowMoreSheet(true); }}
-              className="flex items-center gap-1 text-[11px] text-foreground-secondary bg-background/90 backdrop-blur-sm border border-border rounded-full px-2.5 py-1 shadow-sm active:bg-secondary transition-colors"
-            >
-              <ChevronUp className="w-3 h-3" />
-              <span>More ways to add</span>
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        {/* FAB button */}
         <motion.button
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
-          onPointerLeave={handlePointerCancel}
+          onClick={handleFABTap}
           whileTap={{ scale: 0.9 }}
           className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg bg-primary shadow-primary/30 select-none touch-none"
         >
