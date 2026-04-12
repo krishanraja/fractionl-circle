@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
-import { useTalentContacts } from '@/hooks/useTalentContacts';
+import { useContactIntake } from '@/hooks/useContactIntake';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
@@ -38,7 +38,7 @@ interface VoiceAddContactProps {
 }
 
 export const VoiceAddContact = ({ open, onOpenChange }: VoiceAddContactProps) => {
-  const { createContact } = useTalentContacts();
+  const { intake } = useContactIntake();
   const [state, setState] = useState<VoiceAddState>('idle');
   const [transcript, setTranscript] = useState('');
   const [parsed, setParsed] = useState<ParsedContact>({});
@@ -127,20 +127,29 @@ export const VoiceAddContact = ({ open, onOpenChange }: VoiceAddContactProps) =>
     }
     setIsSubmitting(true);
     try {
-      await createContact({
-        name: parsed.name.trim(),
-        email: parsed.email?.trim() || null,
-        phone: parsed.phone?.trim() ? (normalizePhoneToE164(parsed.phone.trim()) || parsed.phone.trim()) : null,
-        company: parsed.company?.trim() || null,
-        specialty_summary: parsed.specialty_summary?.trim() || [parsed.title, parsed.company].filter(Boolean).join(' at ') || null,
-        linkedin_url: parsed.linkedin_url?.trim() || null,
-        city: parsed.city?.trim() || null,
-        source: 'other' as any,
-      }, []);
+      const result = await intake(
+        {
+          name: parsed.name.trim(),
+          email: parsed.email?.trim() || null,
+          phone: parsed.phone?.trim() ? (normalizePhoneToE164(parsed.phone.trim()) || parsed.phone.trim()) : null,
+          company: parsed.company?.trim() || null,
+          specialty_summary: parsed.specialty_summary?.trim() || [parsed.title, parsed.company].filter(Boolean).join(' at ') || null,
+          linkedin_url: parsed.linkedin_url?.trim() || null,
+          city: parsed.city?.trim() || null,
+          source: 'voice' as any,
+        },
+        { onDuplicate: 'auto_merge' }
+      );
 
       setState('success');
       haptics.success();
-      toast.success(`${parsed.name} added to your Black Book`);
+      if (result.status === 'merged') {
+        toast.success(`Merged into ${result.contact.name}`);
+      } else if (result.status === 'duplicates') {
+        toast(`${parsed.name} saved. Possible duplicate: ${result.matches[0].contact.name}`);
+      } else {
+        toast.success(`${parsed.name} added to your Black Book`);
+      }
       setTimeout(() => {
         handleReset();
         onOpenChange(false);

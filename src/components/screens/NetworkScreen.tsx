@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import {
   Search, Users, Filter, Keyboard, Mic, Camera, Instagram, Linkedin, Smartphone,
-  RefreshCw, Sparkles, Phone, Mail, ChevronDown, Plus,
+  RefreshCw, Sparkles, Phone, Mail, ChevronDown, Plus, AlertTriangle, X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,14 @@ export const CircleScreen = () => {
   const [availableOnly, setAvailableOnly] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showMoreImports, setShowMoreImports] = useState(false);
+  const [reviewFilterActive, setReviewFilterActive] = useState(false);
+
+  // Aggregate "needs review" counter for the enrichment warning system.
+  // A contact needs review if enrichment failed, there's a pending conflict,
+  // or it was flagged with needs_review at intake time.
+  const needsReviewCount = useMemo(() => contacts.filter(
+    (c: any) => c.needs_review || c.enrichment_status === 'failed' || c.enrichment_status === 'conflict'
+  ).length, [contacts]);
 
   // Sheet states
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -94,9 +102,15 @@ export const CircleScreen = () => {
       const matchesAvailability = !availableOnly ||
         contact.availability_status === 'available';
 
-      return matchesSearch && matchesCategory && matchesAvailability;
+      const matchesReview = !reviewFilterActive || (
+        (contact as any).needs_review ||
+        (contact as any).enrichment_status === 'failed' ||
+        (contact as any).enrichment_status === 'conflict'
+      );
+
+      return matchesSearch && matchesCategory && matchesAvailability && matchesReview;
     });
-  }, [contacts, search, activeCategory, availableOnly, skills]);
+  }, [contacts, search, activeCategory, availableOnly, skills, reviewFilterActive]);
 
   // Sort by warmth (most recently interacted first, then by created_at)
   const sorted = useMemo(() => {
@@ -254,6 +268,34 @@ export const CircleScreen = () => {
             </div>
           )}
         </motion.div>
+      )}
+
+      {/* ─── Needs-review aggregate banner (Enrichment Warning System) ─── */}
+      {hasContacts && needsReviewCount > 0 && (
+        <div className="px-4 pt-3">
+          <button
+            onClick={() => { setReviewFilterActive(v => !v); haptics.tap(); }}
+            className={cn(
+              "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl border transition-colors",
+              reviewFilterActive
+                ? "bg-amber-500/15 border-amber-500/40"
+                : "bg-amber-500/8 border-amber-500/20 hover:bg-amber-500/12"
+            )}
+          >
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="text-xs font-medium text-foreground flex-1 text-left">
+              {needsReviewCount} contact{needsReviewCount !== 1 ? 's' : ''} need review
+            </span>
+            {reviewFilterActive ? (
+              <span className="flex items-center gap-1 text-[10px] text-amber-700 font-medium">
+                Showing only
+                <X className="w-3 h-3" />
+              </span>
+            ) : (
+              <span className="text-[10px] text-amber-700 font-medium">Review &rarr;</span>
+            )}
+          </button>
+        </div>
       )}
 
       {/* ─── Search + Filter Row ─── */}

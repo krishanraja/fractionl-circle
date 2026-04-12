@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Linkedin, Link, FileUp, Check, Loader2, ExternalLink } from 'lucide-react';
+import { Linkedin, Link, FileUp, Check, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -11,11 +11,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { useTalentContacts } from '@/hooks/useTalentContacts';
+import { useContactIntake } from '@/hooks/useContactIntake';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
 import { fadeInUp } from '@/constants/animation';
+import { BulkImportReview, type BulkImportRow } from './BulkImportReview';
 
 interface ImportContact {
   name: string;
@@ -24,9 +25,13 @@ interface ImportContact {
   title?: string;
   linkedin_url?: string;
   selected: boolean;
+  /** Set when enrichment was attempted but returned no useful data. */
+  enrichmentFailed?: boolean;
+  /** Set when the name is a raw slug (no real profile found). */
+  needsReview?: boolean;
 }
 
-type ImportState = 'choose' | 'url-input' | 'url-loading' | 'url-confirm' | 'csv-preview' | 'importing' | 'success';
+type ImportState = 'choose' | 'url-input' | 'url-loading' | 'url-confirm' | 'csv-preview' | 'importing' | 'csv-review' | 'success';
 
 interface LinkedInImportSheetProps {
   open: boolean;
@@ -34,86 +39,141 @@ interface LinkedInImportSheetProps {
 }
 
 export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetProps) => {
-  const { createContact } = useTalentContacts();
+  const { intake } = useContactIntake();
   const [state, setState] = useState<ImportState>('choose');
   const [url, setUrl] = useState('');
   const [urlContact, setUrlContact] = useState<ImportContact | null>(null);
   const [csvContacts, setCsvContacts] = useState<ImportContact[]>([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [importedCount, setImportedCount] = useState(0);
+  const [reviewRows, setReviewRows] = useState<BulkImportRow[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── URL paste ─────────────────────────────────────────
+  // Best-effort: we always advance to the confirm card so the user can save
+  // with whatever we've got. Enrichment failures are flagged via needsReview.
   const handleUrlSearch = async () => {
     const trimmed = url.trim();
     if (!trimmed) return;
 
-    // Extract name from URL for search
+    // Extract slug/name from URL for search
     const slugMatch = trimmed.match(/linkedin\.com\/in\/([^/?]+)/);
+    const hasLinkedInUrl = /linkedin\.com/i.test(trimmed);
     const searchName = slugMatch
       ? slugMatch[1].replace(/-/g, ' ').replace(/\d+/g, '').trim()
       : trimmed;
+    const titleCasedGuess = searchName.split(' ')
+      .filter(Boolean)
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
 
     setState('url-loading');
+
+    // Always produce a usable contact, even if enrichment fails.
+    let nextContact: ImportContact = {
+      name: titleCasedGuess || trimmed,
+      linkedin_url: hasLinkedInUrl ? trimmed : undefined,
+      selected: true,
+      // If the input wasn't a URL and we didn't find a match, this is a weak record.
+      needsReview: !slugMatch,
+      enrichmentFailed: false,
+    };
+
     try {
       const { data, error } = await supabase.functions.invoke('contact-enrich', {
         body: { name: searchName, linkedin_search: true },
       });
-
       if (error) throw error;
 
       const results = data?.results || [];
-      // Find best match or use first result
       const match = results.find((r: any) =>
         r.url?.includes(slugMatch?.[1] || '')
       ) || results[0];
 
       if (match) {
-        setUrlContact({
-          name: match.name || searchName,
+        nextContact = {
+          name: match.name || titleCasedGuess || searchName,
           company: match.company,
           title: match.title,
-          linkedin_url: match.url || trimmed,
+          linkedin_url: match.url || (hasLinkedInUrl ? trimmed : undefined),
           selected: true,
-        });
-        setState('url-confirm');
+          enrichmentFailed: false,
+          needsReview: false,
+        };
       } else {
-        // No enrichment found, use URL directly
-        setUrlContact({
-          name: searchName.split(' ').map((w: string) =>
-            w.charAt(0).toUpperCase() + w.slice(1)
-          ).join(' '),
-          linkedin_url: trimmed.includes('linkedin.com') ? trimmed : undefined,
-          selected: true,
-        });
-        setState('url-confirm');
+        // Enrichment returned empty — save anyway, flag for review.
+        nextContact.enrichmentFailed = true;
+        nextContact.needsReview = true;
       }
     } catch {
-      toast.error('Could not look up profile');
-      setState('url-input');
+      // Network / API error — still advance to confirm with raw data.
+      nextContact.enrichmentFailed = true;
+      nextContact.needsReview = true;
     }
+
+    setUrlContact(nextContact);
+    setState('url-confirm');
   };
 
   const handleSaveUrlContact = async () => {
     if (!urlContact?.name) return;
     setIsSubmitting(true);
     try {
-      await createContact({
-        name: urlContact.name,
-        email: urlContact.email || null,
-        company: urlContact.company || null,
-        specialty_summary: urlContact.title ? `${urlContact.title}${urlContact.company ? ` at ${urlContact.company}` : ''}` : null,
-        linkedin_url: urlContact.linkedin_url || null,
-        source: 'linkedin' as any,
-      }, []);
+      const result = await intake(
+        {
+          name: urlContact.name,
+          email: urlContact.email || null,
+          company: urlContact.company || null,
+          specialty_summary: urlContact.title
+            ? `${urlContact.title}${urlContact.company ? ` at ${urlContact.company}` : ''}`
+            : null,
+          linkedin_url: urlContact.linkedin_url || null,
+          source: 'linkedin' as any,
+        },
+        {
+          onDuplicate: 'auto_merge',
+          enrichmentStatus: urlContact.enrichmentFailed ? 'failed' : 'succeeded',
+          enrichmentFailureReason: urlContact.enrichmentFailed
+            ? 'LinkedIn profile lookup returned no results'
+            : undefined,
+          needsReview: urlContact.needsReview,
+        }
+      );
 
-      setState('success');
       haptics.success();
-      toast.success(`${urlContact.name} added to your Black Book`);
+      if (result.status === 'merged') {
+        toast.success(`Merged into ${result.contact.name}`);
+      } else if (result.status === 'duplicates') {
+        // Top match wasn't strong enough — offer merge manually via toast action.
+        toast(`Possible duplicate: ${result.matches[0].contact.name}`, {
+          action: {
+            label: 'Merge',
+            onClick: async () => {
+              await intake(
+                {
+                  name: urlContact.name,
+                  email: urlContact.email || null,
+                  company: urlContact.company || null,
+                  specialty_summary: urlContact.title
+                    ? `${urlContact.title}${urlContact.company ? ` at ${urlContact.company}` : ''}`
+                    : null,
+                  linkedin_url: urlContact.linkedin_url || null,
+                  source: 'linkedin' as any,
+                },
+                { onDuplicate: 'save_new' } // Force new; user already saw the dupe
+              );
+            },
+          },
+        });
+        toast.success(`${urlContact.name} added to your Circle`);
+      } else if (result.status === 'created') {
+        toast.success(`${urlContact.name} added to your Circle`);
+      }
+      setState('success');
       setTimeout(() => { handleReset(); onOpenChange(false); }, 800);
     } catch {
-      // Error handled by hook
+      // Surface nothing — createContact already toasted the error.
     } finally {
       setIsSubmitting(false);
     }
@@ -215,18 +275,31 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
     setState('importing');
     setProgress({ current: 0, total: toImport.length });
     let count = 0;
+    const ambiguous: BulkImportRow[] = [];
 
     for (const contact of toImport) {
+      const insert = {
+        name: contact.name,
+        email: contact.email || null,
+        company: contact.company || null,
+        specialty_summary: contact.title
+          ? `${contact.title}${contact.company ? ` at ${contact.company}` : ''}`
+          : null,
+        linkedin_url: contact.linkedin_url || null,
+        source: 'linkedin' as any,
+      };
       try {
-        await createContact({
-          name: contact.name,
-          email: contact.email || null,
-          company: contact.company || null,
-          specialty_summary: contact.title ? `${contact.title}${contact.company ? ` at ${contact.company}` : ''}` : null,
-          linkedin_url: contact.linkedin_url || null,
-          source: 'linkedin' as any,
-        }, []);
-        count++;
+        const result = await intake(insert, {
+          onDuplicate: 'auto_merge',
+          // Strong identity (email / linkedin_slug) auto-merges; weaker matches
+          // are queued for user review.
+          autoMergeThreshold: 1.0,
+        });
+        if (result.status === 'created' || result.status === 'merged') {
+          count++;
+        } else if (result.status === 'duplicates') {
+          ambiguous.push({ insert, matches: result.matches });
+        }
       } catch {
         // Skip failed, continue
       }
@@ -234,10 +307,26 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
     }
 
     setImportedCount(count);
+
+    if (ambiguous.length > 0) {
+      setReviewRows(ambiguous);
+      setState('csv-review');
+      haptics.success();
+      toast.success(
+        `${count} imported${ambiguous.length > 0 ? `, ${ambiguous.length} need review` : ''}`
+      );
+    } else {
+      setState('success');
+      haptics.success();
+      toast.success(`${count} contact${count !== 1 ? 's' : ''} imported`);
+      setTimeout(() => { handleReset(); onOpenChange(false); }, 1500);
+    }
+  };
+
+  const handleReviewComplete = (addedCount: number) => {
+    setImportedCount(c => c + addedCount);
     setState('success');
-    haptics.success();
-    toast.success(`${count} contact${count !== 1 ? 's' : ''} imported`);
-    setTimeout(() => { handleReset(); onOpenChange(false); }, 1500);
+    setTimeout(() => { handleReset(); onOpenChange(false); }, 1200);
   };
 
   const handleReset = () => {
@@ -247,6 +336,7 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
     setCsvContacts([]);
     setProgress({ current: 0, total: 0 });
     setImportedCount(0);
+    setReviewRows([]);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -350,14 +440,34 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
                   <DrawerTitle className="text-lg">Confirm Contact</DrawerTitle>
                 </DrawerHeader>
 
+                {urlContact.enrichmentFailed && (
+                  <div className="mx-2 mb-2 flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-foreground leading-relaxed">
+                      Couldn't find a matching LinkedIn profile. You can save with what we have and edit later, or go back to try a different URL or name.
+                    </p>
+                  </div>
+                )}
+
                 <div className="mx-2 p-4 rounded-2xl bg-secondary/50 border border-border space-y-2">
-                  <p className="text-base font-semibold text-foreground">{urlContact.name}</p>
-                  {urlContact.title && (
-                    <p className="text-sm text-foreground-secondary">{urlContact.title}</p>
-                  )}
-                  {urlContact.company && (
-                    <p className="text-sm text-foreground-secondary">{urlContact.company}</p>
-                  )}
+                  <Input
+                    value={urlContact.name}
+                    onChange={e => setUrlContact({ ...urlContact, name: e.target.value })}
+                    className="bg-input border-border text-foreground text-base font-semibold"
+                    placeholder="Name"
+                  />
+                  <Input
+                    value={urlContact.title || ''}
+                    onChange={e => setUrlContact({ ...urlContact, title: e.target.value })}
+                    className="bg-input border-border text-foreground text-sm"
+                    placeholder="Title"
+                  />
+                  <Input
+                    value={urlContact.company || ''}
+                    onChange={e => setUrlContact({ ...urlContact, company: e.target.value })}
+                    className="bg-input border-border text-foreground text-sm"
+                    placeholder="Company"
+                  />
                   {urlContact.linkedin_url && (
                     <a
                       href={urlContact.linkedin_url}
@@ -376,12 +486,26 @@ export const LinkedInImportSheet = ({ open, onOpenChange }: LinkedInImportSheetP
                   <Button variant="outline" onClick={() => setState('url-input')} className="flex-1" disabled={isSubmitting}>
                     Back
                   </Button>
-                  <Button onClick={handleSaveUrlContact} className="flex-1" disabled={isSubmitting}>
+                  <Button
+                    onClick={handleSaveUrlContact}
+                    className="flex-1"
+                    disabled={isSubmitting || !urlContact.name.trim()}
+                  >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
                       <Check className="w-4 h-4 mr-1" /> Save
                     </>}
                   </Button>
                 </div>
+              </motion.div>
+            )}
+
+            {/* CSV review queue for ambiguous duplicates */}
+            {state === 'csv-review' && (
+              <motion.div key="csv-review" {...fadeInUp} className="px-4 py-4">
+                <BulkImportReview
+                  rows={reviewRows}
+                  onComplete={handleReviewComplete}
+                />
               </motion.div>
             )}
 

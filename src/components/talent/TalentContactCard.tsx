@@ -150,12 +150,21 @@ export function TalentContactCard({
             {/* ─── Compact Header ─── */}
             <div className="flex items-center gap-3">
               {/* Avatar */}
-              <Avatar className="h-11 w-11 ring-2" style={{ '--tw-ring-color': `${warmthColor}20` } as any}>
-                <AvatarImage src={contact.photo_url || undefined} alt={contact.name} />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-11 w-11 ring-2" style={{ '--tw-ring-color': `${warmthColor}20` } as any}>
+                  <AvatarImage src={contact.photo_url || undefined} alt={contact.name} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                {(contact.needs_review || contact.enrichment_status === 'failed' || contact.enrichment_status === 'conflict') && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-amber-500 ring-2 ring-background"
+                    title={contact.enrichment_failure_reason || 'Needs review'}
+                    aria-label="Needs review"
+                  />
+                )}
+              </div>
 
               {/* Name + Meta */}
               <div className="flex-1 min-w-0">

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useTalentContacts } from '@/hooks/useTalentContacts';
+import { useContactIntake } from '@/hooks/useContactIntake';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
@@ -54,12 +54,13 @@ function mergeEnrichment(parsed: ParsedContact, enriched: Record<string, any>): 
 }
 
 export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) => {
-  const { createContact } = useTalentContacts();
+  const { intake } = useContactIntake();
   const [state, setState] = useState<ImportState>('choose');
   const [preview, setPreview] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedContact>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [enrichmentCount, setEnrichmentCount] = useState(0);
+  const [enrichmentFailed, setEnrichmentFailed] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -120,6 +121,7 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
    */
   const autoEnrich = async (contact: ParsedContact): Promise<ParsedContact> => {
     let enriched = { ...contact };
+    let anyEnrichmentSucceeded = false;
 
     try {
       // Step 1: LinkedIn search by name via Apollo
@@ -129,10 +131,10 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
       });
 
       if (searchData?.results?.length > 0) {
-        // Pick best match — prefer one with matching company/title if OCR found those
         const best = pickBestMatch(searchData.results, contact);
         if (best) {
           enriched = mergeEnrichment(enriched, best);
+          anyEnrichmentSucceeded = true;
         }
       }
 
@@ -145,6 +147,7 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
 
         if (emailData?.enriched) {
           enriched = mergeEnrichment(enriched, emailData.enriched);
+          anyEnrichmentSucceeded = true;
         }
       }
     } catch (err) {
@@ -152,6 +155,8 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
       console.warn('Auto-enrichment failed:', err);
     }
 
+    // Flag for the warning system if we tried but got nothing useful back.
+    setEnrichmentFailed(!anyEnrichmentSucceeded);
     return enriched;
   };
 
@@ -198,24 +203,39 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
         ? parsed.platform.charAt(0).toUpperCase() + parsed.platform.slice(1)
         : undefined;
 
-      await createContact({
-        name: parsed.name.trim(),
-        email: parsed.email?.trim() || null,
-        phone: parsed.phone?.trim() ? (normalizePhoneToE164(parsed.phone.trim()) || parsed.phone.trim()) : null,
-        company: parsed.company?.trim() || null,
-        specialty_summary: parsed.specialty_summary?.trim() || [parsed.title, parsed.company].filter(Boolean).join(' at ') || null,
-        linkedin_url: parsed.linkedin_url?.trim() || null,
-        portfolio_url: parsed.website?.trim() || null,
-        photo_url: parsed.photo_url?.trim() || null,
-        city: parsed.city?.trim() || null,
-        title: parsed.title?.trim() || null,
-        source: 'other' as any,
-        met_at: platformLabel || null,
-      }, []);
+      const result = await intake(
+        {
+          name: parsed.name.trim(),
+          email: parsed.email?.trim() || null,
+          phone: parsed.phone?.trim() ? (normalizePhoneToE164(parsed.phone.trim()) || parsed.phone.trim()) : null,
+          company: parsed.company?.trim() || null,
+          specialty_summary: parsed.specialty_summary?.trim() || [parsed.title, parsed.company].filter(Boolean).join(' at ') || null,
+          linkedin_url: parsed.linkedin_url?.trim() || null,
+          portfolio_url: parsed.website?.trim() || null,
+          photo_url: parsed.photo_url?.trim() || null,
+          city: parsed.city?.trim() || null,
+          title: parsed.title?.trim() || null,
+          source: 'photo' as any,
+          met_at: platformLabel || null,
+        },
+        {
+          onDuplicate: 'auto_merge',
+          enrichmentStatus: enrichmentFailed ? 'failed' : 'succeeded',
+          enrichmentFailureReason: enrichmentFailed
+            ? 'Profile enrichment returned no results'
+            : undefined,
+        }
+      );
 
       setState('success');
       haptics.success();
-      toast.success(`${parsed.name} added to your Circle`);
+      if (result.status === 'merged') {
+        toast.success(`Merged into ${result.contact.name}`);
+      } else if (result.status === 'duplicates') {
+        toast(`${parsed.name} saved. Possible duplicate: ${result.matches[0].contact.name}`);
+      } else {
+        toast.success(`${parsed.name} added to your Circle`);
+      }
       setTimeout(() => {
         handleReset();
         onOpenChange(false);
@@ -232,6 +252,7 @@ export const PhotoImportSheet = ({ open, onOpenChange }: PhotoImportSheetProps) 
     setPreview(null);
     setParsed({});
     setEnrichmentCount(0);
+    setEnrichmentFailed(false);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
