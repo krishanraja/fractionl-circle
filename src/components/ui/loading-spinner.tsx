@@ -38,7 +38,7 @@ export const PageLoader = ({ message = 'Loading...' }: { message?: string }) => 
           <img
             src="/lovable-uploads/63570a7c-6a51-4c13-8694-b6719861a79b.png"
             alt="Fractionl"
-            className="w-10 h-10 rounded-lg"
+            className="w-10 h-10"
           />
         </div>
         <div className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping" />
