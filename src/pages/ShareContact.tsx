@@ -52,11 +52,28 @@ export default function ShareContact() {
         return;
       }
 
-      // 1. Android / PWA share target path — read from service worker cache.
+      // 1. iOS Shortcut path — parsed JSON passed inline via ?prefill=<urlencoded-JSON>.
+      //    The Shortcut does the vision parse on-device (via parse-screenshot) and
+      //    hands the result straight into the confirm card. No DB round-trip needed.
+      const prefillParam = params.get('prefill');
+      if (prefillParam) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(prefillParam)) as ParsedScreenshot;
+          setParsed(decoded || {});
+          setState('confirm');
+          return;
+        } catch (err) {
+          setErrorMsg('Could not read the shared contact data.');
+          setState('error');
+          return;
+        }
+      }
+
+      // 2. Android / PWA share target path — read from service worker cache.
       const { blob, meta } = await readSharedScreenshot();
 
-      // 2. iOS Shortcut path — a parse_id points at a pre-parsed result in the DB
-      //    (the Shortcut POSTs directly to parse-screenshot then hits this page).
+      // 3. Legacy iOS path — parse_id points at a pre-parsed result in the DB.
+      //    Kept for backward compatibility; new Shortcuts use prefill above.
       const parseId = params.get('parse_id');
       if (parseId) {
         await loadPreParsed(parseId);

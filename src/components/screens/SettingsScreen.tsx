@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Calendar, Bell, ChevronRight,
-  LogOut, Moon, CreditCard, Layers, Crown, ExternalLink, BarChart3, FileSpreadsheet
+  LogOut, Moon, CreditCard, Layers, Crown, ExternalLink, BarChart3, FileSpreadsheet,
+  Smartphone, Download
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -20,6 +21,11 @@ import { staggerContainer, staggerItem } from '@/constants/animation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
+import { useInstallPrompt, isIOS } from '@/hooks/useInstallPrompt';
+
+// iCloud link to the "Add to Circle" Apple Shortcut. Built from docs/screenshot-to-contact.md.
+// TODO: replace with the real iCloud URL once the Shortcut is exported; see Task 5 of the rollout.
+const IOS_SHORTCUT_URL = '/shortcuts/add-from-circle.shortcut';
 
 interface SettingsScreenProps {
   initialShowPricing?: boolean;
@@ -40,6 +46,8 @@ export const SettingsScreen = ({ initialShowPricing, onPricingShown }: SettingsS
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [showPricing, setShowPricing] = useState(initialShowPricing ?? false);
   const [showSheetsExport, setShowSheetsExport] = useState(false);
+  const { canInstall, install } = useInstallPrompt();
+  const showIOSShortcut = isIOS();
 
   useEffect(() => {
     if (initialShowPricing) {
@@ -350,6 +358,53 @@ export const SettingsScreen = ({ initialShowPricing, onPricingShown }: SettingsS
           </Card>
         </motion.div>
       ))}
+
+      {/* Install / Shortcut */}
+      {(showIOSShortcut || canInstall) && (
+        <motion.div variants={staggerItem} className="space-y-2">
+          <h2 className="text-label text-foreground-muted px-0.5">
+            Install
+          </h2>
+          <Card className="bg-background-elevated border-border/40 overflow-hidden">
+            <CardContent className="p-0">
+              {showIOSShortcut && (
+                <div
+                  className="w-full flex items-center gap-3 p-4 min-h-[52px] hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer border-b border-border/30"
+                  onClick={() => { haptics.light(); window.open(IOS_SHORTCUT_URL, '_blank'); }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                    <Smartphone className="w-4 h-4 text-foreground-muted" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-body-bold text-foreground">Add from Screenshot (iOS)</div>
+                    <div className="text-caption text-foreground-muted">
+                      Install the Shortcut to add contacts from screenshots
+                    </div>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-foreground-muted" />
+                </div>
+              )}
+              {canInstall && (
+                <div
+                  className="w-full flex items-center gap-3 p-4 min-h-[52px] hover:bg-secondary/40 active:bg-secondary/40 transition-colors cursor-pointer"
+                  onClick={() => { haptics.light(); install(); }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                    <Download className="w-4 h-4 text-foreground-muted" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-body-bold text-foreground">Install Circle as App</div>
+                    <div className="text-caption text-foreground-muted">
+                      Add to home screen for screenshot sharing
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-foreground-muted" />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Data Export */}
       <motion.div variants={staggerItem} className="space-y-2">
