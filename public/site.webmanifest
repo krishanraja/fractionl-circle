@@ -27,5 +27,21 @@
   "orientation": "portrait",
   "start_url": "/",
   "scope": "/",
-  "categories": ["business", "productivity"]
+  "categories": ["business", "productivity"],
+  "share_target": {
+    "action": "/share-contact",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "screenshot",
+          "accept": ["image/png", "image/jpeg", "image/webp", "image/*"]
+        }
+      ]
+    }
+  }
 }

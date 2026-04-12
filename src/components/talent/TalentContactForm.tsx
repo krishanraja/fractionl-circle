@@ -32,6 +32,7 @@ import { isValidPhone, normalizePhoneToE164 } from '@/utils/contactActions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EnrichmentWarningChip } from './EnrichmentWarningChip';
 
 type TalentContactInsert = Database['public']['Tables']['talent_contacts']['Insert'];
 
@@ -263,6 +264,7 @@ export function TalentContactForm({
   const formContent = (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {contact && <EnrichmentWarningChip contact={contact} />}
         {/* Section 1: Basics (always open) */}
         <div className="space-y-4">
           <FormField

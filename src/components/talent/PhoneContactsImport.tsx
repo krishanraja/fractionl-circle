@@ -10,11 +10,13 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useContactIntake } from '@/hooks/useContactIntake';
 import { useTalentContacts } from '@/hooks/useTalentContacts';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
 import { normalizePhoneToE164 } from '@/utils/contactActions';
 import { fadeInUp } from '@/constants/animation';
+import { BulkImportReview, type BulkImportRow } from './BulkImportReview';
 
 interface ImportContact {
   name: string;
@@ -25,7 +27,7 @@ interface ImportContact {
   selected: boolean;
 }
 
-type ImportState = 'choose' | 'preview' | 'importing' | 'success';
+type ImportState = 'choose' | 'preview' | 'importing' | 'review' | 'success';
 
 interface PhoneContactsImportProps {
   open: boolean;
@@ -36,11 +38,13 @@ interface PhoneContactsImportProps {
 const hasContactPicker = typeof navigator !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window;
 
 export const PhoneContactsImport = ({ open, onOpenChange }: PhoneContactsImportProps) => {
-  const { createContact, contacts: existingContacts } = useTalentContacts();
+  const { intake } = useContactIntake();
+  const { contacts: existingContacts } = useTalentContacts();
   const [state, setState] = useState<ImportState>('choose');
   const [importContacts, setImportContacts] = useState<ImportContact[]>([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [importedCount, setImportedCount] = useState(0);
+  const [reviewRows, setReviewRows] = useState<BulkImportRow[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use Contact Picker API (Chrome Android)
@@ -161,18 +165,21 @@ export const PhoneContactsImport = ({ open, onOpenChange }: PhoneContactsImportP
     setState('importing');
     setProgress({ current: 0, total: toImport.length });
     let count = 0;
+    const ambiguous: BulkImportRow[] = [];
 
     for (const contact of toImport) {
+      const insert = {
+        name: contact.name,
+        email: contact.email || null,
+        phone: contact.phone ? (normalizePhoneToE164(contact.phone) || contact.phone) : null,
+        company: contact.company || null,
+        specialty_summary: contact.title || null,
+        source: 'phone_contacts' as any,
+      };
       try {
-        await createContact({
-          name: contact.name,
-          email: contact.email || null,
-          phone: contact.phone ? (normalizePhoneToE164(contact.phone) || contact.phone) : null,
-          company: contact.company || null,
-          specialty_summary: contact.title || null,
-          source: 'other' as any,
-        }, []);
-        count++;
+        const result = await intake(insert, { onDuplicate: 'auto_merge' });
+        if (result.status === 'created' || result.status === 'merged') count++;
+        else if (result.status === 'duplicates') ambiguous.push({ insert, matches: result.matches });
       } catch {
         // Skip failed contacts, continue importing
       }
@@ -180,14 +187,26 @@ export const PhoneContactsImport = ({ open, onOpenChange }: PhoneContactsImportP
     }
 
     setImportedCount(count);
-    setState('success');
     haptics.success();
-    toast.success(`${count} contact${count !== 1 ? 's' : ''} imported`);
 
-    setTimeout(() => {
-      handleReset();
-      onOpenChange(false);
-    }, 1500);
+    if (ambiguous.length > 0) {
+      setReviewRows(ambiguous);
+      setState('review');
+      toast.success(`${count} imported, ${ambiguous.length} need review`);
+    } else {
+      setState('success');
+      toast.success(`${count} contact${count !== 1 ? 's' : ''} imported`);
+      setTimeout(() => {
+        handleReset();
+        onOpenChange(false);
+      }, 1500);
+    }
+  };
+
+  const handleReviewComplete = (addedCount: number) => {
+    setImportedCount(c => c + addedCount);
+    setState('success');
+    setTimeout(() => { handleReset(); onOpenChange(false); }, 1200);
   };
 
   const handleReset = () => {
@@ -195,6 +214,7 @@ export const PhoneContactsImport = ({ open, onOpenChange }: PhoneContactsImportP
     setImportContacts([]);
     setProgress({ current: 0, total: 0 });
     setImportedCount(0);
+    setReviewRows([]);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -310,6 +330,13 @@ export const PhoneContactsImport = ({ open, onOpenChange }: PhoneContactsImportP
                     Import {selectedCount} Contact{selectedCount !== 1 ? 's' : ''}
                   </Button>
                 </DrawerFooter>
+              </motion.div>
+            )}
+
+            {/* Review queue for ambiguous duplicates */}
+            {state === 'review' && (
+              <motion.div key="review" {...fadeInUp} className="px-4 py-4">
+                <BulkImportReview rows={reviewRows} onComplete={handleReviewComplete} />
               </motion.div>
             )}
 

@@ -1252,12 +1252,16 @@ export type Database = {
           company: string | null
           created_at: string
           email: string | null
+          enrichment_failure_reason: string | null
+          enrichment_last_attempt_at: string | null
+          enrichment_status: string | null
           id: string
           last_interaction_date: string | null
           linkedin_url: string | null
           met_at: string | null
           met_date: string | null
           name: string
+          needs_review: boolean | null
           notes_voice_raw: string | null
           phone: string | null
           photo_url: string | null
@@ -1282,12 +1286,16 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          enrichment_failure_reason?: string | null
+          enrichment_last_attempt_at?: string | null
+          enrichment_status?: string | null
           id?: string
           last_interaction_date?: string | null
           linkedin_url?: string | null
           met_at?: string | null
           met_date?: string | null
           name: string
+          needs_review?: boolean | null
           notes_voice_raw?: string | null
           phone?: string | null
           photo_url?: string | null
@@ -1312,12 +1320,16 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          enrichment_failure_reason?: string | null
+          enrichment_last_attempt_at?: string | null
+          enrichment_status?: string | null
           id?: string
           last_interaction_date?: string | null
           linkedin_url?: string | null
           met_at?: string | null
           met_date?: string | null
           name?: string
+          needs_review?: boolean | null
           notes_voice_raw?: string | null
           phone?: string | null
           photo_url?: string | null

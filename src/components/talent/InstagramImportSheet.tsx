@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useTalentContacts } from '@/hooks/useTalentContacts';
+import { useContactIntake } from '@/hooks/useContactIntake';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
@@ -62,8 +62,9 @@ function handleToName(handle: string): string {
 }
 
 export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: InstagramImportSheetProps) => {
-  const { createContact } = useTalentContacts();
+  const { intake } = useContactIntake();
   const [state, setState] = useState<ImportState>('input');
+  const [enrichmentFailed, setEnrichmentFailed] = useState(false);
   const [handle, setHandle] = useState('');
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
@@ -115,18 +116,17 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
         };
         setEnrichedData(enriched);
         setWasAutoFilled(true);
+        setEnrichmentFailed(false);
 
-        // Auto-fill name with the real matched name
-        if (enriched.name) {
-          setName(enriched.name);
-        }
-        // Auto-fill notes with specialty if empty
+        if (enriched.name) setName(enriched.name);
         if (enriched.specialty_summary) {
           setNotes(prev => prev || enriched.specialty_summary || '');
         }
+      } else {
+        setEnrichmentFailed(true);
       }
     } catch {
-      // Enrichment is best-effort
+      setEnrichmentFailed(true);
     } finally {
       setIsEnriching(false);
     }
@@ -149,19 +149,34 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
     setIsSubmitting(true);
     try {
       const contactName = name.trim() || `@${cleaned}`;
-      await createContact({
-        name: contactName,
-        specialty_summary: notes.trim() || enrichedData?.specialty_summary || null,
-        // Store Instagram URL in portfolio_url (no dedicated instagram field in DB)
-        portfolio_url: cleaned ? `https://instagram.com/${cleaned}` : null,
-        linkedin_url: enrichedData?.linkedin_url || null,
-        photo_url: enrichedData?.photo_url || null,
-        source: 'other' as any,
-      }, []);
+      const nameIsFallback = !name.trim(); // we fell back to @handle — weak identity
+      const result = await intake(
+        {
+          name: contactName,
+          specialty_summary: notes.trim() || enrichedData?.specialty_summary || null,
+          // Store Instagram URL in portfolio_url (no dedicated instagram field in DB)
+          portfolio_url: cleaned ? `https://instagram.com/${cleaned}` : null,
+          linkedin_url: enrichedData?.linkedin_url || null,
+          photo_url: enrichedData?.photo_url || null,
+          source: 'instagram' as any,
+        },
+        {
+          onDuplicate: 'auto_merge',
+          enrichmentStatus: enrichmentFailed ? 'failed' : 'succeeded',
+          enrichmentFailureReason: enrichmentFailed
+            ? 'Could not match Instagram handle to a LinkedIn profile'
+            : undefined,
+          needsReview: nameIsFallback,
+        }
+      );
 
       setState('success');
       haptics.success();
-      toast.success(`${contactName} added to your Black Book`);
+      if (result.status === 'merged') {
+        toast.success(`Merged into ${result.contact.name}`);
+      } else {
+        toast.success(`${contactName} added to your Black Book`);
+      }
       setTimeout(() => {
         handleReset();
         onOpenChange(false);
@@ -186,6 +201,7 @@ export const InstagramImportSheet = ({ open, onOpenChange, onScanScreenshot }: I
     setEnrichedData(null);
     setWasAutoFilled(false);
     setIsEnriching(false);
+    setEnrichmentFailed(false);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
