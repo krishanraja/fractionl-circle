@@ -16,18 +16,18 @@ interface PageHeaderProps {
   onTabChange?: (tab: TabId) => void;
 }
 
-const tabConfig: Record<string, { title: string; gradient?: boolean }> = {
-  customers: { title: '' }, // Uses greeting
-  contacts: { title: 'Circle', gradient: true },
-  activity: { title: 'Activity' },
-  settings: { title: 'Settings' },
+const tabConfig: Record<TabId, { title: string; gradient?: boolean }> = {
+  today: { title: '' },
+  streams: { title: 'Streams' },
+  circle: { title: 'Circle', gradient: true },
+  ask: { title: 'Ask' },
 };
 
 export const PageHeader = ({
   title,
   actions,
   currentTab,
-  onTabChange,
+  onTabChange: _onTabChange,
 }: PageHeaderProps) => {
   const { signOut } = useAuth();
   const isMobile = useIsMobile();
@@ -43,8 +43,8 @@ export const PageHeader = ({
     return profile.full_name.charAt(0).toUpperCase();
   }, [profile?.full_name]);
 
-  const config = tabConfig[currentTab || 'customers'] || tabConfig.customers;
-  const isCircle = currentTab === 'contacts';
+  const config = tabConfig[currentTab || 'today'];
+  const isCircle = currentTab === 'circle';
 
   if (isMobile) {
     return (
@@ -57,18 +57,13 @@ export const PageHeader = ({
           isCircle && "circle-hero-bg"
         )}
       >
-        <div className={cn(
-          "flex items-center justify-between px-4",
-          isCircle ? "h-14" : "h-14"
-        )}>
-          {/* Logo */}
+        <div className="flex items-center justify-between px-4 h-14">
           <img
             src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
             alt="Fractionl"
             className="h-6"
           />
 
-          {/* Center: Tab-contextual title */}
           <AnimatePresence mode="wait">
             <motion.div
               key={currentTab}
@@ -98,7 +93,6 @@ export const PageHeader = ({
             </motion.div>
           </AnimatePresence>
 
-          {/* Avatar Initial */}
           <div className="flex items-center gap-2">
             {actions}
             <div
@@ -115,7 +109,6 @@ export const PageHeader = ({
     );
   }
 
-  // Desktop header
   return (
     <header
       className={cn(
@@ -126,25 +119,22 @@ export const PageHeader = ({
       )}
     >
       <div className="flex items-center justify-between h-14 px-4">
-        {/* Logo */}
         <img
           src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
           alt="Fractionl"
           className="h-6"
         />
 
-        {/* Title (optional) */}
         {title && (
           <h1 className="text-title-3 text-foreground">{title}</h1>
         )}
 
-        {/* Actions */}
         <div className="flex items-center gap-2">
           {actions}
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onTabChange?.('settings')}
+            onClick={signOut}
             className="w-10 h-10"
           >
             <LogOut className="w-5 h-5 text-foreground-secondary" />
