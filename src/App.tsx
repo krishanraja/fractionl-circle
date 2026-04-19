@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import ShareContact from "./pages/ShareContact";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
-import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
+import { FirstVoice } from "./components/onboarding/FirstVoice";
 import { useUserProfile } from "./hooks/useUserProfile";
 import { PageLoader } from "./components/ui/loading-spinner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -41,7 +41,7 @@ const AppContent = () => {
   }
 
   if (needsOnboarding) {
-    return <OnboardingWizard onComplete={refetch} />;
+    return <FirstVoice onComplete={refetch} />;
   }
 
   return (
