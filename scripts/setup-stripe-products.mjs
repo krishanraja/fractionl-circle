@@ -76,9 +76,22 @@ const encode = (obj) => {
   return params.toString();
 };
 
+const encodeQuery = (obj) => {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined || v === null) continue;
+    if (Array.isArray(v)) {
+      for (const item of v) params.append(`${k}[]`, String(item));
+    } else {
+      params.append(k, String(v));
+    }
+  }
+  return params.toString();
+};
+
 async function stripe(path, opts = {}) {
   const method = opts.method ?? 'GET';
-  const url = `${STRIPE_API}${path}${opts.query ? '?' + new URLSearchParams(opts.query) : ''}`;
+  const url = `${STRIPE_API}${path}${opts.query ? '?' + encodeQuery(opts.query) : ''}`;
   const headers = { Authorization: `Bearer ${SECRET}` };
   let body;
   if (opts.body) {
