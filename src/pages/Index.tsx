@@ -3,6 +3,7 @@ import { AppShell } from '@/components/layout';
 import { TodayScreen } from '@/components/screens';
 import { PageLoader } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import type { TabId } from '@/components/layout/BottomNav';
 
 const StreamsScreen = lazy(() => import('@/components/screens/StreamsScreen').then(m => ({ default: m.StreamsScreen })));
@@ -23,6 +24,39 @@ const Index = () => {
       toast.info('Checkout was canceled.');
       params.delete('checkout');
       window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`);
+    }
+
+    const oauth = params.get('oauth');
+    const oauthStatus = params.get('status');
+    if (oauth === 'google') {
+      params.delete('oauth');
+      params.delete('status');
+      params.delete('reason');
+      window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`);
+      if (oauthStatus === 'ok') {
+        setCurrentTab('circle');
+        const run = toast.loading('Google connected. Importing contacts + calendar…');
+        supabase.functions.invoke('sync-google', { body: {} })
+          .then(({ data, error }) => {
+            if (error) throw error;
+            const payload = data as {
+              circle_new?: number;
+              circle_merged?: number;
+              signals_inserted?: number;
+            } | null;
+            const bits: string[] = [];
+            if (payload?.circle_new) bits.push(`${payload.circle_new} new`);
+            if (payload?.circle_merged) bits.push(`${payload.circle_merged} merged`);
+            if (payload?.signals_inserted) bits.push(`${payload.signals_inserted} meeting signals`);
+            toast.success(bits.length ? bits.join(' · ') : 'Google sync complete.', { id: run });
+          })
+          .catch((e) => {
+            toast.error(e instanceof Error ? e.message : 'Google sync failed', { id: run });
+          });
+      } else {
+        const reason = new URLSearchParams(window.location.search).get('reason') ?? 'unknown';
+        toast.error(`Google connection failed: ${reason}`);
+      }
     }
   }, []);
 

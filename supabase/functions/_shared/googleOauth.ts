@@ -1,0 +1,156 @@
+// Phase 5: shared Google OAuth helpers. Non-restricted scopes only.
+// Gmail body access (sent-folder signatures) would require the CASA
+// restricted-scope audit — deliberately not wired here.
+
+// deno-lint-ignore-file no-explicit-any
+
+export const GOOGLE_SCOPES = [
+  'openid',
+  'email',
+  'profile',
+  'https://www.googleapis.com/auth/contacts.readonly',
+  'https://www.googleapis.com/auth/contacts.other.readonly',
+  'https://www.googleapis.com/auth/calendar.events.readonly',
+].join(' ');
+
+export const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+export const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+
+export interface StoredToken {
+  id: string;
+  user_id: string;
+  provider: 'google' | 'microsoft';
+  access_token: string;
+  refresh_token: string | null;
+  token_type: string | null;
+  scope: string | null;
+  expires_at: string | null;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  id_token?: string;
+}
+
+export function getRedirectUri(): string {
+  const url = Deno.env.get('SUPABASE_URL');
+  if (!url) throw new Error('SUPABASE_URL not configured');
+  return `${url}/functions/v1/oauth-google-callback`;
+}
+
+export function buildAuthorizeUrl(state: string, clientId: string): string {
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: getRedirectUri(),
+    response_type: 'code',
+    scope: GOOGLE_SCOPES,
+    access_type: 'offline',
+    prompt: 'consent',
+    include_granted_scopes: 'true',
+    state,
+  });
+  return `${GOOGLE_AUTH_URL}?${params.toString()}`;
+}
+
+export async function exchangeCodeForTokens(code: string): Promise<TokenResponse> {
+  const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+  if (!clientId || !clientSecret) throw new Error('Google OAuth env not configured');
+
+  const body = new URLSearchParams({
+    code,
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uri: getRedirectUri(),
+    grant_type: 'authorization_code',
+  });
+  const resp = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Google token exchange failed: ${resp.status} ${text}`);
+  }
+  return await resp.json();
+}
+
+export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse> {
+  const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+  if (!clientId || !clientSecret) throw new Error('Google OAuth env not configured');
+
+  const body = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token',
+  });
+  const resp = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Google refresh failed: ${resp.status} ${text}`);
+  }
+  return await resp.json();
+}
+
+// Pull the stored token row; if it's within 60s of expiry (or already
+// expired) refresh it, persist, and return the live access token.
+export async function getValidAccessToken(
+  admin: any,
+  userId: string,
+  provider: 'google' = 'google',
+): Promise<string> {
+  const { data, error } = await admin
+    .from('oauth_tokens')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('provider', provider)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error(`No ${provider} token for user`);
+
+  const token = data as StoredToken;
+  const expiresAt = token.expires_at ? new Date(token.expires_at).getTime() : 0;
+  const needsRefresh = expiresAt - Date.now() < 60_000;
+
+  if (!needsRefresh) return token.access_token;
+  if (!token.refresh_token) {
+    throw new Error('Access token expired and no refresh token available; user must reconnect');
+  }
+
+  const refreshed = await refreshAccessToken(token.refresh_token);
+  const nextExpiresAt = refreshed.expires_in
+    ? new Date(Date.now() + (refreshed.expires_in - 60) * 1000).toISOString()
+    : null;
+  await admin
+    .from('oauth_tokens')
+    .update({
+      access_token: refreshed.access_token,
+      token_type: refreshed.token_type ?? token.token_type,
+      scope: refreshed.scope ?? token.scope,
+      expires_at: nextExpiresAt,
+      // Google sometimes re-issues a refresh token; persist when it does.
+      refresh_token: refreshed.refresh_token ?? token.refresh_token,
+    })
+    .eq('id', token.id);
+  return refreshed.access_token;
+}
+
+export async function fetchGoogleUserEmail(accessToken: string): Promise<string | null> {
+  const resp = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  return data.email ?? null;
+}
