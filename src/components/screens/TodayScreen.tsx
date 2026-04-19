@@ -7,6 +7,7 @@ import { useIdeas } from '@/hooks/useIdeas';
 import { useCircle } from '@/hooks/useCircle';
 import { useMatches, runMatchEngine } from '@/hooks/useMatches';
 import { MatchCard } from '@/components/today/MatchCard';
+import { SundayLetterCard } from '@/components/today/SundayLetterCard';
 
 export const TodayScreen = () => {
   const { ideas, loading: ideasLoading } = useIdeas();
@@ -56,6 +57,8 @@ export const TodayScreen = () => {
           {headline}
         </h1>
       </motion.header>
+
+      <SundayLetterCard canGenerate={canRun} />
 
       {!hasMatches && !matchesLoading && (
         <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-6">
