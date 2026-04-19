@@ -2282,6 +2282,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      merge_circle_persons: {
+        Args: { drop_id: string; keep_id: string }
+        Returns: undefined
+      }
       verify_token_integrity: {
         Args: { target_user_id: string }
         Returns: boolean
