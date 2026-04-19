@@ -1,10 +1,45 @@
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lightbulb } from 'lucide-react';
-import { useIdeas } from '@/hooks/useIdeas';
+import { Sparkles, Lightbulb, Loader2, Zap } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useIdeas } from '@/hooks/useIdeas';
+import { useCircle } from '@/hooks/useCircle';
+import { useMatches, runMatchEngine } from '@/hooks/useMatches';
+import { MatchCard } from '@/components/today/MatchCard';
 
 export const TodayScreen = () => {
-  const { ideas, loading } = useIdeas();
+  const { ideas, loading: ideasLoading } = useIdeas();
+  const { totalPeople, loading: circleLoading } = useCircle();
+  const { matches, loading: matchesLoading, refresh, updateMatchState } = useMatches();
+  const [running, setRunning] = useState(false);
+
+  const canRun = !ideasLoading && !circleLoading && ideas.length > 0 && totalPeople > 0;
+  const hasMatches = matches.length > 0;
+  const headline = useMemo(() => {
+    if (matchesLoading) return 'Loading Matches…';
+    if (hasMatches) return `${matches.length} Match${matches.length === 1 ? '' : 'es'} waiting for you.`;
+    return 'Nothing waiting for you yet.';
+  }, [hasMatches, matches.length, matchesLoading]);
+
+  const handleRun = async () => {
+    setRunning(true);
+    try {
+      const res = await runMatchEngine();
+      await refresh();
+      if (res.matches_created && res.matches_created > 0) {
+        toast.success(`${res.matches_created} new Match${res.matches_created === 1 ? '' : 'es'} surfaced.`);
+      } else if (res.note) {
+        toast.info(res.note);
+      } else {
+        toast.info('No new Matches this time. Add more sources or Ideas and try again.');
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Match Engine failed');
+    } finally {
+      setRunning(false);
+    }
+  };
 
   return (
     <div className="min-h-full bg-background px-4 pt-6 pb-24">
@@ -12,34 +47,76 @@ export const TodayScreen = () => {
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-8"
+        className="mb-6"
       >
         <p className="text-sm text-foreground-secondary leading-relaxed">
           Overnight I looked for Matches across your Ideas and Circle.
         </p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-          Nothing waiting for you yet.
+          {headline}
         </h1>
       </motion.header>
 
-      <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-6">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-            <Sparkles className="w-4 h-4 text-primary" />
+      {!hasMatches && !matchesLoading && (
+        <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-6">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-full bg-primary/10 p-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <p className="text-sm font-medium text-foreground">
+                {canRun ? 'Ready when you are.' : 'Not enough to match against yet.'}
+              </p>
+              <p className="text-sm text-foreground-secondary leading-relaxed">
+                {canRun
+                  ? `I can cross-reference your ${ideas.length} Idea${ideas.length === 1 ? '' : 's'} against ${totalPeople} people in your Circle.`
+                  : ideas.length === 0
+                    ? 'Voice an Idea in Ask so I know what you want to sell.'
+                    : 'Add a source in Circle so I have people to match against.'}
+              </p>
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-foreground">
-              The Match Engine is warming up.
-            </p>
-            <p className="text-sm text-foreground-secondary leading-relaxed">
-              Connect a source in Circle. I'll surface the first Match here once
-              I have people to match your Ideas against.
-            </p>
-          </div>
-        </div>
-      </section>
+          {canRun && (
+            <button
+              onClick={handleRun}
+              disabled={running}
+              className={cn(
+                'mt-4 w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
+                'flex items-center justify-center gap-2 shadow-lg shadow-primary/30',
+                'disabled:opacity-70'
+              )}
+            >
+              {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              {running ? 'Finding Matches…' : 'Surface Matches'}
+            </button>
+          )}
+        </section>
+      )}
 
-      {!loading && ideas.length > 0 && (
+      {hasMatches && (
+        <section className="space-y-3 mb-8">
+          {matches.map((m) => (
+            <MatchCard key={m.match.id} match={m} onStateChange={updateMatchState} />
+          ))}
+          {canRun && (
+            <button
+              onClick={handleRun}
+              disabled={running}
+              className={cn(
+                'w-full h-10 rounded-full border border-border/60 bg-card/50 backdrop-blur',
+                'text-xs font-medium text-foreground-secondary',
+                'flex items-center justify-center gap-1.5',
+                'disabled:opacity-70'
+              )}
+            >
+              {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+              {running ? 'Finding more…' : 'Find more Matches'}
+            </button>
+          )}
+        </section>
+      )}
+
+      {!ideasLoading && ideas.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Lightbulb className="w-4 h-4 text-foreground-secondary" />
@@ -54,9 +131,7 @@ export const TodayScreen = () => {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className={cn(
-                  'rounded-xl border border-border/60 bg-card/50 backdrop-blur p-4'
-                )}
+                className="rounded-xl border border-border/60 bg-card/50 backdrop-blur p-4"
               >
                 <h3 className="text-sm font-semibold text-foreground">{idea.title}</h3>
                 {idea.one_liner && (
