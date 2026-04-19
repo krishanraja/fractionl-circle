@@ -20,48 +20,51 @@ interface UsageData {
   contacts: number;
 }
 
-// Feature limits per tier
+// Feature limits per tier (redesign ontology).
+// Keyed feature names match what the rest of the app asks about: match_engine
+// limits gate the Today "Surface Matches" action; streams gates how many
+// active Ideas can compound into Streams; sunday_letter_text / _audio gate
+// the Sunday Letter surfaces; ask_messages_per_week gates the Ask persona.
 const LIMITS: Record<SubscriptionTier, Record<string, number>> = {
   free: {
-    clients: 3,
-    voice_logs: 20,
-    ai_queries: 10,
-    contacts: 25,
-    history_days: 30,
-    nudges_per_day: 3,
+    matches_per_day: 1 / 7,         // 1 per week, expressed as per-day budget
+    matches_per_week: 1,
+    active_streams: 1,
+    ask_messages_per_week: 5,
+    circle_sources: 1,
   },
   pro: {
-    clients: Infinity,
-    voice_logs: Infinity,
-    ai_queries: 100,
-    contacts: Infinity,
-    history_days: Infinity,
-    nudges_per_day: Infinity,
+    matches_per_day: 3,
+    matches_per_week: 21,
+    active_streams: 3,
+    ask_messages_per_week: Infinity,
+    circle_sources: Infinity,
   },
   executive: {
-    clients: Infinity,
-    voice_logs: Infinity,
-    ai_queries: Infinity,
-    contacts: Infinity,
-    history_days: Infinity,
-    nudges_per_day: Infinity,
+    matches_per_day: Infinity,
+    matches_per_week: Infinity,
+    active_streams: Infinity,
+    ask_messages_per_week: Infinity,
+    circle_sources: Infinity,
   },
 };
 
-// Features gated by tier
+// Feature gates for the redesign. Match Engine itself is free-tier-available
+// (capped by matches_per_week); premium gates live in signal/letter-audio
+// territory.
 const TIER_FEATURES: Record<string, SubscriptionTier> = {
-  relationship_health: 'pro',
-  voice_commands: 'pro',
-  full_desktop: 'pro',
-  data_export: 'pro',
-  google_sheets: 'pro',
-  custom_pipeline: 'pro',
-  full_briefing: 'pro',
-  predictions: 'executive',
-  custom_commands: 'executive',
-  pdf_reports: 'executive',
-  calendar_integration: 'executive',
-  priority_support: 'executive',
+  sunday_letter_text: 'pro',
+  sunday_letter_audio: 'executive',
+  inbox_connect: 'pro',
+  calendar_connect: 'pro',
+  ledger: 'pro',
+  ask_memory: 'pro',
+  circle_dedupe: 'pro',
+  external_signals: 'executive',
+  autosend: 'executive',
+  market_intelligence: 'executive',
+  concierge: 'executive',
+  priority_compute: 'executive',
 };
 
 const TIER_RANK: Record<SubscriptionTier, number> = { free: 0, pro: 1, executive: 2 };

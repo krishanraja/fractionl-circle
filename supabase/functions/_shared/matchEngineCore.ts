@@ -5,6 +5,8 @@
 
 // deno-lint-ignore-file no-explicit-any
 
+import { getUserTier, QUOTAS, countMatchesSince, startOfWeekIso } from './tiers.ts';
+
 interface Idea {
   id: string;
   title: string;
@@ -38,6 +40,9 @@ export interface MatchEngineResult {
   duplicatesSkipped: number;
   errors: string[];
   note?: string;
+  quota_blocked?: boolean;
+  quota_limit?: number;
+  tier?: 'free' | 'pro' | 'executive';
 }
 
 const MAX_IDEAS_PER_RUN = 3;
@@ -119,6 +124,28 @@ export async function runMatchEngineForUser(
   openaiApiKey: string,
   options?: { ideaIds?: string[] }
 ): Promise<MatchEngineResult> {
+  // Tier quota gate. Free users get 1 Match / week; Operator 21 / week
+  // (3 / day * 7); Chief of Staff unlimited. Counted against any match
+  // surfaced in the trailing week regardless of state.
+  const tier = await getUserTier(supabase, userId);
+  const quota = QUOTAS[tier];
+  const weekStart = startOfWeekIso();
+  const surfacedThisWeek = Number.isFinite(quota.matches_per_week)
+    ? await countMatchesSince(supabase, userId, weekStart)
+    : 0;
+  if (Number.isFinite(quota.matches_per_week) && surfacedThisWeek >= quota.matches_per_week) {
+    return {
+      matchesCreated: 0,
+      ideasConsidered: 0,
+      duplicatesSkipped: 0,
+      errors: [],
+      note: `You've hit the ${tier === 'free' ? 'Freemium' : 'Operator'} Match cap for this week (${quota.matches_per_week}). Upgrade for more.`,
+      quota_blocked: true,
+      quota_limit: quota.matches_per_week,
+      tier,
+    };
+  }
+
   let ideaQuery = supabase
     .from('ideas')
     .select('id, title, one_liner, offer, price_band, icp')
@@ -269,5 +296,6 @@ export async function runMatchEngineForUser(
     ideasConsidered: ideas.length,
     duplicatesSkipped,
     errors,
+    tier,
   };
 }

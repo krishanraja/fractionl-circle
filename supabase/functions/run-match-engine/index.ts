@@ -31,6 +31,9 @@ Deno.serve(async (req) => {
       duplicates_skipped: result.duplicatesSkipped,
       errors: result.errors,
       note: result.note,
+      quota_blocked: result.quota_blocked ?? false,
+      quota_limit: result.quota_limit,
+      tier: result.tier,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     return safeErrorResponse(error, getCorsHeaders(req));

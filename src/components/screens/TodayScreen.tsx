@@ -8,12 +8,15 @@ import { useCircle } from '@/hooks/useCircle';
 import { useMatches, runMatchEngine } from '@/hooks/useMatches';
 import { MatchCard } from '@/components/today/MatchCard';
 import { SundayLetterCard } from '@/components/today/SundayLetterCard';
+import { PricingSheet } from '@/components/billing/PricingSheet';
 
 export const TodayScreen = () => {
   const { ideas, loading: ideasLoading } = useIdeas();
   const { totalPeople, loading: circleLoading } = useCircle();
   const { matches, loading: matchesLoading, refresh, updateMatchState } = useMatches();
   const [running, setRunning] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [pricingReason, setPricingReason] = useState<string | undefined>(undefined);
 
   const canRun = !ideasLoading && !circleLoading && ideas.length > 0 && totalPeople > 0;
   const hasMatches = matches.length > 0;
@@ -28,6 +31,11 @@ export const TodayScreen = () => {
     try {
       const res = await runMatchEngine();
       await refresh();
+      if (res.quota_blocked) {
+        setPricingReason(res.note ?? 'You hit your Match cap. Upgrade for more.');
+        setPricingOpen(true);
+        return;
+      }
       if (res.matches_created && res.matches_created > 0) {
         toast.success(`${res.matches_created} new Match${res.matches_created === 1 ? '' : 'es'} surfaced.`);
       } else if (res.note) {
@@ -151,6 +159,8 @@ export const TodayScreen = () => {
           </div>
         </section>
       )}
+
+      <PricingSheet open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
     </div>
   );
 };
