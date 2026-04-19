@@ -1346,6 +1346,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sunday_letters: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          id: string
+          model: string | null
+          stats: Json | null
+          text_body: string
+          user_id: string
+          week_of: string
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          model?: string | null
+          stats?: Json | null
+          text_body: string
+          user_id: string
+          week_of: string
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          model?: string | null
+          stats?: Json | null
+          text_body?: string
+          user_id?: string
+          week_of?: string
+        }
+        Relationships: []
+      }
       talent_contact_identities: {
         Row: {
           confidence: number | null
