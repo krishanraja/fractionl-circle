@@ -261,6 +261,92 @@ export interface VoiceSeedPerson {
   title?: string | null;
 }
 
+export interface SharedContactInput {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  company?: string | null;
+  title?: string | null;
+  location?: string | null;
+  headline?: string | null;
+  profile_url?: string | null;
+  platform?: string | null;
+}
+
+// Public: ingest a single person captured via the OS share sheet
+// (PWA share_target or iOS Shortcut). Writes to a new `share_sheet` source
+// and returns the resulting circle_person row id.
+export const ingestSharedContact = async (
+  userId: string,
+  input: SharedContactInput,
+): Promise<{ sourceId: string; circlePersonId: string | null; result: IngestResult }> => {
+  const label = input.platform
+    ? `Shared (${input.platform})`
+    : 'Shared';
+  const sourceId = await createSource(userId, 'share_sheet', label);
+  try {
+    const name = input.name?.trim();
+    if (!name) throw new Error('Name is required');
+
+    const linkedin = input.linkedin_url
+      ?? (input.profile_url?.includes('linkedin.com') ? input.profile_url : null);
+
+    const fp = personFingerprint({
+      name,
+      email: input.email ?? null,
+      linkedinUrl: linkedin ?? null,
+      phone: input.phone ?? null,
+      company: input.company ?? null,
+    });
+    if (!fp) throw new Error('Not enough signal to identify this person');
+
+    const candidate: PersonCandidate = {
+      fingerprint: fp,
+      display_name: name,
+      primary_email: input.email?.trim() || null,
+      primary_phone: input.phone?.trim() || null,
+      linkedin_url: linkedin?.trim() || null,
+      company: input.company?.trim() || null,
+      title: input.title?.trim() || null,
+      payload: {
+        name,
+        email: input.email ?? null,
+        phone: input.phone ?? null,
+        linkedin_url: linkedin ?? null,
+        profile_url: input.profile_url ?? null,
+        company: input.company ?? null,
+        title: input.title ?? null,
+        location: input.location ?? null,
+        headline: input.headline ?? null,
+        platform: input.platform ?? null,
+      },
+      external_id: linkedin ?? input.profile_url ?? null,
+    };
+
+    const result = await writeCandidates(userId, sourceId, [candidate]);
+    await markSourceActive(sourceId, result.rawInserted);
+
+    // Resolve the circle_person_id the raw row linked to so the caller can
+    // navigate directly to the (future) person screen.
+    const { data: rawRow } = await supabase
+      .from('person_raw')
+      .select('circle_person_id')
+      .eq('source_id', sourceId)
+      .limit(1)
+      .maybeSingle();
+
+    return {
+      sourceId,
+      circlePersonId: (rawRow as { circle_person_id: string | null } | null)?.circle_person_id ?? null,
+      result,
+    };
+  } catch (err) {
+    await markSourceFailed(sourceId, err);
+    throw err;
+  }
+};
+
 // Public: ingest a batch of voice-named people under a `voice_seed` source.
 export const ingestVoiceSeed = async (
   userId: string,

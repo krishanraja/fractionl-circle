@@ -4,6 +4,8 @@
 
 // deno-lint-ignore-file no-explicit-any
 
+import { getUserTier, QUOTAS } from './tiers.ts';
+
 export interface SundayLetterStats {
   matches_surfaced: number;
   matches_approved: number;
@@ -201,5 +203,79 @@ Rules:
     .single();
   if (insertErr) throw insertErr;
 
-  return { letter: inserted, reused: false };
+  // Phase 8c: TTS audio. Only for Chief of Staff tier. Best-effort — if TTS
+  // fails we keep the text letter.
+  let letter = inserted;
+  try {
+    const tier = await getUserTier(supabase, userId);
+    if (QUOTAS[tier].has_sunday_letter_audio && hasActivity) {
+      const audioUrl = await synthesizeAudio({
+        supabase,
+        openaiApiKey,
+        userId,
+        weekOf,
+        text: narrative,
+      });
+      if (audioUrl) {
+        const { data: withAudio, error: audioErr } = await supabase
+          .from('sunday_letters')
+          .update({ audio_url: audioUrl })
+          .eq('id', inserted.id)
+          .select('*')
+          .single();
+        if (!audioErr && withAudio) letter = withAudio;
+      }
+    }
+  } catch (e) {
+    console.error('sunday_letter_audio_failed', e instanceof Error ? e.message : e);
+  }
+
+  return { letter, reused: false };
+}
+
+async function synthesizeAudio(args: {
+  supabase: any;
+  openaiApiKey: string;
+  userId: string;
+  weekOf: string;
+  text: string;
+}): Promise<string | null> {
+  const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${args.openaiApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini-tts',
+      voice: 'alloy',
+      input: args.text,
+      response_format: 'mp3',
+    }),
+  });
+  if (!resp.ok) {
+    console.error('tts_failed', resp.status, await resp.text());
+    return null;
+  }
+  const buffer = new Uint8Array(await resp.arrayBuffer());
+  const path = `${args.userId}/${args.weekOf}.mp3`;
+  const { error: uploadErr } = await args.supabase.storage
+    .from('sunday-letters')
+    .upload(path, buffer, {
+      contentType: 'audio/mpeg',
+      upsert: true,
+    });
+  if (uploadErr) {
+    console.error('tts_upload_failed', uploadErr.message);
+    return null;
+  }
+  // Bucket is private; generate a signed URL valid for a week.
+  const { data: signed, error: signErr } = await args.supabase.storage
+    .from('sunday-letters')
+    .createSignedUrl(path, 60 * 60 * 24 * 7);
+  if (signErr || !signed?.signedUrl) {
+    console.error('tts_sign_failed', signErr?.message);
+    return null;
+  }
+  return signed.signedUrl;
 }

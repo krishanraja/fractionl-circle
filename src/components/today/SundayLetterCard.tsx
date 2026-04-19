@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollText, Loader2, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { ScrollText, Loader2, RefreshCw, ChevronDown, ChevronUp, Headphones } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSundayLetter, type SundayLetterRow, type SundayLetterStats } from '@/hooks/useSundayLetter';
@@ -123,6 +123,16 @@ export const SundayLetterCard = ({ canGenerate }: SundayLetterCardProps) => {
       </header>
 
       <StatLine stats={letter.stats} />
+
+      {letter.audio_url && (
+        <div className="mt-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+          <div className="flex items-center gap-2 mb-2 text-xs font-medium text-primary">
+            <Headphones className="w-3.5 h-3.5" />
+            Listen — 90 seconds
+          </div>
+          <audio controls preload="none" src={letter.audio_url} className="w-full" />
+        </div>
+      )}
 
       <div className="mt-2">
         <AnimatePresence initial={false}>

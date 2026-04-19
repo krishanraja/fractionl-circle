@@ -5,11 +5,11 @@ import { Loader2, Check, AlertTriangle, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { useContactIntake } from '@/hooks/useContactIntake';
+import { useAuth } from '@/hooks/useAuth';
 import { readSharedScreenshot } from '@/utils/registerServiceWorker';
 import { toast } from 'sonner';
 import { haptics } from '@/utils/haptics';
-import { normalizePhoneToE164 } from '@/utils/contactActions';
+import { ingestSharedContact } from '@/lib/circleIngest';
 
 interface ParsedScreenshot {
   platform?: string;
@@ -36,7 +36,7 @@ type ScreenState = 'loading' | 'parsing' | 'confirm' | 'error' | 'success';
  */
 export default function ShareContact() {
   const navigate = useNavigate();
-  const { intake } = useContactIntake();
+  const { user } = useAuth();
   const [state, setState] = useState<ScreenState>('loading');
   const [parsed, setParsed] = useState<ParsedScreenshot>({});
   const [preview, setPreview] = useState<string | null>(null);
@@ -178,43 +178,38 @@ export default function ShareContact() {
       toast.error('Name is required');
       return;
     }
+    if (!user) {
+      toast.error('Sign in first');
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const platform = parsed.platform;
-      const source = platform === 'linkedin'
-        ? 'screenshot_linkedin'
-        : platform === 'instagram'
-        ? 'screenshot_instagram'
-        : platform === 'contacts'
-        ? 'screenshot_contacts'
-        : 'other';
-
-      const result = await intake(
-        {
-          name: parsed.name.trim(),
-          email: parsed.email?.trim() || null,
-          phone: parsed.phone?.trim() ? (normalizePhoneToE164(parsed.phone.trim()) || parsed.phone.trim()) : null,
-          company: parsed.company?.trim() || null,
-          title: parsed.title?.trim() || null,
-          city: parsed.location?.trim() || null,
-          linkedin_url: parsed.profile_url?.includes('linkedin.com') ? parsed.profile_url : null,
-          portfolio_url: parsed.profile_url?.includes('instagram.com') ? parsed.profile_url : null,
-          specialty_summary: parsed.headline || [parsed.title, parsed.company].filter(Boolean).join(' at ') || null,
-          source: source as any,
-        },
-        { onDuplicate: 'auto_merge' }
-      );
-
+      const result = await ingestSharedContact(user.id, {
+        name: parsed.name.trim(),
+        email: parsed.email?.trim() || null,
+        phone: parsed.phone?.trim() || null,
+        linkedin_url: parsed.profile_url?.includes('linkedin.com') ? parsed.profile_url : null,
+        company: parsed.company?.trim() || null,
+        title: parsed.title?.trim() || null,
+        location: parsed.location?.trim() || null,
+        headline: parsed.headline?.trim() || null,
+        profile_url: parsed.profile_url?.trim() || null,
+        platform: parsed.platform ?? null,
+      });
       haptics.success();
-      if (result.status === 'merged') toast.success(`Merged into ${result.contact.name}`);
-      else toast.success(`${parsed.name} added to your Circle`);
+      if (result.result.circleMerged > 0) {
+        toast.success(`Merged into ${parsed.name}'s existing Circle entry.`);
+      } else {
+        toast.success(`${parsed.name} added to your Circle`);
+      }
       setState('success');
       setTimeout(() => navigate('/'), 800);
-    } catch {
-      // toast handled by hook
-    } finally {
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not save.');
       setIsSubmitting(false);
+      return;
     }
+    setIsSubmitting(false);
   };
 
   return (

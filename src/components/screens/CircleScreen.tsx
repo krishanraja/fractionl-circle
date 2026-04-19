@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Upload, Mic, Sparkles, AlertCircle } from 'lucide-react';
+import { Plus, Upload, Mic, Sparkles, AlertCircle, Users2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCircle } from '@/hooks/useCircle';
+import { useCircleDedupe } from '@/hooks/useCircleDedupe';
 import { AddSourceSheet } from '@/components/circle/AddSourceSheet';
+import { DedupeReviewSheet } from '@/components/circle/DedupeReviewSheet';
 import type { Source } from '@/hooks/useCircle';
 
 const SOURCE_ICON = (kind: Source['kind']) => {
@@ -32,7 +34,20 @@ const SOURCE_LABEL = (kind: Source['kind']) => {
 
 export const CircleScreen = () => {
   const { totalPeople, sources, loading, refresh } = useCircle();
+  const dedupe = useCircleDedupe();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [dedupeOpen, setDedupeOpen] = useState(false);
+
+  const openDedupe = async () => {
+    setDedupeOpen(true);
+    if (!dedupe.lastScan && !dedupe.scanning) {
+      try {
+        await dedupe.scan();
+      } catch {
+        // toast surfaced inside the sheet on action failure; scan errors rare
+      }
+    }
+  };
 
   const activeSources = useMemo(
     () => sources.filter((s) => s.status === 'active' || s.status === 'ingesting'),
@@ -141,17 +156,34 @@ export const CircleScreen = () => {
         </section>
       )}
 
-      <button
-        onClick={() => setSheetOpen(true)}
-        className={cn(
-          'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl',
-          'border border-border/60 bg-card/50 backdrop-blur hover:bg-card',
-          'text-sm font-medium text-foreground transition-colors'
+      <div className="space-y-2">
+        <button
+          onClick={() => setSheetOpen(true)}
+          className={cn(
+            'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl',
+            'border border-border/60 bg-card/50 backdrop-blur hover:bg-card',
+            'text-sm font-medium text-foreground transition-colors'
+          )}
+        >
+          <Plus className="w-4 h-4" />
+          Add a source
+        </button>
+
+        {!loading && totalPeople >= 2 && (
+          <button
+            onClick={openDedupe}
+            className={cn(
+              'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl',
+              'text-xs font-medium text-foreground-secondary hover:text-foreground transition-colors'
+            )}
+          >
+            <Users2 className="w-3.5 h-3.5" />
+            {dedupe.suggestions.length > 0
+              ? `Review ${dedupe.suggestions.length} likely duplicate${dedupe.suggestions.length === 1 ? '' : 's'}`
+              : 'Find duplicates'}
+          </button>
         )}
-      >
-        <Plus className="w-4 h-4" />
-        Add a source
-      </button>
+      </div>
 
       <AddSourceSheet
         open={sheetOpen}
@@ -159,6 +191,21 @@ export const CircleScreen = () => {
         onIngested={() => {
           void refresh();
         }}
+      />
+
+      <DedupeReviewSheet
+        open={dedupeOpen}
+        onOpenChange={setDedupeOpen}
+        suggestions={dedupe.suggestions}
+        scanning={dedupe.scanning}
+        merging={dedupe.merging}
+        lastScan={dedupe.lastScan}
+        onScan={dedupe.scan}
+        onAccept={async (s) => {
+          await dedupe.accept(s);
+          void refresh();
+        }}
+        onReject={dedupe.reject}
       />
     </div>
   );

@@ -139,8 +139,12 @@ export const useMatches = () => {
 interface RunResponse {
   matches_created?: number;
   ideas_considered?: number;
+  duplicates_skipped?: number;
   note?: string;
   errors?: string[];
+  quota_blocked?: boolean;
+  quota_limit?: number;
+  tier?: 'free' | 'pro' | 'executive';
 }
 
 export const runMatchEngine = async (): Promise<RunResponse> => {
