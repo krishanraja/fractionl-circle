@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, Mic, ArrowLeft, Globe, Building2 } from 'lucide-react';
+import { Upload, Mic, ArrowLeft, Globe, Building2, Chrome } from 'lucide-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -7,9 +7,10 @@ import { LinkedInCsvDrop } from './LinkedInCsvDrop';
 import { VoiceSeedCapture } from './VoiceSeedCapture';
 import { GoogleConnect } from './GoogleConnect';
 import { MicrosoftConnect } from './MicrosoftConnect';
+import { ExtensionPair } from './ExtensionPair';
 import type { IngestResult } from '@/lib/circleIngest';
 
-type View = 'pick' | 'linkedin' | 'voice' | 'google' | 'microsoft';
+type View = 'pick' | 'linkedin' | 'voice' | 'google' | 'microsoft' | 'extension';
 
 interface AddSourceSheetProps {
   open: boolean;
@@ -68,6 +69,20 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
       </div>
     </button>
     <button
+      onClick={() => onPick('extension')}
+      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
+    >
+      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
+        <Chrome className="w-4 h-4 text-primary" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-semibold text-foreground">Connect browser extension</p>
+        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
+          Capture LinkedIn profiles client-side as you browse. Pair once, then it runs in the background.
+        </p>
+      </div>
+    </button>
+    <button
       onClick={() => onPick('voice')}
       className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
     >
@@ -108,6 +123,7 @@ const DetailBody = ({
     {view === 'voice' && <VoiceSeedCapture onDone={onIngested} />}
     {view === 'google' && <GoogleConnect />}
     {view === 'microsoft' && <MicrosoftConnect />}
+    {view === 'extension' && <ExtensionPair />}
   </div>
 );
 

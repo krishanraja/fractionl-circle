@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Circle — LinkedIn Capture",
+  "short_name": "Circle",
+  "version": "0.1.0",
+  "description": "Client-side capture of LinkedIn profiles into your Circle. No scraping of anyone else's data — only pages you're actively viewing in your own session.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.linkedin.com/*",
+    "https://*.supabase.co/*"
+  ],
+  "action": {
+    "default_title": "Circle",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/in/*"],
+      "js": ["content-linkedin.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
