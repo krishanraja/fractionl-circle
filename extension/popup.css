@@ -9,6 +9,13 @@ header { margin-bottom: 14px; }
 
 section { display: flex; flex-direction: column; gap: 10px; }
 
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .status {
   font-size: 11px;
   font-weight: 500;
@@ -26,12 +33,67 @@ section { display: flex; flex-direction: column; gap: 10px; }
   word-break: break-word;
 }
 
+.section-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b6b7b;
+}
+
 .help {
   font-size: 12px;
   line-height: 1.5;
   color: #5a5a6a;
   margin: 0;
 }
+
+.recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.recent li {
+  border: 1px solid #eeeef4;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.recent li .who {
+  font-weight: 500;
+  color: #0f0f14;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent li .meta {
+  font-size: 10px;
+  color: #6b6b7b;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.recent li .status-chip {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.recent li.new .status-chip { color: #1a7a3a; }
+.recent li.merged .status-chip { color: #7C3AED; }
+.recent li.error .status-chip { color: #a11b1b; }
+.recent li .error-msg { font-size: 10px; color: #a11b1b; margin-top: 2px; word-break: break-word; }
 
 textarea {
   width: 100%;
@@ -66,7 +128,22 @@ button.ghost {
   background: transparent;
   color: #5a5a6a;
   border: 1px solid #dedee6;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
 }
+button.link {
+  background: transparent;
+  color: #5a5a6a;
+  border: none;
+  padding: 0;
+  height: auto;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+button.link:hover { color: #0f0f14; }
 
 .error {
   font-size: 11px;

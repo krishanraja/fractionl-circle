@@ -14,13 +14,20 @@
       </header>
 
       <section id="connected" hidden>
-        <div class="status ok">Connected</div>
+        <div class="row">
+          <div class="status ok">Connected</div>
+          <button id="sign-out" class="ghost" title="Sign out">Sign out</button>
+        </div>
         <div id="identity" class="identity"></div>
-        <p class="help">
-          Open any LinkedIn profile — we'll capture it into your Circle
-          automatically. Nothing else is scraped.
-        </p>
-        <button id="sign-out" class="ghost">Sign out</button>
+
+        <div class="section-label">
+          <span>Recent captures</span>
+          <button id="clear-recent" class="link" hidden>Clear</button>
+        </div>
+        <ul id="recent" class="recent"></ul>
+        <div id="recent-empty" class="help" hidden>
+          Open any LinkedIn profile to capture it. The list updates automatically.
+        </div>
       </section>
 
       <section id="disconnected">
