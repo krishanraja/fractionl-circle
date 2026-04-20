@@ -120,6 +120,7 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
               primary_email: person.primary_email,
               primary_phone: person.primary_phone,
               linkedin_url: person.linkedin_url,
+              handles: person.handles,
             }}
             raws={match.personRaws}
             size="sm"

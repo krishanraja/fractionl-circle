@@ -20,7 +20,7 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforce
  */
 
 interface ParsedScreenshot {
-  platform?: 'linkedin' | 'instagram' | 'contacts' | 'unknown';
+  platform?: 'linkedin' | 'instagram' | 'tiktok' | 'x' | 'contacts' | 'unknown';
   name?: string;
   headline?: string;
   company?: string;
@@ -35,13 +35,15 @@ interface ParsedScreenshot {
 const PROMPT = `You are an assistant that extracts contact info from app screenshots.
 The screenshot is of one of:
 - A LinkedIn profile (blue top bar, "Connect" / "Message" buttons, experience list)
-- An Instagram profile (grid of posts, "Follow" button, bio)
+- An Instagram profile (grid of posts, "Follow" button, bio, @handle at the top)
+- A TikTok profile (bio + follower/following counts, "Follow" / "Message" buttons, @handle at the top, grid of vertical videos)
+- An X / Twitter profile (bio, following/followers counts, blue or black checkmark, "Follow" button, @handle right under the display name)
 - An iOS Contacts card (white rows, phone/email labels)
 - Something else (platform = "unknown")
 
 Extract ONLY what's visible. Return STRICT JSON with these fields (omit any you can't read):
 {
-  "platform": "linkedin" | "instagram" | "contacts" | "unknown",
+  "platform": "linkedin" | "instagram" | "tiktok" | "x" | "contacts" | "unknown",
   "name": string,
   "headline": string,
   "company": string,
@@ -54,9 +56,12 @@ Extract ONLY what's visible. Return STRICT JSON with these fields (omit any you 
 }
 
 Rules:
-- If the screenshot is LinkedIn, name and headline are usually at the top. Company is often the most-recent experience.
-- If Instagram, the handle is the bold text at the top; "name" is the display name just below. Bio → headline.
-- If Contacts, name is at the top; phone and email are labeled rows.
+- LinkedIn: name and headline are usually at the top. Company is often the most-recent experience.
+- Instagram: "handle" is the bold text at the top; "name" is the display name just below. Bio → headline. If a profile URL is visible, use instagram.com/<handle>.
+- TikTok: "handle" is the @something at the top of the profile. "name" is the display name above it. Bio → headline. Profile URL is tiktok.com/@<handle>.
+- X / Twitter: "handle" is the @something under the display name. "name" is the display name. Bio → headline. Profile URL is x.com/<handle>. Do NOT include the @ in "handle".
+- Contacts: name is at the top; phone and email are labeled rows.
+- For any social platform, always fill "handle" (no @ prefix) and "profile_url" (full https:// URL) when the info is visible.
 - Never invent values. If unsure, omit the field.
 - Output must be pure JSON with no prose, no markdown fences.`;
 

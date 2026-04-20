@@ -33,6 +33,13 @@ export interface MatchPerson {
   primary_email: string | null;
   primary_phone: string | null;
   linkedin_url: string | null;
+  handles: {
+    linkedin?: string | null;
+    instagram?: string | null;
+    tiktok?: string | null;
+    x?: string | null;
+    whatsapp?: string | null;
+  } | null;
 }
 
 export interface MatchIdea {
@@ -100,7 +107,7 @@ export const useMatches = () => {
 
     const [{ data: people }, { data: ideas }, { data: moves }, { data: raws }] = await Promise.all([
       personIds.length
-        ? supabase.from('circle_person').select('id, display_name, company, title, primary_email, linkedin_url, primary_phone').in('id', personIds)
+        ? supabase.from('circle_person').select('id, display_name, company, title, primary_email, linkedin_url, primary_phone, handles').in('id', personIds)
         : Promise.resolve({ data: [] as MatchPerson[] }),
       ideaIds.length
         ? supabase.from('ideas').select('id, title, one_liner').in('id', ideaIds)

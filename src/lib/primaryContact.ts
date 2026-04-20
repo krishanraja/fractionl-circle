@@ -32,6 +32,13 @@ export interface ContactablePerson {
   primary_email: string | null;
   primary_phone: string | null;
   linkedin_url: string | null;
+  handles?: {
+    linkedin?: string | null;
+    instagram?: string | null;
+    tiktok?: string | null;
+    x?: string | null;
+    whatsapp?: string | null;
+  } | null;
 }
 
 export interface ContactableRaw {
@@ -117,28 +124,36 @@ function pickFromPayload(raws: ContactableRaw[], keys: string[]): string | null 
 }
 
 function gatherChannels(person: ContactablePerson, raws: ContactableRaw[]): ChannelData {
-  const linkedin = person.linkedin_url ?? pickFromPayload(raws, ['linkedin_url', 'profile_url']);
-  // For IG/TikTok/X we look at payload.profile_url if the parser tagged the platform.
-  let instagram: string | null = null;
-  let tiktok: string | null = null;
-  let x: string | null = null;
-  for (const raw of raws) {
-    if (!raw.payload) continue;
-    const platform = typeof raw.payload.platform === 'string'
-      ? (raw.payload.platform as string).toLowerCase()
-      : null;
-    const url = typeof raw.payload.profile_url === 'string' ? (raw.payload.profile_url as string) : null;
-    const handle = typeof raw.payload.handle === 'string' ? (raw.payload.handle as string) : null;
-    const candidate = url ?? handle;
-    if (!candidate) continue;
-    if (platform === 'instagram' && !instagram) instagram = candidate;
-    if (platform === 'tiktok' && !tiktok) tiktok = candidate;
-    if ((platform === 'x' || platform === 'twitter') && !x) x = candidate;
-    // Heuristic fallback: recognize by URL substring if platform is missing.
-    if (!instagram && /instagram\.com/i.test(candidate)) instagram = candidate;
-    if (!tiktok && /tiktok\.com/i.test(candidate)) tiktok = candidate;
-    if (!x && /(twitter\.com|x\.com)/i.test(candidate)) x = candidate;
+  // Phase B: handles blob is the canonical store. Fall back to the top-
+  // level linkedin_url + person_raw.payload for rows ingested before
+  // Phase B, OR when a passive sync detected something we haven't
+  // promoted yet.
+  const h = person.handles ?? {};
+
+  const linkedin = h.linkedin
+    ?? person.linkedin_url
+    ?? pickFromPayload(raws, ['linkedin_url', 'profile_url']);
+
+  let instagram = h.instagram ?? null;
+  let tiktok = h.tiktok ?? null;
+  let x = h.x ?? null;
+
+  if (!instagram || !tiktok || !x) {
+    for (const raw of raws) {
+      if (!raw.payload) continue;
+      const platform = typeof raw.payload.platform === 'string'
+        ? (raw.payload.platform as string).toLowerCase()
+        : null;
+      const url = typeof raw.payload.profile_url === 'string' ? (raw.payload.profile_url as string) : null;
+      const handle = typeof raw.payload.handle === 'string' ? (raw.payload.handle as string) : null;
+      const candidate = url ?? handle;
+      if (!candidate) continue;
+      if (!instagram && (platform === 'instagram' || /instagram\.com/i.test(candidate))) instagram = candidate;
+      if (!tiktok && (platform === 'tiktok' || /tiktok\.com/i.test(candidate))) tiktok = candidate;
+      if (!x && (platform === 'x' || platform === 'twitter' || /(twitter\.com|x\.com)/i.test(candidate))) x = candidate;
+    }
   }
+
   return {
     linkedin: linkedin ?? null,
     email: person.primary_email,
