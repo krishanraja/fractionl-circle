@@ -1,10 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
-import { runGoogleSync } from '../_shared/syncGoogleCore.ts';
-
-// User-triggered Google sync. The actual logic lives in the shared core so
-// the cron version can run the exact same path with a service-role client.
+import { runMicrosoftSync } from '../_shared/syncMicrosoftCore.ts';
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -12,16 +9,14 @@ Deno.serve(async (req) => {
 
   try {
     const { userId } = await requireAuth(req);
-    checkRateLimit(`sync-google:${userId}`, 4, 60_000);
+    checkRateLimit(`sync-microsoft:${userId}`, 4, 60_000);
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       { auth: { persistSession: false, autoRefreshToken: false } }
     );
-
-    const result = await runGoogleSync(admin, userId);
-
+    const result = await runMicrosoftSync(admin, userId);
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
