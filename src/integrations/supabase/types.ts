@@ -1,4 +1,3 @@
-Initialising login role...
 export type Json =
   | string
   | number
@@ -171,6 +170,7 @@ export type Database = {
           created_at: string
           display_name: string
           fingerprint: string | null
+          handles: Json
           id: string
           last_interaction_at: string | null
           linkedin_url: string | null
@@ -190,6 +190,7 @@ export type Database = {
           created_at?: string
           display_name: string
           fingerprint?: string | null
+          handles?: Json
           id?: string
           last_interaction_at?: string | null
           linkedin_url?: string | null
@@ -209,6 +210,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           fingerprint?: string | null
+          handles?: Json
           id?: string
           last_interaction_at?: string | null
           linkedin_url?: string | null
