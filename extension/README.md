@@ -35,6 +35,15 @@ pages you actively visit.
 5. Pick this `extension/` folder.
 6. Pin the Circle extension icon from the toolbar's puzzle menu.
 
+Icons are committed to `extension/icons/`. If you ever need to regenerate
+them (or want a different colour), run:
+
+```
+node scripts/build-extension-icons.mjs
+```
+
+This writes `16.png`, `48.png`, and `128.png` in pure Node (no deps).
+
 ## Pair it with your Circle account
 
 1. Open the Circle web app → **Circle** tab → **Add a source** → **Connect
@@ -49,11 +58,18 @@ them as needed.
 
 ## Use it
 
-Open any LinkedIn profile. The extension captures in the background — no
-notification, no flashing icons. Check your Circle on the web: the person
-should appear with `source = linkedin_extension` on the raw record and the
-fingerprint pipeline will merge them with any existing entry from your
-LinkedIn CSV, Google Contacts, etc.
+Open any LinkedIn profile. The extension captures in the background. You'll
+see:
+
+- A brief **purple dot** on the extension toolbar badge when a capture
+  succeeds (red `!` if it failed).
+- The last 8 captures — with name, "new" / "merged" chip, and relative time
+  — inside the popup.
+
+Check your Circle on the web: the person appears with
+`source = linkedin_extension` on the raw record; the fingerprint pipeline
+merges them with any existing entry from your LinkedIn CSV, Google
+Contacts, or Microsoft.
 
 ## Troubleshooting
 

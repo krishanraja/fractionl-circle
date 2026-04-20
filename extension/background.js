@@ -1,37 +1,35 @@
 // Circle — LinkedIn Capture: background service worker.
 //
 // Responsibilities:
-//  1. Hold the user's pairing credentials (Supabase access + refresh tokens)
-//     in chrome.storage.local, refreshing the access token as needed.
+//  1. Hold the user's pairing credentials (Supabase URL + anon key + access
+//     + refresh tokens) in chrome.storage.local, refreshing the access
+//     token as needed.
 //  2. Receive profile captures from the content script and forward them to
 //     our `extension-ingest` edge function.
-//  3. Expose light RPC to the popup: get/set pairing, sign out, run a
-//     manual capture relay.
+//  3. Keep a rolling log of the last captures so the popup can show what
+//     actually happened.
+//  4. Light RPC to the popup: pair, sign out, read state.
 
-const SUPABASE_URL = 'https://ksyuwacuigshvcyptlhe.supabase.co';
-const SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzeXV3YWN1aWdzaHZjeXB0bGhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM4NjEwMDAsImV4cCI6MjA0OTQzNzAwMH0.PLACEHOLDER';
-// NOTE: the real anon key is injected at load time from the pairing token;
-// we read it from storage before making any API calls. The constant above is
-// a placeholder that gets overridden immediately.
-
-const STORAGE_KEY = 'circle_pairing';
+const STORAGE_PAIRING = 'circle_pairing';
+const STORAGE_RECENT = 'circle_recent_captures';
+const RECENT_CAP = 8;
+const BADGE_RESET_MS = 2_500;
 
 // ---------------------------------------------------------------------------
-// Pairing token: { url, anon_key, access_token, refresh_token, expires_at }
+// Pairing bundle: { url, anon_key, access_token, refresh_token, expires_at, email }
 // ---------------------------------------------------------------------------
 
 async function getPairing() {
-  const { [STORAGE_KEY]: pairing } = await chrome.storage.local.get(STORAGE_KEY);
+  const { [STORAGE_PAIRING]: pairing } = await chrome.storage.local.get(STORAGE_PAIRING);
   return pairing ?? null;
 }
 
 async function setPairing(pairing) {
-  await chrome.storage.local.set({ [STORAGE_KEY]: pairing });
+  await chrome.storage.local.set({ [STORAGE_PAIRING]: pairing });
 }
 
 async function clearPairing() {
-  await chrome.storage.local.remove(STORAGE_KEY);
+  await chrome.storage.local.remove(STORAGE_PAIRING);
 }
 
 function parsePairingString(raw) {
@@ -44,6 +42,49 @@ function parsePairingString(raw) {
     return parsed;
   } catch {
     return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Recent captures log (rolling, last N).
+// ---------------------------------------------------------------------------
+
+async function getRecent() {
+  const { [STORAGE_RECENT]: recent } = await chrome.storage.local.get(STORAGE_RECENT);
+  return Array.isArray(recent) ? recent : [];
+}
+
+async function pushRecent(entry) {
+  const current = await getRecent();
+  const next = [entry, ...current].slice(0, RECENT_CAP);
+  await chrome.storage.local.set({ [STORAGE_RECENT]: next });
+  return next;
+}
+
+// ---------------------------------------------------------------------------
+// Badge feedback. The MV3 service worker can be torn down between events,
+// so the setTimeout still works as long as Chrome keeps the worker alive
+// during the capture; if it dies early the badge stays until next set.
+// Acceptable for a transient feedback indicator.
+// ---------------------------------------------------------------------------
+
+let badgeResetTimer = null;
+
+async function flashBadge(kind) {
+  try {
+    if (kind === 'ok') {
+      await chrome.action.setBadgeText({ text: '•' });
+      await chrome.action.setBadgeBackgroundColor({ color: '#7C3AED' });
+    } else {
+      await chrome.action.setBadgeText({ text: '!' });
+      await chrome.action.setBadgeBackgroundColor({ color: '#B91C1C' });
+    }
+    if (badgeResetTimer) clearTimeout(badgeResetTimer);
+    badgeResetTimer = setTimeout(() => {
+      chrome.action.setBadgeText({ text: '' }).catch(() => {});
+    }, BADGE_RESET_MS);
+  } catch {
+    // setBadgeText isn't available in every MV3 host (e.g., tests).
   }
 }
 
@@ -104,6 +145,36 @@ async function ingestProfile(profile) {
   return await resp.json();
 }
 
+async function handleCapture(profile) {
+  try {
+    const result = await ingestProfile(profile);
+    const captured = {
+      name: profile.display_name ?? '(unknown)',
+      linkedin_url: profile.linkedin_url ?? null,
+      circle_person_id: result?.circle_person_id ?? null,
+      status: result?.circle_new ? 'new' : 'merged',
+      at: new Date().toISOString(),
+    };
+    await pushRecent(captured);
+    await flashBadge('ok');
+    return { ok: true, result };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    await pushRecent({
+      name: profile.display_name ?? '(unknown)',
+      linkedin_url: profile.linkedin_url ?? null,
+      circle_person_id: null,
+      status: 'error',
+      at: new Date().toISOString(),
+      error: msg.slice(0, 200),
+    });
+    if (msg !== 'not_paired') {
+      await flashBadge('err');
+    }
+    return { ok: false, error: msg };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Messaging surface.
 // ---------------------------------------------------------------------------
@@ -111,12 +182,14 @@ async function ingestProfile(profile) {
 chrome.runtime.onMessage.addListener((msg, _sender, send) => {
   (async () => {
     try {
-      if (msg?.type === 'get_pairing') {
+      if (msg?.type === 'get_state') {
         const pairing = await getPairing();
+        const recent = await getRecent();
         send({
           ok: true,
           connected: !!pairing,
           email: pairing?.email ?? null,
+          recent,
         });
         return;
       }
@@ -132,12 +205,18 @@ chrome.runtime.onMessage.addListener((msg, _sender, send) => {
       }
       if (msg?.type === 'sign_out') {
         await clearPairing();
+        await chrome.storage.local.remove(STORAGE_RECENT);
+        await chrome.action.setBadgeText({ text: '' }).catch(() => {});
         send({ ok: true });
         return;
       }
       if (msg?.type === 'ingest_profile') {
-        const result = await ingestProfile(msg.profile);
-        send({ ok: true, result });
+        send(await handleCapture(msg.profile));
+        return;
+      }
+      if (msg?.type === 'clear_recent') {
+        await chrome.storage.local.remove(STORAGE_RECENT);
+        send({ ok: true });
         return;
       }
       send({ ok: false, error: 'unknown_message' });
