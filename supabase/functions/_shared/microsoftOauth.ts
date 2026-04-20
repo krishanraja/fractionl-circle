@@ -4,9 +4,16 @@
 
 // deno-lint-ignore-file no-explicit-any
 
-export const MS_TENANT = Deno.env.get('MS_TENANT') ?? 'common';
+export const MS_TENANT = Deno.env.get('MICROSOFT_TENANT') ?? Deno.env.get('MS_TENANT') ?? 'common';
 export const MS_AUTH_URL = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/authorize`;
 export const MS_TOKEN_URL = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/token`;
+
+function msClientCreds(): { clientId: string; clientSecret: string } {
+  const clientId = Deno.env.get('MICROSOFT_CLIENT_ID') ?? Deno.env.get('MS_CLIENT_ID');
+  const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET') ?? Deno.env.get('MS_CLIENT_SECRET');
+  if (!clientId || !clientSecret) throw new Error('Microsoft OAuth env not configured');
+  return { clientId, clientSecret };
+}
 
 // Non-restricted Microsoft Graph scopes. offline_access yields a refresh
 // token. We deliberately stay out of Mail.* (parallel to gmail.readonly).
@@ -60,10 +67,7 @@ export function buildMsAuthorizeUrl(state: string, clientId: string): string {
 }
 
 export async function exchangeMsCodeForTokens(code: string): Promise<MsTokenResponse> {
-  const clientId = Deno.env.get('MS_CLIENT_ID');
-  const clientSecret = Deno.env.get('MS_CLIENT_SECRET');
-  if (!clientId || !clientSecret) throw new Error('Microsoft OAuth env not configured');
-
+  const { clientId, clientSecret } = msClientCreds();
   const body = new URLSearchParams({
     code,
     client_id: clientId,
@@ -85,10 +89,7 @@ export async function exchangeMsCodeForTokens(code: string): Promise<MsTokenResp
 }
 
 export async function refreshMsAccessToken(refreshToken: string): Promise<MsTokenResponse> {
-  const clientId = Deno.env.get('MS_CLIENT_ID');
-  const clientSecret = Deno.env.get('MS_CLIENT_SECRET');
-  if (!clientId || !clientSecret) throw new Error('Microsoft OAuth env not configured');
-
+  const { clientId, clientSecret } = msClientCreds();
   const body = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,

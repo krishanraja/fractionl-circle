@@ -53,12 +53,15 @@ scopes.
 
 ```
 supabase secrets set \
-  MS_CLIENT_ID=<application client id> \
-  MS_CLIENT_SECRET=<the value you copied in step 2>
+  MICROSOFT_CLIENT_ID=<application client id> \
+  MICROSOFT_CLIENT_SECRET=<the value you copied in step 2>
 ```
 
-(Optional) `MS_TENANT` defaults to `common` (multi-tenant + personal). Set
-to your tenant ID if you want to restrict to one Azure AD tenant.
+(Optional) `MICROSOFT_TENANT` defaults to `common` (multi-tenant + personal).
+Set to your tenant ID if you want to restrict to one Azure AD tenant.
+
+The legacy `MS_CLIENT_ID` / `MS_CLIENT_SECRET` / `MS_TENANT` names still
+work as a fallback; new setups should use the verbose names above.
 
 `APP_URL` should already be set (used for the post-callback redirect).
 

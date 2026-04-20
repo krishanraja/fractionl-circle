@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     const { userId } = await requireAuth(req);
     checkRateLimit(`oauth-microsoft-start:${userId}`, 6, 60_000);
 
-    const clientId = Deno.env.get('MS_CLIENT_ID');
+    const clientId = Deno.env.get('MICROSOFT_CLIENT_ID') ?? Deno.env.get('MS_CLIENT_ID');
     if (!clientId) {
       return new Response(JSON.stringify({ error: 'Microsoft OAuth not configured' }), {
         status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
