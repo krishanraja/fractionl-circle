@@ -12,6 +12,12 @@ import {
   linkedinSlug,
 } from '@/lib/fingerprint';
 import type { LinkedInConnection } from '@/lib/linkedinCsv';
+import {
+  handleForPlatform,
+  inferHandlesFromUrl,
+  mergeHandles,
+  type HandleBlob,
+} from '@/lib/handles';
 
 type SourceKind = Database['public']['Enums']['source_kind'];
 
@@ -33,6 +39,7 @@ interface PersonCandidate {
   title: string | null;
   payload: Record<string, unknown>;
   external_id: string | null;
+  handles?: HandleBlob;
 }
 
 // Create a new source row and return its id.
@@ -123,17 +130,27 @@ const writeCandidates = async (
   let inserted: { id: string; fingerprint: string | null }[] = [];
   if (toInsert.length) {
     const now = new Date().toISOString();
-    const payload = toInsert.map((c) => ({
-      user_id: userId,
-      display_name: c.display_name,
-      primary_email: c.primary_email,
-      primary_phone: c.primary_phone,
-      linkedin_url: c.linkedin_url,
-      company: c.company,
-      title: c.title,
-      fingerprint: c.fingerprint,
-      last_interaction_at: now,
-    }));
+    const payload = toInsert.map((c) => {
+      // Mirror linkedin_url into handles.linkedin so the resolver finds the
+      // same value regardless of which field it reads.
+      const handles = mergeHandles(
+        c.handles,
+        c.linkedin_url ? { linkedin: c.linkedin_url } : {},
+      );
+      const row: Record<string, unknown> = {
+        user_id: userId,
+        display_name: c.display_name,
+        primary_email: c.primary_email,
+        primary_phone: c.primary_phone,
+        linkedin_url: c.linkedin_url,
+        company: c.company,
+        title: c.title,
+        fingerprint: c.fingerprint,
+        last_interaction_at: now,
+      };
+      if (Object.keys(handles).length) row.handles = handles;
+      return row;
+    });
     const { data, error } = await supabase
       .from('circle_person')
       .insert(payload)
@@ -145,6 +162,29 @@ const writeCandidates = async (
   const idByFingerprint = new Map<string, string>(mergeTargets);
   for (const row of inserted) {
     if (row.fingerprint) idByFingerprint.set(row.fingerprint, row.id);
+  }
+
+  // Handles-merge pass for existing rows: when a re-share brings new IG /
+  // TikTok / X URLs for a person who's already in the Circle, splice them
+  // into handles without clobbering what's already there.
+  const toMergeHandles = unique.filter((c) => {
+    const existingId = mergeTargets.get(c.fingerprint);
+    if (!existingId) return false;
+    return c.handles && Object.keys(c.handles).length > 0;
+  });
+  if (toMergeHandles.length) {
+    const existingIds = Array.from(new Set(toMergeHandles.map((c) => mergeTargets.get(c.fingerprint)!)));
+    const { data: existingRows } = await supabase
+      .from('circle_person')
+      .select('id, fingerprint, handles')
+      .eq('user_id', userId)
+      .in('id', existingIds);
+    const byId = new Map<string, HandleBlob>((existingRows ?? []).map((r: { id: string; handles: HandleBlob | null }) => [r.id, r.handles ?? {}]));
+    for (const c of toMergeHandles) {
+      const rowId = mergeTargets.get(c.fingerprint)!;
+      const next = mergeHandles(byId.get(rowId) ?? {}, c.handles ?? {});
+      await supabase.from('circle_person').update({ handles: next }).eq('id', rowId);
+    }
   }
 
   // Insert person_raw rows linked to their canonical circle_person.
@@ -263,6 +303,7 @@ export const ingestCrmCsv = async (
             format,
           },
           external_id: slug || c.linkedinUrl || c.email || null,
+          handles: c.linkedinUrl ? inferHandlesFromUrl(c.linkedinUrl) : undefined,
         } satisfies PersonCandidate;
       })
       .filter((x): x is PersonCandidate => Boolean(x));
@@ -376,6 +417,13 @@ export const ingestSharedContact = async (
     });
     if (!fp) throw new Error('Not enough signal to identify this person');
 
+    // Resolve a canonical handle for whichever platform the share source
+    // reported. Fall back to URL sniffing if the platform tag is missing.
+    const platformHandles = handleForPlatform(input.platform ?? null, input.profile_url ?? null, null);
+    const inferred = input.profile_url ? inferHandlesFromUrl(input.profile_url) : {};
+    const handles = mergeHandles(platformHandles, inferred);
+    if (linkedin) Object.assign(handles, { linkedin: handles.linkedin ?? linkedin });
+
     const candidate: PersonCandidate = {
       fingerprint: fp,
       display_name: name,
@@ -397,6 +445,7 @@ export const ingestSharedContact = async (
         platform: input.platform ?? null,
       },
       external_id: linkedin ?? input.profile_url ?? null,
+      handles: Object.keys(handles).length ? handles : undefined,
     };
 
     const result = await writeCandidates(userId, sourceId, [candidate]);

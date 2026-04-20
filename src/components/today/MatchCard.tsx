@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedMatch, MatchState } from '@/hooks/useMatches';
+import { ContactButton } from '@/components/circle/ContactButton';
 
 interface MatchCardProps {
   match: EnrichedMatch;
@@ -109,6 +110,23 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
           {channelLabel}
         </div>
       </header>
+
+      {person && (
+        <div className="mt-3">
+          <ContactButton
+            person={{
+              id: person.id,
+              display_name: person.display_name,
+              primary_email: person.primary_email,
+              primary_phone: person.primary_phone,
+              linkedin_url: person.linkedin_url,
+              handles: person.handles,
+            }}
+            raws={match.personRaws}
+            size="sm"
+          />
+        </div>
+      )}
 
       {idea && (
         <p className="mt-3 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">

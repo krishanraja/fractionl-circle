@@ -1,3 +1,4 @@
+Initialising login role...
 export type Json =
   | string
   | number
@@ -271,6 +272,7 @@ export type Database = {
       concierge_requests: {
         Row: {
           assigned_to: string | null
+          booking_url: string | null
           cancelled_at: string | null
           completed_at: string | null
           created_at: string
@@ -286,6 +288,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          booking_url?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
@@ -301,6 +304,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          booking_url?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
@@ -863,6 +867,66 @@ export type Database = {
           workshops_target?: number | null
         }
         Relationships: []
+      }
+      move_edits: {
+        Row: {
+          channel: Database["public"]["Enums"]["move_channel"]
+          created_at: string
+          draft_body: string
+          draft_len: number
+          edit_distance: number
+          final_body: string
+          final_len: number
+          id: string
+          match_id: string | null
+          move_id: string
+          normalized_distance: number
+          user_id: string
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["move_channel"]
+          created_at?: string
+          draft_body: string
+          draft_len: number
+          edit_distance: number
+          final_body: string
+          final_len: number
+          id?: string
+          match_id?: string | null
+          move_id: string
+          normalized_distance: number
+          user_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["move_channel"]
+          created_at?: string
+          draft_body?: string
+          draft_len?: number
+          edit_distance?: number
+          final_body?: string
+          final_len?: number
+          id?: string
+          match_id?: string | null
+          move_id?: string
+          normalized_distance?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "move_edits_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "move_edits_move_id_fkey"
+            columns: ["move_id"]
+            isOneToOne: false
+            referencedRelation: "moves"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moves: {
         Row: {
