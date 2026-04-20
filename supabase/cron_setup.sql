@@ -32,8 +32,10 @@ create extension if not exists pg_net;
 -- ---------------------------------------------------------------------------
 -- Remove any prior versions of these jobs before re-scheduling.
 -- ---------------------------------------------------------------------------
-select cron.unschedule('cron-match-engine')  where exists (select 1 from cron.job where jobname = 'cron-match-engine');
-select cron.unschedule('cron-sunday-letter') where exists (select 1 from cron.job where jobname = 'cron-sunday-letter');
+select cron.unschedule('cron-match-engine')     where exists (select 1 from cron.job where jobname = 'cron-match-engine');
+select cron.unschedule('cron-sunday-letter')    where exists (select 1 from cron.job where jobname = 'cron-sunday-letter');
+select cron.unschedule('cron-sync-google')      where exists (select 1 from cron.job where jobname = 'cron-sync-google');
+select cron.unschedule('cron-sync-microsoft')   where exists (select 1 from cron.job where jobname = 'cron-sync-microsoft');
 
 -- ---------------------------------------------------------------------------
 -- Phase 6: overnight Match Engine. Runs daily at 08:00 UTC (~midnight PT /
@@ -76,7 +78,46 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Sanity check. Expected: two rows.
+-- Phase 5c: nightly Google contacts + calendar re-sync. 06:00 UTC daily.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-sync-google',
+  '0 6 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-sync-google',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Phase 5c: nightly Microsoft contacts + calendar re-sync. 07:00 UTC daily
+-- (offset from Google by an hour to spread load).
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-sync-microsoft',
+  '0 7 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-sync-microsoft',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Sanity check. Expected: four rows.
 -- ---------------------------------------------------------------------------
 -- select jobname, schedule, active from cron.job where jobname like 'cron-%';
 

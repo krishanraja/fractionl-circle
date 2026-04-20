@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { Upload, Mic, ArrowLeft, Globe } from 'lucide-react';
+import { Upload, Mic, ArrowLeft, Globe, Building2 } from 'lucide-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LinkedInCsvDrop } from './LinkedInCsvDrop';
 import { VoiceSeedCapture } from './VoiceSeedCapture';
 import { GoogleConnect } from './GoogleConnect';
+import { MicrosoftConnect } from './MicrosoftConnect';
 import type { IngestResult } from '@/lib/circleIngest';
 
-type View = 'pick' | 'linkedin' | 'voice' | 'google';
+type View = 'pick' | 'linkedin' | 'voice' | 'google' | 'microsoft';
 
 interface AddSourceSheetProps {
   open: boolean;
@@ -53,6 +54,20 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
       </div>
     </button>
     <button
+      onClick={() => onPick('microsoft')}
+      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
+    >
+      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
+        <Building2 className="w-4 h-4 text-primary" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-semibold text-foreground">Connect Microsoft</p>
+        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
+          Outlook contacts + Calendar. Personal or work-or-school accounts.
+        </p>
+      </div>
+    </button>
+    <button
       onClick={() => onPick('voice')}
       className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
     >
@@ -92,6 +107,7 @@ const DetailBody = ({
     {view === 'linkedin' && <LinkedInCsvDrop onDone={onIngested} />}
     {view === 'voice' && <VoiceSeedCapture onDone={onIngested} />}
     {view === 'google' && <GoogleConnect />}
+    {view === 'microsoft' && <MicrosoftConnect />}
   </div>
 );
 
