@@ -31,6 +31,7 @@ export interface MatchPerson {
   company: string | null;
   title: string | null;
   primary_email: string | null;
+  primary_phone: string | null;
   linkedin_url: string | null;
 }
 
@@ -50,11 +51,19 @@ export interface MatchMove {
   final_body: string | null;
 }
 
+export interface PersonRaw {
+  circle_person_id: string | null;
+  source_kind: string | null;
+  ingested_at: string;
+  payload: Record<string, unknown> | null;
+}
+
 export interface EnrichedMatch {
   match: MatchRow;
   person: MatchPerson | null;
   idea: MatchIdea | null;
   move: MatchMove | null;
+  personRaws: PersonRaw[];
 }
 
 const ACTIVE_STATES: MatchState[] = ['new', 'approved', 'edited'];
@@ -89,9 +98,9 @@ export const useMatches = () => {
     const ideaIds = Array.from(new Set(matches.map((m: MatchRow) => m.idea_id).filter(Boolean))) as string[];
     const matchIds = matches.map((m: MatchRow) => m.id);
 
-    const [{ data: people }, { data: ideas }, { data: moves }] = await Promise.all([
+    const [{ data: people }, { data: ideas }, { data: moves }, { data: raws }] = await Promise.all([
       personIds.length
-        ? supabase.from('circle_person').select('id, display_name, company, title, primary_email, linkedin_url').in('id', personIds)
+        ? supabase.from('circle_person').select('id, display_name, company, title, primary_email, linkedin_url, primary_phone').in('id', personIds)
         : Promise.resolve({ data: [] as MatchPerson[] }),
       ideaIds.length
         ? supabase.from('ideas').select('id, title, one_liner').in('id', ideaIds)
@@ -99,17 +108,52 @@ export const useMatches = () => {
       matchIds.length
         ? supabase.from('moves').select('id, match_id, channel, state, draft_subject, draft_body, final_body').in('match_id', matchIds)
         : Promise.resolve({ data: [] as MatchMove[] }),
+      // Fetch the raw ingestion records for every matched person. We join
+      // sources(kind) so the primaryContact resolver can read source_kind
+      // without a second round-trip. `as any` because the generated Database
+      // type doesn't always surface this relation shape cleanly.
+      personIds.length
+        ? supabase
+            .from('person_raw')
+            .select('circle_person_id, ingested_at, payload, sources(kind)')
+            .in('circle_person_id', personIds)
+            .order('ingested_at', { ascending: true })
+        : Promise.resolve({ data: [] as unknown[] }),
     ]);
 
     const personById = new Map<string, MatchPerson>((people ?? []).map((p: MatchPerson) => [p.id, p]));
     const ideaById = new Map<string, MatchIdea>((ideas ?? []).map((i: MatchIdea) => [i.id, i]));
     const moveByMatch = new Map<string, MatchMove>((moves ?? []).map((m: MatchMove) => [m.match_id, m]));
 
+    const rawsByPerson = new Map<string, PersonRaw[]>();
+    for (const row of (raws ?? []) as Array<{
+      circle_person_id: string | null;
+      ingested_at: string;
+      payload: Record<string, unknown> | null;
+      sources: { kind: string | null } | { kind: string | null }[] | null;
+    }>) {
+      if (!row.circle_person_id) continue;
+      // Supabase returns the joined object either as a single object or an
+      // array depending on the relation cardinality it infers; handle both.
+      const src = Array.isArray(row.sources) ? row.sources[0] : row.sources;
+      const kind = src?.kind ?? null;
+      const entry: PersonRaw = {
+        circle_person_id: row.circle_person_id,
+        source_kind: kind,
+        ingested_at: row.ingested_at,
+        payload: row.payload,
+      };
+      const bucket = rawsByPerson.get(row.circle_person_id) ?? [];
+      bucket.push(entry);
+      rawsByPerson.set(row.circle_person_id, bucket);
+    }
+
     const enriched: EnrichedMatch[] = (matches as MatchRow[]).map((m) => ({
       match: m,
       person: personById.get(m.circle_person_id) ?? null,
       idea: m.idea_id ? ideaById.get(m.idea_id) ?? null : null,
       move: moveByMatch.get(m.id) ?? null,
+      personRaws: rawsByPerson.get(m.circle_person_id) ?? [],
     }));
     setItems(enriched);
     setLoading(false);

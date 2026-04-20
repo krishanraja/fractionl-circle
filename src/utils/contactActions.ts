@@ -117,6 +117,119 @@ export const openPortfolio = (portfolioUrl: string | null | undefined) => {
   window.open(url, '_blank');
 };
 
+// ---------------------------------------------------------------------------
+// Social-platform deep links (Phase A contactability).
+// Each helper accepts either a bare handle ("@jenna.park", "jenna.park"),
+// a platform URL, or null. Returns silently if nothing usable is passed.
+// Tries the native app deep link first via <meta refresh>-style redirect,
+// falls back to the https web URL in a new tab so browsers without the
+// app installed still land somewhere sensible.
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract a handle from either a platform URL or a plain @handle string.
+ * Returns null if nothing looks handle-ish.
+ */
+function extractHandle(
+  input: string | null | undefined,
+  urlPatterns: RegExp[],
+): { handle: string | null; url: string | null } {
+  if (!input) return { handle: null, url: null };
+  const trimmed = input.trim();
+  if (!trimmed) return { handle: null, url: null };
+
+  for (const pattern of urlPatterns) {
+    const match = trimmed.match(pattern);
+    if (match) {
+      const handle = match[1].replace(/^@/, '');
+      return { handle: handle || null, url: trimmed.startsWith('http') ? trimmed : `https://${trimmed}` };
+    }
+  }
+
+  // Plain handle; strip leading @ / whitespace.
+  const plain = trimmed.replace(/^@+/, '').trim();
+  if (!plain || plain.includes('/') || plain.includes(' ')) {
+    return { handle: null, url: trimmed.startsWith('http') ? trimmed : null };
+  }
+  return { handle: plain, url: null };
+}
+
+function openWithNativeFallback(nativeUrl: string, webUrl: string) {
+  // Schema-based deep links on the web need the new tab to exist so a
+  // Universal Link can intercept; we open the https variant, which OS link
+  // handlers promote to the native app when installed.
+  window.open(webUrl, '_blank');
+
+  // On mobile, a same-tab hop to the scheme URL fires the app if present
+  // without stranding the user: if the OS doesn't intercept, the tab we
+  // opened above is already on the web fallback.
+  if (typeof window !== 'undefined' && /(Mobi|Android|iPhone)/i.test(navigator.userAgent)) {
+    const hop = document.createElement('iframe');
+    hop.style.display = 'none';
+    hop.src = nativeUrl;
+    document.body.appendChild(hop);
+    setTimeout(() => hop.remove(), 500);
+  }
+}
+
+/**
+ * Opens an Instagram profile by handle or URL.
+ */
+export const openInstagram = (input: string | null | undefined) => {
+  const { handle, url } = extractHandle(input, [
+    /instagram\.com\/([^/?#]+)/i,
+  ]);
+  if (!handle && !url) {
+    toast.error("No Instagram handle available");
+    return;
+  }
+  const web = handle ? `https://instagram.com/${handle}` : url!;
+  if (handle) {
+    openWithNativeFallback(`instagram://user?username=${handle}`, web);
+  } else {
+    window.open(web, '_blank');
+  }
+};
+
+/**
+ * Opens a TikTok profile by handle or URL.
+ */
+export const openTikTok = (input: string | null | undefined) => {
+  const { handle, url } = extractHandle(input, [
+    /tiktok\.com\/@([^/?#]+)/i,
+  ]);
+  if (!handle && !url) {
+    toast.error("No TikTok handle available");
+    return;
+  }
+  const web = handle ? `https://www.tiktok.com/@${handle}` : url!;
+  if (handle) {
+    // snssdk1128 is the TikTok app scheme; web fallback covers everything else.
+    openWithNativeFallback(`snssdk1128://user/profile/${handle}`, web);
+  } else {
+    window.open(web, '_blank');
+  }
+};
+
+/**
+ * Opens an X (formerly Twitter) profile by handle or URL.
+ */
+export const openTwitter = (input: string | null | undefined) => {
+  const { handle, url } = extractHandle(input, [
+    /(?:twitter|x)\.com\/([^/?#]+)/i,
+  ]);
+  if (!handle && !url) {
+    toast.error("No X / Twitter handle available");
+    return;
+  }
+  const web = handle ? `https://x.com/${handle}` : url!;
+  if (handle) {
+    openWithNativeFallback(`twitter://user?screen_name=${handle}`, web);
+  } else {
+    window.open(web, '_blank');
+  }
+};
+
 /**
  * Copies text to clipboard
  */
