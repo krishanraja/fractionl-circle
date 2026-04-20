@@ -1,3 +1,4 @@
+Initialising login role...
 export type Json =
   | string
   | number
@@ -11,6 +12,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -138,6 +164,66 @@ export type Database = {
           },
         ]
       }
+      circle_person: {
+        Row: {
+          avatar_url: string | null
+          company: string | null
+          created_at: string
+          display_name: string
+          fingerprint: string | null
+          id: string
+          last_interaction_at: string | null
+          linkedin_url: string | null
+          location: string | null
+          primary_email: string | null
+          primary_phone: string | null
+          response_rate: number | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          warmth: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string
+          display_name: string
+          fingerprint?: string | null
+          id?: string
+          last_interaction_at?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          primary_email?: string | null
+          primary_phone?: string | null
+          response_rate?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          warmth?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string
+          display_name?: string
+          fingerprint?: string | null
+          id?: string
+          last_interaction_at?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          primary_email?: string | null
+          primary_phone?: string | null
+          response_rate?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          warmth?: number | null
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           color: string | null
@@ -178,6 +264,54 @@ export type Database = {
           name?: string
           notes?: string | null
           status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      concierge_requests: {
+        Row: {
+          assigned_to: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          ops_notes: string | null
+          preferred_times: string | null
+          result_stats: Json | null
+          scheduled_at: string | null
+          status: Database["public"]["Enums"]["concierge_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ops_notes?: string | null
+          preferred_times?: string | null
+          result_stats?: Json | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["concierge_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ops_notes?: string | null
+          preferred_times?: string | null
+          result_stats?: Json | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["concierge_status"]
           updated_at?: string
           user_id?: string
         }
@@ -501,6 +635,185 @@ export type Database = {
         }
         Relationships: []
       }
+      ideas: {
+        Row: {
+          created_at: string
+          icp: string | null
+          id: string
+          offer: string | null
+          one_liner: string | null
+          price_band: string | null
+          source_transcript_id: string | null
+          status: Database["public"]["Enums"]["idea_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          icp?: string | null
+          id?: string
+          offer?: string | null
+          one_liner?: string | null
+          price_band?: string | null
+          source_transcript_id?: string | null
+          status?: Database["public"]["Enums"]["idea_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          icp?: string | null
+          id?: string
+          offer?: string | null
+          one_liner?: string | null
+          price_band?: string | null
+          source_transcript_id?: string | null
+          status?: Database["public"]["Enums"]["idea_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ledger_entries: {
+        Row: {
+          amount_cents: number | null
+          circle_person_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          minutes: number | null
+          note: string | null
+          occurred_at: string
+          source: string | null
+          stream_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          circle_person_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          minutes?: number | null
+          note?: string | null
+          occurred_at: string
+          source?: string | null
+          stream_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number | null
+          circle_person_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          minutes?: number | null
+          note?: string | null
+          occurred_at?: string
+          source?: string | null
+          stream_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_circle_person_id_fkey"
+            columns: ["circle_person_id"]
+            isOneToOne: false
+            referencedRelation: "circle_person"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          approved_at: string | null
+          circle_person_id: string
+          closed_at: string | null
+          closed_reason: string | null
+          id: string
+          idea_id: string | null
+          rationale: string | null
+          score: number | null
+          signal_id: string | null
+          state: Database["public"]["Enums"]["match_state"]
+          stream_id: string | null
+          surfaced_at: string
+          user_id: string
+          warm_path: Json | null
+        }
+        Insert: {
+          approved_at?: string | null
+          circle_person_id: string
+          closed_at?: string | null
+          closed_reason?: string | null
+          id?: string
+          idea_id?: string | null
+          rationale?: string | null
+          score?: number | null
+          signal_id?: string | null
+          state?: Database["public"]["Enums"]["match_state"]
+          stream_id?: string | null
+          surfaced_at?: string
+          user_id: string
+          warm_path?: Json | null
+        }
+        Update: {
+          approved_at?: string | null
+          circle_person_id?: string
+          closed_at?: string | null
+          closed_reason?: string | null
+          id?: string
+          idea_id?: string | null
+          rationale?: string | null
+          score?: number | null
+          signal_id?: string | null
+          state?: Database["public"]["Enums"]["match_state"]
+          stream_id?: string | null
+          surfaced_at?: string
+          user_id?: string
+          warm_path?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_circle_person_id_fkey"
+            columns: ["circle_person_id"]
+            isOneToOne: false
+            referencedRelation: "circle_person"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_goals: {
         Row: {
           advisory_target: number | null
@@ -549,6 +862,128 @@ export type Database = {
           updated_at?: string
           user_id?: string
           workshops_target?: number | null
+        }
+        Relationships: []
+      }
+      moves: {
+        Row: {
+          channel: Database["public"]["Enums"]["move_channel"]
+          created_at: string
+          draft_body: string
+          draft_subject: string | null
+          edit_distance: number | null
+          final_body: string | null
+          id: string
+          match_id: string
+          responded_at: string | null
+          sent_at: string | null
+          state: Database["public"]["Enums"]["move_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["move_channel"]
+          created_at?: string
+          draft_body: string
+          draft_subject?: string | null
+          edit_distance?: number | null
+          final_body?: string | null
+          id?: string
+          match_id: string
+          responded_at?: string | null
+          sent_at?: string | null
+          state?: Database["public"]["Enums"]["move_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["move_channel"]
+          created_at?: string
+          draft_body?: string
+          draft_subject?: string | null
+          edit_distance?: number | null
+          final_body?: string | null
+          id?: string
+          match_id?: string
+          responded_at?: string | null
+          sent_at?: string | null
+          state?: Database["public"]["Enums"]["move_state"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moves_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oauth_states: {
+        Row: {
+          created_at: string
+          expires_at: string
+          provider: string
+          redirect_to: string | null
+          state: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          provider: string
+          redirect_to?: string | null
+          state: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          provider?: string
+          redirect_to?: string | null
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      oauth_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          provider: string
+          refresh_token: string | null
+          scope: string | null
+          token_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_type?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -602,6 +1037,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      person_raw: {
+        Row: {
+          circle_person_id: string | null
+          confidence: number | null
+          external_id: string | null
+          fingerprint: string | null
+          id: string
+          ingested_at: string
+          payload: Json
+          source_id: string
+          user_id: string
+        }
+        Insert: {
+          circle_person_id?: string | null
+          confidence?: number | null
+          external_id?: string | null
+          fingerprint?: string | null
+          id?: string
+          ingested_at?: string
+          payload: Json
+          source_id: string
+          user_id: string
+        }
+        Update: {
+          circle_person_id?: string | null
+          confidence?: number | null
+          external_id?: string | null
+          fingerprint?: string | null
+          id?: string
+          ingested_at?: string
+          payload?: Json
+          source_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_raw_circle_person_fk"
+            columns: ["circle_person_id"]
+            isOneToOne: false
+            referencedRelation: "circle_person"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_raw_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reminders: {
         Row: {
@@ -755,6 +1241,59 @@ export type Database = {
         }
         Relationships: []
       }
+      signals: {
+        Row: {
+          circle_person_id: string | null
+          confidence: number | null
+          created_at: string
+          detail: string | null
+          headline: string
+          id: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          occurred_at: string | null
+          raw: Json | null
+          source_url: string | null
+          subject: Database["public"]["Enums"]["signal_subject"]
+          user_id: string
+        }
+        Insert: {
+          circle_person_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          detail?: string | null
+          headline: string
+          id?: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          occurred_at?: string | null
+          raw?: Json | null
+          source_url?: string | null
+          subject: Database["public"]["Enums"]["signal_subject"]
+          user_id: string
+        }
+        Update: {
+          circle_person_id?: string | null
+          confidence?: number | null
+          created_at?: string
+          detail?: string | null
+          headline?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["signal_kind"]
+          occurred_at?: string | null
+          raw?: Json | null
+          source_url?: string | null
+          subject?: Database["public"]["Enums"]["signal_subject"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signals_circle_person_id_fkey"
+            columns: ["circle_person_id"]
+            isOneToOne: false
+            referencedRelation: "circle_person"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skills: {
         Row: {
           category: string
@@ -778,6 +1317,101 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      sources: {
+        Row: {
+          created_at: string
+          credentials_ref: string | null
+          id: string
+          kind: Database["public"]["Enums"]["source_kind"]
+          label: string | null
+          last_error: string | null
+          last_ingested_at: string | null
+          scope_payload: Json | null
+          status: Database["public"]["Enums"]["source_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credentials_ref?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["source_kind"]
+          label?: string | null
+          last_error?: string | null
+          last_ingested_at?: string | null
+          scope_payload?: Json | null
+          status?: Database["public"]["Enums"]["source_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credentials_ref?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["source_kind"]
+          label?: string | null
+          last_error?: string | null
+          last_ingested_at?: string | null
+          scope_payload?: Json | null
+          status?: Database["public"]["Enums"]["source_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streams: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          id: string
+          idea_id: string | null
+          monthly_target_cents: number | null
+          name: string
+          playbook: Json | null
+          retired_at: string | null
+          retired_reason: string | null
+          state: Database["public"]["Enums"]["stream_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          id?: string
+          idea_id?: string | null
+          monthly_target_cents?: number | null
+          name: string
+          playbook?: Json | null
+          retired_at?: string | null
+          retired_reason?: string | null
+          state?: Database["public"]["Enums"]["stream_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          id?: string
+          idea_id?: string | null
+          monthly_target_cents?: number | null
+          name?: string
+          playbook?: Json | null
+          retired_at?: string | null
+          retired_reason?: string | null
+          state?: Database["public"]["Enums"]["stream_state"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streams_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
@@ -824,6 +1458,39 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      sunday_letters: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          id: string
+          model: string | null
+          stats: Json | null
+          text_body: string
+          user_id: string
+          week_of: string
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          model?: string | null
+          stats?: Json | null
+          text_body: string
+          user_id: string
+          week_of: string
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          model?: string | null
+          stats?: Json | null
+          text_body?: string
+          user_id?: string
+          week_of?: string
         }
         Relationships: []
       }
@@ -1730,6 +2397,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      merge_circle_persons: {
+        Args: { drop_id: string; keep_id: string }
+        Returns: undefined
+      }
       verify_token_integrity: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -1737,6 +2408,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      concierge_status:
+        | "requested"
+        | "scheduled"
+        | "in_progress"
+        | "delivered"
+        | "cancelled"
       data_request_status:
         | "pending"
         | "processing"
@@ -1751,6 +2428,63 @@ export type Database = {
         | "restriction"
         | "objection"
         | "opt_out"
+      idea_status: "proposed" | "voiced" | "active" | "retired"
+      match_state:
+        | "new"
+        | "approved"
+        | "edited"
+        | "sent"
+        | "won"
+        | "cold"
+        | "declined"
+      move_channel:
+        | "email"
+        | "linkedin_dm"
+        | "sms"
+        | "call"
+        | "calendar_invite"
+        | "post"
+        | "other"
+      move_state: "draft" | "approved" | "sent" | "responded" | "declined"
+      signal_kind:
+        | "job_change"
+        | "promotion"
+        | "fundraise"
+        | "hiring"
+        | "public_post"
+        | "mention"
+        | "rfp"
+        | "trend"
+        | "calendar_meeting"
+        | "email_interaction"
+        | "other"
+      signal_subject: "person" | "market"
+      source_kind:
+        | "google"
+        | "microsoft"
+        | "linkedin_csv"
+        | "linkedin_extension"
+        | "instagram_export"
+        | "facebook_export"
+        | "x_export"
+        | "legacy_crm_csv"
+        | "sheet_upload"
+        | "ios_contacts"
+        | "ios_shortcut"
+        | "share_sheet"
+        | "voice_seed"
+        | "external_enrichment"
+        | "business_card_photo"
+        | "inbox_signature_scan"
+        | "calendar_backscan"
+      source_status:
+        | "connecting"
+        | "ingesting"
+        | "active"
+        | "stale"
+        | "revoked"
+        | "failed"
+      stream_state: "prototyping" | "live" | "paused" | "retired"
       subscription_tier: "free" | "pro" | "executive"
     }
     CompositeTypes: {
@@ -1877,9 +2611,19 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      concierge_status: [
+        "requested",
+        "scheduled",
+        "in_progress",
+        "delivered",
+        "cancelled",
+      ],
       data_request_status: [
         "pending",
         "processing",
@@ -1896,6 +2640,68 @@ export const Constants = {
         "objection",
         "opt_out",
       ],
+      idea_status: ["proposed", "voiced", "active", "retired"],
+      match_state: [
+        "new",
+        "approved",
+        "edited",
+        "sent",
+        "won",
+        "cold",
+        "declined",
+      ],
+      move_channel: [
+        "email",
+        "linkedin_dm",
+        "sms",
+        "call",
+        "calendar_invite",
+        "post",
+        "other",
+      ],
+      move_state: ["draft", "approved", "sent", "responded", "declined"],
+      signal_kind: [
+        "job_change",
+        "promotion",
+        "fundraise",
+        "hiring",
+        "public_post",
+        "mention",
+        "rfp",
+        "trend",
+        "calendar_meeting",
+        "email_interaction",
+        "other",
+      ],
+      signal_subject: ["person", "market"],
+      source_kind: [
+        "google",
+        "microsoft",
+        "linkedin_csv",
+        "linkedin_extension",
+        "instagram_export",
+        "facebook_export",
+        "x_export",
+        "legacy_crm_csv",
+        "sheet_upload",
+        "ios_contacts",
+        "ios_shortcut",
+        "share_sheet",
+        "voice_seed",
+        "external_enrichment",
+        "business_card_photo",
+        "inbox_signature_scan",
+        "calendar_backscan",
+      ],
+      source_status: [
+        "connecting",
+        "ingesting",
+        "active",
+        "stale",
+        "revoked",
+        "failed",
+      ],
+      stream_state: ["prototyping", "live", "paused", "retired"],
       subscription_tier: ["free", "pro", "executive"],
     },
   },
