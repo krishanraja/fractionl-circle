@@ -8,6 +8,7 @@ import { useCircle } from '@/hooks/useCircle';
 import { useMatches, runMatchEngine } from '@/hooks/useMatches';
 import { MatchCard } from '@/components/today/MatchCard';
 import { SundayLetterCard } from '@/components/today/SundayLetterCard';
+import { ConciergeCard } from '@/components/today/ConciergeCard';
 import { PricingSheet } from '@/components/billing/PricingSheet';
 
 export const TodayScreen = () => {
@@ -65,6 +66,8 @@ export const TodayScreen = () => {
           {headline}
         </h1>
       </motion.header>
+
+      <ConciergeCard />
 
       <SundayLetterCard canGenerate={canRun} />
 
