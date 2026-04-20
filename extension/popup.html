@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Circle</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">Circle</div>
+        <div class="subtitle">LinkedIn Capture</div>
+      </header>
+
+      <section id="connected" hidden>
+        <div class="status ok">Connected</div>
+        <div id="identity" class="identity"></div>
+        <p class="help">
+          Open any LinkedIn profile — we'll capture it into your Circle
+          automatically. Nothing else is scraped.
+        </p>
+        <button id="sign-out" class="ghost">Sign out</button>
+      </section>
+
+      <section id="disconnected">
+        <div class="status off">Not connected</div>
+        <p class="help">
+          In the Circle web app, open <strong>Add a source → Connect browser
+          extension</strong>, copy the pairing token, and paste it below.
+        </p>
+        <textarea id="pairing-input" placeholder="Paste pairing token"></textarea>
+        <button id="pair" class="primary">Connect</button>
+        <div id="pair-error" class="error" hidden></div>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
