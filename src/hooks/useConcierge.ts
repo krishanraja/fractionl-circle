@@ -14,6 +14,7 @@ export interface ConciergeRequest {
   assigned_to: string | null;
   ops_notes: string | null;
   result_stats: Record<string, unknown> | null;
+  booking_url: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
   created_at: string;
@@ -96,6 +97,14 @@ export const useConcierge = () => {
         }
       }
 
+      // Fire-and-forget notification; we don't want Slack/email hiccups to
+      // block the UI flow.
+      void supabase.functions
+        .invoke('notify-concierge-event', {
+          body: { event: 'requested', request_id: req.id },
+        })
+        .catch((e) => console.warn('notify-concierge-event failed', e));
+
       setRequest(req);
       return req;
     } finally {
@@ -110,6 +119,11 @@ export const useConcierge = () => {
       .update({ status: 'cancelled' as const, cancelled_at: new Date().toISOString() })
       .eq('id', request.id);
     if (error) throw error;
+    void supabase.functions
+      .invoke('notify-concierge-event', {
+        body: { event: 'cancelled', request_id: request.id },
+      })
+      .catch((e) => console.warn('notify-concierge-event failed', e));
     await refresh();
   }, [request, refresh]);
 

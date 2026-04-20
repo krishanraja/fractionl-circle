@@ -268,6 +268,54 @@ export type Database = {
         }
         Relationships: []
       }
+      concierge_requests: {
+        Row: {
+          assigned_to: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          ops_notes: string | null
+          preferred_times: string | null
+          result_stats: Json | null
+          scheduled_at: string | null
+          status: Database["public"]["Enums"]["concierge_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ops_notes?: string | null
+          preferred_times?: string | null
+          result_stats?: Json | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["concierge_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ops_notes?: string | null
+          preferred_times?: string | null
+          result_stats?: Json | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["concierge_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_sessions: {
         Row: {
           created_at: string
@@ -871,6 +919,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oauth_states: {
+        Row: {
+          created_at: string
+          expires_at: string
+          provider: string
+          redirect_to: string | null
+          state: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          provider: string
+          redirect_to?: string | null
+          state: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          provider?: string
+          redirect_to?: string | null
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      oauth_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          provider: string
+          refresh_token: string | null
+          scope: string | null
+          token_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scope?: string | null
+          token_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       opportunities: {
         Row: {
@@ -2282,6 +2396,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      merge_circle_persons: {
+        Args: { drop_id: string; keep_id: string }
+        Returns: undefined
+      }
       verify_token_integrity: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -2289,6 +2407,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      concierge_status:
+        | "requested"
+        | "scheduled"
+        | "in_progress"
+        | "delivered"
+        | "cancelled"
       data_request_status:
         | "pending"
         | "processing"
@@ -2492,6 +2616,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      concierge_status: [
+        "requested",
+        "scheduled",
+        "in_progress",
+        "delivered",
+        "cancelled",
+      ],
       data_request_status: [
         "pending",
         "processing",

@@ -17,6 +17,10 @@
 //   schedule <request_id> --at <iso-datetime> [--assigned <name-or-email>]
 //     Move the request to scheduled and optionally record who's running the call.
 //
+//   book-url <request_id> --url <calendly-or-cal.com-link>
+//     Attach a booking link the user can click from Today. Works on any
+//     request in `requested` or `scheduled`. User picks a slot themselves.
+//
 //   start <request_id>
 //     Mark in_progress — typically right after the call ends.
 //
@@ -212,6 +216,20 @@ async function cmdSchedule(args, flags) {
   console.log(`scheduled ${shortId(id)} at ${patch.scheduled_at}`);
 }
 
+async function cmdBookUrl(args, flags) {
+  const id = args[0];
+  if (!id || !flags.url) {
+    console.error('usage: book-url <request_id> --url <link>');
+    process.exit(2);
+  }
+  const { error } = await admin
+    .from('concierge_requests')
+    .update({ booking_url: flags.url })
+    .eq('id', id);
+  if (error) { console.error(error.message); process.exit(2); }
+  console.log(`booking_url set on ${shortId(id)}`);
+}
+
 async function cmdStart(args) {
   const id = args[0];
   if (!id) { console.error('usage: start <request_id>'); process.exit(2); }
@@ -260,10 +278,11 @@ switch (cmd) {
   case 'list':     await cmdList(flags); break;
   case 'show':     await cmdShow(rest); break;
   case 'schedule': await cmdSchedule(rest, flags); break;
+  case 'book-url': await cmdBookUrl(rest, flags); break;
   case 'start':    await cmdStart(rest); break;
   case 'deliver':  await cmdDeliver(rest, flags); break;
   case 'cancel':   await cmdCancel(rest, flags); break;
   default:
-    console.error('usage: concierge-inbox.mjs <list|show|schedule|start|deliver|cancel> [args]');
+    console.error('usage: concierge-inbox.mjs <list|show|schedule|book-url|start|deliver|cancel> [args]');
     process.exit(2);
 }

@@ -201,6 +201,81 @@ const fetchExistingByFingerprint = async (
   return result;
 };
 
+// Map a CrmContact (from lib/crmCsv.ts) to our PersonCandidate shape.
+import type { CrmContact, CrmFormat } from '@/lib/crmCsv';
+
+const CRM_SOURCE_KIND: Record<CrmFormat, SourceKind> = {
+  linkedin: 'linkedin_csv',
+  hubspot: 'legacy_crm_csv',
+  attio: 'legacy_crm_csv',
+  folk: 'legacy_crm_csv',
+  generic: 'sheet_upload',
+};
+
+const CRM_LABEL: Record<CrmFormat, string> = {
+  linkedin: 'LinkedIn export',
+  hubspot: 'HubSpot export',
+  attio: 'Attio export',
+  folk: 'Folk export',
+  generic: 'CSV upload',
+};
+
+export const ingestCrmCsv = async (
+  userId: string,
+  format: CrmFormat,
+  contacts: CrmContact[],
+): Promise<IngestResult> => {
+  const sourceId = await createSource(userId, CRM_SOURCE_KIND[format], CRM_LABEL[format]);
+  try {
+    const candidates: PersonCandidate[] = contacts
+      .map((c) => {
+        const fp = personFingerprint({
+          name: c.fullName,
+          email: c.email,
+          linkedinUrl: c.linkedinUrl,
+          phone: c.phone,
+          company: c.company,
+        });
+        if (!fp) return null;
+        const slug = linkedinSlug(c.linkedinUrl);
+        return {
+          fingerprint: fp,
+          display_name: c.fullName,
+          primary_email: c.email,
+          primary_phone: c.phone,
+          linkedin_url: c.linkedinUrl,
+          company: c.company,
+          title: c.title,
+          payload: {
+            first_name: c.firstName,
+            last_name: c.lastName,
+            full_name: c.fullName,
+            email: c.email,
+            phone: c.phone,
+            company: c.company,
+            title: c.title,
+            linkedin_url: c.linkedinUrl,
+            location: c.location,
+            normalized: {
+              name: normalizeName(c.fullName),
+              company: normalizeCompany(c.company),
+            },
+            format,
+          },
+          external_id: slug || c.linkedinUrl || c.email || null,
+        } satisfies PersonCandidate;
+      })
+      .filter((x): x is PersonCandidate => Boolean(x));
+
+    const result = await writeCandidates(userId, sourceId, candidates);
+    await markSourceActive(sourceId, result.rawInserted);
+    return result;
+  } catch (err) {
+    await markSourceFailed(sourceId, err);
+    throw err;
+  }
+};
+
 // Public: ingest a parsed LinkedIn CSV for a user.
 export const ingestLinkedInCsv = async (
   userId: string,
