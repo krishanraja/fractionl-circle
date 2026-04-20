@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageSquare, Check, X, ChevronDown, ChevronUp, Copy } from 'lucide-react';
+import { Mail, MessageSquare, Check, X, ChevronDown, ChevronUp, Copy, Send, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedMatch, MatchState } from '@/hooks/useMatches';
 
 interface MatchCardProps {
@@ -21,9 +22,16 @@ const initials = (name: string) =>
 
 export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [busy, setBusy] = useState<'approve' | 'decline' | null>(null);
+  const [busy, setBusy] = useState<'approve' | 'decline' | 'send' | null>(null);
+  const [markingSent, setMarkingSent] = useState(false);
+  const [finalBody, setFinalBody] = useState('');
 
   const { person, idea, move } = match;
+
+  useEffect(() => {
+    if (move?.draft_body) setFinalBody(move.draft_body);
+  }, [move?.draft_body]);
+
   if (!person) return null;
 
   const channel = move?.channel ?? 'linkedin_dm';
@@ -53,6 +61,29 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
       toast.success('Draft copied');
     } catch {
       toast.error('Could not copy');
+    }
+  };
+
+  const handleMarkSent = async () => {
+    if (!move || !finalBody.trim()) return;
+    setBusy('send');
+    try {
+      const { data, error } = await supabase.functions.invoke('log-move-sent', {
+        body: { move_id: move.id, final_body: finalBody },
+      });
+      if (error) throw error;
+      const distance = (data as { edit_distance?: number } | null)?.edit_distance ?? 0;
+      toast.success(
+        distance === 0
+          ? 'Logged as sent — no edits.'
+          : `Logged as sent — ${distance} char edits.`
+      );
+      setMarkingSent(false);
+      await onStateChange(match.match.id, 'sent');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not log');
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -122,13 +153,61 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
                 )}
                 {move.draft_body}
               </div>
-              <button
-                onClick={handleCopy}
-                className="mt-2 inline-flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                Copy
-              </button>
+              <div className="mt-2 flex items-center gap-3">
+                <button
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy
+                </button>
+                {match.match.state !== 'sent' && (
+                  <button
+                    onClick={() => setMarkingSent((v) => !v)}
+                    className="inline-flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    I sent it
+                  </button>
+                )}
+              </div>
+              {markingSent && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-3 overflow-hidden"
+                >
+                  <p className="text-[11px] uppercase tracking-wide text-foreground-muted mb-1">
+                    What did you actually send?
+                  </p>
+                  <textarea
+                    value={finalBody}
+                    onChange={(e) => setFinalBody(e.target.value)}
+                    className="w-full min-h-[90px] rounded-xl border border-border/60 bg-background p-2 text-sm text-foreground resize-none"
+                  />
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      onClick={handleMarkSent}
+                      disabled={busy === 'send' || !finalBody.trim()}
+                      className={cn(
+                        'flex-1 h-9 rounded-full bg-primary text-primary-foreground text-xs font-medium',
+                        'inline-flex items-center justify-center gap-1.5 shadow-sm shadow-primary/20',
+                        'disabled:opacity-60'
+                      )}
+                    >
+                      {busy === 'send' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                      Log as sent
+                    </button>
+                    <button
+                      onClick={() => setMarkingSent(false)}
+                      disabled={busy === 'send'}
+                      className="h-9 px-3 rounded-full border border-border/60 bg-card/60 text-xs font-medium text-foreground-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
         </div>

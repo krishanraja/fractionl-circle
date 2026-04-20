@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { HeartHandshake, Check, Calendar, Sparkles, X, Loader2 } from 'lucide-react';
+import { HeartHandshake, Check, Calendar, Sparkles, X, Loader2, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -107,25 +107,61 @@ export const ConciergeCard = () => {
 
       {r?.status === 'requested' && (
         <>
-          <p className="text-sm text-foreground leading-relaxed">
-            Your request landed. We'll reach out within <span className="font-medium">24 hours</span> to
-            confirm a time. No need to do anything else.
-          </p>
-          <div className="mt-3 rounded-xl border border-border/50 bg-background/60 p-3 text-xs text-foreground-secondary">
-            {r.preferred_times ? (
-              <p><span className="font-medium text-foreground">When:</span> {r.preferred_times}</p>
-            ) : (
-              <p className="italic">No preferred times specified — we'll propose a few slots.</p>
-            )}
-          </div>
+          {r.booking_url ? (
+            <>
+              <p className="text-sm text-foreground leading-relaxed">
+                Your request landed. <span className="font-medium">Pick a slot now</span> so we can
+                start normalizing your Circle.
+              </p>
+              <a
+                href={r.booking_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'mt-3 inline-flex items-center justify-center gap-2 w-full h-11 rounded-full',
+                  'bg-primary text-primary-foreground text-sm font-medium shadow-lg shadow-primary/25'
+                )}
+              >
+                <Calendar className="w-4 h-4" />
+                Book a time
+                <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+              </a>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-foreground leading-relaxed">
+                Your request landed. We'll reach out within <span className="font-medium">24 hours</span> to
+                confirm a time. No need to do anything else.
+              </p>
+              <div className="mt-3 rounded-xl border border-border/50 bg-background/60 p-3 text-xs text-foreground-secondary">
+                {r.preferred_times ? (
+                  <p><span className="font-medium text-foreground">When:</span> {r.preferred_times}</p>
+                ) : (
+                  <p className="italic">No preferred times specified — we'll propose a few slots.</p>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
 
       {r?.status === 'scheduled' && (
-        <p className="text-sm text-foreground leading-relaxed">
-          Your call is locked in{r.scheduled_at ? ` for ${new Date(r.scheduled_at).toLocaleString()}` : ''}
-          {r.assigned_to ? ` with ${r.assigned_to}` : ''}. We'll start normalizing right after.
-        </p>
+        <>
+          <p className="text-sm text-foreground leading-relaxed">
+            Your call is locked in{r.scheduled_at ? ` for ${new Date(r.scheduled_at).toLocaleString()}` : ''}
+            {r.assigned_to ? ` with ${r.assigned_to}` : ''}. We'll start normalizing right after.
+          </p>
+          {r.booking_url && (
+            <a
+              href={r.booking_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-xs text-foreground-secondary hover:text-foreground"
+            >
+              <ExternalLink className="w-3 h-3" /> Reschedule
+            </a>
+          )}
+        </>
       )}
 
       {r?.status === 'in_progress' && (
