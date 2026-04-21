@@ -67,7 +67,7 @@ export const CircleScreen = () => {
         className="mb-6"
       >
         <div className="flex items-baseline justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
             Your Circle
           </h1>
           {!loading && (

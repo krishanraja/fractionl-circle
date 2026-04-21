@@ -1,12 +1,11 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import { Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
 import { getGreeting } from '@/utils/greeting';
+import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet';
 import type { TabId } from './BottomNav';
 
 interface PageHeaderProps {
@@ -29,9 +28,9 @@ export const PageHeader = ({
   currentTab,
   onTabChange: _onTabChange,
 }: PageHeaderProps) => {
-  const { signOut } = useAuth();
   const isMobile = useIsMobile();
   const { profile } = useUserProfile();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const firstName = useMemo(() => {
     if (!profile?.full_name) return '';
@@ -79,14 +78,14 @@ export const PageHeader = ({
                     <Users className="w-4 h-4 text-primary" strokeWidth={2} />
                   )}
                   <span className={cn(
-                    "text-sm font-semibold tracking-tight",
+                    "text-[15px] font-display font-semibold tracking-tight",
                     config.gradient ? "text-gradient" : "text-foreground"
                   )}>
                     {config.title}
                   </span>
                 </div>
               ) : (
-                <p className="text-sm font-normal text-foreground-secondary tracking-tight">
+                <p className="text-sm text-foreground-secondary tracking-tight">
                   {firstName ? `${getGreeting()}, ${firstName}` : getGreeting()}
                 </p>
               )}
@@ -95,16 +94,19 @@ export const PageHeader = ({
 
           <div className="flex items-center gap-2">
             {actions}
-            <div
-              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center"
-              aria-label="User avatar"
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center transition-transform active:scale-95"
+              aria-label="Open profile and settings"
             >
               <span className="text-xs font-semibold text-primary-foreground">
                 {avatarInitial}
               </span>
-            </div>
+            </button>
           </div>
         </div>
+
+        <ProfileSettingsSheet open={profileOpen} onOpenChange={setProfileOpen} />
       </header>
     );
   }
@@ -131,16 +133,19 @@ export const PageHeader = ({
 
         <div className="flex items-center gap-2">
           {actions}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={signOut}
-            className="w-10 h-10"
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="w-9 h-9 rounded-full bg-primary flex items-center justify-center transition-transform active:scale-95 hover:opacity-90"
+            aria-label="Open profile and settings"
           >
-            <LogOut className="w-5 h-5 text-foreground-secondary" />
-          </Button>
+            <span className="text-xs font-semibold text-primary-foreground">
+              {avatarInitial}
+            </span>
+          </button>
         </div>
       </div>
+
+      <ProfileSettingsSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
   );
 };

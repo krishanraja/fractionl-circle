@@ -70,8 +70,8 @@
     --transition-slow: 400ms;
 
     /* Typography */
-    --font-display: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+    --font-body: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif;
 
     /* Mobile Layout */
     --header-height: 3.5rem;
@@ -151,17 +151,19 @@
     font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.5;
-    font-feature-settings: "ss01", "cv01";
+    font-feature-settings: "ss01", "cv01", "liga";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
   }
 
-  /* Typography Scale — Executive */
+  /* Typography Scale — Premium */
   .text-display {
     font-family: var(--font-display);
     font-size: 2.25rem;
     font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.025em;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
   .text-title-1 {
@@ -169,7 +171,7 @@
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
   }
 
   .text-title-2 {
@@ -177,7 +179,7 @@
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1.25;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
   }
 
   .text-title-3 {
@@ -185,49 +187,49 @@
     font-size: 1.0625rem;
     font-weight: 500;
     line-height: 1.35;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.005em;
   }
 
   .text-body {
     font-size: 0.9375rem;
     font-weight: 400;
-    line-height: 1.55;
+    line-height: 1.6;
   }
 
   .text-body-bold {
     font-size: 0.9375rem;
-    font-weight: 600;
-    line-height: 1.55;
+    font-weight: 700;
+    line-height: 1.6;
   }
 
   .text-caption {
     font-size: 0.8125rem;
     font-weight: 400;
-    line-height: 1.45;
-    letter-spacing: 0.005em;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
   }
 
   .text-caption-bold {
     font-size: 0.8125rem;
     font-weight: 500;
-    line-height: 1.45;
-    letter-spacing: 0.005em;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
   }
 
   .text-label {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 0.6875rem;
-    font-weight: 500;
+    font-weight: 700;
     line-height: 1.3;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   .text-micro {
     font-size: 0.6875rem;
-    font-weight: 500;
+    font-weight: 700;
     line-height: 1.3;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 

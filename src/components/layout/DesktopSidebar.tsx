@@ -1,6 +1,8 @@
-import { Sparkles, Activity, Users, MessageCircle, LogOut } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Sparkles, Activity, Users, MessageCircle, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet';
 import type { TabId } from './BottomNav';
 
 interface DesktopSidebarProps {
@@ -16,7 +18,18 @@ const navItems: { id: TabId; label: string; icon: typeof Sparkles; isHero?: bool
 ];
 
 export const DesktopSidebar = ({ currentTab, onTabChange }: DesktopSidebarProps) => {
-  const { signOut } = useAuth();
+  const { profile } = useUserProfile();
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const avatarInitial = useMemo(() => {
+    if (!profile?.full_name) return '?';
+    return profile.full_name.charAt(0).toUpperCase();
+  }, [profile?.full_name]);
+
+  const firstName = useMemo(() => {
+    if (!profile?.full_name) return '';
+    return profile.full_name.split(' ')[0];
+  }, [profile?.full_name]);
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 bg-background border-r border-border flex flex-col z-40">
@@ -60,13 +73,20 @@ export const DesktopSidebar = ({ currentTab, onTabChange }: DesktopSidebarProps)
 
       <div className="px-3 py-4 border-t border-border">
         <button
-          onClick={signOut}
+          onClick={() => setProfileOpen(true)}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground-secondary hover:text-foreground hover:bg-secondary/50 transition-colors"
         >
-          <LogOut className="w-[18px] h-[18px]" />
-          Sign out
+          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
+            <span className="text-[11px] font-semibold text-primary-foreground">
+              {avatarInitial}
+            </span>
+          </div>
+          <span className="flex-1 text-left truncate">{firstName || 'Profile'}</span>
+          <Settings className="w-4 h-4 text-foreground-muted" />
         </button>
       </div>
+
+      <ProfileSettingsSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </aside>
   );
 };

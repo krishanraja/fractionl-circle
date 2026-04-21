@@ -77,9 +77,9 @@ export default {
 				128: "32rem",
 			},
 			fontFamily: {
-				display: ["DM Sans", "system-ui", "sans-serif"],
-				heading: ["DM Sans", "system-ui", "sans-serif"],
-				body: ["Inter", "system-ui", "sans-serif"],
+				display: ["Source Serif 4", "Georgia", "Times New Roman", "serif"],
+				heading: ["Source Serif 4", "Georgia", "Times New Roman", "serif"],
+				body: ["Satoshi", "Inter", "system-ui", "sans-serif"],
 			},
 			keyframes: {
 				'accordion-down': {
