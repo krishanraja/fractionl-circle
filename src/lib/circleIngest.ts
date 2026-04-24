@@ -4,7 +4,7 @@
 // Phase 2b: deterministic fingerprint-based dedupe. LLM dedupe comes in Phase 3.
 
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database, Json } from '@/integrations/supabase/types';
 import {
   personFingerprint,
   normalizeName,
@@ -37,7 +37,7 @@ interface PersonCandidate {
   linkedin_url: string | null;
   company: string | null;
   title: string | null;
-  payload: Record<string, unknown>;
+  payload: Json;
   external_id: string | null;
   handles?: HandleBlob;
 }
@@ -137,7 +137,7 @@ const writeCandidates = async (
         c.handles,
         c.linkedin_url ? { linkedin: c.linkedin_url } : {},
       );
-      const row: Record<string, unknown> = {
+      const row: Database['public']['Tables']['circle_person']['Insert'] = {
         user_id: userId,
         display_name: c.display_name,
         primary_email: c.primary_email,
@@ -179,7 +179,9 @@ const writeCandidates = async (
       .select('id, fingerprint, handles')
       .eq('user_id', userId)
       .in('id', existingIds);
-    const byId = new Map<string, HandleBlob>((existingRows ?? []).map((r: { id: string; handles: HandleBlob | null }) => [r.id, r.handles ?? {}]));
+    const byId = new Map<string, HandleBlob>(
+      (existingRows ?? []).map((r) => [r.id, (r.handles as HandleBlob | null) ?? {}])
+    );
     for (const c of toMergeHandles) {
       const rowId = mergeTargets.get(c.fingerprint)!;
       const next = mergeHandles(byId.get(rowId) ?? {}, c.handles ?? {});
@@ -268,7 +270,7 @@ export const ingestCrmCsv = async (
   const sourceId = await createSource(userId, CRM_SOURCE_KIND[format], CRM_LABEL[format]);
   try {
     const candidates: PersonCandidate[] = contacts
-      .map((c) => {
+      .map((c): PersonCandidate | null => {
         const fp = personFingerprint({
           name: c.fullName,
           email: c.email,
@@ -325,7 +327,7 @@ export const ingestLinkedInCsv = async (
   const sourceId = await createSource(userId, 'linkedin_csv', 'LinkedIn export');
   try {
     const candidates: PersonCandidate[] = connections
-      .map((c) => {
+      .map((c): PersonCandidate | null => {
         const fullName = c.fullName || `${c.firstName} ${c.lastName}`.trim();
         const fp = personFingerprint({
           name: fullName,
@@ -479,7 +481,7 @@ export const ingestVoiceSeed = async (
   const sourceId = await createSource(userId, 'voice_seed', 'Voice seed');
   try {
     const candidates: PersonCandidate[] = people
-      .map((p) => {
+      .map((p): PersonCandidate | null => {
         const name = p.name?.trim();
         if (!name) return null;
         const fp = personFingerprint({ name, company: p.company || null });
