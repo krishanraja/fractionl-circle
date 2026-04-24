@@ -117,7 +117,7 @@ export function useSubscription() {
         const usageMap: UsageData = { voice_logs: 0, ai_queries: 0, contacts: 0 };
         data.forEach((row: { feature: string; count: number }) => {
           if (row.feature in usageMap) {
-            (usageMap as Record<string, number>)[row.feature] = row.count;
+            usageMap[row.feature as keyof UsageData] = row.count;
           }
         });
         setUsage(usageMap);
@@ -183,26 +183,27 @@ export function useSubscription() {
     const periodEnd = new Date(periodStart);
     periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-    await supabase.rpc('increment_usage', {
-      p_user_id: user.id,
-      p_feature: feature,
-      p_period_start: periodStart.toISOString(),
-      p_period_end: periodEnd.toISOString(),
-    }).then(() => {
+    try {
+      await supabase.rpc('increment_usage', {
+        p_user_id: user.id,
+        p_feature: feature,
+        p_period_start: periodStart.toISOString(),
+        p_period_end: periodEnd.toISOString(),
+      });
       setUsage(prev => ({
         ...prev,
         [feature]: (prev[feature as keyof UsageData] || 0) + 1,
       }));
-    }).catch(() => {
+    } catch {
       // Fallback: upsert directly
-      supabase.from('usage_tracking').upsert({
+      await supabase.from('usage_tracking').upsert({
         user_id: user.id,
         feature,
         count: (usage[feature as keyof UsageData] || 0) + 1,
         period_start: periodStart.toISOString(),
         period_end: periodEnd.toISOString(),
       }, { onConflict: 'user_id,feature,period_start' });
-    });
+    }
   }, [user?.id, usage]);
 
   const openCheckout = useCallback(async (priceId: string) => {

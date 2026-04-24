@@ -128,9 +128,15 @@ export const useMatches = () => {
         : Promise.resolve({ data: [] as unknown[] }),
     ]);
 
-    const personById = new Map<string, MatchPerson>((people ?? []).map((p: MatchPerson) => [p.id, p]));
-    const ideaById = new Map<string, MatchIdea>((ideas ?? []).map((i: MatchIdea) => [i.id, i]));
-    const moveByMatch = new Map<string, MatchMove>((moves ?? []).map((m: MatchMove) => [m.match_id, m]));
+    const personById = new Map<string, MatchPerson>(
+      (people ?? []).map((p: MatchPerson): [string, MatchPerson] => [p.id, p])
+    );
+    const ideaById = new Map<string, MatchIdea>(
+      (ideas ?? []).map((i: MatchIdea): [string, MatchIdea] => [i.id, i])
+    );
+    const moveByMatch = new Map<string, MatchMove>(
+      (moves ?? []).map((m: MatchMove): [string, MatchMove] => [m.match_id, m])
+    );
 
     const rawsByPerson = new Map<string, PersonRaw[]>();
     for (const row of (raws ?? []) as Array<{

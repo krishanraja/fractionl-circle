@@ -158,9 +158,9 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     async (key: string, value: string | number) => {
       try {
         if (key === 'fiscal_year_start') {
-          await updateProfile({ [key]: value });
+          await updateProfile({ fiscal_year_start: value as number });
         } else if (key === 'currency') {
-          await updateProfile({ [key]: value });
+          await updateProfile({ currency: value as string });
         } else {
           await updatePreferences({ [key]: value });
         }

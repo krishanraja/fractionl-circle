@@ -16,7 +16,7 @@ const fadeInUpVariants = {
 
 const fadeInUpTransition = {
   duration: 0.25,
-  ease: [0, 0, 0.2, 1],
+  ease: [0, 0, 0.2, 1] as [number, number, number, number],
 };
 
 const successMessageVariants = {
