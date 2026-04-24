@@ -195,10 +195,14 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="mt-3 overflow-hidden"
                 >
-                  <p className="text-[11px] uppercase tracking-wide text-foreground-muted mb-1">
+                  <label
+                    htmlFor="match-final-body"
+                    className="block text-[11px] uppercase tracking-wide text-foreground-muted mb-1"
+                  >
                     What did you actually send?
-                  </p>
+                  </label>
                   <textarea
+                    id="match-final-body"
                     value={finalBody}
                     onChange={(e) => setFinalBody(e.target.value)}
                     className="w-full min-h-[90px] rounded-xl border border-border/60 bg-background p-2 text-sm text-foreground resize-none"
