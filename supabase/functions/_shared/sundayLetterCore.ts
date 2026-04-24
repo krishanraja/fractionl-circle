@@ -32,6 +32,41 @@ export const startOfWeekUtc = (d: Date): Date => {
 
 export const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
 
+// Max characters we will persist from a generated letter. The prompt caps
+// output at 280 words (~2k chars); anything far beyond that is suspicious
+// (runaway generation or prompt-injection output).
+const MAX_LETTER_CHARS = 4000;
+
+// Patterns that indicate the model returned system-prompt leakage or an
+// injection payload rather than a narrative. Cheap, non-exhaustive; pairs
+// with the length cap.
+const INJECTION_SIGNATURES = [
+  /<\|im_(start|end)\|>/i,
+  /^\s*(system|assistant)\s*:/i,
+  /\bignore (all |the )?(previous|above) (instructions|prompt)/i,
+];
+
+export function validateLetter(raw: string): string {
+  if (!raw) throw new Error('Empty letter');
+
+  // Strip leading/trailing markdown fences the model sometimes adds despite
+  // being told "no markdown" in the system prompt.
+  let text = raw.replace(/^```(?:\w+)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+
+  if (!text) throw new Error('Empty letter');
+  if (text.length > MAX_LETTER_CHARS) {
+    throw new Error(`Letter exceeds ${MAX_LETTER_CHARS} chars (got ${text.length})`);
+  }
+
+  for (const sig of INJECTION_SIGNATURES) {
+    if (sig.test(text)) {
+      throw new Error('Letter rejected: injection signature detected');
+    }
+  }
+
+  return text;
+}
+
 export async function generateSundayLetterForUser(
   userId: string,
   supabase: any,
@@ -140,10 +175,12 @@ export async function generateSundayLetterForUser(
 
   const hasActivity = stats.matches_surfaced > 0 || stats.new_circle_people > 0 || stats.moves_drafted > 0;
   let narrative: string;
+  let generationSource: 'llm' | 'fallback';
   const model = 'gpt-4o-mini';
 
   if (!hasActivity) {
     narrative = `Quiet week. You've got ${stats.active_ideas} Idea${stats.active_ideas === 1 ? '' : 's'} in flight and ${totalCircle.toLocaleString()} people in your Circle, but nothing moved this week. If you want to break the silence, Surface Matches on Today and pick one to send.`;
+    generationSource = 'fallback';
   } else {
     const systemPrompt = `You are a chief of staff writing a weekly "Sunday Letter" to a fractional executive. Speak in a calm, specific, opinionated voice — like a smart friend who paid attention all week. Never sycophantic, never corporate.
 
@@ -190,14 +227,23 @@ Rules:
     });
     if (!resp.ok) throw new Error(`OpenAI ${resp.status}`);
     const result = await resp.json();
-    narrative = String(result.choices[0].message.content ?? '').trim();
-    if (!narrative) throw new Error('Empty letter');
+    const raw = String(result.choices[0].message.content ?? '').trim();
+    narrative = validateLetter(raw);
+    generationSource = 'llm';
   }
 
   const { data: inserted, error: insertErr } = await supabase
     .from('sunday_letters')
     .upsert(
-      { user_id: userId, week_of: weekOf, text_body: narrative, stats, model },
+      {
+        user_id: userId,
+        week_of: weekOf,
+        text_body: narrative,
+        stats,
+        model,
+        generation_source: generationSource,
+        text_length: narrative.length,
+      },
       { onConflict: 'user_id,week_of' }
     )
     .select('*')
