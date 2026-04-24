@@ -126,6 +126,7 @@ async function parseWithClaude(b64: string, mime: string, apiKey: string): Promi
         },
       ],
     }),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!res.ok) {
@@ -159,6 +160,7 @@ async function parseWithOpenAI(b64: string, mime: string, apiKey: string): Promi
         },
       ],
     }),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!res.ok) {

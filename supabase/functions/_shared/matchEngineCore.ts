@@ -219,6 +219,7 @@ export async function runMatchEngineForUser(
         temperature: 0.3,
         store: false,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
     if (!resp.ok) {
       errors.push(`idea ${idea.id}: OpenAI ${resp.status}`);

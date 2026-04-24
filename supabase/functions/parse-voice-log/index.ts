@@ -78,6 +78,7 @@ Be conservative with client matching - only match if you're confident.`;
         temperature: 0.3,
         store: false,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
 
     if (!response.ok) {

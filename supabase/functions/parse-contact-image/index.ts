@@ -85,6 +85,7 @@ Be thorough - check all text in the image including small print, URLs, social ha
         max_tokens: 600,
         store: false,
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {

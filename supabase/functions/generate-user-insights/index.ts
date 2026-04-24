@@ -456,6 +456,7 @@ Generate personalized insights based on this data.`;
         ],
         tool_choice: { type: "function", function: { name: "generate_insights" } },
       }),
+      signal: AbortSignal.timeout(60_000),
     });
 
     if (!response.ok) {

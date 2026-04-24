@@ -186,6 +186,7 @@ Rules:
         temperature: 0.5,
         store: false,
       }),
+      signal: AbortSignal.timeout(60_000),
     });
     if (!resp.ok) throw new Error(`OpenAI ${resp.status}`);
     const result = await resp.json();
@@ -252,6 +253,7 @@ async function synthesizeAudio(args: {
       input: args.text,
       response_format: 'mp3',
     }),
+    signal: AbortSignal.timeout(60_000),
   });
   if (!resp.ok) {
     console.error('tts_failed', resp.status, await resp.text());

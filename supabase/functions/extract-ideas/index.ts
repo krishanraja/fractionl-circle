@@ -74,6 +74,7 @@ Return JSON: { "ideas": [ ... ], "posture": "established", "summary": "one sente
         temperature: 0.4,
         store: false,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
 
     if (!response.ok) {

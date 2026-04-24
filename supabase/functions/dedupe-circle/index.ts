@@ -142,6 +142,7 @@ Deno.serve(async (req) => {
           temperature: 0.1,
           store: false,
         }),
+        signal: AbortSignal.timeout(20_000),
       });
       if (!resp.ok) continue;
       const result = await resp.json();

@@ -68,6 +68,7 @@ If an email domain gives company context (e.g. sarah@nike.com), use it.`;
         temperature: 0.2,
         store: false,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
 
     if (!response.ok) {

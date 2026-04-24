@@ -51,6 +51,7 @@ Rules:
         temperature: 0.2,
         store: false,
       }),
+      signal: AbortSignal.timeout(20_000),
     });
 
     if (!response.ok) {

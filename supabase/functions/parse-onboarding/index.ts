@@ -62,6 +62,7 @@ For clients, include any companies, projects, or engagements mentioned.`;
         temperature: 0.3,
         store: false,
       }),
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!response.ok) {
