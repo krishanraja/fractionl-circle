@@ -34,27 +34,48 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get authorization header for user context
-    const authHeader = req.headers.get("authorization");
-    let userId: string | null = null;
+    const body = await req.json().catch(() => ({}));
 
-    if (authHeader) {
+    // Auth gate: accept either a valid user JWT OR a matching CRON_SECRET
+    // header for scheduled jobs. body.user_id is trusted only in the cron
+    // path; for user-JWT callers it must equal the authed user's id.
+    const cronSecretHeader = req.headers.get("x-cron-secret");
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const isCron = !!cronSecret && cronSecretHeader === cronSecret;
+
+    let targetUserId: string;
+
+    if (isCron) {
+      if (!body.user_id || typeof body.user_id !== "string") {
+        return new Response(
+          JSON.stringify({ error: "user_id required for cron invocation" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      targetUserId = body.user_id;
+    } else {
+      const authHeader = req.headers.get("authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Authorization required" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const token = authHeader.replace("Bearer ", "");
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (!authError && user) {
-        userId = user.id;
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
-    }
-
-    // Parse request body for optional user_id override (for cron jobs)
-    const body = await req.json().catch(() => ({}));
-    const targetUserId = body.user_id || userId;
-
-    if (!targetUserId) {
-      return new Response(
-        JSON.stringify({ error: "No user context available" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (body.user_id && body.user_id !== user.id) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      targetUserId = user.id;
     }
 
     console.log(`Generating insights for user: ${targetUserId}`);
