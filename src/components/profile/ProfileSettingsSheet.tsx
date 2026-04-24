@@ -12,7 +12,6 @@ import {
   Sun,
   Moon,
   Monitor,
-  Mail,
   Check,
 } from 'lucide-react';
 import {

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Layers, Crown, CircleDot } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSubscription, type SubscriptionTier } from '@/hooks/useSubscription';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface SubscriptionBadgeProps {
   className?: string;
@@ -56,7 +56,7 @@ export const SubscriptionBadge = ({ className, showTrialDays = true }: Subscript
  * Trial banner shown at top of app during trial period
  */
 export const TrialBanner = ({ onUpgrade }: { onUpgrade?: () => void }) => {
-  const { isTrialing, trialDaysRemaining, effectiveTier } = useSubscription();
+  const { isTrialing, trialDaysRemaining } = useSubscription();
 
   if (!isTrialing || trialDaysRemaining <= 0) return null;
 

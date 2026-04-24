@@ -62,7 +62,7 @@ export default function ShareContact() {
           setParsed(decoded || {});
           setState('confirm');
           return;
-        } catch (err) {
+        } catch (_err) {
           setErrorMsg('Could not read the shared contact data.');
           setState('error');
           return;

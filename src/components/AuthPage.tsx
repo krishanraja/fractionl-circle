@@ -485,7 +485,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
       } else {
         setSuccessMessage('Check your email to confirm your account');
       }
-    } catch (err) {
+    } catch (_err) {
       setError({ title: 'Sign up failed', message: 'An unexpected error occurred' });
     } finally {
       setLoading(false);
@@ -508,7 +508,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
       } else {
         onAuthenticated();
       }
-    } catch (err) {
+    } catch (_err) {
       setError({ title: 'Sign in failed', message: 'An unexpected error occurred' });
     } finally {
       setLoading(false);

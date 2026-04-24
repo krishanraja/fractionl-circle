@@ -20,7 +20,7 @@ const PRICE_IDS = {
 };
 
 export const UpgradePrompt = ({ feature, message, compact = false, className, onUpgradeClick }: UpgradePromptProps) => {
-  const { openCheckout, effectiveTier } = useSubscription();
+  const { openCheckout } = useSubscription();
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(false);
 

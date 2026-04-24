@@ -21,7 +21,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, loading: authLoading } = useAuth();
-  const { profile, loading: profileLoading, needsOnboarding, refetch } = useUserProfile();
+  const { loading: profileLoading, needsOnboarding, refetch } = useUserProfile();
   const { syncLocalConsents } = useConsent();
   const hasSynced = useRef(false);
 

@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/constants/animation';
-import { useSubscription, type SubscriptionTier } from '@/hooks/useSubscription';
+import { useSubscription } from '@/hooks/useSubscription';
 import { haptics } from '@/utils/haptics';
 import { toast } from 'sonner';
 
@@ -37,7 +37,7 @@ const features = [
   { name: 'Support', free: 'Community', pro: 'Email', exec: 'Priority' },
 ];
 
-export const PricingPage = ({ onClose }: PricingPageProps) => {
+export const PricingPage = ({ onClose: _onClose }: PricingPageProps) => {
   const { effectiveTier, isTrialing, trialDaysRemaining, openCheckout, openPortal, tier } = useSubscription();
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
