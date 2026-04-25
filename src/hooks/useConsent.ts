@@ -87,7 +87,7 @@ export function useConsent() {
     consentType: ConsentType,
     granted: boolean
   ): Promise<boolean> => {
-    const local = getLocalConsent() || {};
+    const local: Partial<Record<ConsentType, boolean>> = getLocalConsent() || {};
     local[consentType] = granted;
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(local));
     setHasConsented(true);
