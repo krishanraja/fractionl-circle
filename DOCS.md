@@ -264,8 +264,8 @@ Performance intelligence:
 | **Auth** | Supabase Auth | Email/password + OAuth (Google ready) |
 | **Database** | Supabase PostgreSQL | Row-level security, real-time subscriptions |
 | **Serverless** | Supabase Edge Functions (Deno) | AI processing, voice transcription, integrations |
-| **AI** | OpenAI (GPT + Whisper) | Strategic analysis, voice-to-text, parsing |
-| **Deployment** | Lovable Cloud | Auto-deploy on commit with edge CDN |
+| **AI** | OpenAI (GPT-4o + Whisper + TTS), Anthropic (Claude Haiku 4.5), Lovable Gateway (Gemini 3 Flash) | Voice/vision parsing, weekly narratives, business insights |
+| **Deployment** | Vercel (frontend) + Supabase Edge (functions) | Auto-deploy on commit |
 
 ### Database Schema
 
@@ -284,9 +284,23 @@ Performance intelligence:
 - `talent_contacts` -- Professional contacts with skills, rates, trust ratings
 - `talent_skills` -- Many-to-many contact-skill relationships
 - `talent_referrals` -- Referral tracking with outcomes
-- `talent_interactions` -- Interaction history for warmth scoring
 - `talent_opportunities` -- Contact-opportunity linkage
-- `skills` -- Predefined taxonomy (50+ skills across 11 categories)
+- `skills` -- Predefined taxonomy
+
+**Phase-1 Ontology Tables (Circle / Match Engine):**
+- `circle_person` -- Canonical person record (deduplicated)
+- `person_raw` -- Per-source raw person rows linked to circle_person
+- `sources` -- Each ingest source (CSV upload, voice seed, share sheet, OAuth)
+- `ideas` -- Active revenue-stream ideas (from extract-ideas)
+- `matches` -- Surfaced (idea × person) matches with rationale
+- `moves`, `move_edits` -- Drafted outreach + edit history
+- `signals`, `streams` -- Inbound activity feed
+- `concierge_requests` -- Onboarding bookings
+- `sunday_letters` -- Weekly narratives (text + audio_url)
+
+**OAuth & Subscription:**
+- `oauth_states`, `oauth_tokens` -- Service-role-only (RLS deny-all)
+- `subscriptions`, `usage_tracking`, `ledger_entries`
 
 **AI & Analytics Tables:**
 - `ai_conversations` -- Chat history with context
@@ -306,14 +320,40 @@ Performance intelligence:
 
 ### Edge Functions
 
-| Function | Purpose |
-|----------|---------|
-| `transcribe` | Whisper-powered audio-to-text |
-| `parse-voice-log` | Extract structured activity data from transcripts |
-| `parse-onboarding` | Parse voice onboarding for client/revenue setup |
-| `ai-strategic-analysis` | GPT-powered strategic chat with business context |
-| `generate-user-insights` | Rule-based + AI insight generation from behavior data |
-| `google-sheets-integration` | Bidirectional Google Sheets sync |
+The repo currently ships **34 functions** under `supabase/functions/` (plus
+shared helpers in `_shared/`). Run `ls supabase/functions/` for the live
+list. Grouped by purpose:
+
+**Voice & vision parsing (LLM-backed):**
+- `transcribe` — Whisper audio-to-text
+- `parse-voice-log`, `parse-voice-contact`, `parse-voice-seed` — voice → structured data
+- `parse-screenshot`, `parse-contact-image` — vision-LLM contact extraction
+- `parse-onboarding` — onboarding voice → client/revenue setup
+- `extract-ideas` — voice transcript → 3 revenue-stream ideas
+
+**Match engine & weekly digest (LLM-backed):**
+- `run-match-engine`, `cron-match-engine` — surface relationship matches
+- `generate-sunday-letter`, `cron-sunday-letter` — weekly narrative + TTS
+- `generate-user-insights` — personalised business insights
+- `dedupe-circle` — LLM-assisted person deduplication
+
+**OAuth + calendar/contacts sync:**
+- `oauth-google-start`, `oauth-google-callback`, `cron-sync-google`, `sync-google`
+- `oauth-microsoft-start`, `oauth-microsoft-callback`, `cron-sync-microsoft`, `sync-microsoft`
+
+**Contact ingest & resolution:**
+- `contact-enrich` — Clearbit / Apollo / Twilio enrichment
+- `linkedin-search` — Google CSE LinkedIn lookup
+- `resolve-contact`, `merge-persons`, `extension-ingest`
+
+**Billing & comms:**
+- `stripe-checkout`, `stripe-portal`, `stripe-webhook`
+- `send-sms` (Twilio)
+- `notify-concierge-event`, `log-move-sent`
+
+**LLM call sites:** 14 outbound LLM fetches across the above functions
+(OpenAI chat / Whisper / TTS, Anthropic Claude Haiku, Lovable Gemini).
+All wrapped with explicit `AbortSignal.timeout` per AUDIT_2026-04-24.md C3.
 
 ---
 
