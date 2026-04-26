@@ -166,7 +166,15 @@ export async function logAuditEvent(
   }
 }
 
-// ── Rate Limiting (basic, per-function) ─────────────────────────────────
+// ── Rate Limiting ───────────────────────────────────────────────────────
+//
+// Two implementations:
+//   - checkRateLimit(key, max, windowMs)        in-memory, per-instance.
+//     Kept for legacy callers. NOT durable across edge-function instances.
+//   - checkRateLimitDurable(supabase, ...)      DB-backed, cross-instance.
+//     Uses the `check_rate_limit` Postgres function from migration
+//     20260424000003. Call this for all new code and when you need
+//     correctness under horizontal scale.
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
@@ -185,6 +193,29 @@ export function checkRateLimit(
 
   entry.count++;
   if (entry.count > maxRequests) {
+    throw new RateLimitError();
+  }
+}
+
+export async function checkRateLimitDurable(
+  supabase: ReturnType<typeof createClient>,
+  key: string,
+  maxRequests: number = 30,
+  windowSeconds: number = 60
+): Promise<void> {
+  const { data, error } = await supabase.rpc('check_rate_limit', {
+    p_key: key,
+    p_max: maxRequests,
+    p_window_seconds: windowSeconds,
+  });
+
+  if (error) {
+    // Fail open on DB error — a rate-limit outage must not block traffic.
+    console.error('rate_limit_rpc_failed', error.message);
+    return;
+  }
+
+  if (!data) {
     throw new RateLimitError();
   }
 }

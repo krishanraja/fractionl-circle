@@ -242,7 +242,7 @@ export const copyToClipboard = async (text: string | null | undefined, label: st
   try {
     await navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard`);
-  } catch (error) {
+  } catch (_error) {
     toast.error(`Failed to copy ${label.toLowerCase()}`);
   }
 };

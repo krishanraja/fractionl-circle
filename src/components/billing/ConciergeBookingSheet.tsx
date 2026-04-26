@@ -79,10 +79,14 @@ const Body = ({ onClose, onSubmitted }: { onClose: () => void; onSubmitted?: () 
 
       <div className="space-y-5">
         <div>
-          <label className="text-[11px] font-medium uppercase tracking-wide text-foreground-secondary">
+          <label
+            htmlFor="concierge-preferred-times"
+            className="text-[11px] font-medium uppercase tracking-wide text-foreground-secondary"
+          >
             When works?
           </label>
           <textarea
+            id="concierge-preferred-times"
             value={preferredTimes}
             onChange={(e) => setPreferredTimes(e.target.value)}
             placeholder="e.g. Tue / Thu mornings PT, or any 15-min slot this week."
@@ -91,10 +95,14 @@ const Body = ({ onClose, onSubmitted }: { onClose: () => void; onSubmitted?: () 
         </div>
 
         <div>
-          <label className="text-[11px] font-medium uppercase tracking-wide text-foreground-secondary">
+          <label
+            htmlFor="concierge-notes"
+            className="text-[11px] font-medium uppercase tracking-wide text-foreground-secondary"
+          >
             Anything we should know?
           </label>
           <textarea
+            id="concierge-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Who are your top 3 clients? What&apos;s your north-star ICP? Anything we should definitely not touch?"

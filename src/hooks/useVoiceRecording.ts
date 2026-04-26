@@ -84,7 +84,7 @@ export const useVoiceRecording = (
     // Sample 20 points for waveform visualization
     const samples = 20;
     const step = Math.floor(dataArray.length / samples);
-    const newWaveform = [];
+    const newWaveform: number[] = [];
     let hasSound = false;
 
     for (let i = 0; i < samples; i++) {

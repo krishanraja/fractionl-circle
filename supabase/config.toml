@@ -16,12 +16,6 @@ enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
 enable_signup = true
 
-[functions.ai-strategic-analysis]
-verify_jwt = false
-
-[functions.google-sheets-integration]
-verify_jwt = false
-
 [functions.test-google-secret]
 verify_jwt = false
 

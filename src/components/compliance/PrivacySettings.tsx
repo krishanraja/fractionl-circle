@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; 
 ];
 
 export function PrivacySettings() {
-  const { consents, updateConsent, isConsentGranted, loading: consentLoading } = useConsent();
+  const { updateConsent, isConsentGranted, loading: consentLoading } = useConsent();
   const { loading: privacyLoading, downloadData, requestErasure, requests, fetchRequests } = useDataPrivacy();
   const { toast } = useToast();
 

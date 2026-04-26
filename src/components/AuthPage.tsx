@@ -16,7 +16,7 @@ const fadeInUpVariants = {
 
 const fadeInUpTransition = {
   duration: 0.25,
-  ease: [0, 0, 0.2, 1],
+  ease: [0, 0, 0.2, 1] as [number, number, number, number],
 };
 
 const successMessageVariants = {
@@ -485,7 +485,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
       } else {
         setSuccessMessage('Check your email to confirm your account');
       }
-    } catch (err) {
+    } catch (_err) {
       setError({ title: 'Sign up failed', message: 'An unexpected error occurred' });
     } finally {
       setLoading(false);
@@ -508,7 +508,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
       } else {
         onAuthenticated();
       }
-    } catch (err) {
+    } catch (_err) {
       setError({ title: 'Sign in failed', message: 'An unexpected error occurred' });
     } finally {
       setLoading(false);

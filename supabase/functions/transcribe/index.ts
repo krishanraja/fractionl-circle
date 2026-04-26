@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
         'Authorization': `Bearer ${openaiApiKey}`,
       },
       body: formData,
+      signal: AbortSignal.timeout(120_000),
     });
 
     if (!response.ok) {
