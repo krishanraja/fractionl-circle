@@ -1,176 +1,183 @@
-# Post-launch leverage roadmap
+# Circle by Fractionl — Roadmap
 
-The 90-day plan is shipped (Phases 1-11). This file is the honest state of
-everything the original plan listed as "post-launch leverage" — what's
-done, what's partial, what's deferred, and roughly what it takes.
+The 90-day plan (Phases 1–11) is shipped. The April 2026 audit (`AUDIT_2026-04-24.md`) shipped 13 of 14 findings via PR #46 (merged 2026-04-26). This file is the honest state of what's done, what's deferred, and roughly what each open item costs.
 
-Ordering is by leverage-per-effort, not by lineup in the original plan.
+Ordering is by **leverage-per-effort**, not by chronological lineup.
 
-## Shipped in this follow-up session
+---
 
-- **Concierge Slack/Email notifications** (`notify-concierge-event` edge fn).
-  Triggered from `useConcierge.submit/cancel` on the client; ops CLI can
-  re-trigger for any state transition.
-- **Concierge booking URL** (Cal.com / Calendly). New
-  `concierge_requests.booking_url` column; `book-url` command on
-  `scripts/concierge-inbox.mjs`; user taps the link straight from Today.
-- **Edit-distance logging** (taste/voice model *foundation*). New
-  `move_edits` table; `log-move-sent` edge fn computes Levenshtein distance
-  between the AI draft and what the user actually sent; MatchCard ships the
-  "I sent it" flow. The model that *uses* this data is a dedicated follow-up.
-- **Multi-CRM / multi-sheet importer**. `src/lib/crmCsv.ts` auto-detects
-  HubSpot / Attio / Folk / LinkedIn / generic sheets from the header row
-  and normalizes into the existing ingest pipeline. New `CrmCsvDrop`
-  surface on **Add a source**.
+## Currently in production (the active surface)
 
-## Deferred — own-session items (sized honestly)
+### Phase-1 ontology (the data model)
+Sources → Person → Idea × Person → Match → Move → Stream. Replaces the legacy clients / opportunities / activity_logs CRM model. Migration `20260418000001_redesign_phase_1_ontology.sql`. See [DOCS.md § Phase-1 ontology](../DOCS.md#7-the-phase-1-ontology).
 
-### External enrichment — People Data Labs / Clay / Apollo on consent
-**Effort:** half-session per provider. Each is a single edge fn + UI toggle
-per user. PDL is the cleanest one-off (per-lookup API, pay-per-find).
+### Voice onboarding (FirstVoice)
+90-second hold-to-talk → Whisper transcription → gpt-4o-mini extracts 3 sellable Ideas. The first artefact a user sees in <2 minutes. `src/components/onboarding/FirstVoice.tsx`.
 
-**Shape when built:**
-- `user_consents` row per provider, per user.
-- Edge fn `enrich-circle-person` takes a `circle_person_id`, calls the
-  provider, writes richer fields back to `circle_person` and/or a signal.
-- UI: "Enrich with public data" button on a Person detail sheet — which we
-  don't have yet. Likely bundled with a Person detail screen session.
+### The Match Engine
+Cross-references active Ideas × Circle people overnight. Drafts the Move alongside the Match. Edit-distance logging on send. Manual + cron triggers. `_shared/matchEngineCore.ts`.
 
-**Gotchas:** none of these providers have a free tier worth testing at
-scale. Prepare to burn $10-$50 to get the ingestion quality right.
+### Sunday Letter
+Weekly narrative with stats sidebar. Text on Operator+, 90-second TTS audio on Chief of Staff. Generation-source tracking in column. Cron + manual triggers. `_shared/sundayLetterCore.ts`.
 
-### Per-category auto-send opt-in
-**Effort:** one session. Needs genuine UX scoping first.
+### Multi-source Circle ingest
+- LinkedIn CSV (`LinkedInCsvDrop`).
+- Generic CRM CSV with HubSpot / Attio / Folk auto-detection (`CrmCsvDrop` + `src/lib/crmCsv.ts`).
+- Voice seed (`VoiceSeedCapture` + `parse-voice-seed`).
+- Google Contacts + Calendar (`oauth-google-*`, `sync-google`, `cron-sync-google`).
+- Microsoft Contacts + Calendar (`oauth-microsoft-*`, `sync-microsoft`, `cron-sync-microsoft`).
+- Browser extension capture (`extension/` + `extension-ingest`).
+- Screenshot capture — Android share target + iOS Apple Shortcut (`parse-screenshot`).
 
-**Open questions (decide before building):**
-- Which categories are auto-send candidates on launch? Plan mentioned
-  `congrats_promotion` and `congrats_job_change` as the obvious starters.
-  Add fundraise / anniversary? Probably.
-- What's the auto-send gate? Per category + per-contact consent, or
-  per-category only?
-- Does auto-send bypass the user-approval step entirely, or still show a
-  brief "sending in 60s" undo banner on Today?
-- Executive tier only, as the plan specified.
+### LLM-assisted Circle dedupe (Operator+)
+`useCircleDedupe`, `DedupeReviewSheet`, `dedupe-circle` edge function. Score-based candidates with LLM tiebreaker.
 
-**Schema:** new `autosend_consents` table (user_id, category,
-circle_person_id nullable, enabled_at). New enum `move_category`.
-`run-match-engine` writes the category onto the Move; a worker dispatches
-approved-and-consented Moves through the channel.
+### Concierge (Chief of Staff)
+Real-human onboarding for Chief-of-Staff users. `concierge_requests` table, `ConciergeCard` on Today, `notify-concierge-event` Slack/Resend ops alerts, `scripts/concierge-inbox.mjs` CLI for the queue.
 
-### Cross-user market intelligence (anonymized)
-**Effort:** one session *plus* a waiting period for real user volume.
+### Stripe billing
+Checkout + Customer Portal + signature-verified webhook + tier sync. `stripe-checkout`, `stripe-portal`, `stripe-webhook`. Tier catalogue in `src/lib/tiers.ts` (Freemium / Operator / Chief of Staff at $0 / $30 / $79).
 
-Shipping this before we have enough users is worse than not shipping it —
-empty charts and made-up insights sour trust. Revisit once paying-user
-count is >200 OR once 90 days of Match+Move data exists.
+### Compliance surface
+ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent flags on auth. Data export + deletion paths in `useDataPrivacy`.
 
-**Shape when built:**
-- Nightly job aggregates anonymized signal → outcome pairs into a
-  `market_patterns` materialized view (ICP cluster × signal kind × response
-  rate × close rate).
-- Sunday Letter surfaces one pattern per week ("Offers shaped like yours
-  are converting at 22% in Series B SaaS this quarter.").
-- Opt-out respected at the user-profile level; aggregation never reads the
-  raw rows of opt-out users.
+### Audit-clean (April 2026)
+- TypeScript strict mode on (audit H1).
+- All 14 LLM call sites have explicit `AbortSignal.timeout` (C3).
+- `generate-user-insights` is auth-gated with body-id validation (C1).
+- `send-sms` uses origin-allowlist CORS (C4).
+- Sunday Letter output is Zod-validated, length-capped, generation-source tagged (C2).
+- Durable per-user `rate_limits` table replaces in-memory map (H4).
+- `npm audit fix` ran — 14 of 18 vulns resolved (H2).
+- ESLint `no-unused-vars` enforced and cleaned (M1).
+- `.env.example` regenerated from code references (M2).
+- DOCS.md regenerated to match shipped state (M3) — this file.
+- Central error telemetry sink + `window` error/unhandledrejection listeners (M5).
+- Form labels associated with inputs (M8).
+- Single lockfile (`bun.lockb` removed) (H5).
 
-### RFP scraper + named-contact news + tweet monitoring
-**Effort:** one session **per feed**.
+---
 
-These are fundamentally provider-integration work. Picking the provider
-first compresses the work:
+## Open audit follow-ups (deferred from PR #46)
 
-- **RFPs:** SAM.gov opportunities feed (free, US federal only) is the
-  easiest start. RFPdb / Govtribe if you want commercial too.
-- **News:** Google News RSS per named contact is the cheapest. NewsAPI /
-  Event Registry if you want entity-level resolution.
-- **Tweets / X:** X API is $100/mo minimum now. The cheap alternative is
-  polling a small number of `@user` RSS bridges. Won't scale to 10K users
-  but is fine for the early Chief of Staff cohort.
+These are the items the audit flagged that did **not** ship in PR #46. They are not blockers; they are next-sprint sized.
 
-Each feed is a cron-fired edge fn that writes `signals` rows keyed to
-existing `circle_person` entries (or `subject='market'` for RFPs/trends),
-which the Match Engine already consumes.
+### H3 — Adopt `react-hook-form` + `@tanstack/react-query` consistently
+Both are installed. `QueryClientProvider` is mounted. Adoption across forms is partial — most forms still hand-roll `useState` + direct `supabase.functions.invoke`. Migration is large but mechanical: `AuthPage`, `FirstVoice`, `ConciergeBookingSheet`, `MatchCard`, `ProfileSettingsSheet`. **Effort:** 1–2 sessions for full migration. Reuse existing `src/components/ui/form.tsx` scaffolding.
 
-### Social data-export parsers — Instagram / Facebook / X
-**Effort:** half-session total for all three. Same shape as `crmCsv.ts`,
-just tuned per format.
+### H6 — OAuth PKCE
+Current state: double-`crypto.randomUUID()` state + TTL + single-use deletion at callback. Sufficient for confidential web clients. Required if we ever ship a native or extension-hosted OAuth flow. **Effort:** half-session per provider. Add `code_challenge` (S256) on start, persist `code_verifier` alongside state, send on token exchange.
 
-- Instagram export → parse `following.json` from the ZIP.
-- Facebook export → parse `friends/your_friends.json`.
-- X export → parse `following.js` (with the weird "window.YTD" preamble
-  stripped).
+### H7 — `parse-screenshot` error-body redaction
+Current: `throw new Error(\`Anthropic error: ${res.status} ${text.slice(0, 300)}\`)` — that body slice can leak echoed prompt fragments into edge logs. **Effort:** 15-minute fix. Log status + request-id only.
 
-Build ZIP parsing into a new `ingestSocialExport` helper that fans out per
-format, then add a "Drop social export" picker option.
+### M4 — `resolve-contact` N+1
+`resolve-contact/index.ts:280–285` loops awaiting per-item `talent_contact_identities` queries. **Effort:** 30 minutes. Single `.in('<col>', ids)` query.
 
-### Legacy CRM *direct* (not CSV) import
-**Effort:** one session per target. Only worth it for customers who
-actively can't export clean CSVs.
+### M6 / M7 / M9 — UI polish
+- M6: ~20 raw HTML form elements (`<button>`, `<textarea>`) bypass shadcn primitives. Migrate to `Button` / `Textarea`.
+- M7: `Skeleton` component exists but is unused — add list-shaped skeletons to TodayScreen / CircleScreen / StreamsScreen / AskScreen instead of the generic `PageLoader`.
+- M9: Icon-only buttons missing `aria-label` (~30 sites). One sweep.
 
-CSV import already covers HubSpot / Attio / Folk (above). OAuth-based
-direct import is the follow-up for:
+**Effort:** one session for M6+M7+M9 together.
 
-- **HubSpot**: CRM API v3, `/crm/v3/objects/contacts`. Needs a HubSpot app
-  + OAuth flow, mirror of Phase 5.
-- **Attio**: REST API, API-key auth (simpler than OAuth).
-- **Folk**: API is limited; CSV is currently the canonical path.
+### M10 — Surface generation source in UI
+Sunday Letter `generation_source` is now persisted (the schema landed in PR #46). Surface it in admin / debug for monitoring drift. **Effort:** 30 minutes if the admin surface exists; otherwise rolled into a future admin pass.
+
+### L1 — Bundle visualizer
+Main chunk is 903 KB. Add `rollup-plugin-visualizer` to confirm where the weight is. AskScreen and StreamsScreen ship suspiciously small (1.1 KB each), suggesting most of their code is in the main bundle. **Effort:** 30 minutes setup, 1–2 sessions to act on results.
+
+### L2 / L3 / L5 / L6 — Design-system polish
+- L2: 4 hardcoded hex colors in `App.css` + one component default — move to tokens.
+- L3: ~20 arbitrary Tailwind dimensions (`text-[10px]` etc.) — extend theme with `text-micro` / `text-tiny` tokens.
+- L5: `lovable-tagger@1.1.7` — verify necessity, remove if unused.
+- L6: 153 `motion.*` instances — moderate at current scale. Revisit if LCP regresses.
+
+**Effort:** half-session in aggregate.
+
+---
+
+## New surfaces & features (not from the audit)
+
+### Phase 2 — Voice-first command surface (`AskScreen`)
+The Ask tab is currently a placeholder. Voice command capture is the Phase 2 project. Hold-to-talk → Whisper → intent classifier → command dispatcher (change a setting, voice an Idea, ask a tactical question). Reuses the `FirstVoice` interaction pattern.
+
+**Effort:** 1–2 sessions.
+**Why now:** unlocks Ask-with-memory as a real Operator-tier feature.
+
+### Per-category auto-send opt-in (Chief of Staff)
+The Chief of Staff tier promises per-category auto-send (e.g. `congrats_promotion`, `congrats_job_change`). Schema needed: `move_category` enum, `autosend_consents` table, worker that dispatches approved-and-consented Moves.
+
+**Effort:** one session — but UX scoping comes first. Decide:
+- Which categories are auto-send candidates on launch? (Promotion / job-change are obvious starters; fundraise + anniversary are likely.)
+- Per-category-only, or per-category × per-contact?
+- Auto-send straight, or undo banner?
+
+### External signal feeds (Chief of Staff)
+**RFP scraper** — SAM.gov is the cheapest start. **News per named contact** — Google News RSS. **Tweet / X monitoring** — X API is now $100/mo minimum; small-scale RSS bridges are the realistic path early.
+
+Each is a cron-fired edge function writing `signals` rows that the Match Engine already consumes. **Effort:** one session per feed.
+
+### Cross-user market intelligence (Chief of Staff)
+Aggregated signal → outcome patterns surfaced in the Sunday Letter ("Offers shaped like yours are converting at 22% in Series B SaaS this quarter"). Requires real volume; shipping it before we have it is worse than not shipping it.
+
+**Gate:** revisit when paying-user count > 200 OR when 90 days of Match + Move data exists.
+
+### External enrichment — PDL / Clay / Apollo on consent
+Per-user consent + per-provider edge function + UI toggle. **Effort:** half-session per provider. **Gotcha:** none have a free tier worth testing at scale; budget $10–$50 per provider for ingest-quality tuning.
+
+### Social data-export parsers (Instagram / Facebook / X)
+Same shape as `crmCsv.ts`, format-tuned. ZIP parsing into a new `ingestSocialExport` helper. **Effort:** half-session total.
+
+### Direct CRM OAuth importers (vs. CSV)
+Only worth it for users who can't export clean CSVs. HubSpot is the most demanded; Attio is API-key auth (simpler). **Effort:** one session per target.
 
 ### Chrome Web Store submission
-**Effort:** 1-2 hours of writing, then 1-2 weeks of Google review.
+Not code — listing copy, 3–5 screenshots at 1280×800, 128×128 branded icon, public privacy policy URL, $5 one-time dev fee. **Effort:** 1–2 hours of writing + 1–2 weeks of Google review.
 
-Not code — artifacts needed:
+### Cal.com / Calendly deep integration
+Already shipped: ops drops a booking URL, user clicks. Deep = embedded scheduler in `ConciergeCard` + webhook-driven `BOOKING_CREATED` → `concierge_requests.status = 'scheduled'`. Obsoletes the manual `schedule` CLI command. **Effort:** half-session.
 
-- Listing copy (short + long description, targeting fractionals).
-- 3-5 screenshots at 1280×800 (popup states: not-connected, connected,
-  recent captures; plus a before/after of Circle).
-- 128×128 branded icon (replace the generated placeholder).
-- Privacy policy at a public URL covering: the three LinkedIn-only
-  permissions, the single Supabase API call, no-mail-bodies posture,
-  chrome.storage scope. Add a `docs/privacy-policy.md` + host at
-  `circle.fractionl.ai/privacy`.
-- Submit via the Chrome Web Store Developer Dashboard ($5 one-time dev fee).
+### Slack interactivity for concierge ops
+Buttons in the Slack notification to schedule / start / deliver without leaving the channel. **Effort:** half-session — only when ops asks.
 
-### Scheduling integration (Calendly / Cal.com) deep
-Already shipped the minimum: ops drops a booking URL, user clicks.
-"Deep" integration = embedded scheduler inside the ConciergeCard itself +
-webhook-driven state transitions. Half-session.
+### Per-user email digests
+Resend-driven "Your concierge delivered: ..." email for users who don't open the app daily. **Effort:** half-session.
 
-**Shape:**
-- Embed the Cal.com `<cal-inline>` component or Calendly widget inside the
-  ConciergeCard so the user never leaves the app.
-- Cal.com webhook on `BOOKING_CREATED` → edge fn that sets
-  `concierge_requests.status = 'scheduled'` and `scheduled_at` + notifies
-  ops. Obsoletes the manual `schedule` CLI command.
-
-### Email / Slack notifications on concierge events (this session shipped core)
-Already shipped the edge fn. Deferred:
-- Per-user email digests ("Your concierge delivered: ...") — useful for
-  users who don't check the app daily.
-- Slack interactivity (buttons in the Slack message to schedule / start /
-  deliver without leaving the channel).
-
-Both are ~half-session once the ops team actually asks for them.
-
-## Truly out-of-scope for now
-
-- Mobile native shells (iOS / Android) — PWA + share target cover most of
-  the value.
-- Firefox / Safari extension variants.
-- Whitelabel / multi-tenant.
-- Team seats beyond the single EA add-on mentioned in the pricing plan.
+---
 
 ## How to pick the next session
 
-If the signal from paying users is...
+Read the signal from paying users:
 
-- **"Our Circle isn't rich enough"** → ship Social export parsers + PDL
-  enrichment. Half-day each.
-- **"The Sunday Letter is thin"** → ship cross-user market intel (only if
-  user-count warrants it) or edit-distance-trained draft personalization.
-- **"I'm drowning in drafts"** → ship per-category auto-send.
-- **"I can't show anyone this without a real Chrome Store listing"** →
-  ship Chrome Web Store submission.
-- **"Ops is buried in concierge coordination"** → ship the deep Cal.com
-  integration + Slack interactivity.
+| Signal from users | Ship next |
+|---|---|
+| **"My Circle isn't rich enough"** | Social-export parsers + PDL enrichment (half-day each) |
+| **"The Sunday Letter is thin"** | Cross-user market intel (gated on user-count) OR the edit-distance-trained personalization model |
+| **"I want auto-send for the easy ones"** | Per-category auto-send |
+| **"I can't show this without a real Chrome listing"** | Chrome Web Store submission |
+| **"Ops is buried in concierge coordination"** | Cal.com deep integration + Slack interactivity |
+| **"The forms feel inconsistent"** | Audit H3 — finish react-hook-form + TanStack Query migration |
+| **"I want to share Circle with my EA"** | Team mode (out of scope for current architecture; needs a real spec) |
 
-Nothing here blocks a real launch. The 90-day plan is complete.
+---
+
+## Truly out-of-scope for now
+
+- **iOS / Android native shells.** PWA + share target + Apple Shortcut cover ~95% of mobile value.
+- **Firefox / Safari extension variants.** Chrome / Arc are the install base.
+- **Whitelabel / multi-tenant.** Single-product, single-brand.
+- **Team seats beyond the EA add-on** mentioned in pricing.
+- **Salesforce / Pipedrive direct integrations.** Wrong ICP.
+
+---
+
+## Operational ledger
+
+- **Last full audit:** 2026-04-24 (`AUDIT_2026-04-24.md`).
+- **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`).
+- **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
+- **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
+- **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
+
+Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; the runway is sales and signal.
