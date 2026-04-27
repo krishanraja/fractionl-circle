@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Upload, Mic, Sparkles, AlertCircle, Users2 } from 'lucide-react';
+import { Plus, Upload, Mic, Sparkles, AlertCircle, Users2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCircle } from '@/hooks/useCircle';
 import { useCircleDedupe } from '@/hooks/useCircleDedupe';
 import { AddSourceSheet } from '@/components/circle/AddSourceSheet';
 import { DedupeReviewSheet } from '@/components/circle/DedupeReviewSheet';
+import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import type { Source } from '@/hooks/useCircle';
 
 const SOURCE_ICON = (kind: Source['kind']) => {
@@ -58,6 +59,10 @@ export const CircleScreen = () => {
     [sources]
   );
 
+  // Default the disclosure open when there's nothing else to do (empty Circle),
+  // collapsed once the user has people to scroll.
+  const sourcesOpenByDefault = !loading && totalPeople === 0;
+
   return (
     <div className="min-h-full bg-background px-4 pt-6 pb-24">
       <motion.header
@@ -81,109 +86,118 @@ export const CircleScreen = () => {
         </p>
       </motion.header>
 
-      {!loading && totalPeople === 0 && (
-        <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-foreground">
-                Your Circle is empty.
-              </p>
-              <p className="text-sm text-foreground-secondary leading-relaxed">
-                Connect a source and I'll start matching while you sleep. LinkedIn
-                is usually the richest single source.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+      <CirclePeopleList totalPeople={totalPeople} circleLoading={loading} />
 
-      {!loading && activeSources.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-medium uppercase tracking-wide text-foreground-secondary mb-2">
-            Sources
-          </h2>
-          <div className="space-y-2">
-            {activeSources.map((src) => {
-              const Icon = SOURCE_ICON(src.kind);
-              return (
-                <div
-                  key={src.id}
-                  className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur p-3"
-                >
-                  <div className="rounded-full bg-primary/10 p-2">
-                    <Icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {SOURCE_LABEL(src.kind)}
-                    </p>
-                    <p className="text-[11px] text-foreground-muted">
-                      {src.last_ingested_at
-                        ? `Last ingested ${new Date(src.last_ingested_at).toLocaleDateString()}`
-                        : 'In progress…'}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {!loading && failedSources.length > 0 && (
-        <section className="mb-4 space-y-2">
-          {failedSources.map((src) => (
-            <div
-              key={src.id}
-              className="flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-3"
-            >
-              <AlertCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">
-                  {SOURCE_LABEL(src.kind)} failed
-                </p>
-                {src.last_error && (
-                  <p className="text-[11px] text-foreground-muted truncate">
-                    {src.last_error}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-
-      <div className="space-y-2">
-        <button
-          onClick={() => setSheetOpen(true)}
+      <details
+        key={sourcesOpenByDefault ? 'open' : 'closed'}
+        open={sourcesOpenByDefault}
+        className="group rounded-2xl border border-border/60 bg-card/30 backdrop-blur"
+      >
+        <summary
           className={cn(
-            'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl',
-            'border border-border/60 bg-card/50 backdrop-blur hover:bg-card',
-            'text-sm font-medium text-foreground transition-colors'
+            'flex items-center justify-between gap-2 cursor-pointer list-none',
+            'px-4 py-3 select-none'
           )}
         >
-          <Plus className="w-4 h-4" />
-          Add a source
-        </button>
-
-        {!loading && totalPeople >= 2 && (
-          <button
-            onClick={openDedupe}
-            className={cn(
-              'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl',
-              'text-xs font-medium text-foreground-secondary hover:text-foreground transition-colors'
+          <div className="flex items-center gap-2 min-w-0">
+            <Users2 className="w-4 h-4 text-foreground-secondary shrink-0" />
+            <span className="text-sm font-medium text-foreground">Sources & tools</span>
+            {!loading && activeSources.length > 0 && (
+              <span className="text-[11px] text-foreground-muted truncate">
+                · {activeSources.length} connected
+              </span>
             )}
-          >
-            <Users2 className="w-3.5 h-3.5" />
-            {dedupe.suggestions.length > 0
-              ? `Review ${dedupe.suggestions.length} likely duplicate${dedupe.suggestions.length === 1 ? '' : 's'}`
-              : 'Find duplicates'}
-          </button>
-        )}
-      </div>
+          </div>
+          <ChevronDown className="w-4 h-4 text-foreground-muted shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+
+        <div className="px-4 pb-4 space-y-4">
+          {!loading && activeSources.length > 0 && (
+            <section>
+              <h2 className="text-xs font-medium uppercase tracking-wide text-foreground-secondary mb-2">
+                Sources
+              </h2>
+              <div className="space-y-2">
+                {activeSources.map((src) => {
+                  const Icon = SOURCE_ICON(src.kind);
+                  return (
+                    <div
+                      key={src.id}
+                      className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur p-3"
+                    >
+                      <div className="rounded-full bg-primary/10 p-2">
+                        <Icon className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {SOURCE_LABEL(src.kind)}
+                        </p>
+                        <p className="text-[11px] text-foreground-muted">
+                          {src.last_ingested_at
+                            ? `Last ingested ${new Date(src.last_ingested_at).toLocaleDateString()}`
+                            : 'In progress…'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {!loading && failedSources.length > 0 && (
+            <section className="space-y-2">
+              {failedSources.map((src) => (
+                <div
+                  key={src.id}
+                  className="flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-3"
+                >
+                  <AlertCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {SOURCE_LABEL(src.kind)} failed
+                    </p>
+                    {src.last_error && (
+                      <p className="text-[11px] text-foreground-muted truncate">
+                        {src.last_error}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
+
+          <div className="space-y-2">
+            <button
+              onClick={() => setSheetOpen(true)}
+              className={cn(
+                'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl',
+                'border border-border/60 bg-card/50 backdrop-blur hover:bg-card',
+                'text-sm font-medium text-foreground transition-colors'
+              )}
+            >
+              <Plus className="w-4 h-4" />
+              Add a source
+            </button>
+
+            {!loading && totalPeople >= 2 && (
+              <button
+                onClick={openDedupe}
+                className={cn(
+                  'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl',
+                  'text-xs font-medium text-foreground-secondary hover:text-foreground transition-colors'
+                )}
+              >
+                <Users2 className="w-3.5 h-3.5" />
+                {dedupe.suggestions.length > 0
+                  ? `Review ${dedupe.suggestions.length} likely duplicate${dedupe.suggestions.length === 1 ? '' : 's'}`
+                  : 'Find duplicates'}
+              </button>
+            )}
+          </div>
+        </div>
+      </details>
 
       <AddSourceSheet
         open={sheetOpen}
