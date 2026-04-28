@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Sparkles, Loader2 } from 'lucide-react';
+import { Search, Sparkles, Loader2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCirclePeople } from '@/hooks/useCirclePeople';
 import { CircleListRow } from '@/components/circle/CircleListRow';
@@ -10,9 +10,10 @@ const DEBOUNCE_MS = 250;
 interface CirclePeopleListProps {
   totalPeople: number;
   circleLoading: boolean;
+  onQuickAdd?: () => void;
 }
 
-export const CirclePeopleList = ({ totalPeople, circleLoading }: CirclePeopleListProps) => {
+export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: CirclePeopleListProps) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -48,14 +49,29 @@ export const CirclePeopleList = ({ totalPeople, circleLoading }: CirclePeopleLis
           <div className="mt-0.5 rounded-full bg-primary/10 p-2">
             <Sparkles className="w-4 h-4 text-primary" />
           </div>
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-foreground">
-              Your Circle is empty.
-            </p>
-            <p className="text-sm text-foreground-secondary leading-relaxed">
-              Connect a source below and I'll start matching while you sleep.
-              LinkedIn is usually the richest single source.
-            </p>
+          <div className="space-y-3 flex-1">
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-foreground">
+                Your Circle is empty — let's add the first person.
+              </p>
+              <p className="text-sm text-foreground-secondary leading-relaxed">
+                Drop a screenshot, paste a LinkedIn URL or Instagram handle, or just say a name.
+                I'll figure out the rest.
+              </p>
+            </div>
+            {onQuickAdd && (
+              <button
+                onClick={onQuickAdd}
+                className={cn(
+                  'inline-flex items-center gap-1.5 h-10 px-4 rounded-full',
+                  'bg-primary text-primary-foreground text-sm font-medium',
+                  'shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 transition-shadow'
+                )}
+              >
+                <Plus className="w-4 h-4" strokeWidth={2.4} />
+                Add someone
+              </button>
+            )}
           </div>
         </div>
       </section>

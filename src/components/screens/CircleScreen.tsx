@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Upload, Mic, Sparkles, AlertCircle, Users2, ChevronDown } from 'lucide-react';
+import { Plus, Upload, Mic, Sparkles, AlertCircle, Users2, ChevronDown, Camera, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCircle } from '@/hooks/useCircle';
 import { useCircleDedupe } from '@/hooks/useCircleDedupe';
 import { AddSourceSheet } from '@/components/circle/AddSourceSheet';
+import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
 import { DedupeReviewSheet } from '@/components/circle/DedupeReviewSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import type { Source } from '@/hooks/useCircle';
@@ -16,6 +17,10 @@ const SOURCE_ICON = (kind: Source['kind']) => {
       return Upload;
     case 'voice_seed':
       return Mic;
+    case 'business_card_photo':
+      return Camera;
+    case 'manual_add':
+      return UserPlus;
     default:
       return Sparkles;
   }
@@ -29,6 +34,8 @@ const SOURCE_LABEL = (kind: Source['kind']) => {
     case 'google': return 'Google';
     case 'microsoft': return 'Microsoft';
     case 'ios_contacts': return 'iPhone contacts';
+    case 'business_card_photo': return 'Quick adds (photo)';
+    case 'manual_add': return 'Quick adds';
     default: return kind.replace(/_/g, ' ');
   }
 };
@@ -37,6 +44,7 @@ export const CircleScreen = () => {
   const { totalPeople, sources, loading, refresh } = useCircle();
   const dedupe = useCircleDedupe();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [dedupeOpen, setDedupeOpen] = useState(false);
 
   const openDedupe = async () => {
@@ -71,22 +79,39 @@ export const CircleScreen = () => {
         transition={{ duration: 0.3 }}
         className="mb-6"
       >
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
             Your Circle
           </h1>
-          {!loading && (
-            <span className="text-sm font-medium text-foreground-secondary tabular-nums">
-              {totalPeople.toLocaleString()}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {!loading && (
+              <span className="text-sm font-medium text-foreground-secondary tabular-nums">
+                {totalPeople.toLocaleString()}
+              </span>
+            )}
+            <button
+              onClick={() => setAddOpen(true)}
+              aria-label="Add to Circle"
+              className={cn(
+                'shrink-0 w-9 h-9 rounded-full flex items-center justify-center',
+                'bg-primary text-primary-foreground shadow-md shadow-primary/30',
+                'hover:shadow-lg hover:shadow-primary/40 transition-shadow'
+              )}
+            >
+              <Plus className="w-5 h-5" strokeWidth={2.4} />
+            </button>
+          </div>
         </div>
         <p className="mt-1 text-sm text-foreground-secondary">
           Every person you know, across every source — unified.
         </p>
       </motion.header>
 
-      <CirclePeopleList totalPeople={totalPeople} circleLoading={loading} />
+      <CirclePeopleList
+        totalPeople={totalPeople}
+        circleLoading={loading}
+        onQuickAdd={() => setAddOpen(true)}
+      />
 
       <details
         key={sourcesOpenByDefault ? 'open' : 'closed'}
@@ -198,6 +223,41 @@ export const CircleScreen = () => {
           </div>
         </div>
       </details>
+
+      {/* Sticky FAB — visible on the Circle tab only, above the bottom nav.
+          Same handler as the header "+" so adding is always one tap away. */}
+      {!loading && totalPeople > 0 && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 28, delay: 0.15 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setAddOpen(true)}
+          aria-label="Add to Circle"
+          className={cn(
+            'fixed right-4 z-40 w-14 h-14 rounded-full',
+            'bg-gradient-to-br from-primary to-primary-light',
+            'shadow-xl shadow-primary/40 flex items-center justify-center'
+          )}
+          style={{ bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))' }}
+        >
+          <Plus className="w-6 h-6 text-white" strokeWidth={2.4} />
+        </motion.button>
+      )}
+
+      <AddToCircleSheet
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onAdded={() => {
+          void refresh();
+        }}
+        onConnectSourceClick={() => {
+          setAddOpen(false);
+          // Wait for the close animation to settle before opening the next
+          // sheet so they don't fight for the focus trap.
+          window.setTimeout(() => setSheetOpen(true), 200);
+        }}
+      />
 
       <AddSourceSheet
         open={sheetOpen}

@@ -673,6 +673,20 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 
 ## 21. Auth, RLS & security posture
 
+### Google sign-in dashboard configuration
+
+The "Continue with Google" button on `AuthPage` uses Supabase's hosted Google provider via `supabase.auth.signInWithOAuth({ provider: 'google' })`. The client code is correct; the provider must be configured in the **Supabase Dashboard** (and the Google Cloud Console) — `supabase/config.toml` does not control deployed-project auth settings. If users see *"Google authentication is not configured"*, check this checklist:
+
+1. **Google Cloud Console** → APIs & Services → Credentials → OAuth 2.0 Web client:
+   - **Authorized JavaScript origins:** `https://circle.fractionl.ai`
+   - **Authorized redirect URIs:** `https://ksyuwacuigshvcyptlhe.supabase.co/auth/v1/callback` (the Supabase callback, **not** the app URL — common mistake)
+2. **Supabase Dashboard** → project `ksyuwacuigshvcyptlhe`:
+   - Authentication → Providers → **Google: enable**, paste Client ID + Client Secret from step 1.
+   - Authentication → URL Configuration → **Site URL:** `https://circle.fractionl.ai`; **Redirect URLs:** add `https://circle.fractionl.ai/**`.
+3. Verify: load `https://circle.fractionl.ai`, tap "Continue with Google" → should bounce to `accounts.google.com` and back to `https://circle.fractionl.ai/#access_token=...`.
+
+This is separate from the Google **contacts/calendar** ingestion flow (`oauth-google-start` + `oauth-google-callback` Edge Functions, which use their own `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` Edge secrets).
+
 - **Auth.** Supabase Auth with email/password and Google OAuth. JWT lifetime 1h, refresh-token rotation enabled, `refresh_token_reuse_interval = 10s` (`supabase/config.toml`).
 - **RLS.** Enforced on every user-scoped table. ~95+ `CREATE POLICY` statements across migrations. `oauth_states` and `oauth_tokens` are `RLS deny-all` — service-role only.
 - **Edge function gating.** All functions use `requireAuth` (JWT) by default. Exceptions (per `supabase/config.toml`):
