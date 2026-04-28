@@ -2542,6 +2542,7 @@ export type Database = {
         | "business_card_photo"
         | "inbox_signature_scan"
         | "calendar_backscan"
+        | "manual_add"
       source_status:
         | "connecting"
         | "ingesting"
@@ -2757,6 +2758,7 @@ export const Constants = {
         "business_card_photo",
         "inbox_signature_scan",
         "calendar_backscan",
+        "manual_add",
       ],
       source_status: [
         "connecting",

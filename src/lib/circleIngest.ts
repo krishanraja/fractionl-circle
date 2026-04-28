@@ -473,6 +473,123 @@ export const ingestSharedContact = async (
   }
 };
 
+// Public: ingest a single in-app quick-add (typed, pasted, or screen-grab).
+// Reuses the same canonicalize-into-circle_person path as every other source
+// so dedupe by fingerprint just works. Caller picks the source_kind so a
+// screenshot lands as `business_card_photo` and a typed/pasted add as
+// `manual_add` — both are visible in Sources & tools.
+export interface QuickAddInput {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  instagram_handle?: string | null;
+  company?: string | null;
+  title?: string | null;
+  city?: string | null;
+  specialty_summary?: string | null;
+  website?: string | null;
+  // Free-text "anything else you remember" captured from the user, or the
+  // raw transcript / OCR text. Stored on person_raw.payload for later mining.
+  notes?: string | null;
+  // Used by the OCR path: the platform the parser thinks the screenshot came
+  // from ("linkedin", "instagram", "business_card", ...). Drives handle
+  // resolution.
+  detected_platform?: string | null;
+}
+
+export interface QuickAddOptions {
+  kind: 'manual_add' | 'business_card_photo';
+  label: string;
+}
+
+export const ingestQuickAdd = async (
+  userId: string,
+  input: QuickAddInput,
+  opts: QuickAddOptions,
+): Promise<{ sourceId: string; circlePersonId: string | null; result: IngestResult }> => {
+  const sourceId = await createSource(userId, opts.kind, opts.label);
+  try {
+    const name = input.name?.trim();
+    if (!name) throw new Error('Name is required');
+
+    // Build a candidate URL for handle inference: prefer LinkedIn, fall back
+    // to Instagram (handle → URL) or website.
+    const linkedin = input.linkedin_url?.trim() || null;
+    const instagramUrl = input.instagram_handle
+      ? `https://instagram.com/${input.instagram_handle.replace(/^@/, '').trim()}`
+      : null;
+
+    const fp = personFingerprint({
+      name,
+      email: input.email ?? null,
+      linkedinUrl: linkedin,
+      phone: input.phone ?? null,
+      company: input.company ?? null,
+    });
+    if (!fp) throw new Error('Not enough signal to identify this person');
+
+    const platformHandles = handleForPlatform(
+      input.detected_platform ?? null,
+      linkedin ?? instagramUrl ?? input.website ?? null,
+      input.instagram_handle ?? null,
+    );
+    const inferredFromLinkedin = linkedin ? inferHandlesFromUrl(linkedin) : {};
+    const inferredFromInsta = instagramUrl ? inferHandlesFromUrl(instagramUrl) : {};
+    const inferredFromWeb = input.website ? inferHandlesFromUrl(input.website) : {};
+    const handles = mergeHandles(
+      mergeHandles(mergeHandles(platformHandles, inferredFromLinkedin), inferredFromInsta),
+      inferredFromWeb,
+    );
+
+    const candidate: PersonCandidate = {
+      fingerprint: fp,
+      display_name: name,
+      primary_email: input.email?.trim() || null,
+      primary_phone: input.phone?.trim() || null,
+      linkedin_url: linkedin,
+      company: input.company?.trim() || null,
+      title: input.title?.trim() || null,
+      payload: {
+        name,
+        email: input.email ?? null,
+        phone: input.phone ?? null,
+        linkedin_url: linkedin,
+        instagram_handle: input.instagram_handle ?? null,
+        company: input.company ?? null,
+        title: input.title ?? null,
+        city: input.city ?? null,
+        specialty_summary: input.specialty_summary ?? null,
+        website: input.website ?? null,
+        notes: input.notes ?? null,
+        detected_platform: input.detected_platform ?? null,
+        added_via: opts.kind,
+      },
+      external_id: linkedin ?? instagramUrl ?? input.website ?? null,
+      handles: Object.keys(handles).length ? handles : undefined,
+    };
+
+    const result = await writeCandidates(userId, sourceId, [candidate]);
+    await markSourceActive(sourceId, result.rawInserted);
+
+    const { data: rawRow } = await supabase
+      .from('person_raw')
+      .select('circle_person_id')
+      .eq('source_id', sourceId)
+      .limit(1)
+      .maybeSingle();
+
+    return {
+      sourceId,
+      circlePersonId: (rawRow as { circle_person_id: string | null } | null)?.circle_person_id ?? null,
+      result,
+    };
+  } catch (err) {
+    await markSourceFailed(sourceId, err);
+    throw err;
+  }
+};
+
 // Public: ingest a batch of voice-named people under a `voice_seed` source.
 export const ingestVoiceSeed = async (
   userId: string,
