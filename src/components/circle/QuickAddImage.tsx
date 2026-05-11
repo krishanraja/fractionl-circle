@@ -175,14 +175,17 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
         <button
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            'w-full h-28 rounded-2xl border-2 border-dashed border-border bg-card/40 backdrop-blur',
-            'flex flex-col items-center justify-center gap-2',
-            'hover:border-primary/60 hover:bg-card/60 transition-colors'
+            'w-full rounded-2xl bg-surface-muted/70 backdrop-blur',
+            'flex flex-col items-center justify-center gap-2.5 px-4 py-8',
+            'hover:bg-surface-muted transition-colors',
+            'active:scale-[0.99] transition-transform duration-100'
           )}
         >
-          <ImagePlus className="w-6 h-6 text-primary" />
-          <span className="text-sm font-medium text-foreground">Add a photo</span>
-          <span className="text-[11px] text-foreground-muted">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <ImagePlus className="w-7 h-7 text-primary" strokeWidth={1.8} />
+          </div>
+          <span className="text-[15px] font-semibold text-foreground">Add a photo</span>
+          <span className="text-xs text-foreground-muted">
             Camera or photo library
           </span>
         </button>

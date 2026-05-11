@@ -103,19 +103,21 @@ export const LinkedInCsvDrop = ({ onDone }: LinkedInCsvDropProps) => {
         disabled={busy}
         whileTap={{ scale: busy ? 1 : 0.98 }}
         className={cn(
-          'w-full rounded-2xl border-2 border-dashed p-8 flex flex-col items-center justify-center gap-2',
+          'w-full rounded-2xl px-6 py-10 flex flex-col items-center justify-center gap-3',
           'transition-colors',
-          step === 'idle' && 'border-border bg-card/40 hover:border-primary/50',
-          step === 'parsing' && 'border-primary/40 bg-primary/5',
-          step === 'ingesting' && 'border-primary/40 bg-primary/5',
-          step === 'done' && 'border-success/40 bg-success/5',
-          step === 'error' && 'border-destructive/40 bg-destructive/5'
+          step === 'idle' && 'bg-surface-muted/70 hover:bg-surface-muted',
+          step === 'parsing' && 'bg-primary/8',
+          step === 'ingesting' && 'bg-primary/8',
+          step === 'done' && 'bg-success/8',
+          step === 'error' && 'bg-destructive/8'
         )}
       >
         {step === 'idle' && (
           <>
-            <Upload className="w-6 h-6 text-foreground-secondary" />
-            <p className="text-sm font-medium text-foreground">Drop Connections.csv</p>
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Upload className="w-6 h-6 text-primary" strokeWidth={1.8} />
+            </div>
+            <p className="text-[15px] font-semibold text-foreground">Drop Connections.csv</p>
             <p className="text-xs text-foreground-muted">or tap to pick a file</p>
           </>
         )}

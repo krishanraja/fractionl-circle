@@ -105,7 +105,7 @@ export const CircleScreen = () => {
         className="mb-6"
       >
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
+          <h1 className="text-display text-foreground">
             Your Circle
           </h1>
           <div className="flex items-center gap-3">
@@ -122,15 +122,16 @@ export const CircleScreen = () => {
               aria-label="Add to Circle"
               className={cn(
                 'shrink-0 w-11 h-11 rounded-full flex items-center justify-center',
-                'bg-primary text-primary-foreground shadow-md shadow-primary/30',
-                'hover:shadow-lg hover:shadow-primary/40 transition-shadow'
+                'bg-primary text-primary-foreground shadow-md shadow-primary/25',
+                'hover:shadow-lg hover:shadow-primary/35 transition-all',
+                'active:scale-95 transition-transform duration-100'
               )}
             >
-              <Plus className="w-5 h-5" strokeWidth={2.4} />
+              <Plus className="w-5 h-5" strokeWidth={2.5} />
             </button>
           </div>
         </div>
-        <p className="mt-1 text-sm text-foreground-secondary">
+        <p className="mt-1.5 text-sm text-foreground-secondary">
           Every person you know, across every source — unified.
         </p>
       </motion.header>
@@ -258,7 +259,7 @@ export const CircleScreen = () => {
         <motion.button
           initial={{ opacity: 0, scale: 0.6 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 28, delay: 0.15 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 26, delay: 0.15 }}
           whileTap={{ scale: 0.92 }}
           onClick={() => {
             haptics.tap();
@@ -266,13 +267,14 @@ export const CircleScreen = () => {
           }}
           aria-label="Add to Circle"
           className={cn(
-            'fixed right-4 z-40 w-14 h-14 rounded-full',
-            'bg-gradient-to-br from-primary to-primary-light',
-            'shadow-xl shadow-primary/40 flex items-center justify-center'
+            'fixed right-5 z-40 w-14 h-14 rounded-full',
+            'bg-primary text-primary-foreground',
+            'shadow-[0_8px_24px_-4px_hsl(263_70%_50%/0.45),_0_2px_6px_-1px_hsl(263_70%_50%/0.25)]',
+            'flex items-center justify-center hover:shadow-[0_12px_32px_-4px_hsl(263_70%_50%/0.5)] transition-shadow'
           )}
           style={{ bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))' }}
         >
-          <Plus className="w-6 h-6 text-white" strokeWidth={2.4} />
+          <Plus className="w-6 h-6" strokeWidth={2.5} />
         </motion.button>
       )}
 

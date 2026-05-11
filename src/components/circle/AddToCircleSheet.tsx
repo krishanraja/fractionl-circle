@@ -66,11 +66,11 @@ const SheetBody = ({
   pastePrefill?: string;
 }) => {
   return (
-    <div className="p-6 pt-3 space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Add to your Circle</h2>
-        <p className="mt-1 text-sm text-foreground-secondary">
-          Drop whatever you've got — name, screenshot, link, voice memo. The faster, the better.
+    <div className="px-5 pt-2 pb-6 space-y-5">
+      <div className="text-center sm:text-left">
+        <h2 className="text-title-1 text-foreground">Add to your Circle</h2>
+        <p className="mt-1.5 text-sm text-foreground-secondary leading-relaxed">
+          Whatever you've got — a name, screenshot, link, voice memo.
         </p>
       </div>
 
@@ -99,7 +99,7 @@ const SheetBody = ({
         </button>
       )}
 
-      <div role="radiogroup" aria-label="Choose add method" className="grid grid-cols-2 gap-2">
+      <div role="radiogroup" aria-label="Choose add method" className="grid grid-cols-2 gap-2.5">
         {MODES.map((m) => {
           const Icon = m.icon;
           const active = mode === m.id;
@@ -113,22 +113,23 @@ const SheetBody = ({
                 setMode(m.id);
               }}
               className={cn(
-                'h-auto py-3 px-3 rounded-xl border text-left transition-colors',
-                'flex items-start gap-2.5',
+                'group relative rounded-2xl border text-left transition-all duration-200',
+                'flex flex-col gap-2 p-3.5 min-h-[112px]',
+                'active:scale-[0.98] active:transition-transform active:duration-75',
                 active
-                  ? 'border-primary/60 bg-primary/5'
-                  : 'border-border/60 bg-card/40 hover:border-primary/40'
+                  ? 'border-primary/60 bg-primary/8 shadow-sm shadow-primary/15'
+                  : 'border-border/70 bg-card/60 hover:border-primary/30 hover:bg-card'
               )}
             >
               <div className={cn(
-                'mt-0.5 rounded-full p-1.5 shrink-0',
-                active ? 'bg-primary/15' : 'bg-primary/10'
+                'rounded-2xl w-10 h-10 flex items-center justify-center shrink-0 transition-colors',
+                active ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
               )}>
-                <Icon className="w-4 h-4 text-primary" />
+                <Icon className="w-5 h-5" strokeWidth={2} />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground leading-tight">{m.label}</p>
-                <p className="text-[11px] text-foreground-muted mt-0.5 leading-snug">
+              <div className="min-w-0 mt-auto">
+                <p className="text-sm font-semibold text-foreground leading-tight">{m.label}</p>
+                <p className="text-xs text-foreground-muted mt-1 leading-snug">
                   {m.hint}
                 </p>
               </div>
@@ -148,12 +149,13 @@ const SheetBody = ({
         <button
           onClick={onConnectSourceClick}
           className={cn(
-            'w-full mt-2 flex items-center justify-between px-3 py-2.5',
-            'text-xs font-medium text-foreground-secondary hover:text-foreground transition-colors'
+            'w-full mt-1 flex items-center justify-between rounded-2xl px-4 py-3',
+            'bg-surface-muted/60 hover:bg-surface-muted',
+            'text-sm font-medium text-foreground-secondary hover:text-foreground transition-colors'
           )}
         >
           <span>Or connect a source for a bigger import</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-4 h-4 shrink-0" />
         </button>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, ArrowLeft, Globe, Building2, Chrome, Database } from 'lucide-react';
+import { Upload, ArrowLeft, Globe, Building2, Chrome, Database, ChevronRight } from 'lucide-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,88 +19,60 @@ interface AddSourceSheetProps {
 }
 
 const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) => (
-  <div className="p-6 pt-3 space-y-3">
-    <div>
-      <h2 className="text-lg font-semibold text-foreground">Add a source</h2>
-      <p className="mt-1 text-sm text-foreground-secondary">
+  <div className="px-5 pt-2 pb-6 space-y-3">
+    <div className="text-center sm:text-left mb-2">
+      <h2 className="text-title-1 text-foreground">Add a source</h2>
+      <p className="mt-1.5 text-sm text-foreground-secondary leading-relaxed">
         The more sources you connect, the better the Matches. Start with whichever is easiest.
       </p>
     </div>
+    {/* Featured recommendation — hero card */}
     <button
       onClick={() => onPick('linkedin')}
-      className="w-full text-left rounded-2xl border border-primary/40 bg-primary/5 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/60 transition-colors"
+      className="w-full text-left rounded-2xl bg-primary/8 p-4 flex items-center gap-4 hover:bg-primary/12 transition-colors active:scale-[0.99] transition-transform duration-100"
     >
-      <div className="mt-0.5 rounded-full bg-primary/15 p-2">
-        <Upload className="w-4 h-4 text-primary" />
+      <div className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+        <Upload className="w-5 h-5" strokeWidth={2} />
       </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-foreground">Drop a LinkedIn CSV</p>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-primary bg-primary/10 rounded-full px-1.5 py-0.5">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-[15px] font-semibold text-foreground">Drop a LinkedIn CSV</p>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-primary bg-primary/15 rounded-full px-2 py-0.5">
             Recommended
           </span>
         </div>
-        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
-          Request your connections export from LinkedIn, drop the file here. The richest single source.
+        <p className="mt-1 text-[13px] text-foreground-secondary leading-snug">
+          The richest single source. Takes 10 minutes to export.
         </p>
       </div>
+      <ChevronRight className="w-5 h-5 text-foreground-muted shrink-0" />
     </button>
-    <button
-      onClick={() => onPick('crm')}
-      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
-    >
-      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-        <Database className="w-4 h-4 text-primary" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-foreground">Import from another CRM or sheet</p>
-        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
-          HubSpot, Attio, Folk, or any spreadsheet with a name column. Auto-detects the format.
-        </p>
-      </div>
-    </button>
-    <button
-      onClick={() => onPick('google')}
-      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
-    >
-      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-        <Globe className="w-4 h-4 text-primary" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-foreground">Connect Google</p>
-        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
-          Contacts + Calendar (last 90 days). No email body scanning.
-        </p>
-      </div>
-    </button>
-    <button
-      onClick={() => onPick('microsoft')}
-      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
-    >
-      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-        <Building2 className="w-4 h-4 text-primary" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-foreground">Connect Microsoft</p>
-        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
-          Outlook contacts + Calendar. Personal or work-or-school accounts.
-        </p>
-      </div>
-    </button>
-    <button
-      onClick={() => onPick('extension')}
-      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
-    >
-      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-        <Chrome className="w-4 h-4 text-primary" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-foreground">Connect browser extension</p>
-        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
-          Capture LinkedIn profiles client-side as you browse. Pair once, then it runs in the background.
-        </p>
-      </div>
-    </button>
+
+    {/* Grouped settings-style list — iOS Settings convention */}
+    <div className="rounded-2xl bg-surface-muted/70 backdrop-blur overflow-hidden divide-y divide-border/40">
+      {[
+        { id: 'crm' as const, icon: Database, label: 'Import CRM or sheet', hint: 'HubSpot · Attio · Folk · spreadsheet' },
+        { id: 'google' as const, icon: Globe, label: 'Connect Google', hint: 'Contacts + Calendar' },
+        { id: 'microsoft' as const, icon: Building2, label: 'Connect Microsoft', hint: 'Outlook + Calendar' },
+        { id: 'extension' as const, icon: Chrome, label: 'Browser extension', hint: 'Capture from LinkedIn as you browse' },
+      ].map(({ id, icon: Icon, label, hint }) => (
+        <button
+          key={id}
+          onClick={() => onPick(id)}
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-card/40 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="w-[18px] h-[18px] text-primary" strokeWidth={2} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[15px] font-medium text-foreground leading-tight">{label}</p>
+            <p className="text-[13px] text-foreground-muted leading-snug mt-0.5">{hint}</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-foreground-muted shrink-0" />
+        </button>
+      ))}
+    </div>
+
     <p className="pt-2 text-center text-xs text-foreground-muted">
       Just want to add one person? Use Quick add from the <span className="font-medium text-foreground-secondary">+</span> button.
     </p>
@@ -116,12 +88,12 @@ const DetailBody = ({
   onBack: () => void;
   onIngested?: (result: IngestResult) => void;
 }) => (
-  <div className="p-6 pt-3">
+  <div className="px-5 pt-2 pb-6">
     <button
       onClick={onBack}
-      className="flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground mb-4"
+      className="flex items-center gap-1 text-sm text-primary hover:opacity-80 mb-4 -ml-1 px-1 py-1"
     >
-      <ArrowLeft className="w-3.5 h-3.5" />
+      <ArrowLeft className="w-4 h-4" />
       Back
     </button>
     {view === 'linkedin' && <LinkedInCsvDrop onDone={onIngested} />}

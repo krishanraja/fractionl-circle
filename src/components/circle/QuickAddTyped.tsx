@@ -90,9 +90,10 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
         onClick={handleSave}
         disabled={!name.trim() || step === 'saving'}
         className={cn(
-          'w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
-          'flex items-center justify-center gap-2 shadow-lg shadow-primary/30',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none'
+          'w-full h-12 rounded-full bg-primary text-primary-foreground text-[15px] font-semibold',
+          'flex items-center justify-center gap-2 shadow-md shadow-primary/25',
+          'active:scale-[0.98] transition-transform duration-100',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100'
         )}
       >
         {step === 'saving' ? (
@@ -102,7 +103,7 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
           </>
         ) : (
           <>
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4" strokeWidth={2.5} />
             Add to Circle
           </>
         )}

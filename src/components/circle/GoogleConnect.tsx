@@ -48,10 +48,11 @@ export const GoogleConnect = () => {
         disabled={step === 'redirecting'}
         whileTap={{ scale: step === 'redirecting' ? 1 : 0.98 }}
         className={cn(
-          'w-full h-12 rounded-full text-sm font-medium',
+          'w-full h-12 rounded-full text-[15px] font-semibold',
           'flex items-center justify-center gap-2',
-          'border border-border/60 bg-card/60 backdrop-blur hover:bg-card transition-colors',
-          'disabled:opacity-70'
+          'bg-primary text-primary-foreground shadow-md shadow-primary/25',
+          'hover:shadow-lg hover:shadow-primary/35 transition-shadow',
+          'disabled:opacity-60'
         )}
       >
         {step === 'redirecting' && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -44,36 +44,31 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
 
   if (!circleLoading && totalPeople === 0) {
     return (
-      <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-6">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
-          <div className="space-y-3 flex-1">
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-foreground">
-                Start with one person you trust.
-              </p>
-              <p className="text-sm text-foreground-secondary leading-relaxed">
-                Snap a business card, paste a LinkedIn URL or Instagram handle, or just say a name.
-                We'll figure out the rest.
-              </p>
-            </div>
-            {onQuickAdd && (
-              <button
-                onClick={onQuickAdd}
-                className={cn(
-                  'inline-flex items-center gap-1.5 h-11 px-4 rounded-full',
-                  'bg-primary text-primary-foreground text-sm font-medium',
-                  'shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 transition-shadow'
-                )}
-              >
-                <Camera className="w-4 h-4" strokeWidth={2.4} />
-                Add your first person
-              </button>
-            )}
-          </div>
+      <section className="flex flex-col items-center text-center px-6 py-12 mb-6">
+        <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
+          <Sparkles className="w-8 h-8 text-primary" strokeWidth={1.6} />
         </div>
+        <h2 className="text-title-2 text-foreground mb-2 max-w-sm">
+          Start with one person you trust.
+        </h2>
+        <p className="text-sm text-foreground-secondary leading-relaxed max-w-sm mb-6">
+          Snap a business card, paste a LinkedIn URL or Instagram handle, or just say a name.
+          We'll figure out the rest.
+        </p>
+        {onQuickAdd && (
+          <button
+            onClick={onQuickAdd}
+            className={cn(
+              'inline-flex items-center gap-2 h-12 px-6 rounded-full',
+              'bg-primary text-primary-foreground text-[15px] font-semibold',
+              'shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35',
+              'active:scale-[0.97] transition-all duration-100'
+            )}
+          >
+            <Camera className="w-4 h-4" strokeWidth={2.4} />
+            Add your first person
+          </button>
+        )}
       </section>
     );
   }

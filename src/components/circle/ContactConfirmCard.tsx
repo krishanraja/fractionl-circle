@@ -55,15 +55,15 @@ export const ContactConfirmCard = ({
     <div className="space-y-3">
       {preview}
 
-      <div className="rounded-2xl border border-border/60 bg-card/40 backdrop-blur divide-y divide-border/40">
+      <div className="rounded-2xl bg-surface-muted/70 backdrop-blur divide-y divide-border/40 overflow-hidden">
         {FIELDS.map((f) => {
           const v = (value[f.key] as string | null | undefined) ?? '';
           const isName = f.key === 'name';
           return (
-            <div key={f.key} className="flex items-center gap-3 px-3 py-2.5">
+            <div key={f.key} className="flex items-center gap-3 px-4 py-3 focus-within:bg-card/40 transition-colors">
               <label
                 htmlFor={`confirm-${f.key}`}
-                className="w-20 shrink-0 text-[11px] font-medium uppercase tracking-wider text-foreground-muted"
+                className="w-24 shrink-0 text-xs font-medium text-foreground-muted"
               >
                 {f.label}
               </label>
@@ -76,7 +76,7 @@ export const ContactConfirmCard = ({
                 placeholder={isName ? 'Required' : '—'}
                 aria-required={isName}
                 className={cn(
-                  'flex-1 min-w-0 bg-transparent text-base text-foreground placeholder:text-foreground-muted outline-none',
+                  'flex-1 min-w-0 bg-transparent text-base text-foreground placeholder:text-foreground-muted/60 outline-none',
                   isName && 'font-semibold'
                 )}
               />
@@ -92,15 +92,15 @@ export const ContactConfirmCard = ({
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onCancel}
           disabled={saving}
           className={cn(
-            'flex-1 h-11 rounded-full border border-border/60 bg-card/50 backdrop-blur',
-            'text-sm font-medium text-foreground',
-            'disabled:opacity-50'
+            'h-12 px-5 rounded-full text-sm font-medium text-foreground-secondary',
+            'hover:text-foreground transition-colors',
+            'disabled:opacity-40'
           )}
         >
           {cancelLabel}
@@ -110,9 +110,10 @@ export const ContactConfirmCard = ({
           onClick={onSave}
           disabled={saving || !(value.name ?? '').trim()}
           className={cn(
-            'flex-1 h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
-            'flex items-center justify-center gap-2 shadow-lg shadow-primary/30',
-            'disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none'
+            'flex-1 h-12 rounded-full bg-primary text-primary-foreground text-[15px] font-semibold',
+            'flex items-center justify-center gap-2 shadow-md shadow-primary/25',
+            'active:scale-[0.98] transition-transform duration-100',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100'
           )}
         >
           {saving ? (
@@ -122,7 +123,7 @@ export const ContactConfirmCard = ({
             </>
           ) : (
             <>
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4" strokeWidth={2.5} />
               {saveLabel}
             </>
           )}

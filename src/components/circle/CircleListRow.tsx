@@ -33,28 +33,28 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
   return (
     <motion.div
       layout
-      className="rounded-xl border border-border/60 bg-card/50 backdrop-blur"
+      className="rounded-2xl bg-card/70 backdrop-blur hover:bg-card transition-colors"
     >
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className="w-full flex items-center gap-3 p-3 text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-surface-muted/50 transition-colors rounded-2xl"
       >
-        <div className="w-9 h-9 rounded-full bg-primary/15 text-primary font-semibold text-sm flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-full bg-primary/12 text-primary font-semibold text-sm flex items-center justify-center shrink-0">
           {initials(person.display_name)}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">
+          <p className="text-[15px] font-semibold text-foreground truncate">
             {person.display_name}
           </p>
           {detail && (
-            <p className="text-xs text-foreground-secondary truncate">{detail}</p>
+            <p className="text-[13px] text-foreground-secondary truncate mt-0.5">{detail}</p>
           )}
         </div>
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-foreground-muted shrink-0 transition-transform',
+            'w-4 h-4 text-foreground-muted shrink-0 transition-transform duration-200',
             expanded && 'rotate-180'
           )}
         />

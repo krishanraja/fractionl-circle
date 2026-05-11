@@ -63,11 +63,11 @@ const SheetBody = ({
   );
 
   return (
-    <div className="p-6 pt-3 pb-safe-bottom">
+    <div className="px-5 pt-2 pb-safe-bottom">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Review duplicates</h2>
-          <p className="mt-1 text-sm text-foreground-secondary">
+          <h2 className="text-title-1 text-foreground">Review duplicates</h2>
+          <p className="mt-1.5 text-sm text-foreground-secondary leading-relaxed">
             {scanning
               ? 'Scanning your Circle…'
               : lastScan
