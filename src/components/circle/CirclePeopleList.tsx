@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Sparkles, Loader2, Plus } from 'lucide-react';
+import { Search, Sparkles, Loader2, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCirclePeople } from '@/hooks/useCirclePeople';
 import { CircleListRow } from '@/components/circle/CircleListRow';
@@ -52,24 +52,24 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
           <div className="space-y-3 flex-1">
             <div className="space-y-1.5">
               <p className="text-sm font-medium text-foreground">
-                Your Circle is empty — let's add the first person.
+                Start with one person you trust.
               </p>
               <p className="text-sm text-foreground-secondary leading-relaxed">
-                Drop a screenshot, paste a LinkedIn URL or Instagram handle, or just say a name.
-                I'll figure out the rest.
+                Snap a business card, paste a LinkedIn URL or Instagram handle, or just say a name.
+                We'll figure out the rest.
               </p>
             </div>
             {onQuickAdd && (
               <button
                 onClick={onQuickAdd}
                 className={cn(
-                  'inline-flex items-center gap-1.5 h-10 px-4 rounded-full',
+                  'inline-flex items-center gap-1.5 h-11 px-4 rounded-full',
                   'bg-primary text-primary-foreground text-sm font-medium',
                   'shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 transition-shadow'
                 )}
               >
-                <Plus className="w-4 h-4" strokeWidth={2.4} />
-                Add someone
+                <Camera className="w-4 h-4" strokeWidth={2.4} />
+                Add your first person
               </button>
             )}
           </div>
@@ -83,7 +83,7 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
       <div
         className={cn(
           'flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'px-3 h-10 mb-3'
+          'px-3 h-11 mb-3'
         )}
       >
         <Search className="w-4 h-4 text-foreground-muted shrink-0" />
@@ -92,7 +92,7 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, company, or title"
-          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground-muted outline-none"
+          className="flex-1 bg-transparent text-base text-foreground placeholder:text-foreground-muted outline-none"
           aria-label="Search your Circle"
         />
         {loading && query.length > 0 && (

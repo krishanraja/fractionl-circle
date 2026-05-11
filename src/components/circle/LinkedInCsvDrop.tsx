@@ -4,7 +4,8 @@ import { Upload, Loader2, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { parseLinkedInCsv } from '@/lib/linkedinCsv';
-import { ingestLinkedInCsv, type IngestResult } from '@/lib/circleIngest';
+import { ingestLinkedInCsv, type IngestResult, type IngestProgress } from '@/lib/circleIngest';
+import { haptics } from '@/utils/haptics';
 
 type Step = 'idle' | 'parsing' | 'ingesting' | 'done' | 'error';
 
@@ -18,6 +19,7 @@ export const LinkedInCsvDrop = ({ onDone }: LinkedInCsvDropProps) => {
   const [step, setStep] = useState<Step>('idle');
   const [result, setResult] = useState<IngestResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [progress, setProgress] = useState<IngestProgress | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
     if (!user) {
@@ -38,11 +40,14 @@ export const LinkedInCsvDrop = ({ onDone }: LinkedInCsvDropProps) => {
       }
 
       setStep('ingesting');
-      const ingested = await ingestLinkedInCsv(user.id, parsed.connections);
+      setProgress({ total: parsed.connections.length, processed: 0 });
+      const ingested = await ingestLinkedInCsv(user.id, parsed.connections, setProgress);
       setResult(ingested);
+      haptics.success();
       setStep('done');
       onDone?.(ingested);
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Ingestion failed');
       setStep('error');
     }
@@ -66,6 +71,7 @@ export const LinkedInCsvDrop = ({ onDone }: LinkedInCsvDropProps) => {
     setStep('idle');
     setResult(null);
     setErrorMsg('');
+    setProgress(null);
   };
 
   const busy = step === 'parsing' || step === 'ingesting';
@@ -122,7 +128,19 @@ export const LinkedInCsvDrop = ({ onDone }: LinkedInCsvDropProps) => {
         {step === 'ingesting' && (
           <>
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
-            <p className="text-sm font-medium text-foreground">Weaving them into your Circle…</p>
+            <p className="text-sm font-medium text-foreground">
+              {progress && progress.total > 0
+                ? `Weaving ${progress.processed.toLocaleString()} of ${progress.total.toLocaleString()}…`
+                : 'Weaving them into your Circle…'}
+            </p>
+            {progress && progress.total > 0 && (
+              <div className="w-2/3 h-1.5 rounded-full bg-border/60 overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-[width] duration-200"
+                  style={{ width: `${Math.min(100, Math.round((progress.processed / progress.total) * 100))}%` }}
+                />
+              </div>
+            )}
           </>
         )}
         {step === 'done' && result && (

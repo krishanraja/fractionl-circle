@@ -305,7 +305,7 @@ function Field({ label, value, onChange, type = 'text', autoFocus }: {
         onChange={e => onChange(e.target.value)}
         type={type}
         autoFocus={autoFocus}
-        className="bg-input border-border text-foreground text-sm h-10"
+        className="bg-input border-border text-foreground text-base h-11"
       />
     </div>
   );

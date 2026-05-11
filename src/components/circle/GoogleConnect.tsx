@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Check, AlertCircle, LogIn } from 'lucide-react';
+import { Loader2, AlertCircle, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,8 +65,6 @@ export const GoogleConnect = () => {
       <p className="text-[11px] text-foreground-muted text-center">
         You'll come back here automatically. On return we'll fetch your contacts + calendar in the background.
       </p>
-      {/* ghost references so unused imports don't fail under strict tsconfig */}
-      {false && <Check className="hidden" />}
     </div>
   );
 };

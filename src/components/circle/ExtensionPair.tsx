@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Check, Loader2, AlertCircle, Chrome } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { haptics } from '@/utils/haptics';
 
 type State = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -18,10 +19,17 @@ export const ExtensionPair = () => {
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const generatedAtRef = useRef(0);
+
   useEffect(() => {
     void generate();
-    // regenerate on focus — Supabase may have refreshed the JWT.
-    const onFocus = () => { void generate(); };
+    // Re-mint on focus only when the existing token is older than 30 minutes.
+    // Otherwise a quick alt-tab to the extension popup and back would silently
+    // invalidate the token the user just copied (see audit P2-H).
+    const onFocus = () => {
+      const age = Date.now() - generatedAtRef.current;
+      if (state !== 'ready' || age > 30 * 60 * 1000) void generate();
+    };
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,6 +60,7 @@ export const ExtensionPair = () => {
       };
       setEmail(pairing.email);
       setToken(btoa(JSON.stringify(pairing)));
+      generatedAtRef.current = Date.now();
       setState('ready');
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Could not generate pairing token');
@@ -62,10 +71,12 @@ export const ExtensionPair = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(token);
+      haptics.success();
       setCopied(true);
       toast.success('Pairing token copied.');
       setTimeout(() => setCopied(false), 1500);
     } catch {
+      haptics.error();
       toast.error('Could not copy — select the text manually.');
     }
   };
@@ -121,7 +132,7 @@ export const ExtensionPair = () => {
             <button
               onClick={handleCopy}
               className={cn(
-                'flex-1 h-10 rounded-full bg-primary text-primary-foreground text-sm font-medium',
+                'flex-1 h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
                 'inline-flex items-center justify-center gap-1.5 shadow-sm shadow-primary/20'
               )}
             >
@@ -130,7 +141,8 @@ export const ExtensionPair = () => {
             </button>
             <button
               onClick={generate}
-              className="h-10 px-4 rounded-full border border-border/60 bg-card/60 text-sm font-medium text-foreground-secondary"
+              aria-label="Regenerate pairing token"
+              className="h-11 w-11 rounded-full border border-border/60 bg-card/60 inline-flex items-center justify-center text-foreground-secondary hover:text-foreground"
             >
               <Chrome className="w-4 h-4" />
             </button>

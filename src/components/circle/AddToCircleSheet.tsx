@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Camera, Clipboard, Mic, Type, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Camera, Clipboard, Mic, Type, ChevronRight, Sparkles, X } from 'lucide-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -9,13 +9,31 @@ import { QuickAddTyped } from './QuickAddTyped';
 import { VoiceSeedCapture } from './VoiceSeedCapture';
 import type { IngestResult } from '@/lib/circleIngest';
 import { cn } from '@/lib/utils';
+import { haptics } from '@/utils/haptics';
+import { toast } from 'sonner';
+
+// Heuristic: is the pasted text contact-shaped? URL, email, @-handle, or a
+// signature-looking blob with a name + something else. False is the safe default.
+const looksLikeContact = (raw: string): boolean => {
+  const t = raw.trim();
+  if (!t || t.length > 2000) return false;
+  if (/^https?:\/\/(www\.)?(linkedin|instagram|x|twitter|tiktok|threads|github)\.com\//i.test(t)) return true;
+  if (/^@[a-z0-9._]{2,30}$/i.test(t)) return true;
+  if (/[\w.+-]+@[\w-]+\.[\w.-]+/.test(t)) return true;
+  return false;
+};
+
+const shortPreview = (raw: string): string => {
+  const t = raw.trim().split('\n')[0];
+  return t.length > 48 ? `${t.slice(0, 45)}…` : t;
+};
 
 type Mode = 'image' | 'paste' | 'voice' | 'typed';
 
 const MODES: { id: Mode; label: string; hint: string; icon: typeof Camera }[] = [
   { id: 'image', label: 'Screenshot or photo', hint: 'LinkedIn, business card, name tag', icon: Camera },
   { id: 'paste', label: 'Paste anything', hint: 'URL, handle, signature, bio', icon: Clipboard },
-  { id: 'voice', label: 'Just say their name', hint: 'Hold to talk', icon: Mic },
+  { id: 'voice', label: 'Just say their name', hint: 'Use your voice', icon: Mic },
   { id: 'typed', label: 'Type a name', hint: 'Plus anything you remember', icon: Type },
 ];
 
@@ -30,12 +48,22 @@ const SheetBody = ({
   mode,
   setMode,
   onAdded,
+  onClose,
   onConnectSourceClick,
+  clipboardHint,
+  onUseClipboard,
+  onDismissClipboard,
+  pastePrefill,
 }: {
   mode: Mode;
   setMode: (m: Mode) => void;
   onAdded?: (result: IngestResult) => void;
+  onClose?: () => void;
   onConnectSourceClick?: () => void;
+  clipboardHint: string | null;
+  onUseClipboard: () => void;
+  onDismissClipboard: () => void;
+  pastePrefill?: string;
 }) => {
   return (
     <div className="p-6 pt-3 space-y-4">
@@ -46,14 +74,44 @@ const SheetBody = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      {clipboardHint && (
+        <button
+          onClick={onUseClipboard}
+          className={cn(
+            'w-full flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5',
+            'px-3 h-11 text-left text-sm text-foreground hover:bg-primary/10 transition-colors'
+          )}
+        >
+          <Sparkles className="w-4 h-4 text-primary shrink-0" />
+          <span className="flex-1 min-w-0 truncate">
+            Use clipboard — <span className="text-foreground-secondary">{clipboardHint}</span>
+          </span>
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label="Dismiss clipboard hint"
+            onClick={(e) => { e.stopPropagation(); onDismissClipboard(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDismissClipboard(); } }}
+            className="shrink-0 w-7 h-7 -mr-1 rounded-full inline-flex items-center justify-center text-foreground-muted hover:text-foreground"
+          >
+            <X className="w-3.5 h-3.5" />
+          </span>
+        </button>
+      )}
+
+      <div role="radiogroup" aria-label="Choose add method" className="grid grid-cols-2 gap-2">
         {MODES.map((m) => {
           const Icon = m.icon;
           const active = mode === m.id;
           return (
             <button
               key={m.id}
-              onClick={() => setMode(m.id)}
+              role="radio"
+              aria-checked={active}
+              onClick={() => {
+                if (!active) haptics.tap();
+                setMode(m.id);
+              }}
               className={cn(
                 'h-auto py-3 px-3 rounded-xl border text-left transition-colors',
                 'flex items-start gap-2.5',
@@ -80,10 +138,10 @@ const SheetBody = ({
       </div>
 
       <div className="pt-2">
-        {mode === 'image' && <QuickAddImage onDone={onAdded} />}
-        {mode === 'paste' && <QuickAddPaste onDone={onAdded} />}
-        {mode === 'voice' && <VoiceSeedCapture onDone={onAdded} />}
-        {mode === 'typed' && <QuickAddTyped onDone={onAdded} />}
+        {mode === 'image' && <QuickAddImage onDone={onAdded} onClose={onClose} />}
+        {mode === 'paste' && <QuickAddPaste onDone={onAdded} onClose={onClose} prefill={pastePrefill} />}
+        {mode === 'voice' && <VoiceSeedCapture onDone={onAdded} onClose={onClose} />}
+        {mode === 'typed' && <QuickAddTyped onDone={onAdded} onClose={onClose} />}
       </div>
 
       {onConnectSourceClick && (
@@ -102,6 +160,8 @@ const SheetBody = ({
   );
 };
 
+const LAST_MODE_KEY = 'circle:add:last-mode';
+
 export const AddToCircleSheet = ({
   open,
   onOpenChange,
@@ -109,20 +169,85 @@ export const AddToCircleSheet = ({
   onConnectSourceClick,
 }: AddToCircleSheetProps) => {
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<Mode>('image');
+  const [mode, setModeState] = useState<Mode>('image');
 
-  // Reset to the default capture mode each time the sheet reopens — keeps the
-  // most encouraging path ("snap a photo") as the first thing users see.
+  const setMode = useCallback((m: Mode) => {
+    setModeState(m);
+    try { sessionStorage.setItem(LAST_MODE_KEY, m); } catch { /* no-op */ }
+  }, []);
+
+  // First open per session: image (the most encouraging default).
+  // Subsequent opens: remember the last-used mode (Apple Camera-style).
   useEffect(() => {
-    if (open) setMode('image');
+    if (!open) return;
+    let next: Mode = 'image';
+    try {
+      const stored = sessionStorage.getItem(LAST_MODE_KEY);
+      if (stored === 'image' || stored === 'paste' || stored === 'voice' || stored === 'typed') {
+        next = stored;
+      }
+    } catch { /* no-op */ }
+    setModeState(next);
   }, [open]);
+
+  // Clipboard sniff: if the user has copied a LinkedIn URL / @-handle / email
+  // address, surface a "Use clipboard" pill. The sheet-open is a user gesture
+  // so the clipboard read is allowed on most browsers; permission denials are
+  // swallowed silently.
+  const [clipboardHint, setClipboardHint] = useState<string | null>(null);
+  const [clipboardText, setClipboardText] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open) { setClipboardHint(null); setClipboardText(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = await navigator.clipboard?.readText?.();
+        if (cancelled || !raw) return;
+        if (!looksLikeContact(raw)) return;
+        setClipboardText(raw);
+        setClipboardHint(shortPreview(raw));
+      } catch { /* permission denied or unsupported — ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, [open]);
+
+  const [pastePrefill, setPastePrefill] = useState<string | undefined>(undefined);
+  const handleUseClipboard = useCallback(() => {
+    if (!clipboardText) return;
+    haptics.tap();
+    setPastePrefill(clipboardText);
+    setMode('paste');
+    setClipboardHint(null);
+  }, [clipboardText, setMode]);
+  const handleDismissClipboard = useCallback(() => {
+    setClipboardHint(null);
+    setClipboardText(null);
+  }, []);
+
+  // Don't carry the prefill into the next open.
+  useEffect(() => { if (!open) setPastePrefill(undefined); }, [open]);
+
+  const wrappedOnAdded = useCallback((result: IngestResult) => {
+    const bits: string[] = [];
+    if (result.circleNew) bits.push(`${result.circleNew} new`);
+    if (result.circleMerged) bits.push(`${result.circleMerged} merged`);
+    toast.success(bits.length ? bits.join(' · ') : 'Added to your Circle');
+    onAdded?.(result);
+  }, [onAdded]);
+
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   const body = (
     <SheetBody
       mode={mode}
       setMode={setMode}
-      onAdded={onAdded}
+      onAdded={wrappedOnAdded}
+      onClose={handleClose}
       onConnectSourceClick={onConnectSourceClick}
+      clipboardHint={clipboardHint}
+      onUseClipboard={handleUseClipboard}
+      onDismissClipboard={handleDismissClipboard}
+      pastePrefill={pastePrefill}
     />
   );
 

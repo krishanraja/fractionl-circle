@@ -1,14 +1,17 @@
-import { useRef, useState } from 'react';
-import { Camera, ImagePlus, Loader2, Check, AlertCircle, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ImagePlus, Loader2, Check, AlertCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult, type QuickAddInput } from '@/lib/circleIngest';
+import { haptics } from '@/utils/haptics';
+import { ContactConfirmCard } from './ContactConfirmCard';
 
 type Step = 'idle' | 'parsing' | 'review' | 'saving' | 'done' | 'error';
 
 interface QuickAddImageProps {
   onDone?: (result: IngestResult) => void;
+  onClose?: () => void;
 }
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -22,14 +25,19 @@ const fileToBase64 = (file: File): Promise<string> =>
     reader.readAsDataURL(file);
   });
 
-export const QuickAddImage = ({ onDone }: QuickAddImageProps) => {
+export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
   const { user } = useAuth();
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const libraryInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>('idle');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [parsed, setParsed] = useState<QuickAddInput | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (step !== 'done' || !onClose) return;
+    const id = window.setTimeout(onClose, 1400);
+    return () => window.clearTimeout(id);
+  }, [step, onClose]);
 
   const handleFile = async (file: File | null | undefined) => {
     if (!file) return;
@@ -61,8 +69,10 @@ export const QuickAddImage = ({ onDone }: QuickAddImageProps) => {
         website: p.website,
         detected_platform: p.platform,
       });
+      haptics.tap();
       setStep('review');
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Could not read the image');
       setStep('error');
     }
@@ -77,9 +87,11 @@ export const QuickAddImage = ({ onDone }: QuickAddImageProps) => {
         kind: 'business_card_photo',
         label: 'Quick adds (photo)',
       });
+      haptics.success();
       setStep('done');
       onDone?.(result);
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Could not save');
       setStep('error');
     }
@@ -91,8 +103,7 @@ export const QuickAddImage = ({ onDone }: QuickAddImageProps) => {
     setParsed(null);
     setErrorMsg('');
     setStep('idle');
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
-    if (libraryInputRef.current) libraryInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   if (step === 'done') {
@@ -111,73 +122,41 @@ export const QuickAddImage = ({ onDone }: QuickAddImageProps) => {
   }
 
   if ((step === 'review' || step === 'saving') && parsed) {
-    return (
-      <div className="space-y-3">
-        {previewUrl && (
-          <div className="relative rounded-xl overflow-hidden border border-border/60">
-            <img src={previewUrl} alt="Captured" className="w-full max-h-48 object-cover" />
-            <button
-              onClick={handleReset}
-              aria-label="Remove image"
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center"
-            >
-              <X className="w-3.5 h-3.5 text-foreground" />
-            </button>
-          </div>
-        )}
-        <div className="rounded-xl border border-border/60 bg-card/50 backdrop-blur p-3">
-          <p className="text-sm font-semibold text-foreground">{parsed.name}</p>
-          {(parsed.title || parsed.company) && (
-            <p className="text-xs text-foreground-secondary mt-0.5">
-              {[parsed.title, parsed.company].filter(Boolean).join(' · ')}
-            </p>
-          )}
-          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-foreground-muted">
-            {parsed.email && <span>{parsed.email}</span>}
-            {parsed.phone && <span>{parsed.phone}</span>}
-            {parsed.linkedin_url && <span>LinkedIn</span>}
-            {parsed.instagram_handle && <span>@{parsed.instagram_handle}</span>}
-            {parsed.city && <span>{parsed.city}</span>}
-          </div>
-        </div>
-        {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
+    const preview = previewUrl ? (
+      <div className="relative rounded-xl overflow-hidden border border-border/60">
+        <img src={previewUrl} alt="Captured" className="w-full max-h-48 object-cover" />
         <button
-          onClick={handleSave}
+          onClick={handleReset}
+          aria-label="Remove image"
           disabled={step === 'saving'}
-          className={cn(
-            'w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
-            'flex items-center justify-center gap-2 shadow-lg shadow-primary/30',
-            'disabled:opacity-70'
-          )}
+          className="absolute top-2 right-2 w-11 h-11 rounded-full bg-background/80 backdrop-blur flex items-center justify-center disabled:opacity-50"
         >
-          {step === 'saving' ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saving…
-            </>
-          ) : (
-            <>
-              <Check className="w-4 h-4" />
-              Add to Circle
-            </>
-          )}
+          <X className="w-4 h-4 text-foreground" />
         </button>
       </div>
+    ) : null;
+
+    return (
+      <ContactConfirmCard
+        value={parsed}
+        onChange={setParsed}
+        onSave={handleSave}
+        onCancel={handleReset}
+        saving={step === 'saving'}
+        cancelLabel="Retake"
+        errorMsg={errorMsg || undefined}
+        preview={preview}
+      />
     );
   }
 
   return (
     <div className="space-y-3">
+      {/* Single file input — iOS surfaces its own action sheet
+          (Take Photo / Photo Library / Choose Files); Android opens the
+          gallery with a camera shortcut. Matches Apple Notes "Scan" feel. */}
       <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
-      />
-      <input
-        ref={libraryInputRef}
+        ref={fileInputRef}
         type="file"
         accept="image/*"
         className="hidden"
@@ -186,37 +165,27 @@ export const QuickAddImage = ({ onDone }: QuickAddImageProps) => {
 
       {step === 'parsing' && previewUrl ? (
         <div className="relative rounded-xl overflow-hidden border border-border/60">
-          <img src={previewUrl} alt="Reading…" className="w-full max-h-48 object-cover opacity-70" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+          <img src={previewUrl} alt="Reading…" className="w-full max-h-48 object-cover" />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/85 to-background/0 backdrop-blur-sm px-3 py-2 flex items-center gap-2">
+            <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
             <p className="text-xs text-foreground">Reading the image…</p>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => cameraInputRef.current?.click()}
-            className={cn(
-              'h-24 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-              'flex flex-col items-center justify-center gap-1.5',
-              'hover:border-primary/60 transition-colors'
-            )}
-          >
-            <Camera className="w-5 h-5 text-primary" />
-            <span className="text-xs font-medium text-foreground">Take photo</span>
-          </button>
-          <button
-            onClick={() => libraryInputRef.current?.click()}
-            className={cn(
-              'h-24 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-              'flex flex-col items-center justify-center gap-1.5',
-              'hover:border-primary/60 transition-colors'
-            )}
-          >
-            <ImagePlus className="w-5 h-5 text-primary" />
-            <span className="text-xs font-medium text-foreground">Upload screenshot</span>
-          </button>
-        </div>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className={cn(
+            'w-full h-28 rounded-2xl border-2 border-dashed border-border bg-card/40 backdrop-blur',
+            'flex flex-col items-center justify-center gap-2',
+            'hover:border-primary/60 hover:bg-card/60 transition-colors'
+          )}
+        >
+          <ImagePlus className="w-6 h-6 text-primary" />
+          <span className="text-sm font-medium text-foreground">Add a photo</span>
+          <span className="text-[11px] text-foreground-muted">
+            Camera or photo library
+          </span>
+        </button>
       )}
 
       {step === 'error' && errorMsg && (

@@ -29,6 +29,13 @@ export interface IngestResult {
   skipped: number;
 }
 
+export interface IngestProgress {
+  /** Total rows the writer expects to process for this run. */
+  total: number;
+  /** Rows committed so far (sum across batches). */
+  processed: number;
+}
+
 interface PersonCandidate {
   fingerprint: string;
   display_name: string;
@@ -88,6 +95,7 @@ const writeCandidates = async (
   userId: string,
   sourceId: string,
   candidates: PersonCandidate[],
+  onProgress?: (p: IngestProgress) => void,
 ): Promise<IngestResult> => {
   if (!candidates.length) {
     return { sourceId, rawInserted: 0, circleNew: 0, circleMerged: 0, skipped: 0 };
@@ -202,11 +210,13 @@ const writeCandidates = async (
   let rawInserted = 0;
   // Batch inserts to keep each request modest. Supabase has a ~1MB row limit.
   const BATCH = 200;
+  onProgress?.({ total: rawPayload.length, processed: 0 });
   for (let i = 0; i < rawPayload.length; i += BATCH) {
     const chunk = rawPayload.slice(i, i + BATCH);
     const { error } = await supabase.from('person_raw').insert(chunk);
     if (error) throw error;
     rawInserted += chunk.length;
+    onProgress?.({ total: rawPayload.length, processed: rawInserted });
   }
 
   return {
@@ -266,6 +276,7 @@ export const ingestCrmCsv = async (
   userId: string,
   format: CrmFormat,
   contacts: CrmContact[],
+  onProgress?: (p: IngestProgress) => void,
 ): Promise<IngestResult> => {
   const sourceId = await createSource(userId, CRM_SOURCE_KIND[format], CRM_LABEL[format]);
   try {
@@ -310,7 +321,7 @@ export const ingestCrmCsv = async (
       })
       .filter((x): x is PersonCandidate => Boolean(x));
 
-    const result = await writeCandidates(userId, sourceId, candidates);
+    const result = await writeCandidates(userId, sourceId, candidates, onProgress);
     await markSourceActive(sourceId, result.rawInserted);
     return result;
   } catch (err) {
@@ -323,6 +334,7 @@ export const ingestCrmCsv = async (
 export const ingestLinkedInCsv = async (
   userId: string,
   connections: LinkedInConnection[],
+  onProgress?: (p: IngestProgress) => void,
 ): Promise<IngestResult> => {
   const sourceId = await createSource(userId, 'linkedin_csv', 'LinkedIn export');
   try {
@@ -363,7 +375,7 @@ export const ingestLinkedInCsv = async (
       })
       .filter((x): x is PersonCandidate => Boolean(x));
 
-    const result = await writeCandidates(userId, sourceId, candidates);
+    const result = await writeCandidates(userId, sourceId, candidates, onProgress);
     await markSourceActive(sourceId, result.rawInserted);
     return result;
   } catch (err) {

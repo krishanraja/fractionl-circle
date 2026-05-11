@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { parseCrmCsv, formatLabel, type CrmFormat } from '@/lib/crmCsv';
 import { ingestCrmCsv } from '@/lib/circleIngest';
-import type { IngestResult } from '@/lib/circleIngest';
+import type { IngestResult, IngestProgress } from '@/lib/circleIngest';
+import { haptics } from '@/utils/haptics';
 
 type Step = 'idle' | 'parsing' | 'ingesting' | 'done' | 'error';
 
@@ -20,6 +21,7 @@ export const CrmCsvDrop = ({ onDone }: CrmCsvDropProps) => {
   const [format, setFormat] = useState<CrmFormat | null>(null);
   const [result, setResult] = useState<IngestResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [progress, setProgress] = useState<IngestProgress | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
     if (!user) {
@@ -39,11 +41,14 @@ export const CrmCsvDrop = ({ onDone }: CrmCsvDropProps) => {
         return;
       }
       setStep('ingesting');
-      const ingested = await ingestCrmCsv(user.id, parsed.format, parsed.contacts);
+      setProgress({ total: parsed.contacts.length, processed: 0 });
+      const ingested = await ingestCrmCsv(user.id, parsed.format, parsed.contacts, setProgress);
       setResult(ingested);
+      haptics.success();
       setStep('done');
       onDone?.(ingested);
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Ingestion failed');
       setStep('error');
     }
@@ -65,6 +70,7 @@ export const CrmCsvDrop = ({ onDone }: CrmCsvDropProps) => {
     setFormat(null);
     setResult(null);
     setErrorMsg('');
+    setProgress(null);
   };
 
   const busy = step === 'parsing' || step === 'ingesting';
@@ -122,8 +128,18 @@ export const CrmCsvDrop = ({ onDone }: CrmCsvDropProps) => {
           <>
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
             <p className="text-sm font-medium text-foreground">
-              Weaving {format ? formatLabel(format).toLowerCase() : 'contacts'} into your Circle…
+              {progress && progress.total > 0
+                ? `Weaving ${progress.processed.toLocaleString()} of ${progress.total.toLocaleString()} ${format ? formatLabel(format).toLowerCase() : 'contacts'}…`
+                : `Weaving ${format ? formatLabel(format).toLowerCase() : 'contacts'} into your Circle…`}
             </p>
+            {progress && progress.total > 0 && (
+              <div className="w-2/3 h-1.5 rounded-full bg-border/60 overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-[width] duration-200"
+                  style={{ width: `${Math.min(100, Math.round((progress.processed / progress.total) * 100))}%` }}
+                />
+              </div>
+            )}
           </>
         )}
         {step === 'done' && result && (

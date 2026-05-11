@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Upload, Mic, Sparkles, AlertCircle, Users2, ChevronDown, Camera, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,8 @@ import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
 import { DedupeReviewSheet } from '@/components/circle/DedupeReviewSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import type { Source } from '@/hooks/useCircle';
+import { haptics } from '@/utils/haptics';
+import { CIRCLE_DATA_CHANGED } from '@/pages/Index';
 
 const SOURCE_ICON = (kind: Source['kind']) => {
   switch (kind) {
@@ -58,6 +60,29 @@ export const CircleScreen = () => {
     }
   };
 
+  // Refresh when an external action (OAuth sync, share-sheet add) signals
+  // that Circle data has changed.
+  useEffect(() => {
+    const handler = () => { void refresh(); };
+    window.addEventListener(CIRCLE_DATA_CHANGED, handler);
+    return () => window.removeEventListener(CIRCLE_DATA_CHANGED, handler);
+  }, [refresh]);
+
+  // Keyboard shortcuts: Cmd/Ctrl+N opens Add. We bail when the user is
+  // already typing somewhere so we don't steal "n" from a text field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'n') return;
+      const t = e.target as HTMLElement | null;
+      if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return;
+      e.preventDefault();
+      haptics.tap();
+      setAddOpen(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const activeSources = useMemo(
     () => sources.filter((s) => s.status === 'active' || s.status === 'ingesting'),
     [sources]
@@ -90,10 +115,13 @@ export const CircleScreen = () => {
               </span>
             )}
             <button
-              onClick={() => setAddOpen(true)}
+              onClick={() => {
+                haptics.tap();
+                setAddOpen(true);
+              }}
               aria-label="Add to Circle"
               className={cn(
-                'shrink-0 w-9 h-9 rounded-full flex items-center justify-center',
+                'shrink-0 w-11 h-11 rounded-full flex items-center justify-center',
                 'bg-primary text-primary-foreground shadow-md shadow-primary/30',
                 'hover:shadow-lg hover:shadow-primary/40 transition-shadow'
               )}
@@ -232,7 +260,10 @@ export const CircleScreen = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 28, delay: 0.15 }}
           whileTap={{ scale: 0.92 }}
-          onClick={() => setAddOpen(true)}
+          onClick={() => {
+            haptics.tap();
+            setAddOpen(true);
+          }}
           aria-label="Add to Circle"
           className={cn(
             'fixed right-4 z-40 w-14 h-14 rounded-full',

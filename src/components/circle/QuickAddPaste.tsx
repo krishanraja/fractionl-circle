@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Loader2, Check, AlertCircle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,11 +6,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult, type QuickAddInput } from '@/lib/circleIngest';
 import { canonicalLinkedIn, canonicalInstagram } from '@/lib/handles';
 import { linkedinSlug } from '@/lib/fingerprint';
+import { haptics } from '@/utils/haptics';
+import { ContactConfirmCard } from './ContactConfirmCard';
 
 type Step = 'idle' | 'parsing' | 'review' | 'saving' | 'done' | 'error';
 
 interface QuickAddPasteProps {
   onDone?: (result: IngestResult) => void;
+  onClose?: () => void;
+  /** Optional initial textarea value. When non-empty, autoFocuses and lets the user hit Parse. */
+  prefill?: string;
 }
 
 // Sniff a single LinkedIn URL or Instagram handle out of pasted text so we
@@ -50,12 +55,22 @@ const detectShortcut = (raw: string): QuickAddInput | null => {
   return null;
 };
 
-export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
+export const QuickAddPaste = ({ onDone, onClose, prefill }: QuickAddPasteProps) => {
   const { user } = useAuth();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(prefill ?? '');
   const [step, setStep] = useState<Step>('idle');
   const [parsed, setParsed] = useState<QuickAddInput | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (prefill && prefill.trim()) setText(prefill);
+  }, [prefill]);
+
+  useEffect(() => {
+    if (step !== 'done' || !onClose) return;
+    const id = window.setTimeout(onClose, 1400);
+    return () => window.clearTimeout(id);
+  }, [step, onClose]);
 
   const trimmed = text.trim();
   const shortcut = useMemo(() => detectShortcut(trimmed), [trimmed]);
@@ -65,6 +80,7 @@ export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
     setErrorMsg('');
 
     if (shortcut) {
+      haptics.tap();
       setParsed(shortcut);
       setStep('review');
       return;
@@ -94,8 +110,10 @@ export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
         instagram_handle: p.instagram_handle,
         notes: trimmed,
       });
+      haptics.tap();
       setStep('review');
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Could not parse');
       setStep('error');
     }
@@ -110,9 +128,11 @@ export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
         kind: 'manual_add',
         label: 'Quick adds',
       });
+      haptics.success();
       setStep('done');
       onDone?.(result);
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Could not save');
       setStep('error');
     }
@@ -140,52 +160,17 @@ export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
     );
   }
 
-  if (step === 'review' && parsed) {
+  if ((step === 'review' || step === 'saving') && parsed) {
     return (
-      <div className="space-y-3">
-        <div className="rounded-xl border border-border/60 bg-card/50 backdrop-blur p-3">
-          <p className="text-sm font-semibold text-foreground">{parsed.name}</p>
-          {(parsed.title || parsed.company) && (
-            <p className="text-xs text-foreground-secondary mt-0.5">
-              {[parsed.title, parsed.company].filter(Boolean).join(' · ')}
-            </p>
-          )}
-          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-foreground-muted">
-            {parsed.email && <span>{parsed.email}</span>}
-            {parsed.phone && <span>{parsed.phone}</span>}
-            {parsed.linkedin_url && <span>LinkedIn</span>}
-            {parsed.instagram_handle && <span>@{parsed.instagram_handle}</span>}
-            {parsed.city && <span>{parsed.city}</span>}
-          </div>
-        </div>
-        {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
-        <div className="flex gap-2">
-          <button
-            onClick={handleReset}
-            className="flex-1 h-11 rounded-full border border-border/60 bg-card/50 backdrop-blur text-sm font-medium text-foreground"
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={step === 'saving'}
-            className={cn(
-              'flex-1 h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
-              'flex items-center justify-center gap-2 shadow-lg shadow-primary/30',
-              'disabled:opacity-70'
-            )}
-          >
-            {step === 'saving' ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <Check className="w-4 h-4" />
-                Add
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      <ContactConfirmCard
+        value={parsed}
+        onChange={setParsed}
+        onSave={handleSave}
+        onCancel={handleReset}
+        saving={step === 'saving'}
+        cancelLabel="Start over"
+        errorMsg={errorMsg || undefined}
+      />
     );
   }
 
@@ -199,7 +184,7 @@ export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
         autoFocus
         className={cn(
           'w-full px-3 py-2 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'text-sm text-foreground placeholder:text-foreground-muted outline-none resize-none',
+          'text-base text-foreground placeholder:text-foreground-muted outline-none resize-none',
           'focus:border-primary/60'
         )}
       />
@@ -226,7 +211,7 @@ export const QuickAddPaste = ({ onDone }: QuickAddPasteProps) => {
         ) : (
           <>
             <Sparkles className="w-4 h-4" />
-            {shortcut ? 'Add this person' : 'Read it'}
+            {shortcut ? 'Add this person' : 'Find this person'}
           </>
         )}
       </button>

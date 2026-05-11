@@ -5,6 +5,11 @@ import { PageLoader } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { TabId } from '@/components/layout/BottomNav';
+import { haptics } from '@/utils/haptics';
+
+// Dispatched after an OAuth-driven sync completes so listening screens
+// (CircleScreen) can refresh data without a full reload.
+export const CIRCLE_DATA_CHANGED = 'circle-data-changed';
 
 const StreamsScreen = lazy(() => import('@/components/screens/StreamsScreen').then(m => ({ default: m.StreamsScreen })));
 const CircleScreen = lazy(() => import('@/components/screens/CircleScreen').then(m => ({ default: m.CircleScreen })));
@@ -53,12 +58,16 @@ const Index = () => {
             if (payload?.circle_new) bits.push(`${payload.circle_new} new`);
             if (payload?.circle_merged) bits.push(`${payload.circle_merged} merged`);
             if (payload?.signals_inserted) bits.push(`${payload.signals_inserted} meeting signals`);
+            haptics.success();
             toast.success(bits.length ? bits.join(' · ') : `${providerLabel} sync complete.`, { id: run });
+            window.dispatchEvent(new CustomEvent(CIRCLE_DATA_CHANGED));
           })
           .catch((e) => {
+            haptics.error();
             toast.error(e instanceof Error ? e.message : `${providerLabel} sync failed`, { id: run });
           });
       } else {
+        haptics.error();
         toast.error(`${providerLabel} connection failed: ${reason}`);
       }
     }

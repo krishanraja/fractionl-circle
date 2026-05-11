@@ -1,21 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult } from '@/lib/circleIngest';
+import { haptics } from '@/utils/haptics';
 
 type Step = 'idle' | 'saving' | 'done' | 'error';
 
 interface QuickAddTypedProps {
   onDone?: (result: IngestResult) => void;
+  onClose?: () => void;
 }
 
-export const QuickAddTyped = ({ onDone }: QuickAddTypedProps) => {
+export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
   const [step, setStep] = useState<Step>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Auto-dismiss after success so the sheet doesn't trap the user.
+  useEffect(() => {
+    if (step !== 'done' || !onClose) return;
+    const id = window.setTimeout(onClose, 1400);
+    return () => window.clearTimeout(id);
+  }, [step, onClose]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -29,9 +38,11 @@ export const QuickAddTyped = ({ onDone }: QuickAddTypedProps) => {
         { name: trimmed, notes: notes.trim() || null },
         { kind: 'manual_add', label: 'Quick adds' },
       );
+      haptics.success();
       setStep('done');
       onDone?.(result);
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Could not save');
       setStep('error');
     }
@@ -58,8 +69,8 @@ export const QuickAddTyped = ({ onDone }: QuickAddTypedProps) => {
         placeholder="Name"
         autoFocus
         className={cn(
-          'w-full h-11 px-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'text-sm text-foreground placeholder:text-foreground-muted outline-none',
+          'w-full h-12 px-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
+          'text-base text-foreground placeholder:text-foreground-muted outline-none',
           'focus:border-primary/60'
         )}
       />
@@ -70,7 +81,7 @@ export const QuickAddTyped = ({ onDone }: QuickAddTypedProps) => {
         rows={3}
         className={cn(
           'w-full px-3 py-2 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'text-sm text-foreground placeholder:text-foreground-muted outline-none resize-none',
+          'text-base text-foreground placeholder:text-foreground-muted outline-none resize-none',
           'focus:border-primary/60'
         )}
       />

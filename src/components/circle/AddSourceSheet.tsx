@@ -1,17 +1,16 @@
 import { useState } from 'react';
-import { Upload, Mic, ArrowLeft, Globe, Building2, Chrome, Database } from 'lucide-react';
+import { Upload, ArrowLeft, Globe, Building2, Chrome, Database } from 'lucide-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LinkedInCsvDrop } from './LinkedInCsvDrop';
 import { CrmCsvDrop } from './CrmCsvDrop';
-import { VoiceSeedCapture } from './VoiceSeedCapture';
 import { GoogleConnect } from './GoogleConnect';
 import { MicrosoftConnect } from './MicrosoftConnect';
 import { ExtensionPair } from './ExtensionPair';
 import type { IngestResult } from '@/lib/circleIngest';
 
-type View = 'pick' | 'linkedin' | 'crm' | 'voice' | 'google' | 'microsoft' | 'extension';
+type View = 'pick' | 'linkedin' | 'crm' | 'google' | 'microsoft' | 'extension';
 
 interface AddSourceSheetProps {
   open: boolean;
@@ -29,13 +28,18 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
     </div>
     <button
       onClick={() => onPick('linkedin')}
-      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
+      className="w-full text-left rounded-2xl border border-primary/40 bg-primary/5 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/60 transition-colors"
     >
-      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
+      <div className="mt-0.5 rounded-full bg-primary/15 p-2">
         <Upload className="w-4 h-4 text-primary" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-semibold text-foreground">Drop a LinkedIn CSV</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold text-foreground">Drop a LinkedIn CSV</p>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-primary bg-primary/10 rounded-full px-1.5 py-0.5">
+            Recommended
+          </span>
+        </div>
         <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
           Request your connections export from LinkedIn, drop the file here. The richest single source.
         </p>
@@ -97,22 +101,8 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
         </p>
       </div>
     </button>
-    <button
-      onClick={() => onPick('voice')}
-      className="w-full text-left rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4 flex items-start gap-3 hover:border-primary/50 transition-colors"
-    >
-      <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-        <Mic className="w-4 h-4 text-primary" />
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold text-foreground">Talk — name 5 people</p>
-        <p className="mt-0.5 text-xs text-foreground-secondary leading-relaxed">
-          Don't have a CSV handy? Voice a few names and I'll seed your Circle right now.
-        </p>
-      </div>
-    </button>
     <p className="pt-2 text-center text-xs text-foreground-muted">
-      Outlook + iOS contacts land in follow-up sessions.
+      Just want to add one person? Use Quick add from the <span className="font-medium text-foreground-secondary">+</span> button.
     </p>
   </div>
 );
@@ -136,7 +126,6 @@ const DetailBody = ({
     </button>
     {view === 'linkedin' && <LinkedInCsvDrop onDone={onIngested} />}
     {view === 'crm' && <CrmCsvDrop onDone={onIngested} />}
-    {view === 'voice' && <VoiceSeedCapture onDone={onIngested} />}
     {view === 'google' && <GoogleConnect />}
     {view === 'microsoft' && <MicrosoftConnect />}
     {view === 'extension' && <ExtensionPair />}

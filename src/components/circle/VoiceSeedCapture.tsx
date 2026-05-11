@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
 import { ingestVoiceSeed, type VoiceSeedPerson, type IngestResult } from '@/lib/circleIngest';
+import { haptics } from '@/utils/haptics';
 
 type Step = 'intro' | 'recording' | 'processing' | 'review' | 'saving' | 'done' | 'error';
 
@@ -24,9 +25,10 @@ const blobToBase64 = (blob: Blob): Promise<string> =>
 
 interface VoiceSeedCaptureProps {
   onDone?: (result: IngestResult) => void;
+  onClose?: () => void;
 }
 
-export const VoiceSeedCapture = ({ onDone }: VoiceSeedCaptureProps) => {
+export const VoiceSeedCapture = ({ onDone, onClose }: VoiceSeedCaptureProps) => {
   const { user } = useAuth();
   const [step, setStep] = useState<Step>('intro');
   const [people, setPeople] = useState<VoiceSeedPerson[]>([]);
@@ -41,20 +43,32 @@ export const VoiceSeedCapture = ({ onDone }: VoiceSeedCaptureProps) => {
 
   const handleHoldStart = useCallback(async () => {
     setErrorMsg('');
+    haptics.medium();
     setStep('recording');
     await startRecording();
   }, [startRecording]);
 
   const handleHoldEnd = useCallback(() => {
-    if (isRecording) stopRecording();
+    if (isRecording) {
+      haptics.tap();
+      stopRecording();
+    }
   }, [isRecording, stopRecording]);
 
   useEffect(() => {
     if (recError) {
+      haptics.error();
       setErrorMsg(recError);
       setStep('error');
     }
   }, [recError]);
+
+  // Voice success holds slightly longer so the new/merged count is readable.
+  useEffect(() => {
+    if (step !== 'done' || !onClose) return;
+    const id = window.setTimeout(onClose, 2200);
+    return () => window.clearTimeout(id);
+  }, [step, onClose]);
 
   useEffect(() => {
     if (!audioBlob) return;
@@ -83,9 +97,11 @@ export const VoiceSeedCapture = ({ onDone }: VoiceSeedCaptureProps) => {
 
         setPeople(parsed);
         setSummary(data?.summary ?? null);
+        haptics.tap();
         setStep('review');
       } catch (e) {
         if (cancelled) return;
+        haptics.error();
         setErrorMsg(e instanceof Error ? e.message : 'Something went wrong');
         setStep('error');
       }
@@ -101,9 +117,11 @@ export const VoiceSeedCapture = ({ onDone }: VoiceSeedCaptureProps) => {
     try {
       const ingested = await ingestVoiceSeed(user.id, people);
       setResult(ingested);
+      haptics.success();
       setStep('done');
       onDone?.(ingested);
     } catch (e) {
+      haptics.error();
       setErrorMsg(e instanceof Error ? e.message : 'Could not save to Circle');
       setStep('error');
     }
@@ -124,7 +142,7 @@ export const VoiceSeedCapture = ({ onDone }: VoiceSeedCaptureProps) => {
         {step === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center max-w-sm mb-6">
             <p className="text-sm text-foreground leading-relaxed">
-              Name 5 people you trust most — or anyone you'd want me to start with. Give me a quick hint about each (an ex-colleague, an old boss, a friend).
+              Name a few people you trust — anyone you'd want us to start with. A quick hint about each helps (an ex-colleague, an old boss, a friend).
             </p>
           </motion.div>
         )}

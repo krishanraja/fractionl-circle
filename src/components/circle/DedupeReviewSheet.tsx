@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { DedupeSuggestion, DedupePerson } from '@/hooks/useCircleDedupe';
 import { suggestionKey } from '@/hooks/useCircleDedupe';
+import { haptics } from '@/utils/haptics';
 
 interface DedupeReviewSheetProps {
   open: boolean;
@@ -155,14 +156,16 @@ const SheetBody = ({
                     onClick={async () => {
                       try {
                         await onAccept(s);
+                        haptics.success();
                         toast.success('Merged.');
                       } catch (e) {
+                        haptics.error();
                         toast.error(e instanceof Error ? e.message : 'Merge failed');
                       }
                     }}
                     disabled={busy}
                     className={cn(
-                      'flex-1 h-10 rounded-full bg-primary text-primary-foreground text-sm font-medium',
+                      'flex-1 h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
                       'inline-flex items-center justify-center gap-1.5 shadow-sm shadow-primary/20',
                       'disabled:opacity-60'
                     )}
@@ -171,9 +174,12 @@ const SheetBody = ({
                     Same person
                   </button>
                   <button
-                    onClick={() => onReject(s)}
+                    onClick={() => {
+                      haptics.tap();
+                      onReject(s);
+                    }}
                     disabled={busy}
-                    className="h-10 px-4 rounded-full border border-border/60 bg-card/60 backdrop-blur text-sm font-medium text-foreground-secondary inline-flex items-center gap-1.5 disabled:opacity-60"
+                    className="h-11 px-4 rounded-full border border-border/60 bg-card/60 backdrop-blur text-sm font-medium text-foreground-secondary inline-flex items-center gap-1.5 disabled:opacity-60"
                   >
                     <X className="w-4 h-4" />
                     Different
