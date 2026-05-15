@@ -61,6 +61,13 @@ Deno.serve(async (req) => {
 
   for (const userId of targetUsers) {
     try {
+      const { data: prefs } = await admin
+        .from('user_preferences')
+        .select('weekly_summary')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (prefs && prefs.weekly_summary === false) continue;
+
       const result = await generateSundayLetterForUser(userId, admin, OPENAI_API_KEY);
       if (result.reused) reused++;
       else generated++;

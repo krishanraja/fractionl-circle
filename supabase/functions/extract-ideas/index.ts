@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
+import { loadUserAiPreferences, withPersonality } from '../_shared/aiPersonality.ts';
 
 // Extracts revenue-stream Ideas from a user's first-run voice transcript.
 // Returns a list of Idea candidates that the client will persist into `ideas`.
@@ -12,7 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { userId } = await requireAuth(req);
+    const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`extract-ideas:${userId}`, 10, 60_000);
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -56,7 +57,9 @@ For each Idea, return:
 
 Return JSON: { "ideas": [ ... ], "posture": "established", "summary": "one sentence back to the user" }`;
 
-    const systemPrompt = posture === 'established' ? established : greenfield;
+    const aiPrefs = await loadUserAiPreferences(supabase, userId);
+    const basePrompt = posture === 'established' ? established : greenfield;
+    const systemPrompt = withPersonality(basePrompt, aiPrefs);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

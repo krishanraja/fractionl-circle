@@ -6,6 +6,7 @@
 // deno-lint-ignore-file no-explicit-any
 
 import { getUserTier, QUOTAS, countMatchesSince, startOfWeekIso } from './tiers.ts';
+import { loadUserAiPreferences, personalitySystemSuffix } from './aiPersonality.ts';
 
 interface Idea {
   id: string;
@@ -85,7 +86,11 @@ const prefilter = (idea: Idea, people: Person[]): Person[] => {
   return [...winners, ...backfill];
 };
 
-const buildPrompt = (idea: Idea, candidates: Person[]): { system: string; user: string } => {
+const buildPrompt = (
+  idea: Idea,
+  candidates: Person[],
+  personalitySuffix = '',
+): { system: string; user: string } => {
   const system = `You are a matchmaker for a fractional executive. Given one of their Ideas and a short list of people in their personal network, pick the top ${MATCHES_PER_IDEA} who are most likely to actually pay for this Idea.
 
 Return JSON: { "matches": [ { "candidate_id": string, "rationale": string, "warm_path": { "via": string | null, "context": string | null }, "score": number between 0 and 1, "draft": { "channel": "linkedin_dm" | "email", "subject": string | null, "body": string } } ] }
@@ -96,7 +101,7 @@ Rules:
 - "warm_path" is how the user plausibly knows them (prior company, shared title, etc.). If the raw data doesn't support a warm path, return both fields as null.
 - "draft" is a short (under 450 chars) DM the user could plausibly send. Use their first name, reference the warm path, and ask ONE clear thing. No "I hope this finds you well" schlock.
 - "channel" defaults to linkedin_dm if a linkedin_url exists, else email if primary_email exists, else linkedin_dm.
-- Be conservative. If no one is a credible fit, return an empty array.`;
+- Be conservative. If no one is a credible fit, return an empty array.${personalitySuffix}`;
 
   const user = JSON.stringify({
     idea: {
@@ -197,6 +202,9 @@ export async function runMatchEngineForUser(
     )
   );
 
+  const aiPrefs = await loadUserAiPreferences(supabase, userId);
+  const personalitySuffix = personalitySystemSuffix(aiPrefs?.ai_personality);
+
   let totalCreated = 0;
   let duplicatesSkipped = 0;
   const errors: string[] = [];
@@ -204,7 +212,7 @@ export async function runMatchEngineForUser(
   for (const idea of ideas as Idea[]) {
     const candidates = prefilter(idea, circle as Person[]);
     if (!candidates.length) continue;
-    const { system, user } = buildPrompt(idea, candidates);
+    const { system, user } = buildPrompt(idea, candidates, personalitySuffix);
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

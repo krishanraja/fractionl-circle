@@ -37,6 +37,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useInstallPrompt, isIOS } from '@/hooks/useInstallPrompt';
+import { Download } from 'lucide-react';
 
 interface ProfileSettingsSheetProps {
   open: boolean;
@@ -115,6 +117,7 @@ function SettingRow({
 export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsSheetProps) {
   const { user, signOut } = useAuth();
   const { profile, preferences, updateProfile, updatePreferences } = useUserProfile();
+  const { canInstall, install } = useInstallPrompt();
 
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -363,7 +366,10 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
           {/* ── Notifications ────────────────── */}
           <SectionHeader icon={Bell} label="Notifications" />
 
-          <SettingRow label="Email notifications">
+          <SettingRow
+            label="Email notifications"
+            description="Master switch for product emails from Circle"
+          >
             <Switch
               checked={preferences?.email_notifications ?? true}
               onCheckedChange={(v) => handleTogglePreference('email_notifications', v)}
@@ -377,21 +383,30 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
             />
           </SettingRow>
 
-          <SettingRow label="Daily digest">
+          <SettingRow
+            label="Daily digest"
+            description="Saved for morning summary emails (when enabled on our side)"
+          >
             <Switch
               checked={preferences?.daily_digest ?? true}
               onCheckedChange={(v) => handleTogglePreference('daily_digest', v)}
             />
           </SettingRow>
 
-          <SettingRow label="Weekly summary">
+          <SettingRow
+            label="Weekly summary"
+            description="Controls automated Sunday Letter generation for your account"
+          >
             <Switch
               checked={preferences?.weekly_summary ?? true}
               onCheckedChange={(v) => handleTogglePreference('weekly_summary', v)}
             />
           </SettingRow>
 
-          <SettingRow label="Goal reminders">
+          <SettingRow
+            label="Goal reminders"
+            description="Saved for goal nudges (when reminder emails are enabled)"
+          >
             <Switch
               checked={preferences?.goal_reminders ?? true}
               onCheckedChange={(v) => handleTogglePreference('goal_reminders', v)}
@@ -481,6 +496,22 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
               </SelectContent>
             </Select>
           </SettingRow>
+
+          {(canInstall || isIOS()) && (
+            <SettingRow
+              label="Install app"
+              description={isIOS() ? 'Safari → Share → Add to Home Screen' : 'Install Circle on this device'}
+            >
+              {canInstall ? (
+                <Button type="button" size="sm" variant="outline" className="h-9" onClick={() => void install()}>
+                  <Download className="w-3.5 h-3.5 mr-1" />
+                  Install
+                </Button>
+              ) : (
+                <span className="text-xs text-foreground-muted">Use Share menu</span>
+              )}
+            </SettingRow>
+          )}
 
           <Separator className="my-1" />
 

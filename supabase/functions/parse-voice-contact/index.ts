@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
+import { loadUserAiPreferences, withPersonality } from '../_shared/aiPersonality.ts';
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -10,7 +11,7 @@ Deno.serve(async (req) => {
 
   try {
     // Require authentication
-    const { userId } = await requireAuth(req);
+    const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`parse-voice-contact:${userId}`, 20, 60_000);
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -32,7 +33,8 @@ Deno.serve(async (req) => {
 
     enforceMaxLength(transcript, 10_000, 'transcript');
 
-    const systemPrompt = `You are an AI that extracts contact information from spoken text.
+    const aiPrefs = await loadUserAiPreferences(supabase, userId);
+    const baseSystem = `You are an AI that extracts contact information from spoken text.
 The user has dictated information about a person they want to save as a contact.
 
 Extract the following fields from the transcript. Only include fields that are clearly mentioned or strongly implied:
@@ -51,6 +53,7 @@ Return a JSON object with these fields. Use null for any field not mentioned.
 Be smart about context: "designer at Nike" means title="Designer" and company="Nike".
 If they say "based in Portland" that's city="Portland".
 If an email domain gives company context (e.g. sarah@nike.com), use it.`;
+    const systemPrompt = withPersonality(baseSystem, aiPrefs);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

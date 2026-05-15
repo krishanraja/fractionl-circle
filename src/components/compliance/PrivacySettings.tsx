@@ -21,14 +21,27 @@ const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; 
 
 export function PrivacySettings() {
   const { updateConsent, isConsentGranted, loading: consentLoading } = useConsent();
-  const { loading: privacyLoading, downloadData, requestErasure, requests, fetchRequests } = useDataPrivacy();
+  const { loading: privacyLoading, exportData, requestErasure, requests, fetchRequests } = useDataPrivacy();
 
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
 
   const handleExport = async () => {
-    await downloadData();
+    const data = await exportData();
+    if (!data) {
+      toast.error('Export failed. Check your connection and try again.');
+      return;
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fractionl-data-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     toast.success('Your data has been downloaded as a JSON file.');
   };
 

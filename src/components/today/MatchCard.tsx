@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedMatch, MatchState } from '@/hooks/useMatches';
 import { ContactButton } from '@/components/circle/ContactButton';
+import { openLinkedIn } from '@/utils/contactActions';
 
 interface MatchCardProps {
   match: EnrichedMatch;
@@ -55,6 +56,32 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
       setBusy(null);
     }
   };
+  const handleOpenDraft = async () => {
+    const body = (finalBody || move?.draft_body || '').trim();
+    if (!body) {
+      toast.error('No draft to open');
+      return;
+    }
+    if (channel === 'email' && person.primary_email) {
+      const params = new URLSearchParams();
+      if (move?.draft_subject) params.set('subject', move.draft_subject);
+      params.set('body', body);
+      window.location.href = `mailto:${person.primary_email}?${params.toString()}`;
+      return;
+    }
+    if (person.linkedin_url) {
+      openLinkedIn(person.linkedin_url);
+      try {
+        await navigator.clipboard.writeText(body);
+        toast.success('Draft copied — paste into LinkedIn');
+      } catch {
+        toast.info('Opened LinkedIn — copy the draft manually');
+      }
+      return;
+    }
+    toast.error('Add an email or LinkedIn URL to open a draft');
+  };
+
   const handleCopy = async () => {
     if (!move?.draft_body) return;
     try {
@@ -171,8 +198,17 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
                 )}
                 {move.draft_body}
               </div>
-              <div className="mt-2 flex items-center gap-3">
+              <div className="mt-2 flex items-center gap-3 flex-wrap">
                 <button
+                  type="button"
+                  onClick={() => void handleOpenDraft()}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  Open {channel === 'email' ? 'email' : 'LinkedIn'}
+                </button>
+                <button
+                  type="button"
                   onClick={handleCopy}
                   className="inline-flex items-center gap-1.5 text-xs text-foreground-secondary hover:text-foreground"
                 >

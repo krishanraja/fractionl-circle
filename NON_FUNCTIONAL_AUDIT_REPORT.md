@@ -363,3 +363,26 @@ Vercel serves static files from `dist` first; everything else falls through to `
 ---
 
 *Updated 2026-05-15 — merged to `main`, production browser pass, Vercel token used for deploy polling only (not stored in repo).*
+
+---
+
+## Continuous audit pass (2026-05-15, final)
+
+**Shipped on `main`:**
+
+| Area | Change |
+|------|--------|
+| **Routing / links** | `BrowserRouter` at app root; `/privacy`, `/terms`, `/share-contact` work signed out; auth footer + profile privacy `Link` |
+| **Settings — live UI** | Theme, compact, animations, profile fields, currency formatter uses `profile.currency` |
+| **Settings — AI** | `ai_personality` applied in match engine, Sunday letter, extract-ideas, parse-voice-contact, dedupe-circle |
+| **Settings — weekly summary** | `weekly_summary=false` skips automated Sunday Letter cron for that user |
+| **Match drafts** | “Open email / LinkedIn” on expanded draft |
+| **Privacy export** | Failed RPC shows error toast (not silent success) |
+| **PWA** | Install row in Profile when `beforeinstallprompt` or iOS |
+| **CI** | `.github/workflows/browser-audit.yml` (needs `AUDIT_EMAIL` / `AUDIT_PASSWORD` secrets) |
+
+**Production smoke (`browser-audit-full.mjs`):** forgot password, profile save + error toast, dedupe error toast, mobile nav — **verified**. Stripe upgrade CTA absent for test account (tier). Privacy `/privacy` shows sign-in prompt when logged out (expected).
+
+**Harness:** `node scripts/browser-audit-all.mjs` (runs full + links).
+
+**Remaining (requires hardware, inbox, or secrets not in repo):** password-reset email click-through, voice/CSV/OAuth/Stripe E2E, physical iOS Shortcut, ExtensionPair token architecture, destructive delete-account test.

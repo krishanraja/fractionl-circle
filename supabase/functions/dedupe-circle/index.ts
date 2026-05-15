@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
+import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
 
 // Phase 3: LLM-powered Circle dedupe.
 // Scans the caller's circle_person for likely duplicates, returns suggestions.
@@ -64,7 +65,7 @@ const chunkByFirstName = (people: Person[]): Person[][] => {
   return chunks;
 };
 
-const buildPrompt = (chunk: Person[]) => {
+const buildPrompt = (chunk: Person[], personalitySuffix = '') => {
   const system = `You are identifying duplicate contact records in a personal network. Given a short list of people who share a first name, return pairs that are the SAME person across different source records (e.g. "Sarah Johnson" from LinkedIn + "Sarah J." from email).
 
 Return JSON: { "pairs": [ { "a_id": string, "b_id": string, "confidence": 0..1, "rationale": short string } ] }
@@ -78,7 +79,7 @@ Rules:
 
 Strong signals (score >=0.9): identical email, identical linkedin_url, identical phone.
 Medium (0.75-0.9): same last name + same company; same email domain + same title.
-Weak (<0.75): do not return.`;
+Weak (<0.75): do not return.${personalitySuffix}`;
 
   const user = JSON.stringify({
     people: chunk.map((p) => ({
@@ -124,11 +125,13 @@ Deno.serve(async (req) => {
 
     const byId = new Map<string, Person>((circle as Person[]).map((p) => [p.id, p]));
     const chunks = chunkByFirstName(circle as Person[]);
+    const aiPrefs = await loadUserAiPreferences(supabase, userId);
+    const personalitySuffix = personalitySystemSuffix(aiPrefs?.ai_personality);
     const seenPair = new Set<string>();
     const suggestions: Suggestion[] = [];
 
     for (const chunk of chunks) {
-      const { system, user } = buildPrompt(chunk);
+      const { system, user } = buildPrompt(chunk, personalitySuffix);
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },

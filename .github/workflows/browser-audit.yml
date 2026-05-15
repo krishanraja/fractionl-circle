@@ -1,0 +1,29 @@
+name: Browser audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.AUDIT_EMAIL != '' && secrets.AUDIT_PASSWORD != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - name: Production smoke
+        env:
+          AUDIT_EMAIL: ${{ secrets.AUDIT_EMAIL }}
+          AUDIT_PASSWORD: ${{ secrets.AUDIT_PASSWORD }}
+          AUDIT_BASE_URL: https://circle.fractionl.ai
+        run: |
+          node scripts/browser-audit-full.mjs
+          node scripts/browser-audit-links.mjs

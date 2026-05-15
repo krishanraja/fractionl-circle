@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { formatCurrencyAmount } from '@/lib/formatCurrency';
 
 interface AnimatedNumberProps {
   value: number;
@@ -51,19 +53,17 @@ interface AnimatedCurrencyProps {
   className?: string;
 }
 
-export const AnimatedCurrency = ({ value, duration, className }: AnimatedCurrencyProps) => (
-  <AnimatedNumber
-    value={value}
-    format={(n) => new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(n)}
-    duration={duration}
-    className={className}
-  />
-);
+export const AnimatedCurrency = ({ value, duration, className }: AnimatedCurrencyProps) => {
+  const { profile } = useUserProfile();
+  return (
+    <AnimatedNumber
+      value={value}
+      format={(n) => formatCurrencyAmount(n, profile?.currency)}
+      duration={duration}
+      className={className}
+    />
+  );
+};
 
 interface AnimatedPercentProps {
   value: number;

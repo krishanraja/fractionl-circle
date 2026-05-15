@@ -5,6 +5,7 @@
 // deno-lint-ignore-file no-explicit-any
 
 import { getUserTier, QUOTAS } from './tiers.ts';
+import { loadUserAiPreferences, withPersonality } from './aiPersonality.ts';
 
 export interface SundayLetterStats {
   matches_surfaced: number;
@@ -182,7 +183,8 @@ export async function generateSundayLetterForUser(
     narrative = `Quiet week. You've got ${stats.active_ideas} Idea${stats.active_ideas === 1 ? '' : 's'} in flight and ${totalCircle.toLocaleString()} people in your Circle, but nothing moved this week. If you want to break the silence, Surface Matches on Today and pick one to send.`;
     generationSource = 'fallback';
   } else {
-    const systemPrompt = `You are a chief of staff writing a weekly "Sunday Letter" to a fractional executive. Speak in a calm, specific, opinionated voice — like a smart friend who paid attention all week. Never sycophantic, never corporate.
+    const aiPrefs = await loadUserAiPreferences(supabase, userId);
+    const baseSystemPrompt = `You are a chief of staff writing a weekly "Sunday Letter" to a fractional executive. Speak in a calm, specific, opinionated voice — like a smart friend who paid attention all week. Never sycophantic, never corporate.
 
 Write 4-8 short paragraphs. Cover, in roughly this order (skip sections with no content):
 1. What actually happened (numbers, a specific name or two from the top matches).
@@ -196,6 +198,7 @@ Rules:
 - No greeting, no signoff, no "Dear X", no "Best, Claude". Just the body.
 - If the data is thin, say so plainly.
 - Use plain paragraphs separated by blank lines. No markdown, no lists.`;
+    const systemPrompt = withPersonality(baseSystemPrompt, aiPrefs);
 
     const userPayload = JSON.stringify({
       user: profile ? { name: profile.full_name ?? null, type: profile.business_type ?? null } : null,

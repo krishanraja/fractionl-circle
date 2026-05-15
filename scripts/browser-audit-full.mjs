@@ -77,9 +77,11 @@ async function main() {
     const page = await browser.newPage();
     const r = await page.goto(`${BASE}/privacy`, { waitUntil: 'domcontentloaded' });
     const status = r?.status();
-    const hasPrivacy = await page.getByText(/privacy & data/i).isVisible().catch(() => false);
+    const hasPrivacy =
+      (await page.getByText(/privacy & data/i).isVisible().catch(() => false)) ||
+      (await page.getByText(/sign in to circle/i).isVisible().catch(() => false));
     log(14, 'Privacy /privacy route', {
-      result: status === 200 && hasPrivacy ? 'verified' : status === 200 ? 'verified' : 'broken',
+      result: status === 200 && hasPrivacy ? 'verified' : status === 200 ? 'broken' : 'broken',
       network: [{ GET: '/privacy', status }],
       notes: `HTTP ${status}; privacy heading: ${hasPrivacy}`,
     });
