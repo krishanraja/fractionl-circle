@@ -77,11 +77,14 @@ async function main() {
     ok: await page.evaluate(() => document.documentElement.classList.contains('dark')),
   });
 
-  await page.getByText('Compact mode').locator('..').locator('..').getByRole('switch').click();
+  const compactSwitch = page.getByText('Compact mode').locator('..').locator('..').getByRole('switch');
+  await compactSwitch.click();
   await page.waitForTimeout(600);
+  const compactClass = await page.evaluate(() => document.documentElement.classList.contains('compact-mode'));
+  const ariaChecked = await compactSwitch.getAttribute('aria-checked');
   results.push({
     setting: 'compact mode',
-    ok: await page.evaluate(() => document.documentElement.classList.contains('compact-mode')),
+    ok: compactClass && ariaChecked === 'true',
   });
 
   const ind = page.locator('label:has-text("Industry")').locator('..').locator('input');

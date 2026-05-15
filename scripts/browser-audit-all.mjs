@@ -14,7 +14,10 @@ const env = { ...process.env };
 function run(script) {
   return new Promise((resolve, reject) => {
     const child = spawn('node', [script], { stdio: 'inherit', env });
-    child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`${script} exited ${code}`))));
+    child.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`${script} exited ${code}`));
+    });
   });
 }
 

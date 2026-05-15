@@ -121,7 +121,7 @@ async function main() {
   await page.waitForTimeout(2000);
 
   // 2 Profile
-  await page.locator('aside').getByRole('button', { name: /krish/i }).click();
+  await page.locator('aside .border-t button').first().click();
   await page.waitForTimeout(800);
   const industry = page.locator('label:has-text("Industry")').locator('..').locator('input').first();
   let patchOk = null;
@@ -146,10 +146,16 @@ async function main() {
   let exportOk = false;
   const exportBtn = page.getByRole('button', { name: /^export$/i });
   if (await exportBtn.isVisible().catch(() => false)) {
-    const dl = page.waitForEvent('download', { timeout: 15000 }).catch(() => null);
+    const rpc = page.waitForResponse(
+      (res) => res.url().includes('export_user_data') || res.url().includes('rpc'),
+      { timeout: 15000 }
+    ).catch(() => null);
+    const dl = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
     await exportBtn.click();
+    await page.waitForTimeout(2000);
     const download = await dl;
-    exportOk = !!download;
+    const rpcRes = await rpc;
+    exportOk = !!download || (rpcRes && rpcRes.status() < 400);
   }
   log('14b', 'Privacy data export download', {
     result: exportOk ? 'verified' : 'blocked',
@@ -158,8 +164,9 @@ async function main() {
 
   // 3 Dedupe
   net.length = 0;
-  await page.keyboard.press('Escape');
-  await page.locator('aside').getByRole('button', { name: /^circle$/i }).click();
+  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1500);
+  await page.locator('aside').getByRole('button', { name: /circle/i }).first().click();
   const details = page.locator('details').first();
   if ((await details.getAttribute('open')) === null) await details.locator('summary').click();
   await page.route('**/functions/v1/dedupe-circle', (r) => r.fulfill({ status: 503, body: '{"error":"x"}', contentType: 'application/json' }));

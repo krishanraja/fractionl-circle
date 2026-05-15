@@ -1,6 +1,6 @@
 {
   "base": "https://circle.fractionl.ai",
-  "at": "2026-05-15T11:30:35.979Z",
+  "at": "2026-05-15T11:36:21.922Z",
   "tests": [
     {
       "id": 1,
@@ -21,14 +21,14 @@
     {
       "id": 14,
       "title": "Privacy /privacy route",
-      "result": "verified",
+      "result": "broken",
       "network": [
         {
           "GET": "/privacy",
           "status": 200
         }
       ],
-      "notes": "HTTP 200; privacy heading: true"
+      "notes": "HTTP 200; privacy heading: false"
     },
     {
       "id": 2,
@@ -54,6 +54,12 @@
       "notes": "PATCH 200; toast true"
     },
     {
+      "id": "14b",
+      "title": "Privacy data export download",
+      "result": "blocked",
+      "notes": "no download event (RPC or browser)"
+    },
+    {
       "id": 3,
       "title": "Dedupe error",
       "result": "verified",
@@ -64,7 +70,7 @@
           "s": 503
         }
       ],
-      "notes": "Edge Function returned a non-2xx status code | Failed to update profile | Saved"
+      "notes": "Edge Function returned a non-2xx status code"
     },
     {
       "id": 9,
