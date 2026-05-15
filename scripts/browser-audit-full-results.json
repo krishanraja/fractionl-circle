@@ -1,0 +1,82 @@
+{
+  "base": "https://circle.fractionl.ai",
+  "at": "2026-05-15T10:46:34.930Z",
+  "tests": [
+    {
+      "id": 1,
+      "title": "Forgot password",
+      "result": "verified",
+      "network": [
+        {
+          "status": 200,
+          "path": "/auth/v1/recover"
+        },
+        {
+          "status": 200,
+          "path": "/auth/v1/recover"
+        }
+      ],
+      "notes": "forgot link: true; banner: true"
+    },
+    {
+      "id": 14,
+      "title": "Privacy /privacy route",
+      "result": "verified",
+      "network": [
+        {
+          "GET": "/privacy",
+          "status": 200
+        }
+      ],
+      "notes": "HTTP 200; privacy heading: false"
+    },
+    {
+      "id": 2,
+      "title": "Profile Industry",
+      "result": "verified",
+      "network": [
+        {
+          "m": "PATCH",
+          "p": "/rest/v1/user_profiles",
+          "s": 204
+        },
+        {
+          "m": "PATCH",
+          "p": "/rest/v1/user_profiles",
+          "s": 204
+        },
+        {
+          "m": "PATCH",
+          "p": "/rest/v1/user_profiles",
+          "s": 200
+        }
+      ],
+      "notes": "PATCH 200; toast true"
+    },
+    {
+      "id": 3,
+      "title": "Dedupe error",
+      "result": "verified",
+      "network": [
+        {
+          "m": "POST",
+          "p": "/functions/v1/dedupe-circle",
+          "s": 503
+        }
+      ],
+      "notes": "Edge Function returned a non-2xx status code | Failed to update profile | Edge Function returned a non-2xx status code | Failed to update profile"
+    },
+    {
+      "id": 9,
+      "title": "Stripe",
+      "result": "blocked",
+      "notes": "no upgrade CTA"
+    },
+    {
+      "id": 16,
+      "title": "Mobile nav",
+      "result": "verified",
+      "notes": "Today, Streams, Ask"
+    }
+  ]
+}
