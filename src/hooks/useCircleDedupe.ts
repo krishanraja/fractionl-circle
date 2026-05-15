@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 // Phase 3: LLM-powered Circle dedupe review. Ephemeral — suggestions live in
@@ -64,6 +65,9 @@ export const useCircleDedupe = () => {
       setSuggestions(res.suggestions ?? []);
       setLastScan({ scanned: res.scanned, chunks: res.chunks });
       return res;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Duplicate scan failed');
+      return null;
     } finally {
       setScanning(false);
     }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useToast } from './use-toast';
+import { toast } from 'sonner';
 
 export interface UserProfile {
   id: string;
@@ -50,7 +50,6 @@ export interface UserPreferences {
 
 export const useUserProfile = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,14 +150,10 @@ export const useUserProfile = () => {
       return data;
     } catch (err: any) {
       console.error('Error updating profile:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update profile',
-        variant: 'destructive'
-      });
+      toast.error('Failed to update profile');
       throw err;
     }
-  }, [user?.id, toast]);
+  }, [user?.id]);
 
   // Update preferences
   const updatePreferences = useCallback(async (updates: Partial<UserPreferences>) => {
@@ -177,14 +172,10 @@ export const useUserProfile = () => {
       return data;
     } catch (err: any) {
       console.error('Error updating preferences:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update preferences',
-        variant: 'destructive'
-      });
+      toast.error('Failed to update preferences');
       throw err;
     }
-  }, [user?.id, toast]);
+  }, [user?.id]);
 
   // Complete onboarding step
   const completeOnboardingStep = useCallback(async (step: number) => {

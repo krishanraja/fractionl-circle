@@ -1,0 +1,116 @@
+{
+  "email": "krish@themindmaker.ai",
+  "results": [
+    {
+      "id": 2,
+      "title": "Profile field saves (Industry)",
+      "route": "/",
+      "steps": [
+        "Profile sheet",
+        "Industry blur",
+        "block PATCH",
+        "blur again"
+      ],
+      "network": [
+        {
+          "method": "PATCH",
+          "path": "/rest/v1/user_profiles",
+          "status": 204
+        },
+        {
+          "method": "GET",
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "method": "PATCH",
+          "path": "/rest/v1/user_profiles",
+          "status": 204
+        },
+        {
+          "method": "PATCH",
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        }
+      ],
+      "console": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_FAILED",
+        "Error updating profile: {message: TypeError: Failed to fetch, details: TypeError: Failed to fetch\n    at http://localhost…deps/@supabase_supabase-js.js?v=9a449538:3903:24), hint: , code: }"
+      ],
+      "result": "verified",
+      "notes": "PATCH 200; error toast after block: true"
+    },
+    {
+      "id": 3,
+      "title": "Dedupe scan error surfacing",
+      "route": "Circle",
+      "steps": [
+        "Find duplicates",
+        "Re-scan with blocked dedupe-circle"
+      ],
+      "network": [
+        {
+          "method": "POST",
+          "path": "/functions/v1/dedupe-circle",
+          "status": 503
+        },
+        {
+          "method": "POST",
+          "path": "/functions/v1/dedupe-circle",
+          "status": 503
+        }
+      ],
+      "console": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_FAILED",
+        "Error updating profile: {message: TypeError: Failed to fetch, details: TypeError: Failed to fetch\n    at http://localhost…deps/@supabase_supabase-js.js?v=9a449538:3903:24), hint: , code: }"
+      ],
+      "result": "verified",
+      "notes": "toasts: Edge Function returned a non-2xx status code | Edge Function returned a non-2xx status code | Failed to update profile; empty state: false"
+    },
+    {
+      "id": 14,
+      "title": "Privacy controls (in-app)",
+      "route": "/privacy",
+      "steps": [
+        "Profile → Privacy settings",
+        "Export button visible"
+      ],
+      "network": [
+        {
+          "method": "GET",
+          "path": "/rest/v1/user_consents",
+          "status": 200
+        }
+      ],
+      "console": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin",
+        "Failed to load resource: net::ERR_FAILED",
+        "Error updating profile: {message: TypeError: Failed to fetch, details: TypeError: Failed to fetch\n    at http://localhost…deps/@supabase_supabase-js.js?v=9a449538:3903:24), hint: , code: }"
+      ],
+      "result": "verified",
+      "notes": "privacy page: true; export: true"
+    },
+    {
+      "id": 16,
+      "title": "Mobile responsive smoke",
+      "route": "/",
+      "steps": [
+        "Tap Today",
+        "Tap Streams",
+        "Tap Ask"
+      ],
+      "network": [],
+      "console": [],
+      "result": "verified",
+      "notes": "tabs: Today, Streams, Ask"
+    }
+  ]
+}
