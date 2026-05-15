@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,7 +60,11 @@ export function ConsentBanner() {
             <h3 className="font-semibold text-sm">Privacy & Data Preferences</h3>
             <p className="text-xs text-muted-foreground mt-1">
               We use your data to provide and improve Fractionl Circle. Choose which data processing activities you consent to.
-              You can change these preferences anytime in Settings &gt; Privacy.
+              You can change these anytime in{' '}
+              <Link to="/privacy" className="text-primary hover:underline font-medium">
+                Privacy settings
+              </Link>
+              .
             </p>
           </div>
         </div>

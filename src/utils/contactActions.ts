@@ -4,6 +4,7 @@
  */
 
 import { toast } from "sonner";
+import { openExternalUrl } from '@/lib/openExternalUrl';
 import { parsePhoneNumberFromString, type PhoneNumber } from 'libphonenumber-js';
 
 /**
@@ -69,7 +70,7 @@ export const openWhatsApp = (phone: string | null | undefined, name?: string) =>
   const message = name ? `Hi ${name},` : 'Hi,';
   const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-  window.open(url, '_blank');
+  openExternalUrl(url);
 };
 
 /**
@@ -100,7 +101,7 @@ export const openLinkedIn = (linkedinUrl: string | null | undefined) => {
 
   // Ensure URL has protocol
   const url = linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`;
-  window.open(url, '_blank');
+  openExternalUrl(url);
 };
 
 /**
@@ -114,7 +115,7 @@ export const openPortfolio = (portfolioUrl: string | null | undefined) => {
 
   // Ensure URL has protocol
   const url = portfolioUrl.startsWith('http') ? portfolioUrl : `https://${portfolioUrl}`;
-  window.open(url, '_blank');
+  openExternalUrl(url);
 };
 
 // ---------------------------------------------------------------------------
@@ -158,7 +159,7 @@ function openWithNativeFallback(nativeUrl: string, webUrl: string) {
   // Schema-based deep links on the web need the new tab to exist so a
   // Universal Link can intercept; we open the https variant, which OS link
   // handlers promote to the native app when installed.
-  window.open(webUrl, '_blank');
+  openExternalUrl(webUrl);
 
   // On mobile, a same-tab hop to the scheme URL fires the app if present
   // without stranding the user: if the OS doesn't intercept, the tab we
@@ -187,7 +188,7 @@ export const openInstagram = (input: string | null | undefined) => {
   if (handle) {
     openWithNativeFallback(`instagram://user?username=${handle}`, web);
   } else {
-    window.open(web, '_blank');
+    openExternalUrl(web);
   }
 };
 
@@ -207,7 +208,7 @@ export const openTikTok = (input: string | null | undefined) => {
     // snssdk1128 is the TikTok app scheme; web fallback covers everything else.
     openWithNativeFallback(`snssdk1128://user/profile/${handle}`, web);
   } else {
-    window.open(web, '_blank');
+    openExternalUrl(web);
   }
 };
 
@@ -226,7 +227,7 @@ export const openTwitter = (input: string | null | undefined) => {
   if (handle) {
     openWithNativeFallback(`twitter://user?screen_name=${handle}`, web);
   } else {
-    window.open(web, '_blank');
+    openExternalUrl(web);
   }
 };
 

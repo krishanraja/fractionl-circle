@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { applyTheme } from '@/lib/applyUserPreferences';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   LogOut,
   User,
@@ -115,7 +115,6 @@ function SettingRow({
 export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsSheetProps) {
   const { user, signOut } = useAuth();
   const { profile, preferences, updateProfile, updatePreferences } = useUserProfile();
-  const navigate = useNavigate();
 
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -223,10 +222,9 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     signOut();
   }, [onOpenChange, signOut]);
 
-  const handlePrivacy = useCallback(() => {
+  const handlePrivacyNavigate = useCallback(() => {
     onOpenChange(false);
-    navigate('/privacy');
-  }, [onOpenChange, navigate]);
+  }, [onOpenChange]);
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -489,8 +487,9 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
           {/* ── Data & Privacy ───────────────── */}
           <SectionHeader icon={Shield} label="Data & Privacy" />
 
-          <button
-            onClick={handlePrivacy}
+          <Link
+            to="/privacy"
+            onClick={handlePrivacyNavigate}
             className="flex items-center justify-between w-full py-3 group"
           >
             <div className="flex items-center gap-3">
@@ -500,7 +499,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
               </span>
             </div>
             <ChevronRight className="w-4 h-4 text-foreground-muted" />
-          </button>
+          </Link>
 
           <Separator className="my-1" />
 
