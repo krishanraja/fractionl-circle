@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { SetNewPasswordScreen } from "@/components/SetNewPasswordScreen";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -24,6 +26,18 @@ const AppContent = () => {
   const { loading: profileLoading, needsOnboarding, refetch } = useUserProfile();
   const { syncLocalConsents } = useConsent();
   const hasSynced = useRef(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(
+    () => typeof window !== 'undefined' && window.location.hash.includes('type=recovery')
+  );
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (user && !hasSynced.current) {
@@ -32,8 +46,16 @@ const AppContent = () => {
     }
   }, [user, syncLocalConsents]);
 
-  if (authLoading || (user && profileLoading)) {
+  if (authLoading || (user && profileLoading && !passwordRecovery)) {
     return <PageLoader message="Loading your workspace..." />;
+  }
+
+  if (passwordRecovery) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 safe-top safe-bottom">
+        <SetNewPasswordScreen onComplete={() => setPasswordRecovery(false)} />
+      </div>
+    );
   }
 
   if (!user) {
@@ -68,6 +90,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
+        <Toaster />
         <AppContent />
       </AuthProvider>
     </ErrorBoundary>

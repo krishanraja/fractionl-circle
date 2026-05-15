@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Shield, Download, Trash2, FileText, Clock } from 'lucide-react';
 import { useConsent, ConsentType } from '@/hooks/useConsent';
 import { useDataPrivacy } from '@/hooks/useDataPrivacy';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; required?: boolean }[] = [
   { type: 'essential', label: 'Essential Services', description: 'Core app functionality — authentication, data storage, and session management.', required: true },

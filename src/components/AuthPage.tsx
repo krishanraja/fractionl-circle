@@ -72,6 +72,18 @@ interface SignInContentProps {
   error: { title: string; message: string } | null;
   onDismissError: () => void;
   onSignUpClick: () => void;
+  onForgotPasswordClick: () => void;
+}
+
+interface ForgotPasswordContentProps {
+  email: string;
+  onEmailChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  loading: boolean;
+  successMessage: string | null;
+  error: { title: string; message: string } | null;
+  onDismissError: () => void;
+  onBackToSignIn: () => void;
 }
 
 interface SignUpContentProps {
@@ -204,6 +216,7 @@ const SignInContent = ({
   error,
   onDismissError,
   onSignUpClick,
+  onForgotPasswordClick,
 }: SignInContentProps) => (
   <motion.div
     key="signin"
@@ -261,6 +274,15 @@ const SignInContent = ({
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
+        <motion.div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onForgotPasswordClick}
+            className="text-caption text-primary font-medium hover:underline"
+          >
+            Forgot password?
+          </button>
+        </motion.div>
       </div>
       <Button 
         type="submit" 
@@ -302,6 +324,87 @@ const SignInContent = ({
         Sign up
       </button>
     </p>
+  </motion.div>
+);
+
+const ForgotPasswordContent = ({
+  email,
+  onEmailChange,
+  onSubmit,
+  loading,
+  successMessage,
+  error,
+  onDismissError,
+  onBackToSignIn,
+}: ForgotPasswordContentProps) => (
+  <motion.div
+    key="forgot"
+    variants={fadeInUpVariants}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    transition={fadeInUpTransition}
+    className="w-full max-w-sm mx-auto space-y-6"
+  >
+    <div className="text-center">
+      <img
+        src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
+        alt="Circle"
+        className="h-8 mx-auto mb-4"
+      />
+      <h1 className="text-title-2 text-foreground mb-1">Reset your password</h1>
+      <p className="text-caption text-foreground-secondary">
+        We will email you a link to choose a new password
+      </p>
+    </div>
+
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="forgot-email" className="text-caption font-medium">Email</Label>
+        <Input
+          id="forgot-email"
+          type="email"
+          placeholder="you@company.com"
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          className="h-12 text-body bg-input border-border"
+          autoComplete="email"
+          required
+        />
+      </div>
+      <Button type="submit" className="w-full h-12 text-body font-semibold btn-touch" disabled={loading}>
+        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send reset link'}
+      </Button>
+    </form>
+
+    <AnimatePresence>
+      {successMessage && (
+        <motion.div
+          variants={successMessageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="p-4 rounded-xl bg-success/10 border border-success/20 text-success text-caption text-center"
+        >
+          {successMessage}
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    <ErrorBanner
+      show={!!error}
+      title={error?.title || ''}
+      message={error?.message}
+      onDismiss={onDismissError}
+    />
+
+    <button
+      type="button"
+      onClick={onBackToSignIn}
+      className="w-full text-center text-caption text-foreground-secondary hover:text-foreground"
+    >
+      ← Back to sign in
+    </button>
   </motion.div>
 );
 
@@ -418,7 +521,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<{ title: string; message: string } | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [mode, setMode] = useState<'welcome' | 'signin' | 'signup'>('welcome');
+  const [mode, setMode] = useState<'welcome' | 'signin' | 'signup' | 'forgot'>('welcome');
 
   const clearMessages = useCallback(() => {
     setError(null);
@@ -537,6 +640,31 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     setMode('signin');
   }, []);
 
+  const handleForgotPassword = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    clearMessages();
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+      if (error) {
+        setError({ title: 'Reset failed', message: error.message });
+      } else {
+        setSuccessMessage('Check your email for a reset link');
+      }
+    } catch {
+      setError({ title: 'Reset failed', message: 'An unexpected error occurred' });
+    } finally {
+      setLoading(false);
+    }
+  }, [email, clearMessages]);
+
+  const handleSetModeForgot = useCallback(() => {
+    clearMessages();
+    setMode('forgot');
+  }, [clearMessages]);
+
   // Memoize the content to prevent unnecessary re-renders
   const content = useMemo(() => {
     switch (mode) {
@@ -555,6 +683,20 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
             error={error}
             onDismissError={handleDismissError}
             onSignUpClick={handleSetModeWelcome}
+            onForgotPasswordClick={handleSetModeForgot}
+          />
+        );
+      case 'forgot':
+        return (
+          <ForgotPasswordContent
+            email={email}
+            onEmailChange={setEmail}
+            onSubmit={handleForgotPassword}
+            loading={loading}
+            successMessage={successMessage}
+            error={error}
+            onDismissError={handleDismissError}
+            onBackToSignIn={handleSetModeSignIn}
           />
         );
       case 'signup':
@@ -604,6 +746,8 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     handleDismissError,
     handleSetModeWelcome,
     handleSetModeSignIn,
+    handleForgotPassword,
+    handleSetModeForgot,
   ]);
 
   return (
