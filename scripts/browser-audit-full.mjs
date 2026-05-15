@@ -142,31 +142,9 @@ async function main() {
   }
   log(2, 'Profile Industry', { result: patchOk && patchOk < 300 && errToast ? 'verified' : 'broken', network: net.filter((n) => n.p.includes('user_profiles')).slice(-3), notes: `PATCH ${patchOk}; toast ${errToast}` });
 
-  // 14b Privacy export (RPC)
-  await page.goto(`${BASE}/privacy`, { waitUntil: 'networkidle' });
-  let exportOk = false;
-  const exportBtn = page.getByRole('button', { name: /^export$/i });
-  if (await exportBtn.isVisible().catch(() => false)) {
-    const rpc = page.waitForResponse(
-      (res) => res.url().includes('export_user_data') || res.url().includes('rpc'),
-      { timeout: 15000 }
-    ).catch(() => null);
-    const dl = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
-    await exportBtn.click();
-    await page.waitForTimeout(2000);
-    const download = await dl;
-    const rpcRes = await rpc;
-    exportOk = !!download || (rpcRes && rpcRes.status() < 400);
-  }
-  log('14b', 'Privacy data export download', {
-    result: exportOk ? 'verified' : 'blocked',
-    notes: exportOk ? 'json download started' : 'no download event (RPC or browser)',
-  });
-
-  // 3 Dedupe
+  // 3 Dedupe (before leaving home shell)
   net.length = 0;
-  await page.goto(BASE, { waitUntil: 'networkidle' });
-  await page.locator('aside').waitFor({ state: 'visible', timeout: 20000 });
+  await page.keyboard.press('Escape');
   await page.locator('aside nav button').nth(2).click();
   await page.waitForTimeout(1000);
   const details = page.locator('details').first();
@@ -181,7 +159,28 @@ async function main() {
   } else log(3, 'Dedupe', { result: 'blocked', notes: 'no button' });
   await page.unroute('**/functions/v1/dedupe-circle');
 
+  // 14b Privacy export (RPC)
+  await page.goto(`${BASE}/privacy`, { waitUntil: 'networkidle' });
+  let exportOk = false;
+  const exportBtn = page.getByRole('button', { name: /^export$/i });
+  if (await exportBtn.isVisible().catch(() => false)) {
+    const rpc = page
+      .waitForResponse((res) => res.url().includes('export_user_data'), { timeout: 15000 })
+      .catch(() => null);
+    const dl = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
+    await exportBtn.click();
+    await page.waitForTimeout(2000);
+    const download = await dl;
+    const rpcRes = await rpc;
+    exportOk = !!download || (rpcRes != null && rpcRes.status() < 400);
+  }
+  log('14b', 'Privacy data export download', {
+    result: exportOk ? 'verified' : 'blocked',
+    notes: exportOk ? 'export ok' : 'no download/rpc in headless',
+  });
+
   // 9 Stripe
+  await page.goto(BASE, { waitUntil: 'networkidle' });
   await page.goto(BASE);
   await page.waitForTimeout(1000);
   const up = page.getByRole('button', { name: /upgrade/i }).first();

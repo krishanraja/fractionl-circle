@@ -78,13 +78,21 @@ async function main() {
   });
 
   const compactSwitch = page.getByText('Compact mode').locator('..').locator('..').getByRole('switch');
-  await compactSwitch.click();
+  const wasOn = (await compactSwitch.getAttribute('aria-checked')) === 'true';
+  if (!wasOn) {
+    const prefWait = page.waitForResponse(
+      (r) => r.url().includes('user_preferences') && r.request().method() === 'PATCH',
+      { timeout: 8000 }
+    ).catch(() => null);
+    await compactSwitch.click();
+    await prefWait;
+  }
   await page.waitForTimeout(600);
-  const compactClass = await page.evaluate(() => document.documentElement.classList.contains('compact-mode'));
-  const ariaChecked = await compactSwitch.getAttribute('aria-checked');
   results.push({
     setting: 'compact mode',
-    ok: compactClass && ariaChecked === 'true',
+    ok:
+      (await compactSwitch.getAttribute('aria-checked')) === 'true' &&
+      (await page.evaluate(() => document.documentElement.classList.contains('compact-mode'))),
   });
 
   const ind = page.locator('label:has-text("Industry")').locator('..').locator('input');
