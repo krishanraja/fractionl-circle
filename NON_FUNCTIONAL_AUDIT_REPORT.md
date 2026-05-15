@@ -385,4 +385,8 @@ Vercel serves static files from `dist` first; everything else falls through to `
 
 **Harness:** `node scripts/browser-audit-all.mjs` (runs full + links).
 
-**Remaining (requires hardware, inbox, or secrets not in repo):** password-reset email click-through, voice/CSV/OAuth/Stripe E2E, physical iOS Shortcut, ExtensionPair token architecture, destructive delete-account test.
+**Remaining (requires hardware, inbox, or secrets not in repo):** password-reset email click-through, voice/CSV/OAuth/Stripe E2E, physical iOS Shortcut, ExtensionPair token architecture (UI warns treat-as-password), destructive delete-account test.
+
+**Deploy note:** Frontend ships via Vercel on push to `main`. Edge function changes (`aiPersonality.ts`, cron gate) require `supabase functions deploy` on project `ksyuwacuigshvcyptlhe` to take effect server-side.
+
+**Latest production smoke (`browser-audit-all.mjs`):** 5 verified, 0 broken, 2 blocked (Stripe CTA absent for test tier; privacy export download event not fired in headless — RPC may still succeed).

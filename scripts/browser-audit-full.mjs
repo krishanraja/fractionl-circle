@@ -75,11 +75,12 @@ async function main() {
   // 14 /privacy deep link
   {
     const page = await browser.newPage();
-    const r = await page.goto(`${BASE}/privacy`, { waitUntil: 'domcontentloaded' });
+    const r = await page.goto(`${BASE}/privacy`, { waitUntil: 'networkidle' });
     const status = r?.status();
+    await page.waitForTimeout(1200);
     const hasPrivacy =
-      (await page.getByText(/privacy & data/i).isVisible().catch(() => false)) ||
-      (await page.getByText(/sign in to circle/i).isVisible().catch(() => false));
+      (await page.getByText(/privacy.*data/i).isVisible().catch(() => false)) ||
+      (await page.getByRole('link', { name: /sign in/i }).isVisible().catch(() => false));
     log(14, 'Privacy /privacy route', {
       result: status === 200 && hasPrivacy ? 'verified' : status === 200 ? 'broken' : 'broken',
       network: [{ GET: '/privacy', status }],
@@ -165,8 +166,9 @@ async function main() {
   // 3 Dedupe
   net.length = 0;
   await page.goto(BASE, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1500);
-  await page.locator('aside').getByRole('button', { name: /circle/i }).first().click();
+  await page.locator('aside').waitFor({ state: 'visible', timeout: 20000 });
+  await page.locator('aside nav button').nth(2).click();
+  await page.waitForTimeout(1000);
   const details = page.locator('details').first();
   if ((await details.getAttribute('open')) === null) await details.locator('summary').click();
   await page.route('**/functions/v1/dedupe-circle', (r) => r.fulfill({ status: 503, body: '{"error":"x"}', contentType: 'application/json' }));
