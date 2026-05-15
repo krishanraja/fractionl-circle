@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SetNewPasswordScreen } from "@/components/SetNewPasswordScreen";
+import { PreferencesApplier } from "@/components/PreferencesApplier";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -69,6 +70,7 @@ const AppContent = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <PreferencesApplier />
         <BrowserRouter>
           <SessionManager />
           <Routes>

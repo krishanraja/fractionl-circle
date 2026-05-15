@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { applyTheme } from '@/lib/applyUserPreferences';
 import { useNavigate } from 'react-router-dom';
 import {
   LogOut,
@@ -119,6 +120,16 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [saving, setSaving] = useState(false);
+  const [industry, setIndustry] = useState('');
+  const [businessType, setBusinessType] = useState('');
+  const [targetMarket, setTargetMarket] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setIndustry(profile?.industry ?? '');
+    setBusinessType(profile?.business_type ?? '');
+    setTargetMarket(profile?.target_market ?? '');
+  }, [open, profile?.industry, profile?.business_type, profile?.target_market]);
 
   const avatarInitial = profile?.full_name
     ? profile.full_name.charAt(0).toUpperCase()
@@ -143,12 +154,44 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     }
   }, [nameValue, updateProfile]);
 
+  const saveProfileTextField = useCallback(
+    async (
+      field: 'industry' | 'business_type' | 'target_market',
+      value: string,
+      previous: string
+    ) => {
+      const trimmed = value.trim();
+      const prev = (previous ?? '').trim();
+      if (trimmed === prev) return;
+      try {
+        await updateProfile({ [field]: trimmed || null });
+        toast.success('Saved');
+      } catch {
+        /* toast from updateProfile */
+      }
+    },
+    [updateProfile]
+  );
+
   const handleTogglePreference = useCallback(
     async (key: string, value: boolean) => {
+      if (key === 'browser_notifications' && value) {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            toast.error('Allow notifications in your browser to enable this.');
+            return;
+          }
+        } else if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+          toast.error('Notifications are blocked in your browser settings.');
+          return;
+        }
+      }
       try {
         await updatePreferences({ [key]: value });
+        toast.success('Saved');
       } catch {
-        toast.error('Failed to update setting');
+        /* toast from updatePreferences */
       }
     },
     [updatePreferences]
@@ -161,11 +204,15 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
           await updateProfile({ fiscal_year_start: value as number });
         } else if (key === 'currency') {
           await updateProfile({ currency: value as string });
+        } else if (key === 'theme') {
+          applyTheme(value as ThemeValue);
+          await updatePreferences({ theme: value as ThemeValue });
         } else {
           await updatePreferences({ [key]: value });
         }
+        toast.success('Saved');
       } catch {
-        toast.error('Failed to update setting');
+        /* toast from hooks */
       }
     },
     [updateProfile, updatePreferences]
@@ -238,27 +285,21 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
             <div>
               <label className="text-xs font-medium text-foreground-muted mb-1 block">Industry</label>
               <Input
-                defaultValue={profile?.industry || ''}
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
                 placeholder="e.g. Technology"
                 className="h-9 text-sm"
-                onBlur={(e) => {
-                  if (e.target.value !== (profile?.industry || '')) {
-                    updateProfile({ industry: e.target.value || null });
-                  }
-                }}
+                onBlur={() => void saveProfileTextField('industry', industry, profile?.industry ?? '')}
               />
             </div>
             <div>
               <label className="text-xs font-medium text-foreground-muted mb-1 block">Business type</label>
               <Input
-                defaultValue={profile?.business_type || ''}
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
                 placeholder="e.g. Consulting"
                 className="h-9 text-sm"
-                onBlur={(e) => {
-                  if (e.target.value !== (profile?.business_type || '')) {
-                    updateProfile({ business_type: e.target.value || null });
-                  }
-                }}
+                onBlur={() => void saveProfileTextField('business_type', businessType, profile?.business_type ?? '')}
               />
             </div>
           </div>
@@ -266,14 +307,11 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
           <div className="py-2">
             <label className="text-xs font-medium text-foreground-muted mb-1 block">Target market</label>
             <Input
-              defaultValue={profile?.target_market || ''}
+              value={targetMarket}
+              onChange={(e) => setTargetMarket(e.target.value)}
               placeholder="e.g. Series A startups"
               className="h-9 text-sm"
-              onBlur={(e) => {
-                if (e.target.value !== (profile?.target_market || '')) {
-                  updateProfile({ target_market: e.target.value || null });
-                }
-              }}
+              onBlur={() => void saveProfileTextField('target_market', targetMarket, profile?.target_market ?? '')}
             />
           </div>
 

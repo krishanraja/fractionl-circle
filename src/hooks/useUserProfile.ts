@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { applyUserPreferences } from '@/lib/applyUserPreferences';
 
 export interface UserProfile {
   id: string;
@@ -102,6 +103,7 @@ export const useUserProfile = () => {
       }
 
       // If no preferences exist, create them
+      let resolvedPrefs: UserPreferences | null = null;
       if (!preferencesResult.data) {
         const { data: newPrefs, error: createError } = await supabase
           .from('user_preferences')
@@ -110,10 +112,14 @@ export const useUserProfile = () => {
           .single();
         
         if (createError) throw createError;
-        setPreferences(newPrefs as UserPreferences);
+        resolvedPrefs = newPrefs as UserPreferences;
+        setPreferences(resolvedPrefs);
       } else {
-        setPreferences(preferencesResult.data as UserPreferences);
+        resolvedPrefs = preferencesResult.data as UserPreferences;
+        setPreferences(resolvedPrefs);
       }
+
+      if (resolvedPrefs) applyUserPreferences(resolvedPrefs);
 
       // Update last active
       await supabase
@@ -168,8 +174,10 @@ export const useUserProfile = () => {
         .single();
 
       if (error) throw error;
-      setPreferences(data as UserPreferences);
-      return data;
+      const next = data as UserPreferences;
+      setPreferences(next);
+      applyUserPreferences(next);
+      return next;
     } catch (err: any) {
       console.error('Error updating preferences:', err);
       toast.error('Failed to update preferences');

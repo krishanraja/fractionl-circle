@@ -410,6 +410,29 @@
   }
 }
 
+/* User preference: disable animations (Profile → Animations off) */
+html.animations-disabled *,
+html.animations-disabled *::before,
+html.animations-disabled *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* User preference: compact layout */
+html.compact-mode {
+  --spacing-section: 0.75rem;
+}
+
+html.compact-mode .py-3 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+html.compact-mode .gap-4 {
+  gap: 0.75rem;
+}
+
 /* Waveform Bars */
 .waveform-bar {
   width: 3px;
