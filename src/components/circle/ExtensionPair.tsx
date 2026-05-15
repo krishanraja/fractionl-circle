@@ -93,6 +93,7 @@ export const ExtensionPair = () => {
         </ol>
         <p className="mt-2">
           Tokens expire after about an hour — if it stops working, come back here and grab a fresh one.
+          Treat the token like a password: anyone with it can access your Circle session until it expires.
         </p>
       </div>
 

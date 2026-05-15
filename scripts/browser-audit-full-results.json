@@ -1,6 +1,6 @@
 {
   "base": "https://circle.fractionl.ai",
-  "at": "2026-05-15T11:27:03.713Z",
+  "at": "2026-05-15T11:30:35.979Z",
   "tests": [
     {
       "id": 1,
@@ -28,7 +28,7 @@
           "status": 200
         }
       ],
-      "notes": "HTTP 200; privacy heading: false"
+      "notes": "HTTP 200; privacy heading: true"
     },
     {
       "id": 2,

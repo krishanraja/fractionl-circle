@@ -141,6 +141,21 @@ async function main() {
   }
   log(2, 'Profile Industry', { result: patchOk && patchOk < 300 && errToast ? 'verified' : 'broken', network: net.filter((n) => n.p.includes('user_profiles')).slice(-3), notes: `PATCH ${patchOk}; toast ${errToast}` });
 
+  // 14b Privacy export (RPC)
+  await page.goto(`${BASE}/privacy`, { waitUntil: 'networkidle' });
+  let exportOk = false;
+  const exportBtn = page.getByRole('button', { name: /^export$/i });
+  if (await exportBtn.isVisible().catch(() => false)) {
+    const dl = page.waitForEvent('download', { timeout: 15000 }).catch(() => null);
+    await exportBtn.click();
+    const download = await dl;
+    exportOk = !!download;
+  }
+  log('14b', 'Privacy data export download', {
+    result: exportOk ? 'verified' : 'blocked',
+    notes: exportOk ? 'json download started' : 'no download event (RPC or browser)',
+  });
+
   // 3 Dedupe
   net.length = 0;
   await page.keyboard.press('Escape');

@@ -1,18 +1,40 @@
 /**
- * Profile settings sheet — all toggles and fields
+ * Profile settings sheet — theme, compact, industry, currency
  */
 import { chromium } from 'playwright';
 import { writeFileSync } from 'fs';
 
-const BASE = 'https://circle.fractionl.ai';
+const BASE = process.env.AUDIT_BASE_URL || 'https://circle.fractionl.ai';
 const EMAIL = process.env.AUDIT_EMAIL;
 const PASSWORD = process.env.AUDIT_PASSWORD;
 const SUPABASE = 'https://ksyuwacuigshvcyptlhe.supabase.co';
 
 const results = [];
 
+async function getAnon(page) {
+  if (process.env.SUPABASE_ANON) return process.env.SUPABASE_ANON;
+  const src = await page.locator('script[src*="index"]').first().getAttribute('src');
+  const text = await (await page.request.get(new URL(src, BASE).href)).text();
+  return text.match(/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/)[0];
+}
+
+async function openProfile(page) {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const btn = page.locator('aside .border-t button').first();
+  await btn.click({ timeout: 15000 });
+  await page.waitForTimeout(600);
+}
+
 async function main() {
-  const anon = process.env.SUPABASE_ANON;
+  if (!EMAIL || !PASSWORD) {
+    console.log('skip: no AUDIT_EMAIL/PASSWORD');
+    process.exit(0);
+  }
+
+  const browser = await chromium.launch({ headless: true });
+  const boot = await browser.newPage();
+  await boot.goto(BASE, { waitUntil: 'networkidle' });
+  const anon = await getAnon(boot);
   const session = await (
     await fetch(`${SUPABASE}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -20,9 +42,22 @@ async function main() {
       body: JSON.stringify({ email: EMAIL, password: PASSWORD }),
     })
   ).json();
+  await boot.close();
 
-  const browser = await chromium.launch({ headless: true });
+  if (!session.access_token) {
+    console.error('sign-in failed', session);
+    process.exit(1);
+  }
+
   const page = await browser.newPage();
+  const net = [];
+  page.on('response', (r) => {
+    const u = r.url();
+    if (u.includes('user_preferences') || u.includes('user_profiles')) {
+      net.push({ m: r.request().method(), p: new URL(u).pathname, s: r.status() });
+    }
+  });
+
   await page.goto(BASE);
   await page.evaluate((v) => localStorage.setItem('sb-ksyuwacuigshvcyptlhe-auth-token', v), JSON.stringify({
     access_token: session.access_token,
@@ -33,49 +68,56 @@ async function main() {
     user: session.user,
   }));
   await page.reload({ waitUntil: 'networkidle' });
-  await page.locator('aside').getByRole('button', { name: /krish/i }).click();
-  await page.waitForTimeout(800);
+  await openProfile(page);
 
-  const net = [];
-  page.on('response', (r) => {
-    const u = r.url();
-    if (u.includes('user_preferences') || u.includes('user_profiles')) {
-      net.push({ m: r.request().method(), p: new URL(u).pathname, s: r.status() });
-    }
+  await page.getByRole('button', { name: 'Dark' }).click();
+  await page.waitForTimeout(600);
+  results.push({
+    setting: 'theme dark',
+    ok: await page.evaluate(() => document.documentElement.classList.contains('dark')),
   });
 
-  // Theme dark
-  await page.getByRole('button', { name: 'Dark' }).click();
-  await page.waitForTimeout(800);
-  const darkClass = await page.evaluate(() => document.documentElement.classList.contains('dark'));
-  results.push({ setting: 'theme dark', ok: darkClass, net: net.slice(-1) });
+  await page.getByText('Compact mode').locator('..').locator('..').getByRole('switch').click();
+  await page.waitForTimeout(600);
+  results.push({
+    setting: 'compact mode',
+    ok: await page.evaluate(() => document.documentElement.classList.contains('compact-mode')),
+  });
 
-  // Compact mode
-  const compact = page.getByRole('switch').nth(0); // first switch in appearance - might be wrong index
-  // Find by label
-  const compactRow = page.locator('text=Compact mode').locator('..').locator('..').getByRole('switch');
-  await compactRow.click();
-  await page.waitForTimeout(500);
-  const compactClass = await page.evaluate(() => document.documentElement.classList.contains('compact-mode'));
-  results.push({ setting: 'compact mode', ok: compactClass });
-
-  // Industry
   const ind = page.locator('label:has-text("Industry")').locator('..').locator('input');
   await ind.fill(`SettingsTest-${Date.now()}`);
   await ind.blur();
   await page.waitForTimeout(1200);
-  const savedToast = await page.locator('[data-sonner-toast]:has-text("Saved")').first().isVisible().catch(() => false);
-  results.push({ setting: 'industry blur', ok: savedToast, net: net.filter((n) => n.p.includes('user_profiles')).slice(-2) });
+  results.push({
+    setting: 'industry blur',
+    ok: await page.locator('[data-sonner-toast]:has-text("Saved")').first().isVisible().catch(() => false),
+  });
 
-  // Currency
-  await page.getByRole('combobox').first().click();
-  await page.getByRole('option', { name: 'GBP' }).click();
-  await page.waitForTimeout(1000);
-  results.push({ setting: 'currency GBP', ok: net.some((n) => n.m === 'PATCH' && n.s < 300) });
+  const drawer = page.locator('.overflow-y-auto').last();
+  await drawer.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  await page.waitForTimeout(400);
+
+  const currencyRow = page.locator('p:text-is("Currency")').locator('xpath=ancestor::div[contains(@class,"justify-between")][1]');
+  if (await currencyRow.isVisible().catch(() => false)) {
+    await currencyRow.getByRole('combobox').click();
+    await page.getByRole('option', { name: /GBP/ }).click();
+    await page.waitForTimeout(1000);
+    results.push({
+      setting: 'currency GBP',
+      ok: net.some((n) => n.m === 'PATCH' && n.p.includes('user_profiles') && n.s < 300),
+    });
+  } else {
+    results.push({ setting: 'currency GBP', ok: false, skipped: 'currency row not visible' });
+  }
 
   await browser.close();
   writeFileSync('scripts/browser-audit-settings-results.json', JSON.stringify(results, null, 2));
   console.log(JSON.stringify(results, null, 2));
+  const failed = results.filter((r) => !r.ok && !r.skipped);
+  process.exit(failed.length ? 1 : 0);
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

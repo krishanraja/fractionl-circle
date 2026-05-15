@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 const scripts = [
   'scripts/browser-audit-full.mjs',
   'scripts/browser-audit-links.mjs',
+  'scripts/browser-audit-settings.mjs',
 ];
 
 const env = { ...process.env };

@@ -438,7 +438,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Proactive suggestions"
-            description="Let AI surface opportunities unprompted"
+            description="When on, Today nudges you to surface Matches (saved for smarter automation later)"
           >
             <Switch
               checked={preferences?.ai_proactive_suggestions ?? true}
