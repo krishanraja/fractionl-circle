@@ -322,4 +322,44 @@ Vercel serves static files from `dist` first; everything else falls through to `
 
 ---
 
-*Updated 2026-05-15 — authenticated re-test + code fixes on `cursor/browser-audit-verification-d378`.*
+## Production re-test after merge to `main` (2026-05-15)
+
+**Deployed:** `main` @ `f6bb772` on `https://circle.fractionl.ai` (Vercel project `fractionl-circle`, deploy READY).
+
+| # | Test | Result | Evidence |
+|---|------|--------|----------|
+| 1 | Forgot password | ✅ | Link on Sign In → `POST /auth/v1/recover` **200** → green “Check your email for a reset link” |
+| 2 | Profile Industry + error toast | ✅ | `PATCH /rest/v1/user_profiles` **204/200**; blocked PATCH → Sonner “Failed to update profile” |
+| 3 | Dedupe scan error | ✅ | Blocked `dedupe-circle` **503** → Sonner error (not empty state); open Circle `<details>` first |
+| 9 | Stripe upgrade | ⚠️ | No “Upgrade” CTA on Today for this account (likely tier already above trial) |
+| 14 | `/privacy` deep link | ✅ | `GET /privacy` **HTTP 200** (was Vercel 404 before `vercel.json`) |
+| 16 | Mobile nav | ✅ | Today, Streams, Ask tappable; Circle is center FAB |
+
+**Commits on `main`:** Sonner profile/dedupe toasts · `vercel.json` SPA rewrites · forgot-password + `SetNewPasswordScreen` · Privacy export toasts via Sonner · global `<Toaster />` on auth shell.
+
+**Harness:** `scripts/browser-audit-full.mjs` → `scripts/browser-audit-full-results.json`
+
+---
+
+## Genuinely unable to assess (needs human, secrets, or hardware)
+
+| Area | Why |
+|------|-----|
+| **Password-reset email link → Set new password → app shell** | Requires inbox access to click Supabase email; recovery UI (`SetNewPasswordScreen`) is implemented but not end-to-end clicked |
+| **Voice onboarding (FirstVoice)** | Needs mic permission + `OPENAI_API_KEY` on `transcribe` / `extract-ideas` |
+| **CSV ingest** | Needs sample LinkedIn export file + time for ingest job |
+| **Quick Add paste / image** | Needs clipboard/file fixtures; `parse-voice-contact` / `parse-contact-image` not exercised |
+| **Google / Microsoft OAuth** | Needs provider secrets + interactive consent |
+| **Stripe Checkout E2E** | No upgrade CTA surfaced for `krish@themindmaker.ai`; `VITE_STRIPE_*_PRICE_ID` / test card flow not run |
+| **Concierge booking + file upload** | Chief-of-Staff tier + storage; `notify-concierge-event` not verified |
+| **Match Send / Approve / Decline** | Partially present on Today; automated click timed out on profile nav in one pass — manual spot-check recommended |
+| **Sunday Letter generate** | `generate-sunday-letter` LLM call (up to 90s); not awaited in this session |
+| **Privacy export RPC download** | Export button visible in-app; `export_user_data` JSON download not asserted |
+| **PWA install prompt** | Headless Chromium does not surface `beforeinstallprompt`; `useInstallPrompt` still unwired |
+| **ExtensionPair token architecture** | Confirmed in source (JWTs in base64); not decoded live in browser this session |
+| **parse-screenshot iOS Shortcut** | Requires physical iPhone + Shortcut |
+| **Delete account** | Intentionally skipped (destructive) |
+
+---
+
+*Updated 2026-05-15 — merged to `main`, production browser pass, Vercel token used for deploy polling only (not stored in repo).*
