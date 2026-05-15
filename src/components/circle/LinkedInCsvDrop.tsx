@@ -81,7 +81,17 @@ export const LinkedInCsvDrop = ({ onDone }: LinkedInCsvDropProps) => {
       <div className="rounded-xl border border-border/60 bg-card/50 backdrop-blur p-4 text-xs text-foreground-secondary leading-relaxed">
         <p className="mb-2 font-medium text-foreground">How to get your CSV</p>
         <ol className="list-decimal pl-4 space-y-1">
-          <li>LinkedIn → Settings &amp; Privacy → Data Privacy → Get a copy of your data.</li>
+          <li>
+            <a
+              href="https://www.linkedin.com/mypreferences/d/download-my-data"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              LinkedIn → Settings &amp; Privacy → Get a copy of your data
+            </a>
+            .
+          </li>
           <li>Pick <span className="font-medium">Connections</span> only. It arrives by email in about 10 minutes.</li>
           <li>Drop the <span className="font-mono">Connections.csv</span> file below.</li>
         </ol>

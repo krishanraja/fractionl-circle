@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ErrorBanner } from '@/components/feedback';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { AuthLegalFooter } from '@/components/auth/AuthLegalFooter';
 
 // Stable animation variants defined at module level to prevent re-creation
 const fadeInUpVariants = {
@@ -751,10 +752,13 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
   ]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 safe-top safe-bottom">
-      <AnimatePresence mode="wait">
-        {content}
-      </AnimatePresence>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 safe-top safe-bottom">
+      <div className="w-full max-w-sm flex-1 flex flex-col justify-center">
+        <AnimatePresence mode="wait">
+          {content}
+        </AnimatePresence>
+      </div>
+      <AuthLegalFooter />
     </div>
   );
 };

@@ -8,8 +8,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import Index from "./pages/Index";
 import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import ShareContact from "./pages/ShareContact";
+import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
 import { FirstVoice } from "./components/onboarding/FirstVoice";
@@ -22,7 +24,22 @@ import { useConsent } from "./hooks/useConsent";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
+/** Privacy settings need auth; show a clear sign-in prompt when logged out. */
+function PrivacyRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader message="Loading..." />;
+  if (!user) return <PrivacySignInPrompt />;
+  return (
+    <>
+      <PreferencesApplier />
+      <SessionManager />
+      <Privacy />
+    </>
+  );
+}
+
+/** Main app shell: auth gate, onboarding, and tabbed home. */
+function AuthenticatedShell() {
   const { user, loading: authLoading } = useAuth();
   const { loading: profileLoading, needsOnboarding, refetch } = useUserProfile();
   const { syncLocalConsents } = useConsent();
@@ -68,32 +85,41 @@ const AppContent = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <PreferencesApplier />
-        <BrowserRouter>
-          <SessionManager />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/share-contact" element={<ShareContact />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <ConsentBanner />
-          <Toaster />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <>
+      <PreferencesApplier />
+      <SessionManager />
+      <Index />
+      <ConsentBanner />
+    </>
   );
-};
+}
+
+function AppRoutes() {
+  return (
+  <>
+      <Routes>
+        <Route path="/privacy" element={<PrivacyRoute />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/share-contact" element={<ShareContact />} />
+        <Route path="/" element={<AuthenticatedShell />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}
 
 const App = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Toaster />
-        <AppContent />
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <BrowserRouter>
+              <Toaster />
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
