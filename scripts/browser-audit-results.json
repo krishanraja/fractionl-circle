@@ -1,0 +1,70 @@
+{
+  "base": "https://circle.fractionl.ai",
+  "email": "browser-audit-1778831375501@mailinator.com",
+  "hasSession": false,
+  "results": [
+    {
+      "id": 1,
+      "title": "Forgot password flow",
+      "route": "/ (sign-in)",
+      "steps": [
+        "Load /",
+        "Open Sign In",
+        "Look for Forgot password?"
+      ],
+      "network": [],
+      "console": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin"
+      ],
+      "result": "broken",
+      "notes": "No Forgot password control on production/main Sign In screen. Branch audit/non-functional-pass-20260515 not on remote."
+    },
+    {
+      "id": 14,
+      "title": "Privacy controls",
+      "route": "/privacy",
+      "steps": [
+        "GET /privacy",
+        "Check Export my data"
+      ],
+      "network": [],
+      "console": [],
+      "result": "verified",
+      "notes": "Privacy page loaded; export may require scroll/auth"
+    },
+    {
+      "id": 9,
+      "title": "Stripe upgrade",
+      "route": "/pricing or in-app",
+      "steps": [
+        "Find upgrade CTA",
+        "Click"
+      ],
+      "network": [],
+      "console": [],
+      "result": "blocked",
+      "notes": "No Upgrade now / pricing sheet entry on Today (may need trial state)"
+    },
+    {
+      "id": 16,
+      "title": "Mobile responsive smoke",
+      "route": "/",
+      "steps": [
+        "Tap Today",
+        "Tap Streams",
+        "Tap Circle",
+        "Tap Ask"
+      ],
+      "network": [],
+      "console": [],
+      "result": "blocked",
+      "notes": "Nav tabs: none (auth gate?). Bottom nav box: missing. safe-area via paddingBottom style on nav."
+    },
+    {
+      "id": "auth",
+      "title": "Session bootstrap",
+      "result": "blocked",
+      "notes": "Could not obtain Supabase session via signup/signin API"
+    }
+  ]
+}
