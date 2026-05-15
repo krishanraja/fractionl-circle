@@ -22,7 +22,6 @@ const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; 
 export function PrivacySettings() {
   const { updateConsent, isConsentGranted, loading: consentLoading } = useConsent();
   const { loading: privacyLoading, downloadData, requestErasure, requests, fetchRequests } = useDataPrivacy();
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchRequests();
@@ -30,15 +29,15 @@ export function PrivacySettings() {
 
   const handleExport = async () => {
     await downloadData();
-    toast({ title: 'Data exported', description: 'Your data has been downloaded as a JSON file.' });
+    toast.success('Your data has been downloaded as a JSON file.');
   };
 
   const handleErasure = async () => {
     const success = await requestErasure();
     if (success) {
-      toast({ title: 'Account erased', description: 'All your data has been deleted. You will be signed out.' });
+      toast.success('All your data has been deleted. You will be signed out.');
     } else {
-      toast({ title: 'Erasure failed', description: 'Please try again or contact support.', variant: 'destructive' });
+      toast.error('Erasure failed. Please try again or contact support.');
     }
   };
 
