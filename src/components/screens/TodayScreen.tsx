@@ -62,7 +62,7 @@ export const TodayScreen = () => {
         <p className="text-sm text-foreground-secondary leading-relaxed">
           Overnight I looked for Matches across your Ideas and Circle.
         </p>
-        <h1 className="mt-2 text-2xl font-display font-semibold tracking-tight text-foreground">
+        <h1 className="mt-2 text-display text-foreground">
           {headline}
         </h1>
       </motion.header>
