@@ -83,6 +83,109 @@ const fiscalMonths = [
   { value: 12, label: 'December' },
 ];
 
+const roleOptions: { value: string; label: string }[] = [
+  { value: 'cmo', label: 'CMO' },
+  { value: 'coo', label: 'COO' },
+  { value: 'cfo', label: 'CFO' },
+  { value: 'cro', label: 'CRO' },
+  { value: 'cpo', label: 'CPO' },
+  { value: 'cto', label: 'CTO' },
+  { value: 'chief_of_staff', label: 'Chief of Staff' },
+  { value: 'other', label: 'Other' },
+];
+
+const engagementOptions: { value: string; label: string }[] = [
+  { value: 'fractional_executive', label: 'Fractional executive' },
+  { value: 'advisor', label: 'Advisor' },
+  { value: 'interim', label: 'Interim' },
+  { value: 'consulting_firm', label: 'Consulting firm' },
+];
+
+const stageOptions: { value: string; label: string }[] = [
+  { value: 'pre_seed', label: 'Pre-seed' },
+  { value: 'seed', label: 'Seed' },
+  { value: 'series_a', label: 'Series A' },
+  { value: 'series_b', label: 'Series B' },
+  { value: 'series_c_plus', label: 'Series C+' },
+  { value: 'bootstrapped', label: 'Bootstrapped' },
+  { value: 'pe_backed', label: 'PE-backed' },
+];
+
+const verticalOptions: { value: string; label: string }[] = [
+  { value: 'saas', label: 'SaaS' },
+  { value: 'enterprise', label: 'Enterprise' },
+  { value: 'ai_ml', label: 'AI / ML' },
+  { value: 'fintech', label: 'Fintech' },
+  { value: 'healthtech', label: 'Healthtech' },
+  { value: 'dev_tools', label: 'Dev tools' },
+  { value: 'marketplace', label: 'Marketplaces' },
+  { value: 'dtc', label: 'DTC / Consumer' },
+  { value: 'edtech', label: 'EdTech' },
+  { value: 'climate', label: 'Climate' },
+];
+
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium',
+        'border transition-all whitespace-nowrap',
+        active
+          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+          : 'bg-surface-muted text-foreground-secondary border-border hover:border-primary/40 hover:text-foreground'
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ChipGroup({
+  label,
+  options,
+  selected,
+  onToggle,
+  multi,
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+  selected: string[];
+  onToggle: (value: string) => void;
+  multi: boolean;
+}) {
+  return (
+    <div className="py-2">
+      <div className="flex items-baseline justify-between mb-2">
+        <label className="text-xs font-medium text-foreground-muted">{label}</label>
+        {multi && (
+          <span className="text-[10px] text-foreground-muted">Select all that apply</span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <Chip
+            key={opt.value}
+            active={selected.includes(opt.value)}
+            onClick={() => onToggle(opt.value)}
+          >
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SectionHeader({ icon: Icon, label }: { icon: typeof User; label: string }) {
   return (
     <div className="flex items-center gap-2 px-1 pt-5 pb-2">
@@ -122,16 +225,17 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [saving, setSaving] = useState(false);
-  const [industry, setIndustry] = useState('');
-  const [businessType, setBusinessType] = useState('');
-  const [targetMarket, setTargetMarket] = useState('');
+  const [positioning, setPositioning] = useState('');
 
   useEffect(() => {
     if (!open) return;
-    setIndustry(profile?.industry ?? '');
-    setBusinessType(profile?.business_type ?? '');
-    setTargetMarket(profile?.target_market ?? '');
-  }, [open, profile?.industry, profile?.business_type, profile?.target_market]);
+    setPositioning(profile?.positioning ?? '');
+  }, [open, profile?.positioning]);
+
+  const role = profile?.role ?? null;
+  const engagementModel = profile?.business_type ?? null;
+  const clientStages = profile?.client_stages ?? [];
+  const clientVerticals = profile?.client_verticals ?? [];
 
   const avatarInitial = profile?.full_name
     ? profile.full_name.charAt(0).toUpperCase()
@@ -156,23 +260,68 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     }
   }, [nameValue, updateProfile]);
 
-  const saveProfileTextField = useCallback(
-    async (
-      field: 'industry' | 'business_type' | 'target_market',
-      value: string,
-      previous: string
-    ) => {
-      const trimmed = value.trim();
-      const prev = (previous ?? '').trim();
-      if (trimmed === prev) return;
+  const savePositioning = useCallback(async () => {
+    const trimmed = positioning.trim();
+    const prev = (profile?.positioning ?? '').trim();
+    if (trimmed === prev) return;
+    try {
+      await updateProfile({ positioning: trimmed || null });
+      toast.success('Saved');
+    } catch {
+      /* toast from updateProfile */
+    }
+  }, [positioning, profile?.positioning, updateProfile]);
+
+  const handleSelectRole = useCallback(
+    async (value: string) => {
+      const next = role === value ? null : value;
       try {
-        await updateProfile({ [field]: trimmed || null });
-        toast.success('Saved');
+        await updateProfile({ role: next });
       } catch {
         /* toast from updateProfile */
       }
     },
-    [updateProfile]
+    [role, updateProfile]
+  );
+
+  const handleSelectEngagement = useCallback(
+    async (value: string) => {
+      const next = engagementModel === value ? null : value;
+      try {
+        await updateProfile({ business_type: next });
+      } catch {
+        /* toast from updateProfile */
+      }
+    },
+    [engagementModel, updateProfile]
+  );
+
+  const handleToggleStage = useCallback(
+    async (value: string) => {
+      const next = clientStages.includes(value)
+        ? clientStages.filter((v) => v !== value)
+        : [...clientStages, value];
+      try {
+        await updateProfile({ client_stages: next });
+      } catch {
+        /* toast from updateProfile */
+      }
+    },
+    [clientStages, updateProfile]
+  );
+
+  const handleToggleVertical = useCallback(
+    async (value: string) => {
+      const next = clientVerticals.includes(value)
+        ? clientVerticals.filter((v) => v !== value)
+        : [...clientVerticals, value];
+      try {
+        await updateProfile({ client_verticals: next });
+      } catch {
+        /* toast from updateProfile */
+      }
+    },
+    [clientVerticals, updateProfile]
   );
 
   const handleTogglePreference = useCallback(
@@ -282,38 +431,52 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 py-2">
-            <div>
-              <label className="text-xs font-medium text-foreground-muted mb-1 block">Industry</label>
-              <Input
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-                placeholder="e.g. Technology"
-                className="h-9 text-sm"
-                onBlur={() => void saveProfileTextField('industry', industry, profile?.industry ?? '')}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-foreground-muted mb-1 block">Business type</label>
-              <Input
-                value={businessType}
-                onChange={(e) => setBusinessType(e.target.value)}
-                placeholder="e.g. Consulting"
-                className="h-9 text-sm"
-                onBlur={() => void saveProfileTextField('business_type', businessType, profile?.business_type ?? '')}
-              />
-            </div>
-          </div>
+          <ChipGroup
+            label="Your role"
+            options={roleOptions}
+            selected={role ? [role] : []}
+            onToggle={handleSelectRole}
+            multi={false}
+          />
+
+          <ChipGroup
+            label="How you work"
+            options={engagementOptions}
+            selected={engagementModel ? [engagementModel] : []}
+            onToggle={handleSelectEngagement}
+            multi={false}
+          />
+
+          <ChipGroup
+            label="Stages you serve"
+            options={stageOptions}
+            selected={clientStages}
+            onToggle={handleToggleStage}
+            multi
+          />
+
+          <ChipGroup
+            label="Verticals you serve"
+            options={verticalOptions}
+            selected={clientVerticals}
+            onToggle={handleToggleVertical}
+            multi
+          />
 
           <div className="py-2">
-            <label className="text-xs font-medium text-foreground-muted mb-1 block">Target market</label>
+            <label className="text-xs font-medium text-foreground-muted mb-1 block">
+              Positioning
+            </label>
             <Input
-              value={targetMarket}
-              onChange={(e) => setTargetMarket(e.target.value)}
-              placeholder="e.g. Series A startups"
+              value={positioning}
+              onChange={(e) => setPositioning(e.target.value)}
+              placeholder="e.g. Helping Series A–C SaaS scale demand gen"
               className="h-9 text-sm"
-              onBlur={() => void saveProfileTextField('target_market', targetMarket, profile?.target_market ?? '')}
+              onBlur={() => void savePositioning()}
             />
+            <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
+              Optional. Your LinkedIn headline, in one line — we use it to flavor AI suggestions.
+            </p>
           </div>
 
           <Separator className="my-1" />
