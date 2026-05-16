@@ -15,6 +15,10 @@ export interface UserProfile {
   revenue_range: string | null;
   target_market: string | null;
   service_types: string[] | null;
+  role: string | null;
+  client_stages: string[];
+  client_verticals: string[];
+  positioning: string | null;
   timezone: string;
   currency: string;
   fiscal_year_start: number;

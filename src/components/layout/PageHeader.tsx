@@ -1,10 +1,7 @@
 import { ReactNode, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
-import { getGreeting } from '@/utils/greeting';
 import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet';
 import type { TabId } from './BottomNav';
 
@@ -14,13 +11,6 @@ interface PageHeaderProps {
   currentTab?: TabId;
   onTabChange?: (tab: TabId) => void;
 }
-
-const tabConfig: Record<TabId, { title: string; gradient?: boolean }> = {
-  today: { title: '' },
-  streams: { title: 'Streams' },
-  circle: { title: 'Circle', gradient: true },
-  ask: { title: 'Ask' },
-};
 
 export const PageHeader = ({
   title,
@@ -32,17 +22,11 @@ export const PageHeader = ({
   const { profile } = useUserProfile();
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const firstName = useMemo(() => {
-    if (!profile?.full_name) return '';
-    return profile.full_name.split(' ')[0];
-  }, [profile?.full_name]);
-
   const avatarInitial = useMemo(() => {
     if (!profile?.full_name) return '?';
     return profile.full_name.charAt(0).toUpperCase();
   }, [profile?.full_name]);
 
-  const config = tabConfig[currentTab || 'today'];
   const isCircle = currentTab === 'circle';
 
   if (isMobile) {
@@ -62,35 +46,6 @@ export const PageHeader = ({
             alt="Fractionl"
             className="h-6"
           />
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentTab}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.15 }}
-              className="flex items-center gap-2"
-            >
-              {config.title ? (
-                <div className="flex items-center gap-1.5">
-                  {isCircle && (
-                    <Users className="w-4 h-4 text-primary" strokeWidth={2} />
-                  )}
-                  <span className={cn(
-                    "text-[15px] font-display font-semibold tracking-tight",
-                    config.gradient ? "text-gradient" : "text-foreground"
-                  )}>
-                    {config.title}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-sm text-foreground-secondary tracking-tight">
-                  {firstName ? `${getGreeting()}, ${firstName}` : getGreeting()}
-                </p>
-              )}
-            </motion.div>
-          </AnimatePresence>
 
           <div className="flex items-center gap-2">
             {actions}

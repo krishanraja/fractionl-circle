@@ -2207,6 +2207,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           business_type: string | null
+          client_stages: string[]
+          client_verticals: string[]
           created_at: string
           currency: string | null
           email: string | null
@@ -2218,7 +2220,9 @@ export type Database = {
           onboarding_completed: boolean | null
           onboarding_completed_at: string | null
           onboarding_step: number | null
+          positioning: string | null
           revenue_range: string | null
+          role: string | null
           service_types: string[] | null
           target_market: string | null
           timezone: string | null
@@ -2229,6 +2233,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           business_type?: string | null
+          client_stages?: string[]
+          client_verticals?: string[]
           created_at?: string
           currency?: string | null
           email?: string | null
@@ -2240,7 +2246,9 @@ export type Database = {
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
           onboarding_step?: number | null
+          positioning?: string | null
           revenue_range?: string | null
+          role?: string | null
           service_types?: string[] | null
           target_market?: string | null
           timezone?: string | null
@@ -2251,6 +2259,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           business_type?: string | null
+          client_stages?: string[]
+          client_verticals?: string[]
           created_at?: string
           currency?: string | null
           email?: string | null
@@ -2262,7 +2272,9 @@ export type Database = {
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
           onboarding_step?: number | null
+          positioning?: string | null
           revenue_range?: string | null
+          role?: string | null
           service_types?: string[] | null
           target_market?: string | null
           timezone?: string | null
