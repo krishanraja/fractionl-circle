@@ -10,7 +10,7 @@ export const AskScreen = () => {
         transition={{ duration: 0.3 }}
         className="mb-8"
       >
-        <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
+        <h1 className="text-display text-foreground">
           Ask
         </h1>
         <p className="mt-1 text-sm text-foreground-secondary">
