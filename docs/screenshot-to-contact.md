@@ -122,7 +122,7 @@ Existing secrets used by `contact-enrich` (Apollo / Clearbit / Twilio) and `link
 - `parse-screenshot` does not persist the raw image. The parsed JSON is returned inline; no image is stored.
 - EXIF is not read.
 - Same Supabase RLS rules apply — the resulting `circle_person` is only readable by the user who created it.
-- Upstream LLM error bodies are **not** echoed into edge logs (audit H7 posture). Status + request-id only.
+- **Open: audit H7.** `parseWithClaude` and `parseWithOpenAI` in `parse-screenshot/index.ts` currently throw `new Error(\`... ${text.slice(0, 300)}\`)` on non-OK responses, which can echo partial LLM error bodies into edge logs. Fix (15 min): log status + request-id only. This is a log-visibility issue, not user-facing. Tracked in [docs/roadmap.md](./roadmap.md).
 
 ---
 

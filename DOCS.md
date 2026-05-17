@@ -4,7 +4,7 @@
 
 This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
 
-**Last verified against repo:** 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-05-17 · `main` @ `ffda624` (post PR #52 header-font merge).
 
 ---
 
@@ -33,7 +33,7 @@ This document is the canonical source for product, architecture, pricing, and go
 16. [Tech stack](#16-tech-stack)
 17. [Frontend layout](#17-frontend-layout)
 18. [Database schema](#18-database-schema)
-19. [Edge functions (35)](#19-edge-functions-35)
+19. [Edge functions (34)](#19-edge-functions-34)
 20. [AI / LLM call sites](#20-ai--llm-call-sites)
 21. [Auth, RLS & security posture](#21-auth-rls--security-posture)
 22. [Reliability & rate limiting](#22-reliability--rate-limiting)
@@ -286,7 +286,8 @@ Ideas that have earned revenue. Currently a placeholder; the loop closes when `l
 ### Circle (`CircleScreen.tsx`)
 Every person you know.
 - Source cards (active + failed states with retry).
-- Total person count.
+- Scrollable contact list (`CirclePeopleList` + `CircleListRow`) showing all deduplicated people with inline contact actions.
+- **Quick Add** button — front-and-centre entry point for adding a single contact via typed form (`QuickAddTyped`), pasted URL/handle (`QuickAddPaste`), or shared image (`QuickAddImage`). Writes a `manual_add` source row.
 - **Add a source** sheet — LinkedIn CSV, generic CRM CSV (HubSpot/Attio/Folk auto-detect), voice seed, Google, Microsoft, browser extension pairing.
 - **Find duplicates** — LLM-assisted dedupe sheet (Operator tier feature gate).
 
@@ -295,9 +296,10 @@ The voice-first command surface. Currently a placeholder UI; voice capture lands
 
 ### Cross-cutting
 
-- **Profile / Settings drawer** — `src/components/profile/ProfileSettingsSheet.tsx`. Theme, account, billing portal link, sign-out, install prompts (Android PWA install + iOS Apple Shortcut for screenshot capture).
+- **Profile / Settings drawer** — `src/components/profile/ProfileSettingsSheet.tsx`. Theme, account, billing portal link, sign-out, install prompts (Android PWA install + iOS Apple Shortcut for screenshot capture). Also surfaces structured practice fields: practitioner role, client stages, client verticals, and positioning one-liner (added PR #51; stored in `user_profiles.role`, `.client_stages`, `.client_verticals`, `.positioning`).
 - **Auth** — `src/components/AuthPage.tsx`. Email + password, Google OAuth.
-- **Privacy** — `src/pages/Privacy.tsx`. Static privacy page.
+- **Privacy** — `src/pages/Privacy.tsx`. Auth-gated: unauthenticated visitors see `PrivacySignInPrompt.tsx` instead of the full privacy settings.
+- **Terms** — `src/pages/Terms.tsx`. Static terms page at `/terms`.
 - **Share Contact** — `src/pages/ShareContact.tsx`. The destination of the Android share target / iOS Shortcut.
 
 ---
@@ -432,9 +434,8 @@ Chief of Staff tier ships with a real human concierge — the relationship manag
 | **Animation** | Framer Motion | 153 `motion.*` instances; all have `initial` + `animate` to avoid first-render flash. |
 | **Forms** | (currently raw `useState`) | `react-hook-form` + Zod scaffolding present (`src/components/ui/form.tsx`) but not yet adopted on most call sites — see audit H3 in [docs/roadmap.md](./docs/roadmap.md). |
 | **Data fetching** | TanStack React Query (provider mounted, partial adoption) | Direct `supabase.functions.invoke` is still common; full migration is a deferred audit item. |
-| **Charts** | Recharts | Used in admin/analytics surfaces. |
 | **Backend** | Supabase (Postgres + Auth + Edge Functions / Deno) | Project: `ksyuwacuigshvcyptlhe`. |
-| **Edge runtime** | Deno (Supabase Edge Functions) | 35 functions; see §19. |
+| **Edge runtime** | Deno (Supabase Edge Functions) | 34 functions; see §19. |
 | **AI providers** | OpenAI (Whisper, GPT-4o, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) | 14 LLM call sites, all with explicit `AbortSignal.timeout`. |
 | **Payments** | Stripe (Checkout, Customer Portal, Webhook) | Verified webhook signature; tier sync on `customer.subscription.*` events. |
 | **SMS** | Twilio | `send-sms` edge function. Origin-allowlisted CORS (audit C4). |
@@ -455,11 +456,17 @@ src/
 ├── pages/
 │   ├── Index.tsx              Tab host (Today / Streams / Circle / Ask)
 │   ├── ShareContact.tsx       /share-contact — Android + iOS screenshot landing
-│   ├── Privacy.tsx            /privacy
+│   ├── Privacy.tsx            /privacy (auth-gated; unauthenticated → PrivacySignInPrompt)
+│   ├── PrivacySignInPrompt.tsx Sign-in prompt shown at /privacy when logged out
+│   ├── Terms.tsx              /terms — static terms page
 │   └── NotFound.tsx
 ├── components/
 │   ├── AuthPage.tsx           Email/password + Google OAuth
 │   ├── ErrorBoundary.tsx
+│   ├── SetNewPasswordScreen.tsx Password reset confirmation screen
+│   ├── PreferencesApplier.tsx Applies saved user preferences on mount
+│   ├── auth/
+│   │   └── AuthLegalFooter.tsx Legal copy shown below auth form
 │   ├── onboarding/
 │   │   └── FirstVoice.tsx     90-second voice → 3 Ideas
 │   ├── screens/
@@ -472,18 +479,25 @@ src/
 │   │   ├── SundayLetterCard.tsx
 │   │   └── ConciergeCard.tsx
 │   ├── circle/
-│   │   ├── AddSourceSheet.tsx
-│   │   ├── LinkedInCsvDrop.tsx
+│   │   ├── AddSourceSheet.tsx       Bulk import entry point
+│   │   ├── AddToCircleSheet.tsx     Wrapper sheet hosting the QuickAdd modes
+│   │   ├── CircleListRow.tsx        Single row in the people list
+│   │   ├── CirclePeopleList.tsx     Scrollable list with Quick Add CTA
+│   │   ├── ContactButton.tsx
+│   │   ├── ContactConfirmCard.tsx   Confirm / edit card before saving a quick-add
 │   │   ├── CrmCsvDrop.tsx
-│   │   ├── VoiceSeedCapture.tsx
-│   │   ├── GoogleConnect.tsx
-│   │   ├── MicrosoftConnect.tsx
-│   │   ├── ExtensionPair.tsx
 │   │   ├── DedupeReviewSheet.tsx
-│   │   └── ContactButton.tsx
+│   │   ├── ExtensionPair.tsx
+│   │   ├── GoogleConnect.tsx
+│   │   ├── LinkedInCsvDrop.tsx
+│   │   ├── MicrosoftConnect.tsx
+│   │   ├── QuickAddImage.tsx        Add contact via shared image (vision LLM)
+│   │   ├── QuickAddPaste.tsx        Add contact via pasted URL / handle
+│   │   ├── QuickAddTyped.tsx        Add contact via typed name + company
+│   │   └── VoiceSeedCapture.tsx
 │   ├── billing/
-│   │   ├── PricingSheet.tsx        (canonical pricing UI — sourced from src/lib/tiers.ts)
-│   │   ├── PricingPage.tsx         (legacy desktop pricing — scheduled for removal/refresh)
+│   │   ├── PricingSheet.tsx         Canonical pricing UI — sourced from src/lib/tiers.ts
+│   │   ├── PricingPage.tsx          Legacy desktop pricing — scheduled for removal/refresh
 │   │   ├── ConciergeBookingSheet.tsx
 │   │   ├── SubscriptionBadge.tsx
 │   │   └── UpgradePrompt.tsx
@@ -492,7 +506,7 @@ src/
 │   │   ├── SessionManager.tsx
 │   │   └── PrivacySettings.tsx
 │   ├── profile/
-│   │   └── ProfileSettingsSheet.tsx
+│   │   └── ProfileSettingsSheet.tsx Theme, practice fields, billing, install prompts
 │   ├── layout/                AppShell, BottomNav, DesktopSidebar, PageHeader
 │   ├── navigation/            MobileBottomNav, MobileHeader, ResponsiveDialog
 │   ├── feedback/              ErrorBanner, InlineSuccess
@@ -503,6 +517,7 @@ src/
 │   ├── useSubscription.ts     Tier, limits, usage, openCheckout, openPortal
 │   ├── useCircle.ts           Sources + people count
 │   ├── useCircleDedupe.ts     Dedupe scan + accept/reject
+│   ├── useCirclePeople.ts     Paginated / filtered people list
 │   ├── useIdeas.ts            Active Ideas
 │   ├── useMatches.ts          Match list + state transitions + run trigger
 │   ├── useSundayLetter.ts     Letter loading + generation
@@ -518,19 +533,24 @@ src/
 │   ├── use-mobile.tsx
 │   └── use-toast.ts
 ├── lib/
-│   ├── tiers.ts               Tier catalogue (Freemium / Operator / Chief of Staff)
-│   ├── circleIngest.ts        Shared ingest pipeline
+│   ├── applyUserPreferences.ts Apply theme / preference values to DOM
+│   ├── circleIngest.ts        Shared ingest pipeline (including ingestQuickAdd)
 │   ├── crmCsv.ts              HubSpot/Attio/Folk/generic CSV detection
-│   ├── linkedinCsv.ts         LinkedIn CSV parsing
-│   ├── handles.ts             Social handle normalization
-│   ├── primaryContact.ts      Pick best email/phone/LinkedIn for outreach
 │   ├── fingerprint.ts         Dedupe key generation
+│   ├── formatCurrency.ts      Currency formatting helpers
+│   ├── handles.ts             Social handle normalization
+│   ├── linkedinCsv.ts         LinkedIn CSV parsing
+│   ├── openExternalUrl.ts     Safe external URL opener
+│   ├── primaryContact.ts      Pick best email/phone/LinkedIn for outreach
 │   ├── telemetry.ts           Central error/event sink (audit M5)
-│   ├── tiers.ts
+│   ├── tiers.ts               Tier catalogue (Freemium / Operator / Chief of Staff)
 │   └── utils.ts               cn() + helpers
+├── types/
+│   ├── customerTracking.ts
+│   └── tracking.ts
 ├── utils/
 │   ├── auditLogger.ts         User-action audit trail
-│   ├── contactActions.ts
+│   ├── contactActions.ts      Shared contact action helpers
 │   ├── greeting.ts
 │   ├── haptics.ts
 │   ├── retry.ts
@@ -544,7 +564,7 @@ src/
 └── index.css                  Design tokens, typography, theme
 ```
 
-121 TS/TSX files in `src/` as of 2026-04-26.
+138 TS/TSX files in `src/` as of 2026-05-17.
 
 ---
 
@@ -554,7 +574,7 @@ src/
 
 | Table | Purpose |
 |---|---|
-| `sources` | Every ingestion source per user. `kind` enum: google · microsoft · linkedin_csv · linkedin_extension · instagram_export · facebook_export · x_export · legacy_crm_csv · sheet_upload · ios_contacts · ios_shortcut · share_sheet · voice_seed · external_enrichment · business_card_photo · inbox_signature_scan · calendar_backscan |
+| `sources` | Every ingestion source per user. `kind` enum: google · microsoft · linkedin_csv · linkedin_extension · instagram_export · facebook_export · x_export · legacy_crm_csv · sheet_upload · ios_contacts · ios_shortcut · share_sheet · voice_seed · external_enrichment · business_card_photo · inbox_signature_scan · calendar_backscan · manual_add |
 | `person_raw` | Per-source raw rows, links to canonical `circle_person` |
 | `circle_person` | Canonical, deduplicated person. `handles` jsonb column for social handles (Phase B promotion, 2026-04-22) |
 | `ideas` | Active sellable Ideas. `status`: proposed · voiced · active · retired |
@@ -582,7 +602,7 @@ src/
 
 | Table | Purpose |
 |---|---|
-| `user_profiles` | Account, business context, onboarding state |
+| `user_profiles` | Account, business context, onboarding state. Practice fields added 2026-05-16: `role` (cmo/coo/cfo/…), `client_stages` (text[]), `client_verticals` (text[]), `positioning` (one-liner). Old free-text columns (`industry`, `business_type`, `target_market`) remain in schema but are no longer surfaced in UI. |
 | `user_preferences` | Theme, notifications, AI personality |
 | `user_business_context` | Business profile for AI personalization |
 | `user_insights` | AI-generated insights with confidence + priority |
@@ -594,13 +614,13 @@ src/
 **Legacy (pruned from the active surface in PR #45 but tables linger in older migrations):**
 `clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `skills`. Do not write new code against these.
 
-**Migration count:** 39 files in `supabase/migrations/` (2026-04-26).
+**Migration count:** 43 files in `supabase/migrations/` (2026-05-17). Notable additions since PR #46: `20260428000001_quick_add_source_kind` (adds `manual_add` enum value) and `20260516000001_user_practice_profile` (practice profile columns).
 
 **Migration drift note.** As of the PR #46 deploy, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. See the audit-deploy memory for context.
 
 ---
 
-## 19. Edge functions (35)
+## 19. Edge functions (34)
 
 All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
 
@@ -964,9 +984,15 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2026-04-24** | Full app audit (`AUDIT_2026-04-24.md`): 4 critical, 7 high, 10 medium, 6 low findings. |
 | **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
 | **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
+| **2026-04-27 (PR #47)** | All contacts shown in Circle tab with inline contact actions (`CirclePeopleList`, `CircleListRow`). |
+| **2026-04-28 (PR #48)** | Apple-grade UX pass on contact-add flows; front-and-centre Quick Add button (`QuickAddTyped`, `QuickAddPaste`, `QuickAddImage`, `AddToCircleSheet`). `manual_add` source kind added (migration `20260428000001`). Google sign-in fix documented. |
+| **2026-04-28 (PR #49)** | Public routes (`/privacy`, `/terms`) mounted in router; `PrivacySignInPrompt` shown at `/privacy` when logged out; `Terms.tsx` wired at `/terms`. Auth legal footer added. |
+| **2026-04-28 (PR #50)** | Profile preference fields wired to live UI with reliable saves. |
+| **2026-05-16 (PR #51)** | Structured practice profile fields: role, client_stages, client_verticals, positioning (migration `20260516000001`). Old free-text fields hidden from UI. |
+| **2026-05-17 (PR #52)** | Standardized top-level header font across all display screens. |
 
-**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), H7 (parse-screenshot error-body leak), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6.
+**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), H7 (parse-screenshot error-body leak — still open; `text.slice(0, 300)` still present in `parseWithClaude` and `parseWithOpenAI`), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6.
 
 ---
 
-*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-04-26.*
+*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-17.*

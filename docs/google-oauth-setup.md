@@ -1,5 +1,7 @@
 # Google OAuth setup (Phase 5)
 
+> Last verified: 2026-05-17. Setup steps and secrets names are current.
+
 One-time Google Cloud Console setup for the `Connect Google` source.
 
 ## 1. Create or pick a project

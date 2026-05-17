@@ -69,7 +69,7 @@ Full breakdown in [DOCS.md § Pricing](./DOCS.md#pricing--gating).
 
 React 18 + TypeScript (strict) · Vite · Tailwind · shadcn/Radix · Framer Motion · Supabase (Postgres + RLS + Edge Functions / Deno) · OpenAI (Whisper, GPT-4o, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) · Stripe · Twilio · Resend · Vercel.
 
-35 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)).
+34 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)).
 
 ---
 

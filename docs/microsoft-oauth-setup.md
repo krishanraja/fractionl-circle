@@ -1,5 +1,7 @@
 # Microsoft Graph OAuth setup (Phase 5b)
 
+> Last verified: 2026-05-17. Setup steps and secrets names are current.
+
 One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the
 Google setup; same token storage, same callback shape, same user UX.
 

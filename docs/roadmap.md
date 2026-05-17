@@ -41,6 +41,15 @@ Checkout + Customer Portal + signature-verified webhook + tier sync. `stripe-che
 ### Compliance surface
 ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent flags on auth. Data export + deletion paths in `useDataPrivacy`.
 
+### Contact list and Quick Add (April–May 2026)
+All deduplicated people shown in Circle tab via `CirclePeopleList` + `CircleListRow` with inline contact actions (PR #47). Front-and-centre Quick Add button covers three paths: typed (`QuickAddTyped`), pasted URL/handle (`QuickAddPaste`), and shared image (`QuickAddImage`). Image path runs vision LLM pipeline identical to screenshot capture. `manual_add` source kind added to the `source_kind` enum (migration `20260428000001_quick_add_source_kind`).
+
+### Public routes and legal pages (April 2026)
+`/terms` route wired to `Terms.tsx`. `/privacy` is now auth-gated — unauthenticated visitors see `PrivacySignInPrompt` instead of a crash. Auth legal footer added to sign-in screen (`auth/AuthLegalFooter.tsx`). PR #49 + #50.
+
+### Structured practice profile (May 2026)
+Profile settings now surface structured pickers for role, client stages, client verticals, and a free-text positioning one-liner. Backed by four new columns on `user_profiles` (migration `20260516000001_user_practice_profile`). Old free-text fields (`industry`, `business_type`, `target_market`) remain in schema but are hidden from the UI — inputs produced junk data the Match Engine could not prompt against reliably. PR #51.
+
 ### Audit-clean (April 2026)
 - TypeScript strict mode on (audit H1).
 - All 14 LLM call sites have explicit `AbortSignal.timeout` (C3).
@@ -179,5 +188,7 @@ Read the signal from paying users:
 - **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
 - **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
 - **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
+- **Open audit item H7:** `parse-screenshot` still echoes up to 300 characters of LLM error body into edge logs. Fix: log status + request-id only. Roadmap entry unchanged; `docs/screenshot-to-contact.md` has been corrected to stop claiming this is resolved.
+- **Roadmap verified:** 2026-05-17. PRs #47–52 shipped since last verification — see "Currently in production" section above.
 
 Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; the runway is sales and signal.
