@@ -1,6 +1,8 @@
 # Circle by Fractionl — Roadmap
 
-The 90-day plan (Phases 1–11) is shipped. The April 2026 audit (`AUDIT_2026-04-24.md`) shipped 13 of 14 findings via PR #46 (merged 2026-04-26). This file is the honest state of what's done, what's deferred, and roughly what each open item costs.
+The 90-day plan (Phases 1–11) is shipped. The April 2026 audit (`AUDIT_2026-04-24.md`) shipped 13 of 14 findings via PR #46 (merged 2026-04-26). PRs #47–#52 shipped further features through 2026-05-24. This file is the honest state of what's done, what's deferred, and roughly what each open item costs.
+
+**Last updated:** 2026-05-24.
 
 Ordering is by **leverage-per-effort**, not by chronological lineup.
 
@@ -40,6 +42,24 @@ Checkout + Customer Portal + signature-verified webhook + tier sync. `stripe-che
 
 ### Compliance surface
 ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent flags on auth. Data export + deletion paths in `useDataPrivacy`.
+
+### Show-all-contacts / inline people list (PR #47)
+`CirclePeopleList.tsx` + `CircleListRow.tsx` + `useCirclePeople` hook. All Circle contacts are now shown inline on the Circle tab with contact actions. The sources panel is moved into a collapsible `<details>` disclosure (auto-expanded when the Circle is empty).
+
+### Quick-add contact-creation (PR #48 + migration 2026-04-28)
+`AddToCircleSheet.tsx` with three quick-add paths: `QuickAddTyped` (hand-type name + details), `QuickAddPaste` (paste a URL or handle), `QuickAddImage` (photo/screenshot). `ContactConfirmCard.tsx` for the confirm step. Tracked with the new `manual_add` source kind. Accessible via header "+" button, sticky FAB on the Circle tab, and keyboard shortcut Cmd/Ctrl+N.
+
+### Forgot-password + password recovery
+`SetNewPasswordScreen.tsx` handles the in-app password reset after the user follows a Supabase-generated reset email. Shown in `AuthenticatedShell` on `PASSWORD_RECOVERY` auth event.
+
+### Public route + /terms fix (PR #50)
+`/privacy` and `/terms` routes properly mounted in React Router. `PrivacyRoute` guard shows `PrivacySignInPrompt.tsx` when the visitor is logged out. New `Terms.tsx` page at `/terms`.
+
+### Structured practice-profile fields (PR #51, migration 2026-05-16)
+`user_profiles` now has `role` (cmo/coo/cfo/…), `client_stages` (text[]), `client_verticals` (text[]), `positioning` (text). `ProfileSettingsSheet` surfaces these as chip-group pickers and a text input. The old free-text `industry` / `business_type` / `target_market` fields are retained in the schema but no longer shown in the UI.
+
+### Screen header standardization (PR #52)
+All top-level screen headers use the `text-display` CSS class for consistent typography across Today / Streams / Circle / Ask.
 
 ### Audit-clean (April 2026)
 - TypeScript strict mode on (audit H1).
@@ -177,7 +197,9 @@ Read the signal from paying users:
 - **Last full audit:** 2026-04-24 (`AUDIT_2026-04-24.md`).
 - **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`).
 - **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
+- **Migration count:** 43 files as of 2026-05-24.
 - **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
 - **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
+- **Open audit item H7** (`parse-screenshot` error-body leak): still unresolved as of 2026-05-24. Both Claude and OpenAI error paths include `text.slice(0, 300)` in the thrown error. Fix: log status + request-id only.
 
 Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; the runway is sales and signal.

@@ -116,3 +116,7 @@ To let non-test-users connect, submit the OAuth consent screen for
 verification. Since we only use non-restricted + sensitive scopes, this is
 Google's lighter-weight "brand verification" — a few screenshots and a demo
 video, typically a few days' turnaround.
+
+---
+
+*Last verified against repo: 2026-05-24. Steps and secrets match the deployed configuration.*

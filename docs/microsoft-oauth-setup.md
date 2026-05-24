@@ -110,3 +110,7 @@ share that file). Run the new sections that schedule `cron-sync-google` and
   was consumed already or never inserted. Try again from Circle.
 - **Empty results from `/me/contacts`** — the user is on a personal account
   with no Outlook contacts. Calendar may still return events.
+
+---
+
+*Last verified against repo: 2026-05-24. Steps and secrets match the deployed configuration.*

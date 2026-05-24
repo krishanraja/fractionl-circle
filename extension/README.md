@@ -97,3 +97,7 @@ popup.css
 
 For now: load unpacked. Chrome Web Store submission is a follow-up — the
 listing needs screenshots, a privacy policy URL, and a 128x128 icon.
+
+---
+
+*Last verified against repo: 2026-05-24. Extension files and pairing flow match the deployed configuration.*
