@@ -6,6 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
+import { ingestVoiceSeed, type VoiceSeedPerson } from '@/lib/circleIngest';
+
+// Seed the Circle with people named during onboarding so day one is not a
+// "no people to match against" dead-end. Flag-gated (default off) until enabled.
+const PEOPLE_SEEDING_ENABLED = import.meta.env.VITE_PEOPLE_SEEDING_ENABLED === 'true';
 
 type Step = 'intro' | 'recording' | 'processing' | 'review' | 'error';
 
@@ -41,6 +46,7 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
   const [step, setStep] = useState<Step>('intro');
   const [transcript, setTranscript] = useState('');
   const [ideas, setIdeas] = useState<IdeaDraft[]>([]);
+  const [people, setPeople] = useState<VoiceSeedPerson[]>([]);
   const [summary, setSummary] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -94,11 +100,12 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
           body: { transcript: tr },
         });
         if (extractRes.error) throw new Error(extractRes.error.message || 'Could not make sense of that');
-        const data = extractRes.data as { ideas?: IdeaDraft[]; summary?: string | null } | null;
+        const data = extractRes.data as { ideas?: IdeaDraft[]; people?: VoiceSeedPerson[]; summary?: string | null } | null;
         const parsed = Array.isArray(data?.ideas) ? data!.ideas : [];
         if (!parsed.length) throw new Error('No Ideas landed. Try again with a little more detail.');
         if (cancelled) return;
         setIdeas(parsed);
+        setPeople(Array.isArray(data?.people) ? data!.people : []);
         setSummary(data?.summary ?? null);
         setStep('review');
       } catch (e) {
@@ -130,6 +137,17 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
         }))
       );
       if (error) throw error;
+
+      // Seed the Circle with the people they named, so the overnight match has
+      // someone to run against on night one. Non-fatal: never block onboarding.
+      if (PEOPLE_SEEDING_ENABLED && people.length) {
+        try {
+          await ingestVoiceSeed(user.id, people);
+        } catch {
+          // ignore: seeding is a bonus, onboarding completion is what matters
+        }
+      }
+
       await completeOnboardingStep(4);
       onComplete();
     } catch (e) {
@@ -266,6 +284,16 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
                 </motion.div>
               ))}
             </div>
+            {PEOPLE_SEEDING_ENABLED && people.length > 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: ideas.length * 0.08 + 0.1 }}
+                className="mt-4 text-xs text-foreground-muted text-center"
+              >
+                I also caught {people.length} {people.length === 1 ? 'person' : 'people'} you mentioned. I'll start matching them against these tonight.
+              </motion.p>
+            )}
           </motion.div>
         )}
 

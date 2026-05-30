@@ -57,8 +57,14 @@ For each Idea, return:
 
 Return JSON: { "ideas": [ ... ], "posture": "established", "summary": "one sentence back to the user" }`;
 
+    // Also mine the transcript for specific PEOPLE the user named, so onboarding
+    // can seed their Circle (fixes the day-one "no people to match against" gap).
+    const peopleClause = `
+
+ALSO extract any specific PEOPLE the user mentioned by name (colleagues, clients, prospects, partners, contacts). For each, return: name (required), hint (a short phrase on how they relate or why they matter, e.g. "VP Marketing at the fintech, drowning in attribution"), company (if stated, else null), title (if stated, else null). Add a "people" array to the JSON you return: "people": [ { "name": string, "hint": string|null, "company": string|null, "title": string|null } ]. Only include real, specifically-named individuals (never the user themselves, never vague references like "a client"). If no one was named, return "people": [].`;
+
     const aiPrefs = await loadUserAiPreferences(supabase, userId);
-    const basePrompt = posture === 'established' ? established : greenfield;
+    const basePrompt = (posture === 'established' ? established : greenfield) + peopleClause;
     const systemPrompt = withPersonality(basePrompt, aiPrefs);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -94,6 +100,7 @@ Return JSON: { "ideas": [ ... ], "posture": "established", "summary": "one sente
     return new Response(
       JSON.stringify({
         ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+        people: Array.isArray(parsed.people) ? parsed.people : [],
         posture: parsed.posture ?? (posture === 'established' ? 'established' : 'greenfield'),
         summary: typeof parsed.summary === 'string' ? parsed.summary : null,
         raw_transcript: transcript,
