@@ -73,6 +73,22 @@ Deno.serve(async (req) => {
     const event = JSON.parse(body);
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Idempotency: Stripe delivers at-least-once. Record each verified event.id
+    // and short-circuit on a redelivery so we never reprocess (Phase 2 hardening,
+    // 5d foundation). Fail-open on unexpected DB errors so real events are never
+    // silently dropped.
+    const { error: dedupeError } = await supabase
+      .from('processed_stripe_events')
+      .insert({ event_id: event.id, event_type: event.type });
+    if (dedupeError) {
+      if (dedupeError.code === '23505') {
+        return new Response(JSON.stringify({ received: true, deduped: true }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      console.error('processed_stripe_events insert error:', dedupeError.code);
+    }
+
     console.log('Stripe webhook event:', event.type);
 
     switch (event.type) {
