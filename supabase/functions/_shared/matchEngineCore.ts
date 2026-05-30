@@ -54,7 +54,13 @@ const ACTIVE_STATES = ['new', 'approved', 'edited'] as const;
 const tokens = (s: string | null | undefined): string[] =>
   (s ?? '').toLowerCase().match(/[a-z0-9]+/g) ?? [];
 
-const prefilter = (idea: Idea, people: Person[]): Person[] => {
+// A small, conservative nudge given to a candidate who has a recent INTERNAL
+// signal (warmth-decay / mention). It only changes *which* candidates make the
+// prefilter shortlist — never the LLM's scoring or any persisted score. When no
+// signals exist the set is empty and behavior is identical to before.
+const SIGNAL_PREFILTER_BONUS = 1;
+
+const prefilter = (idea: Idea, people: Person[], signalPersonIds: Set<string>): Person[] => {
   const icpTokens = new Set([
     ...tokens(idea.icp),
     ...tokens(idea.offer),
@@ -62,7 +68,11 @@ const prefilter = (idea: Idea, people: Person[]): Person[] => {
   ]);
   if (!icpTokens.size) {
     return [...people]
-      .sort((a, b) => (b.last_interaction_at ?? '').localeCompare(a.last_interaction_at ?? ''))
+      .sort((a, b) => {
+        const bonus = (signalPersonIds.has(b.id) ? 1 : 0) - (signalPersonIds.has(a.id) ? 1 : 0);
+        if (bonus !== 0) return bonus;
+        return (b.last_interaction_at ?? '').localeCompare(a.last_interaction_at ?? '');
+      })
       .slice(0, PREFILTER_TOP_N);
   }
   const scored = people.map((p) => {
@@ -73,6 +83,7 @@ const prefilter = (idea: Idea, people: Person[]): Person[] => {
     for (const t of companyToks) if (icpTokens.has(t)) score += 1;
     if (p.primary_email) score += 0.3;
     if (p.linkedin_url) score += 0.3;
+    if (signalPersonIds.has(p.id)) score += SIGNAL_PREFILTER_BONUS;
     return { p, score };
   });
   scored.sort((a, b) => b.score - a.score);
@@ -202,6 +213,26 @@ export async function runMatchEngineForUser(
     )
   );
 
+  // Recent INTERNAL signals (warmth-decay / mention, written by generate-signals)
+  // give their person a small prefilter nudge. Best-effort: a signals read error
+  // must never break matching — we just fall back to an empty set (no nudge).
+  const signalPersonIds = new Set<string>();
+  try {
+    const signalsSince = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: recentSignals } = await supabase
+      .from('signals')
+      .select('circle_person_id')
+      .eq('user_id', userId)
+      .not('circle_person_id', 'is', null)
+      .gte('created_at', signalsSince)
+      .limit(500);
+    for (const s of (recentSignals ?? []) as Array<{ circle_person_id: string | null }>) {
+      if (s.circle_person_id) signalPersonIds.add(s.circle_person_id);
+    }
+  } catch (_e) {
+    // No signals table read access / transient error: proceed with no nudge.
+  }
+
   const aiPrefs = await loadUserAiPreferences(supabase, userId);
   const personalitySuffix = personalitySystemSuffix(aiPrefs?.ai_personality);
 
@@ -210,7 +241,7 @@ export async function runMatchEngineForUser(
   const errors: string[] = [];
 
   for (const idea of ideas as Idea[]) {
-    const candidates = prefilter(idea, circle as Person[]);
+    const candidates = prefilter(idea, circle as Person[], signalPersonIds);
     if (!candidates.length) continue;
     const { system, user } = buildPrompt(idea, candidates, personalitySuffix);
 

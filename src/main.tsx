@@ -3,7 +3,7 @@ import App from './App.tsx'
 import './index.css'
 import { registerServiceWorker } from './utils/registerServiceWorker'
 import { reportError } from './lib/telemetry'
-import { captureAttribution, flushAttribution } from './lib/attribution'
+import { captureAttribution, flushAttribution, emitLifecycle } from './lib/attribution'
 import { supabase } from './integrations/supabase/client'
 
 registerServiceWorker();
@@ -14,6 +14,8 @@ captureAttribution();
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session?.user?.id) {
     void flushAttribution(session.user.id);
+    // Server-side lifecycle emit (5d). Guarded to once per session; fire-and-forget.
+    emitLifecycle('signed_up');
   }
 });
 

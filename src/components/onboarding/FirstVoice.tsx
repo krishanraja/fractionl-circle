@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
 import { ingestVoiceSeed, type VoiceSeedPerson } from '@/lib/circleIngest';
+import { emitLifecycle } from '@/lib/attribution';
 
 // Seed the Circle with people named during onboarding so day one is not a
 // "no people to match against" dead-end. Flag-gated (default off) until enabled.
@@ -149,6 +150,9 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
       }
 
       await completeOnboardingStep(4);
+      // Magic moment reached (first voice -> Ideas saved). Server-side lifecycle
+      // emit (5d); deduped on user_id downstream, fire-and-forget.
+      emitLifecycle('activated');
       onComplete();
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Could not save Ideas');

@@ -42,3 +42,9 @@ verify_jwt = false
 
 [functions.send-push]
 verify_jwt = false
+
+[functions.generate-signals]
+verify_jwt = true
+
+[functions.emit-lifecycle]
+verify_jwt = true

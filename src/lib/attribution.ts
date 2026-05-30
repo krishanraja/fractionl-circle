@@ -96,6 +96,36 @@ export function getAttribution(): AttributionContext | null {
   return readStored();
 }
 
+const SIGNED_UP_GUARD_KEY = 'circle.lifecycle.signed_up';
+
+/**
+ * Emit a canonical lifecycle event to the central warehouse, server-side (the
+ * edge function holds the secret; the browser never does). The function is inert
+ * until the OS provisions ATTRIBUTION_INGEST_SECRET, so this is safe to call
+ * before the receiver exists. Fire-and-forget: never blocks, never throws.
+ *
+ * 'signed_up' is guarded to fire at most once per session (sessionStorage), so a
+ * token refresh re-firing SIGNED_IN does not re-emit it. 'activated' is keyed
+ * server-side on the user_id, so emitting it more than once is harmless (deduped
+ * downstream).
+ */
+export function emitLifecycle(event: 'signed_up' | 'activated'): void {
+  try {
+    if (event === 'signed_up') {
+      if (sessionStorage.getItem(SIGNED_UP_GUARD_KEY)) return;
+      sessionStorage.setItem(SIGNED_UP_GUARD_KEY, '1');
+    }
+    const ctx = getAttribution();
+    void supabase.functions
+      .invoke('emit-lifecycle', { body: { event, ...(ctx ?? {}) } })
+      .catch(() => {
+        // Non-fatal: lifecycle emit must never affect the app.
+      });
+  } catch {
+    // sessionStorage unavailable (private mode etc.): skip silently.
+  }
+}
+
 /**
  * Flush the captured context to public.user_attribution once, on the first
  * authenticated session. Write-once (first-touch immutable): skips if a row
