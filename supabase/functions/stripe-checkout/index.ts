@@ -63,6 +63,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Acquisition attribution (5c): read the user's first-touch row and build
+    // Stripe metadata so the purchase event is attributable to a campaign/agent.
+    const { data: attr } = await supabase
+      .from('user_attribution')
+      .select('utm_source, utm_medium, utm_campaign, utm_content, utm_term, campaign_id, agent, anonymous_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const customerMeta: Record<string, string> = {};
+    const subMeta: Record<string, string> = {};
+    if (attr) {
+      for (const [k, v] of Object.entries(attr)) {
+        if (v != null && v !== '') {
+          customerMeta[`metadata[${k}]`] = String(v);
+          subMeta[`subscription_data[metadata][${k}]`] = String(v);
+        }
+      }
+    }
+
     // Check for existing Stripe customer
     const { data: subscription } = await supabase
       .from('subscriptions')
@@ -77,6 +95,7 @@ Deno.serve(async (req) => {
       const customer = await stripeRequest('/customers', {
         email: user.email || '',
         'metadata[supabase_user_id]': user.id,
+        ...customerMeta,
       });
       customerId = customer.id;
 
@@ -96,6 +115,7 @@ Deno.serve(async (req) => {
       'cancel_url': `${APP_URL}?checkout=canceled`,
       'subscription_data[metadata][supabase_user_id]': user.id,
       'allow_promotion_codes': 'true',
+      ...subMeta,
     });
 
     return new Response(

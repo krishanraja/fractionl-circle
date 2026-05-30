@@ -6,6 +6,50 @@ const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+// Central attribution warehouse (5d). Circle only EMITS revenue lifecycle events
+// to the Mindmaker OS ingest function. No-op until the OS provisions the secret,
+// so this is safe to ship before the receiver exists. Never throws.
+const ATTRIBUTION_INGEST_URL = Deno.env.get('ATTRIBUTION_INGEST_URL')
+  || 'https://gojpffsrxybbpbdzzrvs.supabase.co/functions/v1/ingest-attribution';
+const ATTRIBUTION_INGEST_SECRET = Deno.env.get('ATTRIBUTION_INGEST_SECRET');
+
+async function emitAttribution(event: string, fields: Record<string, unknown>, dedupeKey: string) {
+  if (!ATTRIBUTION_INGEST_SECRET) return;
+  try {
+    await fetch(ATTRIBUTION_INGEST_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-attribution-secret': ATTRIBUTION_INGEST_SECRET },
+      body: JSON.stringify({
+        app: 'circle',
+        event,
+        stripe_account: 'fractionl_ai',
+        occurred_at: new Date().toISOString(),
+        dedupe_key: dedupeKey,
+        ...fields,
+      }),
+      signal: AbortSignal.timeout(5_000),
+    });
+  } catch (_e) {
+    // Fail-open: an ingest hiccup must never fail the Stripe webhook.
+  }
+}
+
+// Pull attribution fields stamped onto the Stripe subscription metadata at checkout.
+function attrFromMetadata(meta: Record<string, string> | undefined) {
+  const m = meta ?? {};
+  return {
+    user_id: m.supabase_user_id ?? null,
+    anonymous_id: m.anonymous_id ?? null,
+    utm_source: m.utm_source ?? null,
+    utm_medium: m.utm_medium ?? null,
+    utm_campaign: m.utm_campaign ?? null,
+    utm_content: m.utm_content ?? null,
+    utm_term: m.utm_term ?? null,
+    campaign_id: m.campaign_id ?? null,
+    agent: m.agent ?? null,
+  };
+}
+
 async function stripeGet(endpoint: string) {
   const response = await fetch(`https://api.stripe.com/v1${endpoint}`, {
     headers: { 'Authorization': `Bearer ${STRIPE_SECRET_KEY}` },
@@ -164,6 +208,12 @@ Deno.serve(async (req) => {
           cancel_at_period_end: false,
         }, { onConflict: 'user_id' });
 
+        await emitAttribution('churned', {
+          ...attrFromMetadata(sub.metadata),
+          stripe_subscription_id: sub.id,
+          metadata: { source_event: 'customer.subscription.deleted' },
+        }, `circle:churned:${sub.id}`);
+
         console.log(`Subscription canceled for ${userId}, reverted to free`);
         break;
       }
@@ -182,6 +232,37 @@ Deno.serve(async (req) => {
         }).eq('user_id', userId);
 
         console.log(`Payment failed for ${userId}`);
+        break;
+      }
+
+      case 'invoice.payment_succeeded': {
+        // Canonical 'purchased' event (first sale + every renewal). Keyed on the
+        // invoice id so each paid invoice counts once and renewals are distinct.
+        const invoice = event.data.object;
+        const subId = invoice.subscription;
+        if (!subId) break;
+
+        const sub = await stripeGet(`/subscriptions/${subId}`);
+        const priceId = sub.items?.data?.[0]?.price?.id;
+        await emitAttribution('purchased', {
+          ...attrFromMetadata(sub.metadata),
+          stripe_customer_id: invoice.customer,
+          stripe_subscription_id: subId,
+          amount_cents: invoice.amount_paid ?? null,
+          currency: invoice.currency ?? null,
+          metadata: { price_id: priceId, billing_reason: invoice.billing_reason, source_event: 'invoice.payment_succeeded' },
+        }, `circle:purchased:${subId}:${invoice.id}`);
+        break;
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object;
+        await emitAttribution('refunded', {
+          stripe_customer_id: charge.customer ?? null,
+          amount_cents: charge.amount_refunded ?? null,
+          currency: charge.currency ?? null,
+          metadata: { charge_id: charge.id, source_event: 'charge.refunded' },
+        }, `circle:refunded:${charge.id}:${charge.amount_refunded}`);
         break;
       }
     }
