@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
   let totalMatches = 0;
   let totalDuplicates = 0;
   const errors: Array<{ user_id: string; message: string }> = [];
+  const notifyUserIds: string[] = [];
 
   for (const userId of targetUsers) {
     try {
@@ -67,6 +68,8 @@ Deno.serve(async (req) => {
       processed++;
       totalMatches += result.matchesCreated;
       totalDuplicates += result.duplicatesSkipped;
+      // Only notify users who actually got fresh Moves this run.
+      if (result.matchesCreated >= 1) notifyUserIds.push(userId);
       if (result.errors.length) {
         errors.push({ user_id: userId, message: result.errors.join('; ') });
       }
@@ -75,11 +78,39 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Fire Web Push notifications for users with new matches. Best-effort: a
+  // push failure (or send-push being inert when VAPID is unconfigured) must
+  // never break or fail the cron run.
+  let pushed = 0;
+  for (const userId of notifyUserIds) {
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          title: 'Your moves are ready',
+          body: 'Circle found people worth reaching this week.',
+          url: 'https://circle.fractionl.ai/',
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (resp.ok) pushed++;
+    } catch (_e) {
+      // Swallow: notifications are non-critical relative to match creation.
+    }
+  }
+
   return new Response(JSON.stringify({
     target_users: targetUsers.length,
     processed,
     matches_created: totalMatches,
     duplicates_skipped: totalDuplicates,
+    notified_users: notifyUserIds.length,
+    push_calls_ok: pushed,
     errors,
     at: new Date().toISOString(),
   }), { headers: { 'Content-Type': 'application/json' } });

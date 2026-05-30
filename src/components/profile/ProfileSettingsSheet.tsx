@@ -38,7 +38,12 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useInstallPrompt, isIOS } from '@/hooks/useInstallPrompt';
+import { useWebPush } from '@/hooks/useWebPush';
 import { Download } from 'lucide-react';
+
+// Gated behind a build flag AND runtime push support. Inert until the VAPID
+// keys are configured (VITE_VAPID_PUBLIC_KEY is read inside useWebPush).
+const PUSH_ENABLED = import.meta.env.VITE_PUSH_ENABLED === 'true';
 
 interface ProfileSettingsSheetProps {
   open: boolean;
@@ -221,11 +226,30 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   const { user, signOut } = useAuth();
   const { profile, preferences, updateProfile, updatePreferences } = useUserProfile();
   const { canInstall, install } = useInstallPrompt();
+  const { supported: pushSupported, permission: pushPermission, subscribe: subscribePush } =
+    useWebPush();
 
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [positioning, setPositioning] = useState('');
+  const [pushBusy, setPushBusy] = useState(false);
+
+  const showPushOptIn = PUSH_ENABLED && pushSupported;
+
+  const handleEnablePush = useCallback(async () => {
+    setPushBusy(true);
+    try {
+      const ok = await subscribePush();
+      if (ok) {
+        toast.success("You're set — we'll ping you when moves are ready.");
+      } else {
+        toast.error('Allow notifications in your browser to enable this.');
+      }
+    } finally {
+      setPushBusy(false);
+    }
+  }, [subscribePush]);
 
   useEffect(() => {
     if (!open) return;
@@ -545,6 +569,32 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
               onCheckedChange={(v) => handleTogglePreference('browser_notifications', v)}
             />
           </SettingRow>
+
+          {showPushOptIn && (
+            <SettingRow
+              label="Notify me when moves are ready"
+              description="Get a push the moment Circle drafts your overnight Moves"
+            >
+              {pushPermission === 'granted' ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground-muted">
+                  <Check className="w-3.5 h-3.5 text-primary" />
+                  Enabled
+                </span>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-9"
+                  disabled={pushBusy}
+                  onClick={() => void handleEnablePush()}
+                >
+                  <Bell className="w-3.5 h-3.5 mr-1" />
+                  {pushBusy ? 'Enabling…' : 'Enable'}
+                </Button>
+              )}
+            </SettingRow>
+          )}
 
           <SettingRow
             label="Daily digest"

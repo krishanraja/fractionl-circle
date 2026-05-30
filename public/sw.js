@@ -67,6 +67,68 @@ async function handleShareTarget(request) {
   }
 }
 
+// ── Web Push ────────────────────────────────────────────────────────────
+// Inert unless the server (send-push) actually delivers a push. Parses the
+// payload defensively and shows a notification that deep-links into the app.
+
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (_err) {
+    // Fallback: treat any non-JSON body as the notification body text.
+    try {
+      payload = { body: event.data ? event.data.text() : '' };
+    } catch (_err2) {
+      payload = {};
+    }
+  }
+
+  const title = payload.title || 'Circle';
+  const options = {
+    body: payload.body || 'Your moves are ready.',
+    data: { url: payload.url || '/' },
+    icon: '/android-chrome-192x192.png',
+    badge: '/android-chrome-192x192.png',
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options).catch(() => {})
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+
+  event.waitUntil(
+    (async () => {
+      try {
+        const allClients = await self.clients.matchAll({
+          type: 'window',
+          includeUncontrolled: true,
+        });
+        // Focus an existing tab if one is open, otherwise open a new window.
+        for (const client of allClients) {
+          if ('focus' in client) {
+            try {
+              if ('navigate' in client) await client.navigate(targetUrl);
+            } catch (_err) {
+              /* navigation can fail cross-origin; just focus */
+            }
+            return client.focus();
+          }
+        }
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl);
+        }
+      } catch (_err) {
+        /* never throw out of the SW */
+      }
+    })()
+  );
+});
+
 // Expose the cached blob to the client via a message channel.
 self.addEventListener('message', async (event) => {
   if (event.data?.type === 'READ_SHARED') {
