@@ -7,9 +7,15 @@ import { useIdeas } from '@/hooks/useIdeas';
 import { useCircle } from '@/hooks/useCircle';
 import { useMatches, runMatchEngine } from '@/hooks/useMatches';
 import { MatchCard } from '@/components/today/MatchCard';
+import { FocusMove } from '@/components/today/FocusMove';
 import { SundayLetterCard } from '@/components/today/SundayLetterCard';
 import { ConciergeCard } from '@/components/today/ConciergeCard';
 import { PricingSheet } from '@/components/billing/PricingSheet';
+
+// "Today: one thing now" inversion. When on, and there are matches, the home
+// leads with the single highest-priority Move; everything else recedes below.
+// Flag off = the original flat card stack, byte-for-byte unchanged.
+const TODAY_FOCUS_ENABLED = import.meta.env.VITE_TODAY_FOCUS_ENABLED === 'true';
 
 export const TodayScreen = () => {
   const { ideas, loading: ideasLoading } = useIdeas();
@@ -51,6 +57,40 @@ export const TodayScreen = () => {
       setRunning(false);
     }
   };
+
+  // FOCUS layout: flag on AND there is at least one match. The headline and the
+  // hero Move come first; ConciergeCard / SundayLetterCard recede below. The
+  // no-match, empty, and error states deliberately fall through to the existing
+  // layout below so that gating logic (canRun, Surface Matches, matchesError)
+  // is never regressed.
+  if (TODAY_FOCUS_ENABLED && hasMatches) {
+    return (
+      <div className="min-h-full bg-background px-4 pt-6 pb-24">
+        <motion.p
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-5 text-sm text-foreground-secondary leading-relaxed"
+        >
+          Overnight I looked for Matches across your Ideas and Circle.
+        </motion.p>
+
+        <FocusMove
+          matches={matches}
+          onStateChange={updateMatchState}
+          canRun={canRun}
+          running={running}
+          onRun={handleRun}
+        />
+
+        <ConciergeCard />
+
+        <SundayLetterCard canGenerate={canRun} />
+
+        <PricingSheet open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-background px-4 pt-6 pb-24">
