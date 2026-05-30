@@ -79,6 +79,7 @@ export const useMatches = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<EnrichedMatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!user) {
@@ -87,6 +88,7 @@ export const useMatches = () => {
       return;
     }
     setLoading(true);
+    setLoadError(null);
 
     const { data: matches, error } = await supabase
       .from('matches')
@@ -96,6 +98,9 @@ export const useMatches = () => {
       .order('surfaced_at', { ascending: false })
       .limit(30);
     if (error || !matches) {
+      // Surface the failure instead of silently collapsing to "no matches", so
+      // a backend/RLS error is not mistaken for an empty pipeline.
+      setLoadError('Could not load your Matches. Tap to retry.');
       setItems([]);
       setLoading(false);
       return;
@@ -190,7 +195,7 @@ export const useMatches = () => {
     [refresh]
   );
 
-  return { matches: items, loading, refresh, updateMatchState };
+  return { matches: items, loading, error: loadError, refresh, updateMatchState };
 };
 
 interface RunResponse {

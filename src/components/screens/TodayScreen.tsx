@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lightbulb, Loader2, Zap } from 'lucide-react';
+import { Sparkles, Lightbulb, Loader2, Zap, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useIdeas } from '@/hooks/useIdeas';
@@ -14,7 +14,7 @@ import { PricingSheet } from '@/components/billing/PricingSheet';
 export const TodayScreen = () => {
   const { ideas, loading: ideasLoading } = useIdeas();
   const { totalPeople, loading: circleLoading } = useCircle();
-  const { matches, loading: matchesLoading, refresh, updateMatchState } = useMatches();
+  const { matches, loading: matchesLoading, error: matchesError, refresh, updateMatchState } = useMatches();
   const [running, setRunning] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<string | undefined>(undefined);
@@ -23,9 +23,10 @@ export const TodayScreen = () => {
   const hasMatches = matches.length > 0;
   const headline = useMemo(() => {
     if (matchesLoading) return 'Loading Matches…';
+    if (matchesError) return 'Could not load Matches.';
     if (hasMatches) return `${matches.length} Match${matches.length === 1 ? '' : 'es'} waiting for you.`;
     return 'Nothing waiting for you yet.';
-  }, [hasMatches, matches.length, matchesLoading]);
+  }, [hasMatches, matches.length, matchesLoading, matchesError]);
 
   const handleRun = async () => {
     setRunning(true);
@@ -71,7 +72,23 @@ export const TodayScreen = () => {
 
       <SundayLetterCard canGenerate={canRun} />
 
-      {!hasMatches && !matchesLoading && (
+      {matchesError && !matchesLoading && (
+        <section className="rounded-2xl border border-destructive/40 bg-destructive/5 p-6 mb-6">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-full bg-destructive/10 p-2">
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <p className="text-sm font-medium text-foreground">{matchesError}</p>
+              <button onClick={() => void refresh()} className="mt-1 text-sm text-primary font-medium">
+                Retry
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!hasMatches && !matchesLoading && !matchesError && (
         <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-6">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-full bg-primary/10 p-2">
