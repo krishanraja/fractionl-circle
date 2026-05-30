@@ -11,6 +11,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import ShareContact from "./pages/ShareContact";
+import TryDemo from "./pages/TryDemo";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
@@ -101,6 +102,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/share-contact" element={<ShareContact />} />
+        <Route path="/try" element={<TryDemo />} />
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
