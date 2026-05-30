@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { buildAuthorizeUrl } from '../_shared/googleOauth.ts';
+import { getUserTier } from '../_shared/tiers.ts';
 
 // Phase 5: start the Google OAuth flow. Returns an authorize URL the client
 // opens in a new tab / same-tab redirect. State is stored server-side and
@@ -14,8 +15,20 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { userId } = await requireAuth(req);
+    const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`oauth-google-start:${userId}`, 6, 60_000);
+
+    // Connecting an inbox/calendar is an Operator+ feature. The client hides it
+    // for Freemium; enforce server-side too (Phase 2 security: was client-only).
+    if ((await getUserTier(supabase, userId)) === 'free') {
+      return new Response(JSON.stringify({
+        error: 'upgrade_required',
+        feature: 'inbox_connect',
+        message: 'Connecting Google is available on Operator and Chief of Staff.',
+      }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
     if (!clientId) {

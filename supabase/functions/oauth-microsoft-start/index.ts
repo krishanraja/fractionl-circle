@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { buildMsAuthorizeUrl } from '../_shared/microsoftOauth.ts';
+import { getUserTier } from '../_shared/tiers.ts';
 
 const STATE_TTL_MS = 10 * 60 * 1000;
 
@@ -10,8 +11,20 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { userId } = await requireAuth(req);
+    const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`oauth-microsoft-start:${userId}`, 6, 60_000);
+
+    // Connecting an inbox/calendar is an Operator+ feature. The client hides it
+    // for Freemium; enforce server-side too (Phase 2 security: was client-only).
+    if ((await getUserTier(supabase, userId)) === 'free') {
+      return new Response(JSON.stringify({
+        error: 'upgrade_required',
+        feature: 'inbox_connect',
+        message: 'Connecting Microsoft is available on Operator and Chief of Staff.',
+      }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID') ?? Deno.env.get('MS_CLIENT_ID');
     if (!clientId) {
