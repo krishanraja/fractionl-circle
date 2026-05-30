@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollText, Loader2, RefreshCw, ChevronDown, ChevronUp, Headphones } from 'lucide-react';
+import { ScrollText, Loader2, RefreshCw, ChevronDown, ChevronUp, Headphones, Share2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 import { useSundayLetter, type SundayLetterRow, type SundayLetterStats } from '@/hooks/useSundayLetter';
+
+// 5e: opt-in public Signal feed. Off by default; flip VITE_SUNDAY_FEED_ENABLED
+// to expose the share control. When on, sharing flips is_publishable = true so
+// the de-identified preview appears in the public Sunday Letter feed.
+const SUNDAY_FEED_ENABLED = import.meta.env.VITE_SUNDAY_FEED_ENABLED === 'true';
 
 const formatWeekOf = (iso: string): string => {
   const d = new Date(`${iso}T00:00:00Z`);
@@ -33,6 +39,56 @@ const Preview = ({ letter }: { letter: SundayLetterRow }) => {
   const firstPara = letter.text_body.split(/\n\s*\n/)[0] ?? letter.text_body;
   return (
     <p className="text-sm text-foreground leading-relaxed line-clamp-3">{firstPara}</p>
+  );
+};
+
+// Opt-in control: flips is_publishable = true on the current letter so its
+// de-identified preview joins the public feed (5e). Owner RLS allows the
+// update. The new columns are not in the generated supabase types yet, so we
+// cast the client narrowly for this one call.
+const ShareSignal = ({ letter }: { letter: SundayLetterRow }) => {
+  const [published, setPublished] = useState<boolean>(
+    Boolean((letter as unknown as { is_publishable?: boolean }).is_publishable)
+  );
+  const [saving, setSaving] = useState(false);
+
+  const handleShare = async () => {
+    if (published || saving) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase as unknown as { from: (t: string) => any })
+        .from('sunday_letters')
+        .update({ is_publishable: true })
+        .eq('id', letter.id);
+      if (error) throw error;
+      setPublished(true);
+      toast.success('Shared as a public Signal. Only the de-identified teaser is published.');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not share this letter');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (published) {
+    return (
+      <p className="mt-3 inline-flex items-center gap-1 text-xs text-foreground-muted">
+        <Check className="w-3.5 h-3.5 text-primary" />
+        Shared as a public Signal
+      </p>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      disabled={saving}
+      className="mt-3 ml-3 inline-flex items-center gap-1 text-xs font-medium text-foreground-secondary hover:text-foreground disabled:opacity-60"
+      aria-label="Share this week's letter as a public Signal"
+    >
+      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5" />}
+      Share as public Signal
+    </button>
   );
 };
 
@@ -165,6 +221,8 @@ export const SundayLetterCard = ({ canGenerate }: SundayLetterCardProps) => {
         {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         {expanded ? 'Collapse' : 'Read the letter'}
       </button>
+
+      {SUNDAY_FEED_ENABLED && <ShareSignal letter={letter} />}
     </motion.section>
   );
 };

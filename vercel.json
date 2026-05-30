@@ -1,3 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/feed/sunday-letter.json",
+      "destination": "https://ksyuwacuigshvcyptlhe.supabase.co/functions/v1/sunday-letter-feed"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

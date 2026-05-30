@@ -68,6 +68,59 @@ export function validateLetter(raw: string): string {
   return text;
 }
 
+// A safe, generic teaser used when the de-identified preview call fails. Must
+// never contain names, companies, or client numbers.
+const FALLBACK_PREVIEW = 'A quiet read on the week in fractional revenue: where momentum showed up, and where it stalled.';
+
+// Generate a fully de-identified, shareable one-liner about the week's pattern.
+// Used by the public Sunday Letter feed (5e). Never leaks names, companies, or
+// client-tied figures. Best-effort: on any failure we return FALLBACK_PREVIEW
+// so letter generation never breaks.
+async function generatePreviewText(
+  narrative: string,
+  openaiApiKey: string
+): Promise<string> {
+  try {
+    const systemPrompt = `You write a single, fully anonymous teaser line about a fractional executive's week. You are given a private weekly letter; your job is to distill the GENERIC pattern into something shareable publicly.
+
+Rules (strict):
+- Output 1-2 sentences, under 240 characters total.
+- NO person names (first or last). NO company or organisation names. NO dollar figures, deal sizes, or any client-tied numbers.
+- No quotes, no markdown, no greeting, no signoff. Just the line.
+- Speak to the universal pattern (e.g. "warm intros outperformed cold outreach again this week"), never the specific people or deals.
+- Calm, specific, opinionated. Like a smart friend, not a marketer.`;
+
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: narrative },
+        ],
+        temperature: 0.4,
+        store: false,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!resp.ok) {
+      console.error('sunday_letter_preview_failed', resp.status);
+      return FALLBACK_PREVIEW;
+    }
+    const result = await resp.json();
+    const raw = String(result.choices?.[0]?.message?.content ?? '').trim();
+    if (!raw) return FALLBACK_PREVIEW;
+    // Strip any stray quotes/fences and cap length defensively.
+    const cleaned = raw.replace(/^```(?:\w+)?\s*\n?/, '').replace(/\n?```\s*$/, '').replace(/^["']|["']$/g, '').trim();
+    if (!cleaned) return FALLBACK_PREVIEW;
+    return cleaned.length > 280 ? cleaned.slice(0, 277).trimEnd() + '...' : cleaned;
+  } catch (e) {
+    console.error('sunday_letter_preview_error', e instanceof Error ? e.message : e);
+    return FALLBACK_PREVIEW;
+  }
+}
+
 export async function generateSundayLetterForUser(
   userId: string,
   supabase: any,
@@ -235,6 +288,11 @@ Rules:
     generationSource = 'llm';
   }
 
+  // Sanitized public teaser + url-safe slug for the opt-in public feed (5e).
+  // is_publishable stays false here; the owner opts in from the card later.
+  const previewText = await generatePreviewText(narrative, openaiApiKey);
+  const publicSlug = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+
   const { data: inserted, error: insertErr } = await supabase
     .from('sunday_letters')
     .upsert(
@@ -246,6 +304,8 @@ Rules:
         model,
         generation_source: generationSource,
         text_length: narrative.length,
+        preview_text: previewText,
+        public_slug: publicSlug,
       },
       { onConflict: 'user_id,week_of' }
     )
