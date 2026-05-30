@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       activity_logs: {
@@ -1154,6 +1129,42 @@ export type Database = {
           },
         ]
       }
+      processed_stripe_events: {
+        Row: {
+          event_id: string
+          event_type: string | null
+          processed_at: string
+        }
+        Insert: {
+          event_id: string
+          event_type?: string | null
+          processed_at?: string
+        }
+        Update: {
+          event_id?: string
+          event_type?: string | null
+          processed_at?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          bucket_key: string
+          count: number
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          count?: number
+          window_start: string
+        }
+        Update: {
+          bucket_key?: string
+          count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       reminders: {
         Row: {
           active: boolean
@@ -1530,30 +1541,36 @@ export type Database = {
         Row: {
           audio_url: string | null
           created_at: string
+          generation_source: string | null
           id: string
           model: string | null
           stats: Json | null
           text_body: string
+          text_length: number | null
           user_id: string
           week_of: string
         }
         Insert: {
           audio_url?: string | null
           created_at?: string
+          generation_source?: string | null
           id?: string
           model?: string | null
           stats?: Json | null
           text_body: string
+          text_length?: number | null
           user_id: string
           week_of: string
         }
         Update: {
           audio_url?: string | null
           created_at?: string
+          generation_source?: string | null
           id?: string
           model?: string | null
           stats?: Json | null
           text_body?: string
+          text_length?: number | null
           user_id?: string
           week_of?: string
         }
@@ -1945,6 +1962,51 @@ export type Database = {
           period_end?: string
           period_start?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_attribution: {
+        Row: {
+          agent: string | null
+          anonymous_id: string | null
+          campaign_id: string | null
+          captured_at: string
+          landing_path: string | null
+          referrer: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          agent?: string | null
+          anonymous_id?: string | null
+          campaign_id?: string | null
+          captured_at?: string
+          landing_path?: string | null
+          referrer?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          agent?: string | null
+          anonymous_id?: string | null
+          campaign_id?: string | null
+          captured_at?: string
+          landing_path?: string | null
+          referrer?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }
@@ -2415,6 +2477,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: { p_key: string; p_max: number; p_window_seconds: number }
+        Returns: boolean
+      }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       erase_user_data: { Args: { target_user_id: string }; Returns: boolean }
       export_user_data: { Args: { target_user_id: string }; Returns: Json }
       get_user_google_tokens: {
@@ -2689,9 +2756,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

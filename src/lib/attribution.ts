@@ -104,17 +104,14 @@ export function getAttribution(): AttributionContext | null {
 export async function flushAttribution(userId: string): Promise<void> {
   const ctx = getAttribution();
   if (!ctx || !userId) return;
-  // user_attribution is intentionally not in the generated Database types yet;
-  // cast to keep the typed client happy until types are regenerated.
-  const sb = supabase as unknown as { from: (table: string) => any };
   try {
-    const { data: existing } = await sb
+    const { data: existing } = await supabase
       .from('user_attribution')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle();
     if (existing) return;
-    await sb.from('user_attribution').insert({
+    await supabase.from('user_attribution').insert({
       user_id: userId,
       anonymous_id: ctx.anonymous_id,
       utm_source: ctx.utm_source,

@@ -55,16 +55,18 @@ The OS `attribution.events` table should carry at least: id, occurred_at, receiv
 ## Events that are PENDING (not yet emitted by Circle)
 - `landed`, `signed_up`, `activated` require a server-side emit path (the SSG marketing edge layer / a server helper) so the shared secret is never exposed in the browser bundle. That edge layer is the locked-but-unbuilt 5a SSG surface, so these three events are ROADMAP. The revenue half (purchased/refunded/churned) is wired now.
 
-## Circle-side steps still pending an authorized actor (NOT done in this session)
-These are production-affecting and were intentionally not executed without explicit approval:
-1. Apply the two additive migrations to the Circle Supabase project `ksyuwacuigshvcyptlhe`:
-   - `supabase/migrations/20260530000001_processed_stripe_events.sql`
-   - `supabase/migrations/20260530000002_user_attribution.sql`
-   (Until user_attribution exists, the app's attribution flush fails open silently; until processed_stripe_events exists, the webhook dedup is skipped fail-open.)
-2. Deploy the touched Circle edge functions: `stripe-checkout`, `stripe-webhook`, `dedupe-circle`, `oauth-google-start`, `oauth-microsoft-start`, `parse-screenshot`.
-3. Set `ATTRIBUTION_INGEST_SECRET` on Circle's edge env (step 3 above) to turn on emission.
-4. Rotate the exposed credentials: the `sbp_` Supabase token and the GitHub PAT embedded in the git remote.
-5. Optional cleanup (production-destructive, needs go/no-go): undeploy the 7 orphan live functions (ai-strategic-analysis, swift-action, google-sheets-integration, get-market-sentiment, chat-with-krish, daily-briefing, voice-command) and the test-google-secret debug function.
+## Circle-side production state (DONE this session, 2026-05-30)
+- APPLIED to Circle Supabase `ksyuwacuigshvcyptlhe` (verified): `public.processed_stripe_events` (RLS on, deny-all) and `public.user_attribution` (RLS on, owner select/insert).
+- DEPLOYED + smoke-verified (verify_jwt preserved): `stripe-webhook` v20 (false, returns 400 on missing signature), `stripe-checkout` v20 (true), `dedupe-circle` v16 (true, 401 without auth), `oauth-google-start` v13, `oauth-microsoft-start` v9, `parse-screenshot` v18.
+- `src/integrations/supabase/types.ts` regenerated from the live DB (now includes both new tables).
+
+## Still pending (after this session)
+1. Set `ATTRIBUTION_INGEST_SECRET` on Circle's Supabase edge env so emission turns on. This MUST equal the secret on the OS ingest function. Do this when the OS receiver is built (steps 1-3 above). Optionally set `ATTRIBUTION_INGEST_URL` on Circle if it differs from the default.
+2. Rotate the exposed credentials: the `sbp_` Supabase token and the GitHub PAT embedded in the git remote.
+3. Optional cleanup (production-destructive, needs Krish go/no-go, NOT done): undeploy the 7 orphan live functions (ai-strategic-analysis, swift-action, google-sheets-integration, get-market-sentiment, chat-with-krish, daily-briefing, voice-command) and the test-google-secret debug function. Left in place because they have no repo source and may be wired to the wider fleet (n8n/OS); confirm nothing calls them before removing.
+
+## Note on emission being live
+The Circle webhook now emits purchased/refunded/churned, but `emitAttribution` is a no-op until `ATTRIBUTION_INGEST_SECRET` is set, so nothing is sent yet. The moment the OS provisions the receiver + shared secret (set on both sides), revenue events flow with zero further Circle changes.
 
 ## Where to read the full story
 - `_upgrade/fractionl-circle/PHASE-0.md` (verified audit), `PHASE-1.md` (5X vision + commerce contract), and `AGENT_BRIEFING.md` (the fleet brief).
