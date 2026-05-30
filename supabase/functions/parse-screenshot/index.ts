@@ -130,8 +130,9 @@ async function parseWithClaude(b64: string, mime: string, apiKey: string): Promi
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Anthropic error: ${res.status} ${text.slice(0, 300)}`);
+    // H7: do not echo the upstream response body into the error or edge logs.
+    await res.text().catch(() => '');
+    throw new Error(`Anthropic vision request failed: ${res.status}`);
   }
 
   const data = await res.json();
@@ -164,8 +165,9 @@ async function parseWithOpenAI(b64: string, mime: string, apiKey: string): Promi
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`OpenAI error: ${res.status} ${text.slice(0, 300)}`);
+    // H7: do not echo the upstream response body into the error or edge logs.
+    await res.text().catch(() => '');
+    throw new Error(`OpenAI vision request failed: ${res.status}`);
   }
 
   const data = await res.json();

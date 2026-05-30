@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
+import { getUserTier, QUOTAS } from '../_shared/tiers.ts';
 
 // Phase 3: LLM-powered Circle dedupe.
 // Scans the caller's circle_person for likely duplicates, returns suggestions.
@@ -102,6 +103,20 @@ Deno.serve(async (req) => {
   try {
     const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`dedupe-circle:${userId}`, 4, 60_000);
+
+    // Server-side tier gate. The client hides dedupe for Freemium, but the
+    // LLM cost lives here, so a direct invoke must also be blocked (Phase 2
+    // security: this gate was previously client-only and bypassable).
+    const tier = await getUserTier(supabase, userId);
+    if (!QUOTAS[tier].has_dedupe) {
+      return new Response(JSON.stringify({
+        error: 'upgrade_required',
+        feature: 'dedupe',
+        message: 'Circle dedupe is available on Operator and Chief of Staff.',
+      }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiApiKey) {
