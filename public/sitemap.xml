@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Circle by Fractionl, sitemap for the canonical domain https://circle.fractionl.ai
+  Covers the public marketing routes the locked plan (PHASE-1.md, 5a/5b) will prerender via the Vite SSG surface.
+  Per the locked plan the authed app moves to /app and this marketing surface lives at the root (ROADMAP, not yet shipped).
+  ROADMAP, not yet listed: the programmatic Pulse pages and the per-letter public Signal pages at /letters/<slug>
+  (edge-rendered, unguessable slugs, off by default), which arrive with the feeds work in PHASE-1.md section 5e.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://circle.fractionl.ai/</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://circle.fractionl.ai/pricing</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://circle.fractionl.ai/privacy</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://circle.fractionl.ai/terms</loc>
+    <lastmod>2026-05-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

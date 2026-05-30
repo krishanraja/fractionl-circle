@@ -4,7 +4,33 @@
 
 This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
 
-**Last verified against repo:** 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+
+---
+
+## Rebuild status (2026-05-30)
+
+Where Circle is in the rebuild, so the fleet never overclaims.
+
+- **Phase 0 (audit / recon): done.** Full app audit landed in PR #46 (2026-04-26); the verified recon of the current surface is the baseline for everything below.
+- **Phase 1 (5X vision): locked.** The unbounded product vision plus the fleet-commerce contract is locked in `_upgrade/fractionl-circle/PHASE-1.md` (dated 2026-05-30). Scope was selected at the gate: SHIP EVERYTHING (Bundles 1 + 2 + 3, the Spine plus Flywheel/Commerce plus Deep Anticipation) across Phases 2 to 4, all four high-sensitivity capabilities approved with their guardrails. This is roadmap, not shipped code.
+- **Phase 2 (security hardening): shipped on branch `upgrade/circle/phase-2`.** Server-side tier gates on dedupe and the OAuth-connect path (no longer client-trust only), Stripe webhook idempotency (`processed_stripe_events`), and the H7 fix (parse-screenshot logs the status code only, no upstream error body). Production promotion (Supabase function deploys, Vercel prod) still waits for explicit approval per the hard rules.
+
+### LIVE vs ROADMAP (the line the fleet must hold)
+
+- **LIVE NOW.** Voice onboarding that extracts Ideas; a Match Engine that scores Idea x Person and drafts a Move (surfaced via a manual "Surface Matches" action, NOT automatic overnight); the Sunday Letter (text for Operator+, 90-second audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, browser extension, screenshot-to-contact (vision), and voice; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`).
+- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match plus push notifications (today it is a manual button; the PWA has no push); seeding people from the onboarding voice note; the trigger layer (job-change / funding signals); the voice fingerprint; real one-tap sending; the public "Signal" share posts; the anonymous live-mic demo on the landing page; the SSG marketing surface and the `/app` move (the authed app moves to `/app`, marketing lives at the root of `circle.fractionl.ai`).
+- **Honesty gate.** Marketing copy MAY use "talk once, wake to a drafted Move" as the product PROMISE / vision, but must NOT state that automatic-overnight-while-you-sleep delivery is live until the per-user cron plus Web Push ship. Canonical domain is `circle.fractionl.ai` (the company site is a separate surface, not this product).
+
+### Fleet attribution wiring
+
+How Circle's revenue is attributed across the Mindmaker OS fleet. Agent-facing summary lives in `AGENT_BRIEFING.md`; this is the contract.
+
+- **Emit-only.** Circle ONLY emits attribution events; it never holds the central-warehouse service-role key. The warehouse is the Mindmaker OS Supabase project `gojpffsrxybbpbdzzrvs`.
+- **Events.** `landed | signed_up | activated | purchased | refunded | churned`, POSTed to the OS function `ingest-attribution` with header `x-attribution-secret`. `landed` / `signed_up` / `activated` fire server-side (never the browser); `purchased` / `refunded` / `churned` fire from the signature-verified Stripe webhook off the subscription metadata. Each event carries a deterministic `dedupe_key`; the OS does INSERT ON CONFLICT DO NOTHING.
+- **Canonical fields.** `id`, `occurred_at`, `app=circle`, `event`, `anonymous_id`, `user_id`, `email`, `utm_source` / `utm_medium` / `utm_campaign` / `utm_content` / `utm_term`, `campaign_id`, `agent`, `referrer`, `landing_path`, `stripe_account=fractionl_ai`, `stripe_customer_id`, `stripe_subscription_id`, `amount_cents`, `currency`, `metadata`, `dedupe_key`.
+- **Stripe stamp.** Checkout stamps `metadata[supabase_user_id]` plus the `utm_*` / `campaign_id` / `agent` fields on both the Stripe customer and subscription, so the webhook can attribute the purchase back to first touch.
+- **Runtime product-truth URLs the fleet reads.** `https://circle.fractionl.ai/llms.txt` and `https://circle.fractionl.ai/agent.json` (both ROADMAP, emitted by the SSG build from `src/lib/tiers.ts` + a DOCS.md slice; the fleet queries these, it never pitches from memory).
 
 ---
 
@@ -33,7 +59,7 @@ This document is the canonical source for product, architecture, pricing, and go
 16. [Tech stack](#16-tech-stack)
 17. [Frontend layout](#17-frontend-layout)
 18. [Database schema](#18-database-schema)
-19. [Edge functions (35)](#19-edge-functions-35)
+19. [Edge functions (34 in source, 41 deployed)](#19-edge-functions-34-in-source-41-deployed)
 20. [AI / LLM call sites](#20-ai--llm-call-sites)
 21. [Auth, RLS & security posture](#21-auth-rls--security-posture)
 22. [Reliability & rate limiting](#22-reliability--rate-limiting)
@@ -332,7 +358,7 @@ Sources funnel into `person_raw`, which deduplicates into `circle_person` via fi
 | **Google** (Contacts + Calendar) | `GoogleConnect.tsx` | `oauth-google-start` → `oauth-google-callback` → `sync-google` (+ `cron-sync-google`) | People API + Calendar API. Reads last 90 days of meetings as `signal_kind = 'calendar_meeting'`. No email body scanning. |
 | **Microsoft** (Contacts + Calendar) | `MicrosoftConnect.tsx` | `oauth-microsoft-start` → `oauth-microsoft-callback` → `sync-microsoft` (+ `cron-sync-microsoft`) | Microsoft Graph. Same shape as Google. |
 | **Browser extension** | `ExtensionPair.tsx` (pair) + the extension itself | `extension-ingest` | Captures profiles as the user actually browses LinkedIn. Zero scraping. See [extension/README.md](./extension/README.md). |
-| **Screenshot** (Android share / iOS Shortcut) | `src/pages/ShareContact.tsx` | `parse-screenshot` (Claude Haiku 4.5 → GPT-4o fallback) | Vision LLM extracts profile from a shared screenshot. See [docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md). |
+| **Screenshot** (Android share / iOS Shortcut) | `src/pages/ShareContact.tsx` | `parse-screenshot` (claude-haiku-4-5-20251001 preferred → gpt-4o-mini fallback) | Vision LLM extracts profile from a shared screenshot. See [docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md). |
 | **Manual** (resolve / merge / enrich) | various | `resolve-contact`, `merge-persons`, `contact-enrich`, `linkedin-search`, `dedupe-circle` | Server-side dedupe + Clearbit/Apollo enrichment + Google CSE-backed LinkedIn lookup. |
 
 All sources end up in the same canonical `circle_person` table with `person_raw` rows linking back to provenance. The Match Engine doesn't care where someone came from — only that they're in the Circle.
@@ -368,7 +394,7 @@ Lives in `supabase/functions/_shared/sundayLetterCore.ts`. Triggered by:
 
 Output:
 - **Text body** — gpt-4o-mini narrative (~200 words). Stored in `sunday_letters.text_body`.
-- **Audio** (Chief of Staff only) — OpenAI TTS, ~90 seconds, served from `sunday_letters.audio_url`.
+- **Audio** (Chief of Staff only): OpenAI gpt-4o-mini-tts, ~90 seconds, served from `sunday_letters.audio_url`.
 - **Stats sidebar** — `matches_surfaced`, `matches_approved`, `moves_sent`, `new_circle_people` for the week.
 
 **Generation source tracking.** Migration `20260424000002_sunday_letter_generation_source` adds a `generation_source` column (`llm`, `rule_based`, etc.) so we can monitor what fraction of letters are LLM vs. fallback over time. Closes audit M10.
@@ -403,7 +429,7 @@ Chrome Web Store submission is a follow-up — see [docs/roadmap.md](./docs/road
 One-gesture contact capture. Works on Android (Web Share Target) and iOS (Apple Shortcut). See [docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md) for the full flow.
 
 - **Android.** PWA installed → take screenshot → Share → Circle → land on `/share-contact` with parsed fields. Wired via `public/site.webmanifest` `share_target` + `public/sw.js` interception.
-- **iOS.** User installs an Apple Shortcut once. Shortcut POSTs the screenshot to `parse-screenshot` and opens `/share-contact?prefill=<urlencoded-JSON>`. The `parse-screenshot` function uses Claude Haiku 4.5 vision (preferred) with GPT-4o vision fallback.
+- **iOS.** User installs an Apple Shortcut once. Shortcut POSTs the screenshot to `parse-screenshot` and opens `/share-contact?prefill=<urlencoded-JSON>`. The `parse-screenshot` function uses claude-haiku-4-5-20251001 vision (preferred) with gpt-4o-mini vision fallback.
 - **Privacy.** Screenshots only leave the device when the user explicitly shares. The function does not persist the raw image. EXIF is not read.
 
 ---
@@ -434,9 +460,9 @@ Chief of Staff tier ships with a real human concierge — the relationship manag
 | **Data fetching** | TanStack React Query (provider mounted, partial adoption) | Direct `supabase.functions.invoke` is still common; full migration is a deferred audit item. |
 | **Charts** | Recharts | Used in admin/analytics surfaces. |
 | **Backend** | Supabase (Postgres + Auth + Edge Functions / Deno) | Project: `ksyuwacuigshvcyptlhe`. |
-| **Edge runtime** | Deno (Supabase Edge Functions) | 35 functions; see §19. |
-| **AI providers** | OpenAI (Whisper, GPT-4o, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) | 14 LLM call sites, all with explicit `AbortSignal.timeout`. |
-| **Payments** | Stripe (Checkout, Customer Portal, Webhook) | Verified webhook signature; tier sync on `customer.subscription.*` events. |
+| **Edge runtime** | Deno (Supabase Edge Functions) | 34 functions in source (41 deployed, 7 orphan legacy); see §19. |
+| **AI providers** | OpenAI (Whisper, GPT-4o-mini, gpt-4o-mini-tts) · Anthropic (claude-haiku-4-5-20251001) · Lovable Gateway (google/gemini-3-flash-preview) | 14 LLM call sites, all with explicit `AbortSignal.timeout`. |
+| **Payments** | Stripe (Checkout, Customer Portal, Webhook) | Account `fractionl_ai`. Hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) + `processed_stripe_events` idempotency ledger; tier sync on `customer.subscription.*` events. |
 | **SMS** | Twilio | `send-sms` edge function. Origin-allowlisted CORS (audit C4). |
 | **Email** | Resend | Concierge ops notifications. |
 | **Search** | Google CSE | LinkedIn lookup via `linkedin-search` edge function. |
@@ -573,6 +599,7 @@ src/
 | `oauth_states` | Single-use, TTL'd OAuth state nonces. RLS: deny-all (service role only) |
 | `oauth_tokens` | Encrypted tokens with SHA-256 integrity hash. RLS: deny-all |
 | `subscriptions` | Stripe-synced tier + status |
+| `processed_stripe_events` | Webhook idempotency ledger keyed on Stripe `event.id`; dedupes replays and at-least-once redelivery |
 | `usage_tracking` | Per-feature, per-period counts (Match cap enforcement) |
 | `ledger_entries` | Inferred revenue from inbox + calendar (Operator+) |
 | `rate_limits` | Durable per-user / per-bucket rate limiter (audit H4) |
@@ -594,15 +621,17 @@ src/
 **Legacy (pruned from the active surface in PR #45 but tables linger in older migrations):**
 `clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `skills`. Do not write new code against these.
 
-**Migration count:** 39 files in `supabase/migrations/` (2026-04-26).
+**Migration count:** 43 files in `supabase/migrations/` (2026-05-30).
 
 **Migration drift note.** As of the PR #46 deploy, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. See the audit-deploy memory for context.
 
 ---
 
-## 19. Edge functions (35)
+## 19. Edge functions (34 in source, 41 deployed)
 
 All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
+
+**Count note (2026-05-30):** the repo source tree holds 34 functions. The live Supabase project has 41 deployed, the extra 7 being orphan legacy functions that no longer exist in source and no live UI calls (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`). These are slated for removal in the Phase 2 orphan-function cleanup; do not write new code against them.
 
 **Voice & vision parsing (LLM-backed):**
 - `transcribe` — Whisper audio→text
@@ -610,7 +639,7 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 - `parse-voice-contact` — voice → contact
 - `parse-voice-seed` — voice → batch contact seed (onboarding)
 - `parse-onboarding` — voice → client / revenue setup (legacy onboarding path)
-- `parse-screenshot` — vision LLM (Claude Haiku 4.5 → GPT-4o fallback) for shared screenshots
+- `parse-screenshot`: vision LLM (claude-haiku-4-5-20251001 preferred, gpt-4o-mini fallback) for shared screenshots
 - `parse-contact-image` — vision LLM for business cards / profile shots
 - `extract-ideas` — onboarding voice transcript → 3 Idea drafts
 
@@ -636,7 +665,7 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 **Billing & comms:**
 - `stripe-checkout` — create Checkout session
 - `stripe-portal` — open Customer Portal
-- `stripe-webhook` — verified webhook → tier sync
+- `stripe-webhook`: hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) plus `processed_stripe_events` idempotency ledger, then tier sync
 - `send-sms` — Twilio (origin-allowlisted CORS per audit C4)
 - `notify-concierge-event` — Slack + Resend ops notifications
 - `log-move-sent` — edit-distance logging on Move send
@@ -660,14 +689,14 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 | 8 | `parse-onboarding/index.ts:49` | OpenAI | gpt-4o-mini | Voice onboarding parse (legacy) |
 | 9 | `transcribe/index.ts:64` | OpenAI | whisper-1 | Audio transcription |
 | 10 | `parse-screenshot/index.ts:109` | Anthropic | claude-haiku-4-5-20251001 | Screenshot vision (preferred) |
-| 11 | `parse-screenshot/index.ts:142` | OpenAI | gpt-4o | Screenshot vision (fallback) |
+| 11 | `parse-screenshot/index.ts:142` | OpenAI | gpt-4o-mini | Screenshot vision (fallback) |
 | 12 | `parse-contact-image/index.ts:56` | OpenAI | gpt-4o | Contact image vision |
 | 13 | `generate-user-insights/index.ts:391` | Lovable Gateway | google/gemini-3-flash-preview | Personalized insights |
-| 14 | `generate-sunday-letter` (audio path) | OpenAI | tts-1 | 90-second audio narration (Chief of Staff) |
+| 14 | `generate-sunday-letter` (audio path) | OpenAI | gpt-4o-mini-tts | 90-second audio narration (Chief of Staff) |
 
 **Output validation.** `generate-sunday-letter` runs Zod-validated, length-capped output and rejects empty/placeholder strings (audit C2). `sunday_letters.generation_source` records `llm` vs `rule_based` so we can monitor drift (audit M10).
 
-**Prompt-injection posture.** All LLM input is treated as untrusted. Persisted output is validated. We do not echo upstream error bodies into edge logs (audit H7).
+**Prompt-injection posture.** All LLM input is treated as untrusted. Persisted output is validated. Upstream provider error bodies are no longer echoed into edge logs: `parse-screenshot` now logs the status code only (audit H7, fixed 2026-05-30 in Phase 2).
 
 ---
 
@@ -695,7 +724,7 @@ This is separate from the Google **contacts/calendar** ingestion flow (`oauth-go
   - `generate-user-insights` — `verify_jwt = false` but enforces auth-or-`CRON_SECRET` at the function layer (audit C1 fix).
   - `test-google-secret` — debug helper; remove from prod config.
   - `stripe-webhook` — verified by Stripe signature instead of JWT.
-- **Stripe webhook.** Verified via `stripe.webhooks.constructEvent()` with `STRIPE_WEBHOOK_SECRET`. Tier sync happens on `customer.subscription.created` / `.updated` / `.deleted` and `invoice.payment_*`.
+- **Stripe webhook.** Signature is verified by a hand-rolled Web Crypto HMAC verifier (constant-time compare of the `Stripe-Signature` header against `STRIPE_WEBHOOK_SECRET`), not `stripe.webhooks.constructEvent()` (the Stripe SDK's sync crypto path is unavailable on Deno edge). An idempotency ledger (`processed_stripe_events` table, keyed on Stripe `event.id`) makes replays and at-least-once redelivery a no-op. Tier sync happens on `customer.subscription.created` / `.updated` / `.deleted` and `invoice.payment_*`. Stripe account: `fractionl_ai`.
 - **OAuth.** State tokens are double-`crypto.randomUUID()`, single-use, TTL'd. Tokens are encrypted with SHA-256 integrity hash. PKCE is a deferred audit item (H6).
 - **CORS.** Origin allowlist via `_shared/compliance.ts::getCorsHeaders(req)`. `send-sms` was the last wildcard holdout — fixed in PR #46 (audit C4).
 - **Service-role key** never appears in the client bundle. `.env` is gitignored (verified clean against history).
@@ -965,8 +994,8 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
 | **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
 
-**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), H7 (parse-screenshot error-body leak), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6.
+**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
 
 ---
 
-*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-04-26.*
+*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-30.*
