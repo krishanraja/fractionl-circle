@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo:** README.md, DOCS.md, src/lib/tiers.ts, _upgrade/fractionl-circle/PHASE-1.md.
+**Last verified against repo:** README.md, DOCS.md, src/lib/tiers.ts, _upgrade/fractionl-circle/PHASE-1.md. Last full reconciliation: 2026-05-31 (Phase 4 features).
 
 ---
 
@@ -224,15 +224,15 @@ The single hard rule: marketing copy may say "talk once, wake to a drafted Move"
 | LLM cross-source dedupe (Operator+) | LIVE | Claim freely. |
 | Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
 | 14-day Operator-equivalent trial | LIVE | Claim freely. |
-| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Frame ONLY as the promise/vision. Today it is a manual button and the PWA has no push. |
+| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Web Push infrastructure is wired (send-push function, useWebPush hook, push_subscriptions table) but inert until VAPID keys are provisioned in production. Frame ONLY as the promise/vision until end-to-end production delivery is confirmed. |
 | Seeding people from the onboarding voice note | ROADMAP | Do not claim as live. |
-| Trigger layer (job-change / funding / news signals driving Moves) | ROADMAP | Do not claim as live (external signal feeds appear in tier copy as the vision). |
+| External trigger layer (job-change / funding / news signals from outside Circle) | ROADMAP | Do not claim as live. The internal warmth-decay and Sunday-Letter-mention signal generator (generate-signals) is LIVE, but external feeds are not. |
 | Voice fingerprint (drafts in your sent-mail/DM style) | ROADMAP | Do not claim; today personalization is the logged edit-distance substrate. |
 | Real one-tap sending (Gmail/Outlook draft or LinkedIn composer inject) | ROADMAP | Do not claim; today it is draft + manual send. |
 | Public "Signal" share posts | ROADMAP | Do not claim as live. |
-| Anonymous live-mic demo on the landing page | ROADMAP | Do not claim as live. |
-| SSG marketing surface and the /app move (authed app to /app, marketing at root) | ROADMAP | Do not claim as live. |
-| Sunday Letter public feed (/feed/sunday-letter.json) | ROADMAP | Do not claim as live. |
+| Anonymous live-mic demo at /try | LIVE | Claim freely. Unauthenticated, IP-rate-limited 3/hour. Visitor speaks or types; Ideas are extracted live. No DB writes. |
+| SSG marketing surface and the /app move (authed app to /app, static marketing at root) | ROADMAP | A React marketing landing exists behind VITE_MARKETING_LANDING_ENABLED flag; the SSG build and /app move are still ROADMAP. Do not claim as live. |
+| Sunday Letter public feed (/feed/sunday-letter.json) | SHIPPED IN SOURCE | The sunday-letter-feed edge function and is_publishable migration are committed. Public URL is https://circle.fractionl.ai/feed/sunday-letter.json. Whether the function is deployed and the URL is live is unverified from code alone; do not claim as live until confirmed. |
 
 **Approved promise line (safe everywhere):** "Talk once, wake to a drafted Move on the right person." This is the product promise. Do not append "automatically while you sleep, pushed to your phone" as a present-tense live claim.
 

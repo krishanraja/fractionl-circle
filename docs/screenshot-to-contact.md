@@ -1,5 +1,7 @@
 # Screenshot → Contact
 
+*Last verified: 2026-05-31. Privacy section updated to reflect H7 fix (audit H7 closed 2026-05-30 in Phase 2). All other content verified against parse-screenshot source and ShareContact.tsx. No further changes required.*
+
 One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline — same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
 
 Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.

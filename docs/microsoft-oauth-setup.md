@@ -1,5 +1,7 @@
 # Microsoft Graph OAuth setup (Phase 5b)
 
+*Last verified: 2026-05-31. Scopes, redirect URIs, secret names, and Supabase project ref verified against deployed edge functions and oauth-microsoft-* source. No content changes required.*
+
 One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the
 Google setup; same token storage, same callback shape, same user UX.
 

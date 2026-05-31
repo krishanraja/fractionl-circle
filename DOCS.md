@@ -4,7 +4,7 @@
 
 This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
 
-**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-05-31 (Phase 4 features reconciled: demo, push infra, signals, marketing landing, Streams, Sunday Letter feed). Prior baseline: 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Earlier baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
 
 ---
 
@@ -18,8 +18,8 @@ Where Circle is in the rebuild, so the fleet never overclaims.
 
 ### LIVE vs ROADMAP (the line the fleet must hold)
 
-- **LIVE NOW.** Voice onboarding that extracts Ideas; a Match Engine that scores Idea x Person and drafts a Move (surfaced via a manual "Surface Matches" action, NOT automatic overnight); the Sunday Letter (text for Operator+, 90-second audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, browser extension, screenshot-to-contact (vision), and voice; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`).
-- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match plus push notifications (today it is a manual button; the PWA has no push); seeding people from the onboarding voice note; the trigger layer (job-change / funding signals); the voice fingerprint; real one-tap sending; the public "Signal" share posts; the anonymous live-mic demo on the landing page; the SSG marketing surface and the `/app` move (the authed app moves to `/app`, marketing lives at the root of `circle.fractionl.ai`).
+- **LIVE NOW.** Voice onboarding that extracts Ideas; a Match Engine that scores Idea x Person and drafts a Move (surfaced via a manual "Surface Matches" action, NOT automatic overnight); the Sunday Letter (text for Operator+, 90-second audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, browser extension, screenshot-to-contact (vision), and voice; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`); anonymous live-mic demo at `/try` (`demo-extract` edge function, unauthenticated, IP-rate-limited 3/hour); Streams real implementation (useStreams hook, live revenue data per Stream); internal trigger layer (`generate-signals` — warmth-decay and Sunday-Letter-mention signals from existing data); lifecycle attribution events (`emit-lifecycle` — `signed_up` / `activated` POST to OS warehouse); Web Push infrastructure (`send-push` edge function + `useWebPush` hook + `push_subscriptions` table + `VITE_VAPID_PUBLIC_KEY` client env) — wired but **inert** until VAPID keys are provisioned; Sunday Letter public JSON feed (`sunday-letter-feed` edge function + `is_publishable` migration) — edge function committed, deployment status unverified; React marketing landing at `/` behind `VITE_MARKETING_LANDING_ENABLED=true` flag.
+- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match delivery plus reliable push delivery to users (the infrastructure exists but is not yet end-to-end live in production); seeding people from the onboarding voice note; the external trigger layer (job-change / funding / news signals from outside Circle); the voice fingerprint; real one-tap sending (Gmail/Outlook draft inject or LinkedIn composer inject); the public "Signal" share posts; the SSG marketing build and the `/app` move (the authed app to `/app`, static marketing at root); `llms.txt` and `agent.json` machine-readable product-truth files.
 - **Honesty gate.** Marketing copy MAY use "talk once, wake to a drafted Move" as the product PROMISE / vision, but must NOT state that automatic-overnight-while-you-sleep delivery is live until the per-user cron plus Web Push ship. Canonical domain is `circle.fractionl.ai` (the company site is a separate surface, not this product).
 
 ### Fleet attribution wiring
@@ -307,7 +307,7 @@ The home screen. What's waiting for you, ranked.
 - **Surface Matches button** — manual trigger of the engine (used after a fresh import).
 
 ### Streams (`StreamsScreen.tsx`)
-Ideas that have earned revenue. Currently a placeholder; the loop closes when `log-move-sent` rolls forward into `streams.state = 'live'`.
+Ideas that have earned revenue. The `useStreams` hook queries the `streams` table and joins each stream to its linked Idea title. The screen renders a card per stream showing earned amount (USD), a state badge, and the optional monthly target. An empty state appears until `log-move-sent` promotes a Move into a Stream. Error and retry paths are wired.
 
 ### Circle (`CircleScreen.tsx`)
 Every person you know.
@@ -474,6 +474,8 @@ Chief of Staff tier ships with a real human concierge — the relationship manag
 
 ## 17. Frontend layout
 
+App routes: `/` (AuthenticatedShell — marketing landing when flagged, auth/onboarding/app otherwise), `/try` (anonymous demo), `/auth` (explicit auth route), `/share-contact`, `/privacy`, `/terms`, `/*` (NotFound).
+
 ```
 src/
 ├── App.tsx                    Top-level router + providers (Auth, Query, Tooltip, Toaster, ErrorBoundary)
@@ -482,9 +484,14 @@ src/
 │   ├── Index.tsx              Tab host (Today / Streams / Circle / Ask)
 │   ├── ShareContact.tsx       /share-contact — Android + iOS screenshot landing
 │   ├── Privacy.tsx            /privacy
+│   ├── Terms.tsx              /terms — static terms of service
+│   ├── TryDemo.tsx            /try — anonymous live-mic demo (no auth required)
+│   ├── MarketingLanding.tsx   / — logged-out marketing surface (VITE_MARKETING_LANDING_ENABLED)
+│   ├── PrivacySignInPrompt.tsx  /privacy redirect when logged out
 │   └── NotFound.tsx
 ├── components/
 │   ├── AuthPage.tsx           Email/password + Google OAuth
+│   ├── SetNewPasswordScreen.tsx  Password recovery completion screen
 │   ├── ErrorBoundary.tsx
 │   ├── onboarding/
 │   │   └── FirstVoice.tsx     90-second voice → 3 Ideas
@@ -529,14 +536,17 @@ src/
 │   ├── useSubscription.ts     Tier, limits, usage, openCheckout, openPortal
 │   ├── useCircle.ts           Sources + people count
 │   ├── useCircleDedupe.ts     Dedupe scan + accept/reject
+│   ├── useCirclePeople.ts     Paginated people list for the Circle tab
 │   ├── useIdeas.ts            Active Ideas
 │   ├── useMatches.ts          Match list + state transitions + run trigger
+│   ├── useStreams.ts           Streams list (earned revenue per Stream)
 │   ├── useSundayLetter.ts     Letter loading + generation
 │   ├── useConcierge.ts        Concierge request lifecycle
 │   ├── useUserInsights.ts     Generated insights
 │   ├── useConsent.ts          GDPR consent state
 │   ├── useDataPrivacy.ts      Data export / deletion
 │   ├── useVoiceRecording.ts   MediaRecorder wrapper for the onboarding mic
+│   ├── useWebPush.ts          Web Push subscription lifecycle (inert until VITE_VAPID_PUBLIC_KEY set)
 │   ├── useSkills.ts
 │   ├── useBehaviorTracking.ts
 │   ├── useInstallPrompt.ts    PWA install prompt
@@ -545,6 +555,7 @@ src/
 │   └── use-toast.ts
 ├── lib/
 │   ├── tiers.ts               Tier catalogue (Freemium / Operator / Chief of Staff)
+│   ├── attribution.ts         First-touch attribution capture + persist + lifecycle emit
 │   ├── circleIngest.ts        Shared ingest pipeline
 │   ├── crmCsv.ts              HubSpot/Attio/Folk/generic CSV detection
 │   ├── linkedinCsv.ts         LinkedIn CSV parsing
@@ -552,7 +563,6 @@ src/
 │   ├── primaryContact.ts      Pick best email/phone/LinkedIn for outreach
 │   ├── fingerprint.ts         Dedupe key generation
 │   ├── telemetry.ts           Central error/event sink (audit M5)
-│   ├── tiers.ts
 │   └── utils.ts               cn() + helpers
 ├── utils/
 │   ├── auditLogger.ts         User-action audit trail
@@ -570,7 +580,7 @@ src/
 └── index.css                  Design tokens, typography, theme
 ```
 
-121 TS/TSX files in `src/` as of 2026-04-26.
+144 TS/TSX files in `src/` as of 2026-05-31.
 
 ---
 
@@ -621,17 +631,30 @@ src/
 **Legacy (pruned from the active surface in PR #45 but tables linger in older migrations):**
 `clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `skills`. Do not write new code against these.
 
-**Migration count:** 43 files in `supabase/migrations/` (2026-05-30).
+**Migration count:** 47 files in `supabase/migrations/` (2026-05-31). Notable additions since PR #46: `20260428000001_quick_add_source_kind.sql`, `20260516000001_user_practice_profile.sql`, `20260530000001_processed_stripe_events.sql`, `20260530000002_user_attribution.sql`, `20260530000003_sunday_letter_feed.sql` (adds `is_publishable` to `sunday_letters`), `20260530000004_push_subscriptions.sql` (adds `push_subscriptions` table for Web Push).
 
 **Migration drift note.** As of the PR #46 deploy, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. See the audit-deploy memory for context.
 
 ---
 
-## 19. Edge functions (34 in source, 41 deployed)
+## 19. Edge functions (39 in source, 41+ deployed)
 
 All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
 
-**Count note (2026-05-30):** the repo source tree holds 34 functions. The live Supabase project has 41 deployed, the extra 7 being orphan legacy functions that no longer exist in source and no live UI calls (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`). These are slated for removal in the Phase 2 orphan-function cleanup; do not write new code against them.
+**Count note (2026-05-31):** the repo source tree holds 39 functions. The live Supabase project has 41 deployed; the extra legacy orphans (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`) still exist in the deployed project but no longer exist in source and no live UI calls them. Do not write new code against them. As the 5 Phase 4 functions (`demo-extract`, `emit-lifecycle`, `generate-signals`, `send-push`, `sunday-letter-feed`) are deployed, the deployed count will increase accordingly.
+
+**Anonymous demo (unauthenticated):**
+- `demo-extract` — logged-out live-mic demo at `/try`. Whisper transcription + gpt-4o-mini Idea extraction; no DB writes; IP-rate-limited 3 calls/hour via the durable rate limiter. Returns `{ ideas: [...] }` only.
+
+**Attribution & signals:**
+- `emit-lifecycle` — server-side lifecycle event emitter for the Mindmaker OS attribution warehouse. Accepts `signed_up` | `activated` from the authenticated client (user_id + email read from the JWT, never from the body). Inert if `ATTRIBUTION_INGEST_SECRET` is not configured.
+- `generate-signals` — internal trigger layer. Derives warmth-decay signals (circle_person where `last_interaction_at` is older than 60 days and linked to an active Match) and mention signals (names extracted from recent Sunday Letters). Idempotent: skips a signal kind if one already exists for the person within 30 days.
+
+**Push notifications:**
+- `send-push` — Web Push fan-out called by cron-match-engine. Reads `push_subscriptions` and sends a VAPID-signed push payload. Inert (returns `{ skipped: 'vapid_unconfigured' }`) until `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` are set. Not publicly callable: requires service-role key as the Bearer token.
+
+**Public content feed:**
+- `sunday-letter-feed` — public JSON Feed 1.1 of opt-in (`is_publishable = true`) Sunday Letters. Returns `public_slug`, de-identified `preview_text`, and timestamp only — never `text_body`, `audio_url`, `user_id`, stats, or names.
 
 **Voice & vision parsing (LLM-backed):**
 - `transcribe` — Whisper audio→text
@@ -675,7 +698,7 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 
 ## 20. AI / LLM call sites
 
-14 outbound LLM fetches across the codebase. All wrapped with explicit `AbortSignal.timeout` (20s default; 60s on `generate-sunday-letter` and `generate-user-insights`) since PR #46.
+16 outbound LLM fetches across the codebase. All wrapped with explicit `AbortSignal.timeout` (20s default; 60s on `generate-sunday-letter`, `generate-user-insights`, and the Whisper call in `demo-extract`) since PR #46.
 
 | # | File:Line | Provider | Model | Purpose |
 |---|---|---|---|---|
@@ -693,6 +716,8 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 | 12 | `parse-contact-image/index.ts:56` | OpenAI | gpt-4o | Contact image vision |
 | 13 | `generate-user-insights/index.ts:391` | Lovable Gateway | google/gemini-3-flash-preview | Personalized insights |
 | 14 | `generate-sunday-letter` (audio path) | OpenAI | gpt-4o-mini-tts | 90-second audio narration (Chief of Staff) |
+| 15 | `demo-extract/index.ts:120` | OpenAI | whisper-1 | Demo audio transcription (unauthenticated, IP-rate-limited) |
+| 16 | `demo-extract/index.ts:149` | OpenAI | gpt-4o-mini | Demo Idea extraction (unauthenticated, IP-rate-limited) |
 
 **Output validation.** `generate-sunday-letter` runs Zod-validated, length-capped output and rejects empty/placeholder strings (audit C2). `sunday_letters.generation_source` records `llm` vs `rule_based` so we can monitor drift (audit M10).
 
@@ -950,7 +975,8 @@ For prospects who need to see *how* the AI works before they trust it:
 npm install
 cp .env.example .env
 # fill in VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, and the
-# VITE_STRIPE_PRICE_* IDs you want to test against
+# VITE_STRIPE_PRICE_OPERATOR and VITE_STRIPE_PRICE_CHIEF_OF_STAFF IDs
+# (note: .env.example still has old VITE_STRIPE_PRO_* names; tiers.ts reads the above)
 npm run dev      # vite dev server on localhost:8080 (or whatever vite picks)
 npm run build    # production build
 npm run preview  # preview production build
@@ -993,9 +1019,13 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2026-04-24** | Full app audit (`AUDIT_2026-04-24.md`): 4 critical, 7 high, 10 medium, 6 low findings. |
 | **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
 | **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
+| **2026-05-16** | `user_practice_profile` migration — structured practice fields on `user_profiles`. |
+| **2026-05-30** | Phase 2 security hardening merged: H7 fix (parse-screenshot logs status code only), `processed_stripe_events` idempotency ledger, server-side tier gates on inbox/calendar connect and LLM dedupe. |
+| **2026-05-30** | Attribution wiring: `user_attribution` table, first-touch context capture in `src/lib/attribution.ts`, Stripe checkout metadata stamping, `emit-lifecycle` edge function. |
+| **2026-05-31** | Phase 4 features merged: anonymous live-mic demo (`/try`, `demo-extract`); Streams real implementation (`useStreams`); internal trigger layer (`generate-signals`); Web Push infrastructure (`send-push`, `useWebPush`, `push_subscriptions` — inert until VAPID); Sunday Letter public feed (`sunday-letter-feed`, `is_publishable`); React marketing landing (behind `VITE_MARKETING_LANDING_ENABLED`); Today focus layout (behind `VITE_TODAY_FOCUS_ENABLED`); sealed-letter identity reskin. |
 
 **Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
 
 ---
 
-*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-30.*
+*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-31.*

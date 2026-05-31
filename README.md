@@ -41,9 +41,11 @@ If you build six- and seven-figure income from a network you can't fit in a spre
 **Mobile-first PWA — four tabs:**
 
 - **Today** — what's waiting for you today: Matches the engine surfaced overnight, this week's Sunday Letter, your concierge banner if you're on Chief of Staff.
-- **Streams** — Ideas that earned revenue. The closed-loop view of what's working.
+- **Streams** — Ideas that earned revenue. Live closed-loop view: earned amount, state, and monthly target per Stream.
 - **Circle** — every person you know, unified across LinkedIn / Google / Microsoft / browser extension / screenshots / voice. Dedupe lives here.
 - **Ask** — voice-first command surface (Phase 2).
+
+**Anonymous live-mic demo** — `/try` — a logged-out visitor can speak or type for a few seconds and see real Ideas extracted before any signup. IP-rate-limited, no auth required, no data stored.
 
 **Browser extension** — capture LinkedIn profiles into your Circle as you naturally browse. Zero scraping; works only in your authenticated session.
 
@@ -69,7 +71,7 @@ Full breakdown in [DOCS.md § Pricing](./DOCS.md#pricing--gating).
 
 React 18 + TypeScript (strict) · Vite · Tailwind · shadcn/Radix · Framer Motion · Supabase (Postgres + RLS + Edge Functions / Deno) · OpenAI (Whisper, GPT-4o, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) · Stripe · Twilio · Resend · Vercel.
 
-35 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)).
+39 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)). Phase 2 security hardening merged 2026-05-30.
 
 ---
 

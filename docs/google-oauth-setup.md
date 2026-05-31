@@ -1,5 +1,7 @@
 # Google OAuth setup (Phase 5)
 
+*Last verified: 2026-05-31. Scopes, redirect URIs, and Supabase project ref verified against deployed edge functions and oauth-google-* source. No content changes required.*
+
 One-time Google Cloud Console setup for the `Connect Google` source.
 
 ## 1. Create or pick a project

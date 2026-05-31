@@ -68,8 +68,7 @@ Both are installed. `QueryClientProvider` is mounted. Adoption across forms is p
 ### H6 — OAuth PKCE
 Current state: double-`crypto.randomUUID()` state + TTL + single-use deletion at callback. Sufficient for confidential web clients. Required if we ever ship a native or extension-hosted OAuth flow. **Effort:** half-session per provider. Add `code_challenge` (S256) on start, persist `code_verifier` alongside state, send on token exchange.
 
-### H7 — `parse-screenshot` error-body redaction
-Current: `throw new Error(\`Anthropic error: ${res.status} ${text.slice(0, 300)}\`)` — that body slice can leak echoed prompt fragments into edge logs. **Effort:** 15-minute fix. Log status + request-id only.
+~~**H7 — `parse-screenshot` error-body redaction**~~ **CLOSED (2026-05-30, Phase 2).** `parse-screenshot` now logs the status code only; the upstream body is never echoed into edge logs.
 
 ### M4 — `resolve-contact` N+1
 `resolve-contact/index.ts:280–285` loops awaiting per-item `talent_contact_identities` queries. **Effort:** 30 minutes. Single `.in('<col>', ids)` query.
@@ -98,6 +97,21 @@ Main chunk is 903 KB. Add `rollup-plugin-visualizer` to confirm where the weight
 ---
 
 ## New surfaces & features (not from the audit)
+
+### Phase 4 shipped (2026-05-31)
+
+The following shipped to `main` in the Phase 4 build:
+
+- **Anonymous live-mic demo (`/try`)** — logged-out visitor speaks or types; `demo-extract` edge function returns Ideas (no auth, no DB writes, IP-rate-limited 3/hour). Conversion hero before signup.
+- **Streams real implementation** — `useStreams` hook + live data cards replacing the placeholder shell.
+- **Internal trigger layer (`generate-signals`)** — derives warmth-decay and Sunday-Letter-mention signals from existing Circle data; writes to `signals` table; idempotent on 30-day window.
+- **Web Push infrastructure** — `send-push` edge function, `useWebPush` hook, `push_subscriptions` table, `VITE_VAPID_PUBLIC_KEY` client env. Wired to `cron-match-engine`. **Inert until VAPID keys are provisioned** (returns `{ skipped: 'vapid_unconfigured' }`).
+- **Sunday Letter public JSON feed** — `sunday-letter-feed` edge function + `is_publishable` column. Returns de-identified preview text only; never the private narrative, audio, names, or user IDs. Deployment status to be confirmed.
+- **React marketing landing** — `MarketingLanding.tsx` at `/` behind `VITE_MARKETING_LANDING_ENABLED=true` flag.
+- **Today focus layout** — single-Idea focus mode behind `VITE_TODAY_FOCUS_ENABLED=true` flag.
+- **Attribution wiring** — `emit-lifecycle` edge function + `src/lib/attribution.ts` + `user_attribution` table + Stripe checkout metadata stamping for full first-touch-to-revenue attribution into the Mindmaker OS warehouse.
+
+---
 
 ### Phase 2 — Voice-first command surface (`AskScreen`)
 The Ask tab is currently a placeholder. Voice command capture is the Phase 2 project. Hold-to-talk → Whisper → intent classifier → command dispatcher (change a setting, voice an Idea, ask a tactical question). Reuses the `FirstVoice` interaction pattern.
@@ -175,8 +189,8 @@ Read the signal from paying users:
 ## Operational ledger
 
 - **Last full audit:** 2026-04-24 (`AUDIT_2026-04-24.md`).
-- **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`).
-- **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
+- **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`). H7 closed 2026-05-30 (Phase 2).
+- **Next recommended audit:** 2026-06-01 (now current). Trigger: Phase 4 ships 5 new edge functions and Web Push infra.
 - **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
 - **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
 
