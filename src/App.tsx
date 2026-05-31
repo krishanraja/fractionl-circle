@@ -4,7 +4,7 @@ import { SetNewPasswordScreen } from "@/components/SetNewPasswordScreen";
 import { PreferencesApplier } from "@/components/PreferencesApplier";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import Index from "./pages/Index";
 import Privacy from "./pages/Privacy";
@@ -12,6 +12,7 @@ import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import ShareContact from "./pages/ShareContact";
 import TryDemo from "./pages/TryDemo";
+import MarketingLanding from "./pages/MarketingLanding";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
@@ -24,6 +25,23 @@ import { SessionManager } from "./components/compliance/SessionManager";
 import { useConsent } from "./hooks/useConsent";
 
 const queryClient = new QueryClient();
+
+// Marketing landing flag. Default OFF: when false, logged-out "/" behaves exactly as
+// before (AuthPage). When true, logged-out "/" renders the marketing landing instead.
+// Instantly reversible via env, no code change.
+const MARKETING_ENABLED = import.meta.env.VITE_MARKETING_LANDING_ENABLED === 'true';
+
+/**
+ * Public /auth route. Renders the working AuthPage (Google OAuth + email).
+ * On a successful password sign-in, AuthPage calls onAuthenticated; we navigate
+ * to "/" so the user lands in the app. Google OAuth and email-confirm/reset all
+ * redirect to "/" themselves (window.location.origin + "/"), so the app gate
+ * picks them up there. This mirrors how AuthenticatedShell uses AuthPage.
+ */
+function AuthRoute() {
+  const navigate = useNavigate();
+  return <AuthPage onAuthenticated={() => navigate('/')} />;
+}
 
 /** Privacy settings need auth; show a clear sign-in prompt when logged out. */
 function PrivacyRoute() {
@@ -78,6 +96,11 @@ function AuthenticatedShell() {
   }
 
   if (!user) {
+    // Flag ON: logged-out "/" shows the marketing landing.
+    // Flag OFF: exact prior behavior (logged-out "/" = AuthPage).
+    if (MARKETING_ENABLED) {
+      return <MarketingLanding />;
+    }
     return <AuthPage onAuthenticated={() => {}} />;
   }
 
@@ -103,6 +126,7 @@ function AppRoutes() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/share-contact" element={<ShareContact />} />
         <Route path="/try" element={<TryDemo />} />
+        <Route path="/auth" element={<AuthRoute />} />
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
