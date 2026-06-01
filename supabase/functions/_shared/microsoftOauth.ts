@@ -15,8 +15,8 @@ function msClientCreds(): { clientId: string; clientSecret: string } {
   return { clientId, clientSecret };
 }
 
-// Non-restricted Microsoft Graph scopes. offline_access yields a refresh
-// token. We deliberately stay out of Mail.* (parallel to gmail.readonly).
+// Microsoft Graph delegated scopes. offline_access yields a refresh token.
+// Mail.Read + Mail.Send are user-consent scopes (no admin consent, no audit).
 export const MS_SCOPES = [
   'openid',
   'email',
@@ -25,6 +25,8 @@ export const MS_SCOPES = [
   'User.Read',
   'Contacts.Read',
   'Calendars.Read',
+  'Mail.Read',
+  'Mail.Send',
 ].join(' ');
 
 export interface StoredMsToken {

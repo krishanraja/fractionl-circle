@@ -1,6 +1,7 @@
-// Phase 5: shared Google OAuth helpers. Non-restricted scopes only.
-// Gmail body access (sent-folder signatures) would require the CASA
-// restricted-scope audit — deliberately not wired here.
+// Phase 5: shared Google OAuth helpers.
+// Gmail readonly + send scopes are restricted. The OAuth app stays in
+// Testing mode (test users only) to use them without the CASA audit.
+// Move to production + CASA only once usage justifies it.
 
 // deno-lint-ignore-file no-explicit-any
 
@@ -11,6 +12,8 @@ export const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/contacts.readonly',
   'https://www.googleapis.com/auth/contacts.other.readonly',
   'https://www.googleapis.com/auth/calendar.events.readonly',
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/gmail.send',
 ].join(' ');
 
 export const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
