@@ -86,13 +86,13 @@ export function useDataPrivacy() {
     if (!user) return false;
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('erase_user_data' as any, {
-        target_user_id: user.id,
-      });
-
+      // Server-side erasure: wipes every owned row across the full data surface
+      // AND removes the auth identity. The client RPC alone could do neither
+      // completely. Identity is taken from the verified JWT, not the body.
+      const { error } = await supabase.functions.invoke('delete-account', { body: {} });
       if (error) throw error;
 
-      // Sign out after erasure
+      // Identity is gone; clear the local session.
       await signOut();
       return true;
     } catch (err) {
