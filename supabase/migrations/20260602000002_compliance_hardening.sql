@@ -90,7 +90,10 @@ begin
   perform _dsar_assert_self(target_user_id);
 
   foreach tbl in array all_tables loop
-    execute format('select coalesce(jsonb_agg(to_jsonb(t)), ''[]''::jsonb) from public.%I t where t.user_id = $1', tbl)
+    -- Cast both sides to text: most tables key user_id as uuid, but a few legacy
+    -- tables (e.g. ai_conversations, single-tenant 'default_user') type it as
+    -- text. The cast matches real rows in either case and harmlessly skips legacy.
+    execute format('select coalesce(jsonb_agg(to_jsonb(t)), ''[]''::jsonb) from public.%I t where t.user_id::text = $1::text', tbl)
       into rows using target_user_id;
     result := result || jsonb_build_object(tbl, rows);
   end loop;
@@ -132,7 +135,7 @@ begin
   perform _dsar_assert_self(target_user_id);
 
   foreach tbl in array _dsar_user_tables() loop
-    execute format('delete from public.%I where user_id = $1', tbl) using target_user_id;
+    execute format('delete from public.%I where user_id::text = $1::text', tbl) using target_user_id;
     get diagnostics deleted_count = row_count;
     total := total + deleted_count;
     per_table := per_table || jsonb_build_object(tbl, deleted_count);
