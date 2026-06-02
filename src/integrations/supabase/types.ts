@@ -622,6 +622,7 @@ export type Database = {
           id: string
           offer: string | null
           one_liner: string | null
+          pain: string | null
           price_band: string | null
           source_transcript_id: string | null
           status: Database["public"]["Enums"]["idea_status"]
@@ -635,6 +636,7 @@ export type Database = {
           id?: string
           offer?: string | null
           one_liner?: string | null
+          pain?: string | null
           price_band?: string | null
           source_transcript_id?: string | null
           status?: Database["public"]["Enums"]["idea_status"]
@@ -648,6 +650,7 @@ export type Database = {
           id?: string
           offer?: string | null
           one_liner?: string | null
+          pain?: string | null
           price_band?: string | null
           source_transcript_id?: string | null
           status?: Database["public"]["Enums"]["idea_status"]
@@ -723,6 +726,7 @@ export type Database = {
           id: string
           idea_id: string | null
           rationale: string | null
+          role: string
           score: number | null
           signal_id: string | null
           state: Database["public"]["Enums"]["match_state"]
@@ -739,6 +743,7 @@ export type Database = {
           id?: string
           idea_id?: string | null
           rationale?: string | null
+          role?: string
           score?: number | null
           signal_id?: string | null
           state?: Database["public"]["Enums"]["match_state"]
@@ -755,6 +760,7 @@ export type Database = {
           id?: string
           idea_id?: string | null
           rationale?: string | null
+          role?: string
           score?: number | null
           signal_id?: string | null
           state?: Database["public"]["Enums"]["match_state"]

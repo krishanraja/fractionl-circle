@@ -19,6 +19,7 @@ interface IdeaDraft {
   title: string;
   one_liner?: string | null;
   offer?: string | null;
+  pain?: string | null;
   price_band?: string | null;
   icp?: string | null;
   is_adjacent?: boolean;
@@ -132,6 +133,7 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
           title: i.title,
           one_liner: i.one_liner ?? null,
           offer: i.offer ?? null,
+          pain: i.pain ?? null,
           price_band: i.price_band ?? null,
           icp: i.icp ?? null,
           status: 'voiced' as const,

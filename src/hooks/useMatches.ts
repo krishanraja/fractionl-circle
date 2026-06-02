@@ -5,6 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 // Match state is an enum in the DB. Phase 4 only reads/writes via string literals;
 // a regenerated types file will later give us the full enum type.
 export type MatchState = 'new' | 'approved' | 'edited' | 'sent' | 'won' | 'cold' | 'declined';
+// How the matched person relates to the offer. Optional on the row because the
+// column ships ahead of its backfill; reads default to 'buyer' when absent so a
+// pre-migration database (or an older match) never breaks the card.
+export type MatchRole = 'buyer' | 'amplifier' | 'sharpener';
 export type MoveChannel = 'email' | 'linkedin_dm' | 'sms' | 'call' | 'calendar_invite' | 'post' | 'other';
 export type MoveState = 'draft' | 'approved' | 'sent' | 'responded' | 'declined';
 
@@ -18,6 +22,7 @@ export interface MatchRow {
   warm_path: { via?: string | null; context?: string | null } | null;
   rationale: string | null;
   score: number | null;
+  role?: MatchRole | null;
   state: MatchState;
   surfaced_at: string;
   approved_at: string | null;

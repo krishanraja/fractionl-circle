@@ -1,12 +1,36 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageSquare, Check, X, ChevronDown, ChevronUp, Copy, Send, Loader2 } from 'lucide-react';
+import { Mail, MessageSquare, Check, X, ChevronDown, ChevronUp, Copy, Send, Loader2, Target, Megaphone, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import type { EnrichedMatch, MatchState } from '@/hooks/useMatches';
+import type { EnrichedMatch, MatchRole, MatchState } from '@/hooks/useMatches';
 import { ContactButton } from '@/components/circle/ContactButton';
 import { openLinkedIn } from '@/utils/contactActions';
+
+// How the matched person relates to the offer drives the whole card's framing:
+// a buyer gets pitched, an amplifier gets asked for a door, a sharpener gets
+// asked to react. The badge makes that relationship legible at a glance.
+const ROLE_META: Record<MatchRole, { label: string; Icon: typeof Target; cls: string; verb: string }> = {
+  buyer: {
+    label: 'Customer',
+    Icon: Target,
+    cls: 'bg-primary/10 text-primary',
+    verb: 'Customer for',
+  },
+  amplifier: {
+    label: 'Amplifier',
+    Icon: Megaphone,
+    cls: 'bg-primary/15 text-primary ring-1 ring-primary/30',
+    verb: 'Could open doors for',
+  },
+  sharpener: {
+    label: 'Sharpener',
+    Icon: Lightbulb,
+    cls: 'bg-foreground/[0.06] text-foreground-secondary',
+    verb: 'Could sharpen',
+  },
+};
 
 interface MatchCardProps {
   match: EnrichedMatch;
@@ -29,6 +53,9 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
   const [finalBody, setFinalBody] = useState('');
 
   const { person, idea, move } = match;
+  // Default to 'buyer' so a pre-migration row (no role column) or an older match
+  // renders exactly as before — the badge just reads "Customer".
+  const role = ROLE_META[(match.match.role ?? 'buyer') as MatchRole] ?? ROLE_META.buyer;
 
   useEffect(() => {
     if (move?.draft_body) setFinalBody(move.draft_body);
@@ -132,9 +159,15 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
             {[person.title, person.company].filter(Boolean).join(' · ') || 'No title on file'}
           </p>
         </div>
-        <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-          <ChannelIcon className="w-3 h-3" />
-          {channelLabel}
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium', role.cls)}>
+            <role.Icon className="w-3 h-3" />
+            {role.label}
+          </div>
+          <div className="flex items-center gap-1 rounded-full bg-foreground/[0.04] px-2 py-0.5 text-[10px] font-medium text-foreground-muted">
+            <ChannelIcon className="w-3 h-3" />
+            {channelLabel}
+          </div>
         </div>
       </header>
 
@@ -157,7 +190,7 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
 
       {idea && (
         <p className="mt-3 text-[11px] font-medium uppercase tracking-wide text-foreground-muted">
-          For: {idea.title}
+          {role.verb} {idea.title}
         </p>
       )}
 
