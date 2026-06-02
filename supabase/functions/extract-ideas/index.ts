@@ -42,17 +42,18 @@ For each Idea, return:
 - title: short name (max 6 words)
 - one_liner: one-sentence description of the offer
 - offer: a 1-2 sentence concrete deliverable
+- pain: the specific, expensive pain this offer removes for the buyer — the thing that keeps them up at night (one tight sentence, concrete, e.g. "their CAC is climbing and they can't see which channel is leaking")
 - price_band: rough monthly/project range as text (e.g. "$3-8K/mo", "$15-25K project")
 - icp: one-line description of the ideal customer profile
 
 Return JSON: { "ideas": [ ... ], "posture": "greenfield" | "established", "summary": "one sentence back to the user" }
 
-Be specific and opinionated. Use what they said about their skills, wins, and appetite. Prefer narrower ICPs over broader ones.`;
+Be specific and opinionated. Use what they said about their skills, wins, and appetite. Prefer narrower ICPs over broader ones. Name the pain in the buyer's own terms, not generic consultant-speak.`;
 
     const established = `The user is an established fractional operator. Mirror back the revenue streams they already run as Ideas, then propose ONE adjacent Idea they haven't considered.
 
 For each Idea, return:
-- title, one_liner, offer, price_band, icp (same shape as above)
+- title, one_liner, offer, pain, price_band, icp (same shape as above — "pain" is the specific, expensive problem this offer removes for the buyer)
 - is_adjacent: boolean (true only for the one new adjacent Idea)
 
 Return JSON: { "ideas": [ ... ], "posture": "established", "summary": "one sentence back to the user" }`;

@@ -15,7 +15,18 @@ interface Idea {
   offer: string | null;
   price_band: string | null;
   icp: string | null;
+  pain: string | null;
 }
+
+// How a person relates to an offer. The whole point of the dual-role engine:
+// the most valuable person in a fractional's network is often NOT the buyer.
+//   buyer     — has the pain, fits the ICP, can pay.
+//   amplifier — reaches the ICP; can intro / refer / co-market / distribute.
+//   sharpener — a peer/operator who helps refine the idea itself.
+type MatchRole = 'buyer' | 'amplifier' | 'sharpener';
+const VALID_ROLES: ReadonlySet<string> = new Set(['buyer', 'amplifier', 'sharpener']);
+const coerceRole = (r: unknown): MatchRole =>
+  typeof r === 'string' && VALID_ROLES.has(r) ? (r as MatchRole) : 'buyer';
 
 interface Person {
   id: string;
@@ -29,6 +40,7 @@ interface Person {
 
 interface LlmMatch {
   candidate_id: string;
+  role?: string;
   rationale: string;
   warm_path?: { via?: string | null; context?: string | null } | null;
   score: number;
@@ -65,6 +77,7 @@ const prefilter = (idea: Idea, people: Person[], signalPersonIds: Set<string>): 
     ...tokens(idea.icp),
     ...tokens(idea.offer),
     ...tokens(idea.one_liner),
+    ...tokens(idea.pain),
   ]);
   if (!icpTokens.size) {
     return [...people]
@@ -102,23 +115,31 @@ const buildPrompt = (
   candidates: Person[],
   personalitySuffix = '',
 ): { system: string; user: string } => {
-  const system = `You are a matchmaker for a fractional executive. Given one of their Ideas and a short list of people in their personal network, pick the top ${MATCHES_PER_IDEA} who are most likely to actually pay for this Idea.
+  const system = `You match a fractional executive's Idea (an offer they want to sell) to the right people in their personal network. The key insight: the most valuable person is often NOT a buyer. Classify each pick by ROLE:
 
-Return JSON: { "matches": [ { "candidate_id": string, "rationale": string, "warm_path": { "via": string | null, "context": string | null }, "score": number between 0 and 1, "draft": { "channel": "linkedin_dm" | "email", "subject": string | null, "body": string } } ] }
+- "buyer": has the pain this offer removes, fits the ICP, could pay for it directly.
+- "amplifier": is NOT the buyer, but REACHES the ICP — runs a community/newsletter/podcast/portfolio/team, or is well-connected to the exact buyers. The offer flows THROUGH them to many buyers via an intro, referral, or co-marketing.
+- "sharpener": a peer or operator who has done this kind of work and can help refine the Idea itself — sharpen the offer, narrow the ICP, pressure-test pricing.
+
+Pick the top ${MATCHES_PER_IDEA} HIGHEST-LEVERAGE people across all three roles (not just buyers). One strong amplifier who can open a door to fifty buyers can outrank a single buyer.
+
+Return JSON: { "matches": [ { "candidate_id": string, "role": "buyer" | "amplifier" | "sharpener", "rationale": string, "warm_path": { "via": string | null, "context": string | null }, "score": number between 0 and 1, "draft": { "channel": "linkedin_dm" | "email", "subject": string | null, "body": string } } ] }
 
 Rules:
 - Pick from candidates only — use their exact candidate_id string.
-- "rationale" is one tight sentence: why this person, why now.
+- "role" must reflect this person's actual relationship to THIS offer based on their title/company. When unsure between buyer and amplifier, prefer the one the data supports; default to "buyer" only if they plausibly have the pain.
+- "rationale" is one tight sentence: why this person, in this role, why now. For amplifiers, say WHO they reach. For sharpeners, say what they'd sharpen.
 - "warm_path" is how the user plausibly knows them (prior company, shared title, etc.). If the raw data doesn't support a warm path, return both fields as null.
-- "draft" is a short (under 450 chars) DM the user could plausibly send. Use their first name, reference the warm path, and ask ONE clear thing. No "I hope this finds you well" schlock.
+- "draft" is a short (under 450 chars) message the user could plausibly send, MATCHED TO THE ROLE: a buyer gets a value-led ask tied to their pain; an amplifier gets an intro/collaboration ask (never pitch them as if they're the customer); a sharpener gets a "can I run this by you" ask. Use their first name, reference the warm path, ask ONE clear thing. No "I hope this finds you well" schlock.
 - "channel" defaults to linkedin_dm if a linkedin_url exists, else email if primary_email exists, else linkedin_dm.
-- Be conservative. If no one is a credible fit, return an empty array.${personalitySuffix}`;
+- Be conservative. If no one is a credible fit in any role, return an empty array.${personalitySuffix}`;
 
   const user = JSON.stringify({
     idea: {
       title: idea.title,
       one_liner: idea.one_liner,
       offer: idea.offer,
+      pain: idea.pain,
       price_band: idea.price_band,
       icp: idea.icp,
     },
@@ -164,7 +185,7 @@ export async function runMatchEngineForUser(
 
   let ideaQuery = supabase
     .from('ideas')
-    .select('id, title, one_liner, offer, price_band, icp')
+    .select('id, title, one_liner, offer, price_band, icp, pain')
     .eq('user_id', userId)
     .in('status', ['voiced', 'proposed', 'active'])
     .order('created_at', { ascending: false })
@@ -295,6 +316,7 @@ export async function runMatchEngineForUser(
       user_id: userId,
       idea_id: idea.id,
       circle_person_id: m.candidate_id,
+      role: coerceRole(m.role),
       warm_path: m.warm_path ?? null,
       rationale: m.rationale,
       score: Math.max(0, Math.min(1, Number(m.score) || 0)),
