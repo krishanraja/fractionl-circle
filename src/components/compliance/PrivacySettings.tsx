@@ -65,7 +65,7 @@ export function PrivacySettings() {
           </div>
           <CardDescription>
             Control how your data is used. Changes take effect immediately.
-            These preferences comply with GDPR, CCPA, and ISO 27001 requirements.
+            These controls support your GDPR and CCPA data-subject rights.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

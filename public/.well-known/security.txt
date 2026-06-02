@@ -1,0 +1,8 @@
+# Security contact for fractionl Circle (circle.fractionl.ai)
+# RFC 9116
+
+Contact: mailto:security@fractionl.ai
+Preferred-Languages: en
+Canonical: https://circle.fractionl.ai/.well-known/security.txt
+Policy: https://circle.fractionl.ai/security
+Expires: 2027-06-02T00:00:00.000Z
