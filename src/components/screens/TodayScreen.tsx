@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lightbulb, Loader2, Zap, AlertCircle } from 'lucide-react';
+import { Lightbulb, Loader2, Zap, AlertCircle } from 'lucide-react';
+import type { TabId } from '@/components/layout/BottomNav';
+import { GettingStarted } from '@/components/today/GettingStarted';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useIdeas } from '@/hooks/useIdeas';
@@ -17,7 +19,11 @@ import { PricingSheet } from '@/components/billing/PricingSheet';
 // Flag off = the original flat card stack, byte-for-byte unchanged.
 const TODAY_FOCUS_ENABLED = import.meta.env.VITE_TODAY_FOCUS_ENABLED === 'true';
 
-export const TodayScreen = () => {
+interface TodayScreenProps {
+  onNavigate?: (tab: TabId) => void;
+}
+
+export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
   const { ideas, loading: ideasLoading } = useIdeas();
   const { totalPeople, loading: circleLoading } = useCircle();
   const { matches, loading: matchesLoading, error: matchesError, refresh, updateMatchState } = useMatches();
@@ -108,6 +114,17 @@ export const TodayScreen = () => {
         </h1>
       </motion.header>
 
+      {!hasMatches && !matchesLoading && !matchesError && (
+        <GettingStarted
+          ideasCount={ideas.length}
+          peopleCount={totalPeople}
+          canRun={canRun}
+          running={running}
+          onRun={handleRun}
+          onNavigate={onNavigate}
+        />
+      )}
+
       <ConciergeCard />
 
       <SundayLetterCard canGenerate={canRun} />
@@ -125,42 +142,6 @@ export const TodayScreen = () => {
               </button>
             </div>
           </div>
-        </section>
-      )}
-
-      {!hasMatches && !matchesLoading && !matchesError && (
-        <section className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-6 mb-6">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-full bg-primary/10 p-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
-            <div className="space-y-1.5 flex-1">
-              <p className="text-sm font-medium text-foreground">
-                {canRun ? 'Ready when you are.' : 'Not enough to match against yet.'}
-              </p>
-              <p className="text-sm text-foreground-secondary leading-relaxed">
-                {canRun
-                  ? `I can cross-reference your ${ideas.length} Idea${ideas.length === 1 ? '' : 's'} against ${totalPeople} people in your Circle.`
-                  : ideas.length === 0
-                    ? 'Voice an Idea in Ask so I know what you want to sell.'
-                    : 'Add a source in Circle so I have people to match against.'}
-              </p>
-            </div>
-          </div>
-          {canRun && (
-            <button
-              onClick={handleRun}
-              disabled={running}
-              className={cn(
-                'mt-4 w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
-                'flex items-center justify-center gap-2 shadow-lg shadow-primary/30',
-                'disabled:opacity-70'
-              )}
-            >
-              {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-              {running ? 'Finding Matches…' : 'Surface Matches'}
-            </button>
-          )}
         </section>
       )}
 

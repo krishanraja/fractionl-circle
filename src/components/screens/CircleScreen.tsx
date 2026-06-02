@@ -120,6 +120,7 @@ export const CircleScreen = () => {
                 setAddOpen(true);
               }}
               aria-label="Add to Circle"
+              title="Add to Circle (⌘N)"
               className={cn(
                 'shrink-0 w-11 h-11 rounded-full flex items-center justify-center',
                 'bg-primary text-primary-foreground shadow-md shadow-primary/25',

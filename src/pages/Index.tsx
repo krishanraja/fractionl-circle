@@ -76,7 +76,7 @@ const Index = () => {
   const renderScreen = () => {
     switch (currentTab) {
       case 'today':
-        return <TodayScreen />;
+        return <TodayScreen onNavigate={setCurrentTab} />;
       case 'streams':
         return (
           <Suspense fallback={<PageLoader message="Loading Streams..." />}>
@@ -92,11 +92,11 @@ const Index = () => {
       case 'ask':
         return (
           <Suspense fallback={<PageLoader message="Loading Ask..." />}>
-            <AskScreen />
+            <AskScreen onNavigate={setCurrentTab} />
           </Suspense>
         );
       default:
-        return <TodayScreen />;
+        return <TodayScreen onNavigate={setCurrentTab} />;
     }
   };
 

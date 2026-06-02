@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Sparkles, Loader2, AlertCircle, Check } from 'lucide-react';
+import { Mic, Sparkles, Loader2, AlertCircle, Check, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +26,7 @@ interface IdeaDraft {
 }
 
 const MAX_RECORDING_MS = 90_000;
+const MAX_TYPED_CHARS = 1500;
 
 const blobToBase64 = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -52,6 +53,7 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
   const [summary, setSummary] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [typed, setTyped] = useState('');
 
   const {
     isRecording,
@@ -81,6 +83,30 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
     }
   }, [recError]);
 
+  // Shared extraction: turn a transcript (typed, or transcribed from audio)
+  // into Ideas. Used by both the hold-to-talk and the type-instead paths so a
+  // user without a mic — or who simply prefers typing — is never locked out.
+  const extractIdeas = useCallback(async (tr: string) => {
+    setStep('processing');
+    try {
+      const extractRes = await supabase.functions.invoke('extract-ideas', {
+        body: { transcript: tr },
+      });
+      if (extractRes.error) throw new Error(extractRes.error.message || 'Could not make sense of that');
+      const data = extractRes.data as { ideas?: IdeaDraft[]; people?: VoiceSeedPerson[]; summary?: string | null } | null;
+      const parsed = Array.isArray(data?.ideas) ? data!.ideas : [];
+      if (!parsed.length) throw new Error('No Ideas landed. Try again with a little more detail.');
+      setIdeas(parsed);
+      setPeople(Array.isArray(data?.people) ? data!.people : []);
+      setSummary(data?.summary ?? null);
+      setStep('review');
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'Something went wrong');
+      setStep('error');
+    }
+  }, []);
+
+  // Audio path: transcribe first, then hand the transcript to extractIdeas.
   useEffect(() => {
     if (!audioBlob) return;
     let cancelled = false;
@@ -97,19 +123,7 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
         if (!tr.trim()) throw new Error('Nothing came through. Try again?');
         if (cancelled) return;
         setTranscript(tr);
-
-        const extractRes = await supabase.functions.invoke('extract-ideas', {
-          body: { transcript: tr },
-        });
-        if (extractRes.error) throw new Error(extractRes.error.message || 'Could not make sense of that');
-        const data = extractRes.data as { ideas?: IdeaDraft[]; people?: VoiceSeedPerson[]; summary?: string | null } | null;
-        const parsed = Array.isArray(data?.ideas) ? data!.ideas : [];
-        if (!parsed.length) throw new Error('No Ideas landed. Try again with a little more detail.');
-        if (cancelled) return;
-        setIdeas(parsed);
-        setPeople(Array.isArray(data?.people) ? data!.people : []);
-        setSummary(data?.summary ?? null);
-        setStep('review');
+        await extractIdeas(tr);
       } catch (e) {
         if (cancelled) return;
         setErrorMsg(e instanceof Error ? e.message : 'Something went wrong');
@@ -121,7 +135,15 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
     return () => {
       cancelled = true;
     };
-  }, [audioBlob]);
+  }, [audioBlob, extractIdeas]);
+
+  const handleTypedSubmit = useCallback(() => {
+    const text = typed.trim();
+    if (!text) return;
+    setErrorMsg('');
+    setTranscript(text);
+    void extractIdeas(text);
+  }, [typed, extractIdeas]);
 
   const handleSave = async () => {
     if (!user || !ideas.length) return;
@@ -166,6 +188,7 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
   const handleRetry = () => {
     resetRecording();
     setTranscript('');
+    setTyped('');
     setIdeas([]);
     setSummary(null);
     setErrorMsg('');
@@ -254,10 +277,13 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
             className="flex-1 w-full max-w-md flex flex-col"
           >
             {summary && (
-              <p className="text-sm text-foreground-secondary leading-relaxed mb-6">
+              <p className="text-sm text-foreground-secondary leading-relaxed mb-3">
                 {summary}
               </p>
             )}
+            <p className="text-xs text-foreground-muted leading-relaxed mb-6">
+              Each one is something you could sell — with a rough price band and the kind of buyer (ICP) it suits.
+            </p>
             <div className="space-y-3">
               {ideas.map((i, idx) => (
                 <motion.div
@@ -330,6 +356,37 @@ export const FirstVoice = ({ onComplete }: FirstVoiceProps) => {
               <Mic className="w-9 h-9 text-white" strokeWidth={2} />
             </motion.button>
             <p className="mt-4 text-xs text-foreground-muted">Hold to talk · up to 90s</p>
+
+            <div className="mt-8 w-full">
+              <div className="flex items-center gap-3 text-xs text-foreground-muted">
+                <span className="h-px flex-1 bg-border" />
+                or type it instead
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <textarea
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                maxLength={MAX_TYPED_CHARS}
+                rows={4}
+                placeholder="I'm a fractional CMO. I just helped a Series B fintech fix their attribution and cut CAC by 30%…"
+                className={cn(
+                  'mt-3 w-full rounded-2xl border border-border bg-card p-4 text-sm text-foreground',
+                  'placeholder:text-foreground-muted resize-none',
+                  'focus:outline-none focus:ring-2 focus:ring-primary/40'
+                )}
+              />
+              <button
+                onClick={handleTypedSubmit}
+                disabled={!typed.trim()}
+                className={cn(
+                  'mt-3 w-full h-12 rounded-full bg-primary text-primary-foreground font-medium',
+                  'flex items-center justify-center gap-2 disabled:opacity-50'
+                )}
+              >
+                Turn this into Ideas
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </>
         )}
 
