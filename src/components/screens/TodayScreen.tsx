@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lightbulb, Loader2, Zap, AlertCircle } from 'lucide-react';
+import { Sparkles, Lightbulb, Loader2, Zap, AlertCircle, Users, ArrowRight } from 'lucide-react';
+import type { TabId } from '@/components/layout/BottomNav';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useIdeas } from '@/hooks/useIdeas';
@@ -17,7 +18,11 @@ import { PricingSheet } from '@/components/billing/PricingSheet';
 // Flag off = the original flat card stack, byte-for-byte unchanged.
 const TODAY_FOCUS_ENABLED = import.meta.env.VITE_TODAY_FOCUS_ENABLED === 'true';
 
-export const TodayScreen = () => {
+interface TodayScreenProps {
+  onNavigate?: (tab: TabId) => void;
+}
+
+export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
   const { ideas, loading: ideasLoading } = useIdeas();
   const { totalPeople, loading: circleLoading } = useCircle();
   const { matches, loading: matchesLoading, error: matchesError, refresh, updateMatchState } = useMatches();
@@ -136,18 +141,16 @@ export const TodayScreen = () => {
             </div>
             <div className="space-y-1.5 flex-1">
               <p className="text-sm font-medium text-foreground">
-                {canRun ? 'Ready when you are.' : 'Not enough to match against yet.'}
+                {canRun ? 'Ready when you are.' : 'Two steps to your first Move.'}
               </p>
               <p className="text-sm text-foreground-secondary leading-relaxed">
                 {canRun
                   ? `I can cross-reference your ${ideas.length} Idea${ideas.length === 1 ? '' : 's'} against ${totalPeople} people in your Circle.`
-                  : ideas.length === 0
-                    ? 'Voice an Idea in Ask so I know what you want to sell.'
-                    : 'Add a source in Circle so I have people to match against.'}
+                  : 'Circle works in a loop: Talk → Match → Move. Give me an Idea to sell and a few people to sell it to, and I take it from there.'}
               </p>
             </div>
           </div>
-          {canRun && (
+          {canRun ? (
             <button
               onClick={handleRun}
               disabled={running}
@@ -160,6 +163,38 @@ export const TodayScreen = () => {
               {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
               {running ? 'Finding Matches…' : 'Surface Matches'}
             </button>
+          ) : (
+            <div className="mt-4 space-y-2">
+              {ideas.length === 0 && (
+                <button
+                  onClick={() => onNavigate?.('ask')}
+                  className={cn(
+                    'w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
+                    'flex items-center justify-center gap-2 shadow-lg shadow-primary/30'
+                  )}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Capture your first Idea
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+              {totalPeople === 0 && (
+                <button
+                  onClick={() => onNavigate?.('circle')}
+                  className={cn(
+                    'w-full h-11 rounded-full text-sm font-medium',
+                    'flex items-center justify-center gap-2',
+                    ideas.length === 0
+                      ? 'border border-border/60 bg-card/50 backdrop-blur text-foreground'
+                      : 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
+                  )}
+                >
+                  <Users className="w-4 h-4" />
+                  Add people to your Circle
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           )}
         </section>
       )}
