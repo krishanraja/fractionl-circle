@@ -12,6 +12,7 @@ interface ContactConfirmCardProps {
   saveLabel?: string;
   cancelLabel?: string;
   errorMsg?: string;
+  note?: string;
   preview?: ReactNode;
 }
 
@@ -45,6 +46,7 @@ export const ContactConfirmCard = ({
   saveLabel = 'Add to Circle',
   cancelLabel = 'Cancel',
   errorMsg,
+  note,
   preview,
 }: ContactConfirmCardProps) => {
   const setField = (key: FieldKey, v: string) => {
@@ -54,6 +56,10 @@ export const ContactConfirmCard = ({
   return (
     <div className="space-y-3">
       {preview}
+
+      {note && (
+        <p className="text-xs text-foreground-secondary leading-relaxed">{note}</p>
+      )}
 
       <div className="rounded-2xl bg-surface-muted/70 backdrop-blur divide-y divide-border/40 overflow-hidden">
         {FIELDS.map((f) => {

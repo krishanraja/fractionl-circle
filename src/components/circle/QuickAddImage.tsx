@@ -32,6 +32,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [parsed, setParsed] = useState<QuickAddInput | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     if (step !== 'done' || !onClose) return;
@@ -42,20 +43,27 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
   const handleFile = async (file: File | null | undefined) => {
     if (!file) return;
     setErrorMsg('');
+    setNote('');
     setPreviewUrl(URL.createObjectURL(file));
     setStep('parsing');
+    // Resilient: whatever the parser does — succeeds, finds no name, errors, or
+    // the key is missing — we land in an editable confirm card with the photo
+    // still attached. A bad read becomes a 2-second manual add, never a dead end.
     try {
       const base64 = await fileToBase64(file);
       const res = await supabase.functions.invoke('parse-contact-image', {
         body: { image: base64 },
       });
-      if (res.error) throw new Error(res.error.message || 'Image parse failed');
+      if (res.error) {
+        setParsed({ name: '' });
+        setNote("Couldn't read that one automatically — add the details below and save.");
+        haptics.error();
+        setStep('review');
+        return;
+      }
       const data = res.data as { parsed?: Record<string, string | null> } | null;
       const p = data?.parsed ?? {};
       const name = (p.name ?? '').trim();
-      if (!name) {
-        throw new Error("Couldn't find a name in that image. Try a clearer shot.");
-      }
       setParsed({
         name,
         email: p.email,
@@ -69,12 +77,15 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
         website: p.website,
         detected_platform: p.platform,
       });
+      setNote(name ? '' : "Couldn't make out the name — add it and save. I kept everything else I could read.");
       haptics.tap();
       setStep('review');
-    } catch (e) {
+    } catch {
+      // Even a hard failure (couldn't read the file) → manual add, photo kept.
+      setParsed({ name: '' });
+      setNote("Couldn't read that image — add the details here and save.");
       haptics.error();
-      setErrorMsg(e instanceof Error ? e.message : 'Could not read the image');
-      setStep('error');
+      setStep('review');
     }
   };
 
@@ -102,6 +113,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
     setPreviewUrl(null);
     setParsed(null);
     setErrorMsg('');
+    setNote('');
     setStep('idle');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -145,6 +157,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
         saving={step === 'saving'}
         cancelLabel="Retake"
         errorMsg={errorMsg || undefined}
+        note={note || undefined}
         preview={preview}
       />
     );

@@ -33,6 +33,8 @@ const StatLine = ({ stats }: { stats: SundayLetterStats | null }) => {
 
 interface SundayLetterCardProps {
   canGenerate: boolean;
+  /** Weekend hero treatment: starts expanded, primary-tinted, claims the top. */
+  prominent?: boolean;
 }
 
 const Preview = ({ letter }: { letter: SundayLetterRow }) => {
@@ -92,9 +94,9 @@ const ShareSignal = ({ letter }: { letter: SundayLetterRow }) => {
   );
 };
 
-export const SundayLetterCard = ({ canGenerate }: SundayLetterCardProps) => {
+export const SundayLetterCard = ({ canGenerate, prominent = false }: SundayLetterCardProps) => {
   const { letter, loading, generating, generate, isThisWeek } = useSundayLetter();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(prominent);
 
   const handleGenerate = async (force: boolean) => {
     try {
@@ -151,8 +153,16 @@ export const SundayLetterCard = ({ canGenerate }: SundayLetterCardProps) => {
     <motion.section
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-6 rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-5"
+      className={cn(
+        'mb-6 rounded-2xl backdrop-blur',
+        prominent
+          ? 'border-2 border-primary/40 bg-primary/[0.06] p-6 shadow-md shadow-primary/10'
+          : 'border border-border/60 bg-card/60 p-5'
+      )}
     >
+      {prominent && (
+        <p className="text-label text-primary mb-2">Your week, in one read</p>
+      )}
       <header className="flex items-start justify-between gap-3 mb-2">
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-primary/10 p-1.5">

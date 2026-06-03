@@ -33,6 +33,9 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
 
   const canRun = !ideasLoading && !circleLoading && ideas.length > 0 && totalPeople > 0;
   const hasMatches = matches.length > 0;
+  // The Sunday Letter is a weekend ritual: Sat–Mon it claims the top of Today,
+  // expanded; the rest of the week it sits quietly lower in the stack.
+  const weekend = [0, 1, 6].includes(new Date().getDay());
   const headline = useMemo(() => {
     if (matchesLoading) return 'Loading Matches…';
     if (matchesError) return 'Could not load Matches.';
@@ -81,6 +84,8 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
           Overnight I looked for Matches across your Ideas and Circle.
         </motion.p>
 
+        {weekend && <SundayLetterCard canGenerate={canRun} prominent />}
+
         <FocusMove
           matches={matches}
           onStateChange={updateMatchState}
@@ -91,7 +96,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
 
         <ConciergeCard />
 
-        <SundayLetterCard canGenerate={canRun} />
+        {!weekend && <SundayLetterCard canGenerate={canRun} />}
 
         <PricingSheet open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
       </div>
@@ -114,6 +119,8 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
         </h1>
       </motion.header>
 
+      {weekend && <SundayLetterCard canGenerate={canRun} prominent />}
+
       {!hasMatches && !matchesLoading && !matchesError && (
         <GettingStarted
           ideasCount={ideas.length}
@@ -127,7 +134,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
 
       <ConciergeCard />
 
-      <SundayLetterCard canGenerate={canRun} />
+      {!weekend && <SundayLetterCard canGenerate={canRun} />}
 
       {matchesError && !matchesLoading && (
         <section className="rounded-2xl border border-destructive/40 bg-destructive/5 p-6 mb-6">
