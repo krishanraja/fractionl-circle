@@ -6,6 +6,7 @@
 
 import { getUserTier, QUOTAS } from './tiers.ts';
 import { loadUserAiPreferences, withPersonality } from './aiPersonality.ts';
+import { profilePromptBlock } from './profileContext.ts';
 
 export interface SundayLetterStats {
   matches_surfaced: number;
@@ -177,8 +178,8 @@ export async function generateSundayLetterForUser(
       .in('status', ['voiced', 'proposed', 'active']),
     supabase
       .from('user_profiles')
-      .select('full_name, business_type')
-      .eq('user_id', userId)
+      .select('full_name, role, business_type, positioning, client_stages, client_verticals')
+      .eq('id', userId)
       .maybeSingle(),
   ]);
 
@@ -251,7 +252,7 @@ Rules:
 - No greeting, no signoff, no "Dear X", no "Best, Claude". Just the body.
 - If the data is thin, say so plainly.
 - Use plain paragraphs separated by blank lines. No markdown, no lists.`;
-    const systemPrompt = withPersonality(baseSystemPrompt, aiPrefs);
+    const systemPrompt = withPersonality(baseSystemPrompt + profilePromptBlock(profile as any), aiPrefs);
 
     const userPayload = JSON.stringify({
       user: profile ? { name: profile.full_name ?? null, type: profile.business_type ?? null } : null,

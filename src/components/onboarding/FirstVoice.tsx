@@ -11,7 +11,10 @@ import { emitLifecycle } from '@/lib/attribution';
 
 // Seed the Circle with people named during onboarding so day one is not a
 // "no people to match against" dead-end. Flag-gated (default off) until enabled.
-const PEOPLE_SEEDING_ENABLED = import.meta.env.VITE_PEOPLE_SEEDING_ENABLED === 'true';
+// Default ON: people named during onboarding seed the Circle so day one is not
+// a "no one to match against" dead-end. Set VITE_PEOPLE_SEEDING_ENABLED=false
+// to disable. (P0: was opt-in and off, which left every new Circle empty.)
+const PEOPLE_SEEDING_ENABLED = import.meta.env.VITE_PEOPLE_SEEDING_ENABLED !== 'false';
 
 type Step = 'intro' | 'recording' | 'processing' | 'review' | 'error';
 

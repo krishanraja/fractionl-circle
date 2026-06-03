@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MessageSquare, Check, X, ChevronDown, ChevronUp, Copy, Send, Loader2, Target, Megaphone, Lightbulb } from 'lucide-react';
+import { Mail, MessageSquare, Check, X, ChevronDown, ChevronUp, Copy, Send, Loader2, Target, Megaphone, Lightbulb, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,9 +48,11 @@ const initials = (name: string) =>
 
 export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [busy, setBusy] = useState<'approve' | 'decline' | 'send' | null>(null);
+  const [busy, setBusy] = useState<'approve' | 'decline' | 'send' | 'won' | null>(null);
   const [markingSent, setMarkingSent] = useState(false);
   const [finalBody, setFinalBody] = useState('');
+  const [markingWon, setMarkingWon] = useState(false);
+  const [wonAmount, setWonAmount] = useState('');
 
   const { person, idea, move } = match;
   // Default to 'buyer' so a pre-migration row (no role column) or an older match
@@ -137,6 +139,32 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
       await onStateChange(match.match.id, 'sent');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not log');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // The loop's far end. Marking a match won mints the Stream (via log-win) and,
+  // if an amount is given, writes the first ledger entry so EARNED leaves $0.
+  const handleLogWin = async () => {
+    setBusy('won');
+    try {
+      const dollars = parseFloat(wonAmount.replace(/[^0-9.]/g, ''));
+      const cents = Number.isFinite(dollars) && dollars > 0 ? Math.round(dollars * 100) : 0;
+      const { error } = await supabase.functions.invoke('log-win', {
+        body: {
+          match_id: match.match.id,
+          amount_cents: cents || undefined,
+          monthly_target_cents: cents || undefined,
+        },
+      });
+      if (error) throw error;
+      toast.success(idea?.title ? `🎉 "${idea.title}" is a Stream now.` : "🎉 Logged — it's a Stream now.");
+      setMarkingWon(false);
+      // Refresh the list; 'won' is not an active state so the card retires.
+      await onStateChange(match.match.id, 'won', { closed_reason: 'won' });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not log the win');
     } finally {
       setBusy(null);
     }
@@ -331,6 +359,64 @@ export const MatchCard = ({ match, onStateChange }: MatchCardProps) => {
           Pass
         </button>
       </footer>
+
+      {/* The win: turns this match into a Stream (loop closure). */}
+      <div className="mt-2 text-center">
+        {!markingWon ? (
+          <button
+            onClick={() => setMarkingWon(true)}
+            className="inline-flex items-center gap-1 text-xs font-medium text-foreground-muted hover:text-primary transition-colors"
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            They said yes — log the win
+          </button>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="overflow-hidden text-left"
+          >
+            <label
+              htmlFor={`won-${match.match.id}`}
+              className="block text-[11px] uppercase tracking-wide text-foreground-muted mb-1"
+            >
+              Roughly what's it worth per month? (optional)
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground-muted">$</span>
+                <input
+                  id={`won-${match.match.id}`}
+                  inputMode="numeric"
+                  value={wonAmount}
+                  onChange={(e) => setWonAmount(e.target.value.replace(/[^0-9.,]/g, ''))}
+                  placeholder="5,000"
+                  className="w-full h-9 rounded-full border border-border/60 bg-background pl-6 pr-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+              <button
+                onClick={handleLogWin}
+                disabled={busy === 'won'}
+                className={cn(
+                  'h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-medium',
+                  'inline-flex items-center justify-center gap-1.5 shadow-sm shadow-primary/20',
+                  'disabled:opacity-60'
+                )}
+              >
+                {busy === 'won' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trophy className="w-3.5 h-3.5" />}
+                Log the win
+              </button>
+              <button
+                onClick={() => setMarkingWon(false)}
+                disabled={busy === 'won'}
+                className="h-9 px-3 rounded-full border border-border/60 bg-card/60 text-xs font-medium text-foreground-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </motion.article>
   );
 };

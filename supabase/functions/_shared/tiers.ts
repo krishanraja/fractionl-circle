@@ -18,7 +18,10 @@ export interface TierQuotas {
 
 export const QUOTAS: Record<Tier, TierQuotas> = {
   free: {
-    matches_per_week: 1,
+    // P0: ungate the first session. A single weekly match made the cold-start
+    // loop unusable (one move, then a wall). 3 lets a new user actually feel
+    // the loop before any upgrade prompt. Revisit with the P1 first-run.
+    matches_per_week: 3,
     active_streams: 1,
     ask_messages_per_week: 5,
     has_sunday_letter_text: false,

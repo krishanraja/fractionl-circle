@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforceMaxLength } from '../_shared/compliance.ts';
 import { loadUserAiPreferences, withPersonality } from '../_shared/aiPersonality.ts';
+import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
 
 // Extracts revenue-stream Ideas from a user's first-run voice transcript.
 // Returns a list of Idea candidates that the client will persist into `ideas`.
@@ -65,7 +66,9 @@ Return JSON: { "ideas": [ ... ], "posture": "established", "summary": "one sente
 ALSO extract any specific PEOPLE the user mentioned by name (colleagues, clients, prospects, partners, contacts). For each, return: name (required), hint (a short phrase on how they relate or why they matter, e.g. "VP Marketing at the fintech, drowning in attribution"), company (if stated, else null), title (if stated, else null). Add a "people" array to the JSON you return: "people": [ { "name": string, "hint": string|null, "company": string|null, "title": string|null } ]. Only include real, specifically-named individuals (never the user themselves, never vague references like "a client"). If no one was named, return "people": [].`;
 
     const aiPrefs = await loadUserAiPreferences(supabase, userId);
-    const basePrompt = (posture === 'established' ? established : greenfield) + peopleClause;
+    const profile = await loadProfileContext(supabase, userId);
+    const basePrompt =
+      (posture === 'established' ? established : greenfield) + peopleClause + profilePromptBlock(profile);
     const systemPrompt = withPersonality(basePrompt, aiPrefs);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

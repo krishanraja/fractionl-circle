@@ -37,7 +37,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
     if (matchesLoading) return 'Loading Matches…';
     if (matchesError) return 'Could not load Matches.';
     if (hasMatches) return `${matches.length} Match${matches.length === 1 ? '' : 'es'} waiting for you.`;
-    return 'Nothing waiting for you yet.';
+    return "Let's line up your next move.";
   }, [hasMatches, matches.length, matchesLoading, matchesError]);
 
   const handleRun = async () => {

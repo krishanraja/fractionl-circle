@@ -4,6 +4,7 @@ import { Loader2, AlertCircle, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { readEdgeError, humanizeEdgeError } from '@/lib/functionError';
 
 type Step = 'idle' | 'redirecting' | 'error';
 
@@ -23,9 +24,13 @@ export const MicrosoftConnect = () => {
       if (!url) throw new Error('No authorize URL returned');
       window.location.assign(url);
     } catch (e) {
-      setErrorMsg(e instanceof Error ? e.message : 'Could not start Microsoft OAuth');
+      // supabase-js hides the real reason behind a generic "non-2xx" message;
+      // read the structured body so the user sees why (e.g. upgrade gate).
+      const body = await readEdgeError(e);
+      const msg = humanizeEdgeError(body, 'Could not start Microsoft just now. Try again.');
+      setErrorMsg(msg);
       setStep('error');
-      toast.error(e instanceof Error ? e.message : 'Could not start Microsoft OAuth');
+      toast.error(msg);
     }
   };
 

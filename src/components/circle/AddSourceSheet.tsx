@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, ArrowLeft, Globe, Building2, Chrome, Database, ChevronRight } from 'lucide-react';
+import { Upload, ArrowLeft, Globe, Building2, Database, ChevronRight } from 'lucide-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -7,10 +7,12 @@ import { LinkedInCsvDrop } from './LinkedInCsvDrop';
 import { CrmCsvDrop } from './CrmCsvDrop';
 import { GoogleConnect } from './GoogleConnect';
 import { MicrosoftConnect } from './MicrosoftConnect';
-import { ExtensionPair } from './ExtensionPair';
 import type { IngestResult } from '@/lib/circleIngest';
 
-type View = 'pick' | 'linkedin' | 'crm' | 'google' | 'microsoft' | 'extension';
+// Browser-extension pairing is intentionally omitted: it leaked a raw session
+// token and required loading an unpacked dev build. It returns in P3 as a
+// one-click, tokenless Web Store install. See docs/UX_REBUILD_VISION.
+type View = 'pick' | 'linkedin' | 'crm' | 'google' | 'microsoft';
 
 interface AddSourceSheetProps {
   open: boolean;
@@ -54,7 +56,6 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
         { id: 'crm' as const, icon: Database, label: 'Import CRM or sheet', hint: 'HubSpot · Attio · Folk · spreadsheet' },
         { id: 'google' as const, icon: Globe, label: 'Connect Google', hint: 'Contacts + Calendar' },
         { id: 'microsoft' as const, icon: Building2, label: 'Connect Microsoft', hint: 'Outlook + Calendar' },
-        { id: 'extension' as const, icon: Chrome, label: 'Browser extension', hint: 'Capture from LinkedIn as you browse' },
       ].map(({ id, icon: Icon, label, hint }) => (
         <button
           key={id}
@@ -100,7 +101,6 @@ const DetailBody = ({
     {view === 'crm' && <CrmCsvDrop onDone={onIngested} />}
     {view === 'google' && <GoogleConnect />}
     {view === 'microsoft' && <MicrosoftConnect />}
-    {view === 'extension' && <ExtensionPair />}
   </div>
 );
 

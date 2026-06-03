@@ -7,6 +7,7 @@
 
 import { getUserTier, QUOTAS, countMatchesSince, startOfWeekIso } from './tiers.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from './aiPersonality.ts';
+import { loadProfileContext, profilePromptBlock } from './profileContext.ts';
 
 interface Idea {
   id: string;
@@ -114,6 +115,7 @@ const buildPrompt = (
   idea: Idea,
   candidates: Person[],
   personalitySuffix = '',
+  profileBlock = '',
 ): { system: string; user: string } => {
   const system = `You match a fractional executive's Idea (an offer they want to sell) to the right people in their personal network. The key insight: the most valuable person is often NOT a buyer. Classify each pick by ROLE:
 
@@ -132,7 +134,7 @@ Rules:
 - "warm_path" is how the user plausibly knows them (prior company, shared title, etc.). If the raw data doesn't support a warm path, return both fields as null.
 - "draft" is a short (under 450 chars) message the user could plausibly send, MATCHED TO THE ROLE: a buyer gets a value-led ask tied to their pain; an amplifier gets an intro/collaboration ask (never pitch them as if they're the customer); a sharpener gets a "can I run this by you" ask. Use their first name, reference the warm path, ask ONE clear thing. No "I hope this finds you well" schlock.
 - "channel" defaults to linkedin_dm if a linkedin_url exists, else email if primary_email exists, else linkedin_dm.
-- Be conservative. If no one is a credible fit in any role, return an empty array.${personalitySuffix}`;
+- Be conservative. If no one is a credible fit in any role, return an empty array.${profileBlock}${personalitySuffix}`;
 
   const user = JSON.stringify({
     idea: {
@@ -256,6 +258,7 @@ export async function runMatchEngineForUser(
 
   const aiPrefs = await loadUserAiPreferences(supabase, userId);
   const personalitySuffix = personalitySystemSuffix(aiPrefs?.ai_personality);
+  const profileBlock = profilePromptBlock(await loadProfileContext(supabase, userId));
 
   let totalCreated = 0;
   let duplicatesSkipped = 0;
@@ -264,7 +267,7 @@ export async function runMatchEngineForUser(
   for (const idea of ideas as Idea[]) {
     const candidates = prefilter(idea, circle as Person[], signalPersonIds);
     if (!candidates.length) continue;
-    const { system, user } = buildPrompt(idea, candidates, personalitySuffix);
+    const { system, user } = buildPrompt(idea, candidates, personalitySuffix, profileBlock);
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
