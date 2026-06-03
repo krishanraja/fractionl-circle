@@ -23,17 +23,14 @@ export function applyUserPreferences(prefs: Partial<UserPreferences> | null | un
 
 export function applyTheme(theme: ThemePreference) {
   const root = document.documentElement;
-  root.classList.remove('dark');
-
-  if (theme === 'dark') {
-    root.classList.add('dark');
+  // Dark-first ("walnut desk" is the brand): everything is dark unless the user
+  // has explicitly opted into light. 'system' and unset both resolve to dark so
+  // the night-shift look is the default the anxious operator opens at night.
+  if (theme === 'light') {
+    root.classList.remove('dark');
     return;
   }
-
-  if (theme === 'system') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDark) root.classList.add('dark');
-  }
+  root.classList.add('dark');
 }
 
 /** Listen for OS theme changes when preference is "system". */

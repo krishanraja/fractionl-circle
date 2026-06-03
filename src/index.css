@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* GoBold — the brand display face (matches the logo). Self-hosted; used ONLY
+   for big page headers (.text-display) so headings carry the brand without
+   every card title looking like the logo. Gobold Thin is reserved for large
+   numerals. Note: GoBold is personal-use licensed — purchase a commercial
+   license before any public/marketing ship. */
+@font-face {
+  font-family: 'Gobold High';
+  src: url('/fonts/GoboldHigh.otf') format('opentype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gobold Thin';
+  src: url('/fonts/GoboldThin.otf') format('opentype');
+  font-weight: 100 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Circle Design System - The Night-Shift Chief of Staff
    A sealed cream letter on a dark walnut desk.
    Two materials (Ink Walnut + Correspondence cream), three warm inks,
@@ -71,8 +91,8 @@
     --transition-normal: 250ms;
     --transition-slow: 400ms;
 
-    /* Typography */
-    --font-display: 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+    /* Typography — GoBold display (brand), Satoshi body */
+    --font-display: 'Gobold High', 'Georgia', 'Times New Roman', serif;
     --font-body: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif;
 
     /* Mobile Layout */
@@ -163,16 +183,20 @@
   }
 
   /* Typography Scale — Premium */
+  /* Big brand header — the ONLY place GoBold is used. Condensed display face,
+     so sentence case + a hair of positive tracking reads premium, not poster. */
   .text-display {
     font-family: var(--font-display);
     font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: 0.005em;
   }
 
+  /* Card / section titles now use the body face (Satoshi) so they don't all
+     read like the logo. */
   .text-title-1 {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.2;
@@ -180,7 +204,7 @@
   }
 
   .text-title-2 {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1.25;
@@ -188,9 +212,9 @@
   }
 
   .text-title-3 {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.0625rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.35;
     letter-spacing: -0.005em;
   }

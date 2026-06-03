@@ -77,8 +77,8 @@ export default {
 				128: "32rem",
 			},
 			fontFamily: {
-				display: ["Source Serif 4", "Georgia", "Times New Roman", "serif"],
-				heading: ["Source Serif 4", "Georgia", "Times New Roman", "serif"],
+				display: ["Gobold High", "Georgia", "Times New Roman", "serif"],
+				heading: ["Satoshi", "Inter", "system-ui", "sans-serif"],
 				body: ["Satoshi", "Inter", "system-ui", "sans-serif"],
 			},
 			keyframes: {
