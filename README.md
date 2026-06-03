@@ -88,6 +88,7 @@ Edge function secrets are set via `supabase secrets set` — see [.env.example](
 ## Documentation
 
 - **[DOCS.md](./DOCS.md)** — full source of truth: product, architecture, schema, sales/marketing anchors, ICP, objection handling, channel-ready copy.
+- **[docs/icp-archetype.md](./docs/icp-archetype.md)** — deep ICP & archetype reference: who the fractional executive really is, why they go independent, the psychology, the buying-trigger window, and the market data behind the ICP.
 - **[docs/roadmap.md](./docs/roadmap.md)** — what shipped, what's next, sized honestly.
 - **[AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)** — last full audit + remediation log.
 - **[docs/google-oauth-setup.md](./docs/google-oauth-setup.md)** · **[docs/microsoft-oauth-setup.md](./docs/microsoft-oauth-setup.md)** — one-time provider setup.
