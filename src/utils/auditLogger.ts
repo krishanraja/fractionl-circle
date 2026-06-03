@@ -62,18 +62,22 @@ class AuditLogger {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const records = events.map(event => ({
-        user_id: user.id,
-        action: event.action,
-        resource: event.resource,
-        details: event.details || {},
-        compliance_framework: event.framework || null,
-        data_classification: event.classification || 'internal',
-        outcome: event.outcome || 'success',
-      }));
-
-      // Insert batch — fire and forget, don't block UI
-      await supabase.from('security_audit_log' as any).insert(records);
+      // security_audit_log is service-role-only (tamper-proof), so the browser
+      // cannot insert directly — it 403s. Write through the audit-log edge
+      // function, which stamps user_id from the verified JWT and inserts with
+      // the service role. Fire and forget; never block the UI.
+      await supabase.functions.invoke('audit-log', {
+        body: {
+          events: events.map(event => ({
+            action: event.action,
+            resource: event.resource,
+            details: event.details || {},
+            framework: event.framework || null,
+            classification: event.classification || 'internal',
+            outcome: event.outcome || 'success',
+          })),
+        },
+      });
     } catch (err) {
       // Audit logging should never break the app
       console.error('Audit log flush failed:', err);

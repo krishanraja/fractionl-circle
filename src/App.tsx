@@ -17,6 +17,7 @@ import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
 import { FirstVoice } from "./components/onboarding/FirstVoice";
+import { IdentityFirstRun } from "./components/onboarding/IdentityFirstRun";
 import { useUserProfile } from "./hooks/useUserProfile";
 import { PageLoader } from "./components/ui/loading-spinner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -30,6 +31,12 @@ const queryClient = new QueryClient();
 // before (AuthPage). When true, logged-out "/" renders the marketing landing instead.
 // Instantly reversible via env, no code change.
 const MARKETING_ENABLED = import.meta.env.VITE_MARKETING_LANDING_ENABLED === 'true';
+
+// P1 borrowed-conviction first-run. Default ON: new users get the identity flow
+// (Welcome → Talk → Proposal → First Move). Set VITE_IDENTITY_FIRSTRUN_ENABLED
+// =false to fall back to the original FirstVoice. Only affects users who still
+// need onboarding, so existing accounts are untouched.
+const IDENTITY_FIRSTRUN_ENABLED = import.meta.env.VITE_IDENTITY_FIRSTRUN_ENABLED !== 'false';
 
 /**
  * Public /auth route. Renders the working AuthPage (Google OAuth + email).
@@ -105,7 +112,9 @@ function AuthenticatedShell() {
   }
 
   if (needsOnboarding) {
-    return <FirstVoice onComplete={refetch} />;
+    return IDENTITY_FIRSTRUN_ENABLED
+      ? <IdentityFirstRun onComplete={refetch} />
+      : <FirstVoice onComplete={refetch} />;
   }
 
   return (

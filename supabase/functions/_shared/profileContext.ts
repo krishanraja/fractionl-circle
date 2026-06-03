@@ -16,6 +16,12 @@ export interface ProfileContext {
   positioning: string | null;
   client_stages: string[] | null;
   client_verticals: string[] | null;
+  // P1 identity fields (inferred by the borrowed-conviction first-run).
+  identity_statement?: string | null;
+  motivation_type?: string | null;
+  journey_stage?: string | null;
+  offer_maturity?: string | null;
+  target_buyer?: string | null;
 }
 
 export async function loadProfileContext(
@@ -24,7 +30,7 @@ export async function loadProfileContext(
 ): Promise<ProfileContext | null> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('full_name, role, business_type, positioning, client_stages, client_verticals')
+    .select('full_name, role, business_type, positioning, client_stages, client_verticals, identity_statement, motivation_type, journey_stage, offer_maturity, target_buyer')
     .eq('id', userId)
     .maybeSingle();
   if (error) {
@@ -53,17 +59,31 @@ const humanize = (slug: string): string =>
 
 // Builds the prompt fragment. Returns '' when we know nothing, so callers can
 // concatenate unconditionally without leaving an empty header in the prompt.
+const MOTIVATION_NOTE: Record<string, string> = {
+  pushed: 'left corporate involuntarily (layoff/restructure) — likely urgency and a thinner runway; lead with speed-to-pipeline and reassurance, never doom',
+  pulled: 'chose to go independent (burnout/autonomy) — high conviction; can be coached toward a real practice',
+  lifestyle: 'wants a sustainable portfolio life — steady, values fit over volume',
+};
+
 export function profilePromptBlock(p: ProfileContext | null): string {
   if (!p) return '';
   const lines: string[] = [];
+  // Identity statement leads — it is the single most anchoring line.
+  if (p.identity_statement) lines.push(`Identity: ${p.identity_statement}`);
   if (p.role) lines.push(`They are a fractional ${ROLE_LABELS[p.role] ?? humanize(p.role)}.`);
   if (p.business_type) lines.push(`Engagement model: ${humanize(p.business_type)}.`);
+  if (p.target_buyer) lines.push(`Who they sell to: ${p.target_buyer}.`);
   if (p.positioning) lines.push(`How they position themselves: "${p.positioning}".`);
   if (p.client_stages?.length) {
     lines.push(`Company stages they target: ${p.client_stages.map(humanize).join(', ')}.`);
   }
   if (p.client_verticals?.length) {
     lines.push(`Verticals they know best: ${p.client_verticals.map(humanize).join(', ')}.`);
+  }
+  if (p.journey_stage) lines.push(`Months into fractional work: ${p.journey_stage}.`);
+  if (p.offer_maturity) lines.push(`How defined their offer is so far: ${p.offer_maturity}.`);
+  if (p.motivation_type && MOTIVATION_NOTE[p.motivation_type]) {
+    lines.push(`Why they went fractional: ${MOTIVATION_NOTE[p.motivation_type]}.`);
   }
   if (!lines.length) return '';
   return `\n\nABOUT THIS SPECIFIC USER — anchor every suggestion to this; never produce generic, could-be-anyone output:\n- ${lines.join('\n- ')}`;

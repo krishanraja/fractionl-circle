@@ -19,6 +19,15 @@ export interface UserProfile {
   client_stages: string[];
   client_verticals: string[];
   positioning: string | null;
+  // P1 identity foundation (borrowed-conviction first-run)
+  motivation_type: string | null;
+  journey_stage: string | null;
+  target_buyer: string | null;
+  offer_maturity: string | null;
+  signature_win: string | null;
+  identity_statement: string | null;
+  first_run_transcript: string | null;
+  first_run_completed_at: string | null;
   timezone: string;
   currency: string;
   fiscal_year_start: number;
