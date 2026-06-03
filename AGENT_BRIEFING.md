@@ -21,6 +21,8 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 
 ## 2. ICP (primary, secondary, anti-ICP) with exact pains and what Circle replaces
 
+> This section is the tight pitch-ready ICP. For the deep archetype — motivations that predict buying (Pushed / Pulled / Lifestyle), the psychology, the month-2-to-6 buying window, and the commercial wedge — the canonical reference is `docs/icp-archetype.md` in the repo.
+
 ### Primary ICP: the fractional executive
 - **Who:** Fractional CMO / CFO / CTO / COO / CHRO. 15+ years experience, ex-VP or C-suite from high-growth companies.
 - **Revenue:** $150K to $1.5M annually across 2 to 7 concurrent retainers.

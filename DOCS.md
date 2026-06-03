@@ -124,6 +124,8 @@ She sells more by sending fewer, better messages to the right people. The AI is 
 
 ## 3. ICP — who Circle is for
 
+> **Deep profile:** The tables below are the operational quick-reference. For the full archetype — the three motivation segments (Pushed / Pulled / Lifestyle), the psychology, the buying-trigger window, the market data, and the commercial wedge — see [docs/icp-archetype.md](./docs/icp-archetype.md), the canonical buyer profile.
+
 ### Primary ICP — The Fractional Executive
 
 | Attribute | Detail |
