@@ -138,6 +138,9 @@ export const StreamsScreen = () => {
   const { user } = useAuth();
   const { streams, loading, error, refresh } = useStreams();
 
+  const totalEarned = streams.reduce((s, x) => s + x.earnedCents, 0);
+  const totalTarget = streams.reduce((s, x) => s + (x.monthlyTargetCents ?? 0), 0);
+
   // Log a revenue event against a Stream. RLS scopes ledger_entries to the owner,
   // so this is a safe client write. First dollar promotes a prototype to live.
   const handleLog = async (stream: EnrichedStream, cents: number) => {
@@ -174,6 +177,15 @@ export const StreamsScreen = () => {
       >
         <h1 className="text-display text-foreground">Streams</h1>
         <p className="mt-1 text-sm text-foreground-secondary">Ideas that earned their way in.</p>
+        {!loading && !error && streams.length > 0 && (
+          <p className="mt-3 text-sm text-foreground tabular-nums">
+            <span className="font-semibold text-success">{formatUsd(totalEarned)}</span>
+            <span className="text-foreground-muted"> earned</span>
+            {totalTarget > 0 && (
+              <span className="text-foreground-secondary"> · {formatUsd(totalTarget)}/mo target</span>
+            )}
+          </p>
+        )}
       </motion.header>
 
       {loading && (
@@ -216,7 +228,7 @@ export const StreamsScreen = () => {
       )}
 
       {!loading && !error && streams.length > 0 && (
-        <section className="space-y-3">
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {streams.map((s, i) => (
             <StreamRow key={s.id} stream={s} index={i} onLog={handleLog} />
           ))}

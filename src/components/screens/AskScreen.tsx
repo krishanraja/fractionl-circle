@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, ArrowRight, Mic, Sparkles } from 'lucide-react';
+import { Loader2, ArrowRight, Mic, Sparkles, Check, Zap, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,9 +24,6 @@ interface AskScreenProps {
   onNavigate?: (tab: TabId) => void;
 }
 
-// War-story framed openers. A blank box paralyses the archetype ("an average
-// user would have no idea what to say"); a question they can actually answer
-// from memory does not. Tapping one drops it into the type box to riff on.
 const STARTERS = [
   "What's a problem you fixed that you'd happily fix again?",
   'Who did you just talk to — and what did they need?',
@@ -44,13 +41,15 @@ const blobToBase64 = (blob: Blob): Promise<string> =>
     reader.readAsDataURL(blob);
   });
 
-type Phase = 'idle' | 'recording' | 'processing';
+type Phase = 'idle' | 'recording' | 'processing' | 'done';
 
 export const AskScreen = ({ onNavigate }: AskScreenProps) => {
   const { user } = useAuth();
   const [typed, setTyped] = useState('');
   const [showType, setShowType] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
+  const [captured, setCaptured] = useState<IdeaDraft[]>([]);
+  const [matching, setMatching] = useState(false);
 
   const {
     isRecording,
@@ -79,16 +78,13 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
         }))
       );
       if (error) throw error;
-      toast.success(
-        parsed.length === 1
-          ? `New Idea added — "${parsed[0].title}". Let's find who it's for.`
-          : `${parsed.length} new Ideas added.`
-      );
+      // Resolve in place: show what landed + the next move, don't bounce away.
+      setCaptured(parsed);
       setTyped('');
       setShowType(false);
-      onNavigate?.('today');
+      setPhase('done');
     },
-    [user, onNavigate]
+    [user]
   );
 
   const extractFrom = useCallback(
@@ -107,15 +103,14 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
         await persistIdeas(parsed);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Could not add that Idea');
-      } finally {
         setPhase('idle');
+      } finally {
         resetRecording();
       }
     },
     [user, persistIdeas, resetRecording]
   );
 
-  // Audio path: transcribe first, then extract Ideas.
   useEffect(() => {
     if (!audioBlob) return;
     let cancelled = false;
@@ -123,9 +118,7 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
       setPhase('processing');
       try {
         const base64 = await blobToBase64(audioBlob);
-        const t = await supabase.functions.invoke('transcribe', {
-          body: { audio: base64, format: 'webm' },
-        });
+        const t = await supabase.functions.invoke('transcribe', { body: { audio: base64, format: 'webm' } });
         if (t.error) throw new Error(t.error.message || 'Transcription failed');
         const tr = (t.data as { transcript?: string } | null)?.transcript ?? '';
         if (cancelled) return;
@@ -138,16 +131,11 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
         resetRecording();
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [audioBlob, extractFrom, resetRecording]);
 
   useEffect(() => {
-    if (recError) {
-      toast.error(recError);
-      setPhase('idle');
-    }
+    if (recError) { toast.error(recError); setPhase('idle'); }
   }, [recError]);
 
   const handleHoldStart = useCallback(async () => {
@@ -157,12 +145,24 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
   }, [phase, startRecording]);
 
   const handleHoldEnd = useCallback(() => {
-    if (isRecording) {
-      stopRecording();
-      setPhase('processing');
-    }
+    if (isRecording) { stopRecording(); setPhase('processing'); }
   }, [isRecording, stopRecording]);
 
+  const findMatches = useCallback(async () => {
+    setMatching(true);
+    try {
+      const { error } = await supabase.functions.invoke('run-match-engine', { body: {} });
+      if (error) throw error;
+      toast.success('Looking across your Circle — your moves are on Today.');
+      onNavigate?.('today');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not find matches');
+    } finally {
+      setMatching(false);
+    }
+  }, [onNavigate]);
+
+  const reset = () => { setCaptured([]); setPhase('idle'); };
   const busy = phase === 'processing';
 
   return (
@@ -182,58 +182,64 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
 
       <section className="flex-1 flex flex-col items-center">
         <AnimatePresence mode="wait">
-          {phase === 'processing' ? (
+          {phase === 'done' ? (
             <motion.div
-              key="processing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              key="done"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-12"
+              className="w-full max-w-md"
             >
-              <motion.div
-                className="w-16 h-16 rounded-full border-2 border-primary/20 border-t-primary"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-              />
-              <p className="mt-6 text-sm text-foreground-secondary">Turning that into your next move…</p>
-            </motion.div>
-          ) : phase === 'recording' ? (
-            <motion.div
-              key="recording"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center pt-6"
-            >
-              <div className="flex items-end gap-1 h-16 mb-6">
-                {waveformData.map((v, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-1.5 rounded-full bg-primary"
-                    animate={{ height: `${Math.max(8, v * 64)}px` }}
-                    transition={{ duration: 0.08 }}
-                  />
+              <p className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
+                <Check className="w-4 h-4 text-success" />
+                {captured.length === 1 ? 'Got it — one new Idea.' : `Got it — ${captured.length} new Ideas.`}
+              </p>
+              <div className="space-y-2">
+                {captured.map((i, idx) => (
+                  <div key={idx} className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur p-4">
+                    <h3 className="text-sm font-semibold text-foreground">{i.title}</h3>
+                    {i.one_liner && <p className="mt-1 text-xs text-foreground-secondary leading-relaxed">{i.one_liner}</p>}
+                    <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-foreground-muted">
+                      {i.price_band && <span>{i.price_band}</span>}
+                      {i.icp && <span>· {i.icp}</span>}
+                    </div>
+                  </div>
                 ))}
               </div>
               <button
-                onPointerUp={handleHoldEnd}
-                onPointerLeave={handleHoldEnd}
-                className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/40 flex items-center justify-center animate-pulse"
+                onClick={findMatches}
+                disabled={matching}
+                className="mt-4 w-full h-12 rounded-full bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-60"
               >
+                {matching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                Find who this is for
+              </button>
+              <button
+                onClick={reset}
+                className="mt-2 w-full h-10 inline-flex items-center justify-center gap-1.5 text-sm font-medium text-foreground-secondary hover:text-foreground"
+              >
+                <Plus className="w-4 h-4" /> Capture another
+              </button>
+            </motion.div>
+          ) : phase === 'processing' ? (
+            <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-12">
+              <motion.div className="w-16 h-16 rounded-full border-2 border-primary/20 border-t-primary" animate={{ rotate: 360 }} transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }} />
+              <p className="mt-6 text-sm text-foreground-secondary">Turning that into your next move…</p>
+            </motion.div>
+          ) : phase === 'recording' ? (
+            <motion.div key="recording" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center pt-6">
+              <div className="flex items-end gap-1 h-16 mb-6">
+                {waveformData.map((v, i) => (
+                  <motion.div key={i} className="w-1.5 rounded-full bg-primary" animate={{ height: `${Math.max(8, v * 64)}px` }} transition={{ duration: 0.08 }} />
+                ))}
+              </div>
+              <button onPointerUp={handleHoldEnd} onPointerLeave={handleHoldEnd} className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/40 flex items-center justify-center animate-pulse">
                 <Mic className="w-9 h-9 text-white" strokeWidth={2} />
               </button>
-              <p className="mt-4 text-sm text-foreground-secondary">
-                Listening… {Math.floor(duration / 1000)}s — release when done
-              </p>
+              <p className="mt-4 text-sm text-foreground-secondary">Listening… {Math.floor(duration / 1000)}s — release when done</p>
             </motion.div>
           ) : (
-            <motion.div
-              key="idle"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full flex flex-col items-center pt-4"
-            >
+            <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full flex flex-col items-center pt-4">
               <motion.button
                 onPointerDown={handleHoldStart}
                 onPointerUp={handleHoldEnd}
@@ -247,16 +253,11 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
 
               {!showType && (
                 <div className="mt-8 w-full max-w-sm space-y-2">
-                  <p className="text-[11px] uppercase tracking-wide text-foreground-muted text-center mb-1">
-                    Not sure where to start?
-                  </p>
+                  <p className="text-[11px] uppercase tracking-wide text-foreground-muted text-center mb-1">Not sure where to start?</p>
                   {STARTERS.map((s) => (
                     <button
                       key={s}
-                      onClick={() => {
-                        setTyped(s + '\n\n');
-                        setShowType(true);
-                      }}
+                      onClick={() => { setTyped(s + '\n\n'); setShowType(true); }}
                       className="w-full text-left rounded-xl border border-border/60 bg-card/50 px-3 py-2.5 text-[13px] text-foreground-secondary hover:border-primary/40 hover:text-foreground transition-colors"
                     >
                       {s}
@@ -267,10 +268,7 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
 
               <div className="mt-6 w-full max-w-sm">
                 {!showType ? (
-                  <button
-                    onClick={() => setShowType(true)}
-                    className="w-full text-center text-xs text-foreground-muted hover:text-foreground"
-                  >
+                  <button onClick={() => setShowType(true)} className="w-full text-center text-xs text-foreground-muted hover:text-foreground">
                     or type it instead
                   </button>
                 ) : (
@@ -297,9 +295,9 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
                         'disabled:opacity-50'
                       )}
                     >
-                      {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                      {busy ? 'Turning it into a move…' : 'Capture'}
-                      {!busy && <ArrowRight className="w-4 h-4" />}
+                      <Sparkles className="w-4 h-4" />
+                      Capture
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </>
                 )}
