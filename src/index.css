@@ -2,22 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* GoBold — the brand display face (matches the logo). Self-hosted; used ONLY
-   for big page headers (.text-display) so headings carry the brand without
-   every card title looking like the logo. Gobold Thin is reserved for large
-   numerals. Note: GoBold is personal-use licensed — purchase a commercial
-   license before any public/marketing ship. */
+/* Archivo (Expanded) — the brand display face. Self-hosted variable font
+   (SIL OFL, free for commercial use; see public/fonts/Archivo-OFL.txt). Used
+   only for big page headers (.text-display), set in expanded width + uppercase
+   with wide tracking so headings read as a confident, squared wordmark —
+   without every card title looking like the logo. */
 @font-face {
-  font-family: 'Gobold High';
-  src: url('/fonts/GoboldHigh.otf') format('opentype');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Gobold Thin';
-  src: url('/fonts/GoboldThin.otf') format('opentype');
-  font-weight: 100 400;
+  font-family: 'Archivo Variable';
+  src: url('/fonts/archivo-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-style: normal;
   font-display: swap;
 }
@@ -91,8 +85,8 @@
     --transition-normal: 250ms;
     --transition-slow: 400ms;
 
-    /* Typography — GoBold display (brand), Satoshi body */
-    --font-display: 'Gobold High', 'Georgia', 'Times New Roman', serif;
+    /* Typography — Archivo Expanded display (brand), Satoshi body */
+    --font-display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
     --font-body: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif;
 
     /* Mobile Layout */
@@ -183,14 +177,30 @@
   }
 
   /* Typography Scale — Premium */
-  /* Big brand header — the ONLY place GoBold is used. Condensed display face,
-     so sentence case + a hair of positive tracking reads premium, not poster. */
+  /* Big brand header — the ONLY place the display face is used. Archivo set in
+     expanded width, uppercase, with wide tracking reads as a squared,
+     architectural wordmark — professional, not poster. */
   .text-display {
     font-family: var(--font-display);
     font-size: 2.25rem;
-    font-weight: 400;
-    line-height: 1.05;
+    font-weight: 600;
+    font-stretch: 125%;
+    line-height: 1.08;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Long, full-sentence display headers (marketing hero, onboarding) keep the
+     Archivo voice but stay sentence-case with tighter tracking so a whole
+     sentence doesn't shout. */
+  .text-display-sentence {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    font-weight: 600;
+    font-stretch: 110%;
+    line-height: 1.1;
     letter-spacing: 0.005em;
+    text-transform: none;
   }
 
   /* Card / section titles now use the body face (Satoshi) so they don't all

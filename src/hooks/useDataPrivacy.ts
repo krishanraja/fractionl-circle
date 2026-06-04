@@ -24,6 +24,7 @@ export function useDataPrivacy() {
     if (!user) return;
     try {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated Supabase types
         .from('data_subject_requests' as any)
         .select('*')
         .eq('user_id', user.id)
@@ -41,6 +42,7 @@ export function useDataPrivacy() {
     if (!user) return null;
     setLoading(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- RPC not in generated Supabase types
       const { data, error } = await supabase.rpc('export_user_data' as any, {
         target_user_id: user.id,
       });
@@ -48,6 +50,7 @@ export function useDataPrivacy() {
       if (error) throw error;
 
       // Also create a DSR record
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated Supabase types
       await supabase.from('data_subject_requests' as any).insert({
         user_id: user.id,
         request_type: 'portability',
@@ -112,6 +115,7 @@ export function useDataPrivacy() {
     setLoading(true);
     try {
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated Supabase types
         .from('data_subject_requests' as any)
         .insert({
           user_id: user.id,

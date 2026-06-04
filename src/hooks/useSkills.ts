@@ -41,9 +41,9 @@ export const useSkills = () => {
       }, {});
 
       setSkillsByCategory(grouped);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching skills:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
       toast.error('Failed to load skills');
     } finally {
       setLoading(false);

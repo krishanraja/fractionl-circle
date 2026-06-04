@@ -51,7 +51,7 @@ export interface UserPreferences {
   sidebar_collapsed: boolean;
   favorite_metrics: string[] | null;
   hidden_sections: string[] | null;
-  widget_order: any[];
+  widget_order: unknown[];
   email_notifications: boolean;
   browser_notifications: boolean;
   daily_digest: boolean;
@@ -140,9 +140,9 @@ export const useUserProfile = () => {
         .update({ last_active_at: new Date().toISOString() })
         .eq('id', user.id);
 
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching user data:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -167,7 +167,7 @@ export const useUserProfile = () => {
       if (error) throw error;
       setProfile(data as UserProfile);
       return data;
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error updating profile:', err);
       toast.error('Failed to update profile');
       throw err;
@@ -191,7 +191,7 @@ export const useUserProfile = () => {
       setPreferences(next);
       applyUserPreferences(next);
       return next;
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error updating preferences:', err);
       toast.error('Failed to update preferences');
       throw err;

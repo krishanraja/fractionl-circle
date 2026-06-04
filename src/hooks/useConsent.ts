@@ -55,6 +55,7 @@ export function useConsent() {
 
     try {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated Supabase types
         .from('user_consents' as any)
         .select('consent_type, granted, granted_at, revoked_at, consent_version')
         .eq('user_id', user.id);
@@ -97,6 +98,7 @@ export function useConsent() {
     try {
       const now = new Date().toISOString();
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated Supabase types
         .from('user_consents' as any)
         .upsert({
           user_id: user.id,

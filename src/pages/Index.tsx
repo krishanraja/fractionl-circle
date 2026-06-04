@@ -11,12 +11,25 @@ import { haptics } from '@/utils/haptics';
 // (CircleScreen) can refresh data without a full reload.
 export const CIRCLE_DATA_CHANGED = 'circle-data-changed';
 
+// Optional intent carried when navigating to the Circle tab, so a CTA elsewhere
+// (e.g. the Today "who'd buy it?" hero) can land the user straight in the right
+// add flow: 'import' opens the source/LinkedIn sheet, 'add' opens quick-add.
+export type CircleIntent = 'import' | 'add';
+
 const StreamsScreen = lazy(() => import('@/components/screens/StreamsScreen').then(m => ({ default: m.StreamsScreen })));
 const CircleScreen = lazy(() => import('@/components/screens/CircleScreen').then(m => ({ default: m.CircleScreen })));
 const AskScreen = lazy(() => import('@/components/screens/AskScreen').then(m => ({ default: m.AskScreen })));
 
 const Index = () => {
   const [currentTab, setCurrentTab] = useState<TabId>('today');
+  const [circleIntent, setCircleIntent] = useState<CircleIntent | null>(null);
+
+  // Tab navigation that can carry an intent for the Circle tab. Other tabs
+  // ignore the intent. Used by Today's diagnosis hero to deep-link into import.
+  const navigate = (tab: TabId, intent?: CircleIntent) => {
+    setCurrentTab(tab);
+    setCircleIntent(tab === 'circle' ? intent ?? null : null);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -76,7 +89,7 @@ const Index = () => {
   const renderScreen = () => {
     switch (currentTab) {
       case 'today':
-        return <TodayScreen onNavigate={setCurrentTab} />;
+        return <TodayScreen onNavigate={navigate} />;
       case 'streams':
         return (
           <Suspense fallback={<PageLoader message="Loading Streams..." />}>
@@ -86,22 +99,25 @@ const Index = () => {
       case 'circle':
         return (
           <Suspense fallback={<PageLoader message="Loading Circle..." />}>
-            <CircleScreen />
+            <CircleScreen
+              initialAction={circleIntent}
+              onActionConsumed={() => setCircleIntent(null)}
+            />
           </Suspense>
         );
       case 'ask':
         return (
           <Suspense fallback={<PageLoader message="Loading Ask..." />}>
-            <AskScreen onNavigate={setCurrentTab} />
+            <AskScreen onNavigate={navigate} />
           </Suspense>
         );
       default:
-        return <TodayScreen onNavigate={setCurrentTab} />;
+        return <TodayScreen onNavigate={navigate} />;
     }
   };
 
   return (
-    <AppShell currentTab={currentTab} onTabChange={setCurrentTab}>
+    <AppShell currentTab={currentTab} onTabChange={(tab) => navigate(tab)}>
       {renderScreen()}
     </AppShell>
   );

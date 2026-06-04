@@ -115,8 +115,8 @@ export default function ShareContact() {
 
       setParsed(data?.parsed || {});
       setState('confirm');
-    } catch (err: any) {
-      setErrorMsg(err?.message || 'Could not parse the screenshot.');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Could not parse the screenshot.');
       setState('error');
     }
   };
@@ -163,8 +163,8 @@ export default function ShareContact() {
       if (error) throw error;
       setParsed(data?.parsed || {});
       setState('confirm');
-    } catch (err: any) {
-      setErrorMsg(err?.message || 'Could not load the parsed contact.');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Could not load the parsed contact.');
       setState('error');
     }
   };

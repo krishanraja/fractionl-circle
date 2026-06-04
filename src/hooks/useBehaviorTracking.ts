@@ -10,7 +10,7 @@ export interface BehaviorEvent {
   event_value?: number;
   page_path?: string;
   component_name?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export const useBehaviorTracking = () => {
@@ -137,7 +137,7 @@ export const useBehaviorTracking = () => {
     });
   }, [trackEvent]);
 
-  const trackFeatureUse = useCallback((featureKey: string, action: string, metadata?: Record<string, any>) => {
+  const trackFeatureUse = useCallback((featureKey: string, action: string, metadata?: Record<string, unknown>) => {
     trackEvent({
       event_type: 'feature_use',
       event_category: 'engagement',
@@ -150,7 +150,7 @@ export const useBehaviorTracking = () => {
     updateFeatureUsage(featureKey);
   }, [trackEvent]);
 
-  const trackClick = useCallback((componentName: string, action: string, metadata?: Record<string, any>) => {
+  const trackClick = useCallback((componentName: string, action: string, metadata?: Record<string, unknown>) => {
     trackEvent({
       event_type: 'click',
       event_category: 'interaction',
@@ -160,7 +160,7 @@ export const useBehaviorTracking = () => {
     });
   }, [trackEvent]);
 
-  const trackAIInteraction = useCallback((action: string, query?: string, metadata?: Record<string, any>) => {
+  const trackAIInteraction = useCallback((action: string, query?: string, metadata?: Record<string, unknown>) => {
     trackEvent({
       event_type: 'ai_interaction',
       event_category: 'ai',
@@ -170,7 +170,7 @@ export const useBehaviorTracking = () => {
     });
   }, [trackEvent]);
 
-  const trackGoalUpdate = useCallback((goalType: string, value: number, metadata?: Record<string, any>) => {
+  const trackGoalUpdate = useCallback((goalType: string, value: number, metadata?: Record<string, unknown>) => {
     trackEvent({
       event_type: 'goal_update',
       event_category: 'data_entry',

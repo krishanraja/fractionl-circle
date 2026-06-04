@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
@@ -77,7 +78,7 @@ export default {
 				128: "32rem",
 			},
 			fontFamily: {
-				display: ["Gobold High", "Georgia", "Times New Roman", "serif"],
+				display: ["Archivo Variable", "Archivo", "system-ui", "sans-serif"],
 				heading: ["Satoshi", "Inter", "system-ui", "sans-serif"],
 				body: ["Satoshi", "Inter", "system-ui", "sans-serif"],
 			},
@@ -152,5 +153,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [tailwindcssAnimate],
 } satisfies Config;

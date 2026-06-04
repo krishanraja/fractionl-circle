@@ -65,7 +65,7 @@ export interface CustomerJourneyTracking {
   user_id: string;
   customer_email: string;
   journey_stage: 'awareness' | 'consideration' | 'decision' | 'retention' | 'advocacy';
-  touchpoints: any[];
+  touchpoints: unknown[];
   first_tool_used?: string;
   tools_used: string[];
   progression_velocity: number;
@@ -82,7 +82,7 @@ export interface EngagementAnalytics {
   user_id: string;
   metric_type: 'active_sessions' | 'daily_usage' | 'conversion_events' | 'lead_temperature_changes';
   metric_value: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   timestamp: string;
   created_at?: string;
 }
