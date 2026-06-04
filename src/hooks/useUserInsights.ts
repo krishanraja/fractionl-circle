@@ -13,7 +13,7 @@ export interface UserInsight {
   suggested_actions: string[] | null;
   confidence_score: number | null;
   status: 'active' | 'dismissed' | 'actioned' | 'expired' | null;
-  supporting_data: Record<string, any> | null;
+  supporting_data: Record<string, unknown> | null;
   expires_at: string | null;
   dismissed_at: string | null;
   actioned_at: string | null;
@@ -31,7 +31,7 @@ interface UseUserInsightsOptions {
 export interface InsightOperationResult {
   success: boolean;
   error?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export function useUserInsights(options: UseUserInsightsOptions = {}) {
@@ -82,7 +82,7 @@ export function useUserInsights(options: UseUserInsightsOptions = {}) {
       if (fetchError) throw fetchError;
 
       // Parse the data to match our interface
-      const parsedInsights: UserInsight[] = (data || []).map((insight: any) => ({
+      const parsedInsights: UserInsight[] = ((data || []) as unknown as UserInsight[]).map((insight) => ({
         ...insight,
         suggested_actions: Array.isArray(insight.suggested_actions) 
           ? insight.suggested_actions 

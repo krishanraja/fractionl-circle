@@ -25,6 +25,7 @@ interface UseWebPush {
 }
 
 // Narrowly-typed view of the supabase client for the un-typed table.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped table; query-builder methods resolved at runtime
 type LooseClient = { from: (table: string) => any };
 const db = supabase as unknown as LooseClient;
 

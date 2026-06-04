@@ -58,6 +58,7 @@ const ShareSignal = ({ letter }: { letter: SundayLetterRow }) => {
     if (published || saving) return;
     setSaving(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated Supabase types
       const { error } = await (supabase as unknown as { from: (t: string) => any })
         .from('sunday_letters')
         .update({ is_publishable: true })

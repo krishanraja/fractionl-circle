@@ -20,7 +20,6 @@ export function reportError(error: unknown, context: ErrorContext = {}): void {
       ts: new Date().toISOString(),
     };
 
-    // eslint-disable-next-line no-console
     console.error('[telemetry]', payload);
 
     // Sentry hook point — install @sentry/react and call

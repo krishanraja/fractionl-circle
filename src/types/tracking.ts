@@ -1,4 +1,5 @@
 // Redesigned data structures for the holistic goal tracking system
+import type { LucideIcon } from 'lucide-react';
 
 export interface MonthlyGoals {
   id?: string;
@@ -66,7 +67,7 @@ export interface SpreadsheetSync {
 export interface MetricConfig {
   key: string;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   unit: string;
   type: 'target' | 'snapshot';
   category: 'revenue' | 'business_development' | 'current_state';
@@ -87,7 +88,7 @@ export interface MetricProgress {
   target: number;
   dailyTarget: number;
   progress: ProgressStatus;
-  icon: any;
+  icon: LucideIcon;
   unit: string;
   type: 'target' | 'snapshot';
   category: string;
@@ -133,7 +134,7 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: any;
+  icon: LucideIcon;
   unlocked: boolean;
   unlockedDate?: string;
   category: 'streak' | 'target' | 'growth' | 'milestone';
