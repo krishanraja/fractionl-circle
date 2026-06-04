@@ -194,7 +194,7 @@ export const IdentityFirstRun = ({ onComplete }: Props) => {
         {/* WELCOME */}
         {step === 'welcome' && (
           <motion.div key="w" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto">
-            <motion.h1 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-display text-foreground leading-tight">
+            <motion.h1 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-display-sentence text-foreground leading-tight">
               You built the capability.<br />Let's build the distribution.
             </motion.h1>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-4 text-sm text-foreground-secondary leading-relaxed">

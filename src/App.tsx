@@ -12,7 +12,6 @@ import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import ShareContact from "./pages/ShareContact";
 import TryDemo from "./pages/TryDemo";
-import TypePreview from "./pages/TypePreview";
 import MarketingLanding from "./pages/MarketingLanding";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
@@ -136,7 +135,6 @@ function AppRoutes() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/share-contact" element={<ShareContact />} />
         <Route path="/try" element={<TryDemo />} />
-        <Route path="/type-preview" element={<TypePreview />} />
         <Route path="/auth" element={<AuthRoute />} />
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />

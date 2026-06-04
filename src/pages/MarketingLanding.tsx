@@ -97,7 +97,7 @@ export default function MarketingLanding() {
             initial="initial"
             animate="animate"
             transition={{ ...fadeUpTransition, delay: 0.05 }}
-            className="text-display text-foreground md:text-[3rem] md:leading-[1.08]"
+            className="text-display-sentence text-foreground md:text-[3rem] md:leading-[1.08]"
           >
             Talk once. Wake to a drafted Move on the right person.
           </motion.h1>
