@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, Loader2, Zap, AlertCircle } from 'lucide-react';
 import type { TabId } from '@/components/layout/BottomNav';
+import type { CircleIntent } from '@/pages/Index';
 import { GettingStarted } from '@/components/today/GettingStarted';
+import { NextMove } from '@/components/today/NextMove';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useIdeas } from '@/hooks/useIdeas';
@@ -19,8 +21,14 @@ import { PricingSheet } from '@/components/billing/PricingSheet';
 // Flag off = the original flat card stack, byte-for-byte unchanged.
 const TODAY_FOCUS_ENABLED = import.meta.env.VITE_TODAY_FOCUS_ENABLED === 'true';
 
+// Diagnosis hero. Default ON: when there are no Matches yet, Today reads the
+// user's state (ideas vs. people) and names their single biggest gap with one
+// action, instead of the generic Talk→Match→Move checklist. Set
+// VITE_NEXT_MOVE_ENABLED=false to fall back to GettingStarted.
+const NEXT_MOVE_ENABLED = import.meta.env.VITE_NEXT_MOVE_ENABLED !== 'false';
+
 interface TodayScreenProps {
-  onNavigate?: (tab: TabId) => void;
+  onNavigate?: (tab: TabId, intent?: CircleIntent) => void;
 }
 
 export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
@@ -103,34 +111,52 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
     );
   }
 
+  // When there are no Matches yet, the diagnosis hero (NextMove) carries the
+  // message, so we drop the redundant display headline and the "overnight"
+  // line — the latter would also be untrue for a user with nothing seeded yet.
+  const showDiagnosis = !hasMatches && !matchesLoading && !matchesError;
+
   return (
     <div className="min-h-full bg-background px-4 pt-6 pb-24">
-      <motion.header
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="mb-6"
-      >
-        <p className="text-sm text-foreground-secondary leading-relaxed">
-          Overnight I looked for Matches across your Ideas and Circle.
-        </p>
-        <h1 className="mt-2 text-display text-foreground">
-          {headline}
-        </h1>
-      </motion.header>
+      {!showDiagnosis && (
+        <motion.header
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
+        >
+          <p className="text-sm text-foreground-secondary leading-relaxed">
+            Overnight I looked for Matches across your Ideas and Circle.
+          </p>
+          <h1 className="mt-2 text-display text-foreground">
+            {headline}
+          </h1>
+        </motion.header>
+      )}
 
       {weekend && <SundayLetterCard canGenerate={canRun} prominent />}
 
-      {!hasMatches && !matchesLoading && !matchesError && (
-        <GettingStarted
-          ideasCount={ideas.length}
-          peopleCount={totalPeople}
-          canRun={canRun}
-          running={running}
-          onRun={handleRun}
-          onNavigate={onNavigate}
-        />
-      )}
+      {showDiagnosis &&
+        (NEXT_MOVE_ENABLED ? (
+          <NextMove
+            ideasCount={ideas.length}
+            peopleCount={totalPeople}
+            canRun={canRun}
+            running={running}
+            onRun={handleRun}
+            onNavigate={onNavigate}
+            topIdeaTitle={ideas[0]?.title}
+          />
+        ) : (
+          <GettingStarted
+            ideasCount={ideas.length}
+            peopleCount={totalPeople}
+            canRun={canRun}
+            running={running}
+            onRun={handleRun}
+            onNavigate={onNavigate}
+          />
+        ))}
 
       <ConciergeCard />
 

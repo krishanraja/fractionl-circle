@@ -10,7 +10,7 @@ import { DedupeReviewSheet } from '@/components/circle/DedupeReviewSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import type { Source } from '@/hooks/useCircle';
 import { haptics } from '@/utils/haptics';
-import { CIRCLE_DATA_CHANGED } from '@/pages/Index';
+import { CIRCLE_DATA_CHANGED, type CircleIntent } from '@/pages/Index';
 
 const SOURCE_ICON = (kind: Source['kind']) => {
   switch (kind) {
@@ -42,12 +42,28 @@ const SOURCE_LABEL = (kind: Source['kind']) => {
   }
 };
 
-export const CircleScreen = () => {
+interface CircleScreenProps {
+  /** When the user arrives via a deep-link CTA, open the matching add flow:
+   *  'import' → the source/LinkedIn sheet, 'add' → quick-add. */
+  initialAction?: CircleIntent | null;
+  onActionConsumed?: () => void;
+}
+
+export const CircleScreen = ({ initialAction, onActionConsumed }: CircleScreenProps = {}) => {
   const { totalPeople, sources, loading, refresh } = useCircle();
   const dedupe = useCircleDedupe();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [dedupeOpen, setDedupeOpen] = useState(false);
+
+  // Honor a deep-link intent once, then tell the parent to clear it so the
+  // sheet doesn't re-open on the next render.
+  useEffect(() => {
+    if (!initialAction) return;
+    if (initialAction === 'import') setSheetOpen(true);
+    else if (initialAction === 'add') setAddOpen(true);
+    onActionConsumed?.();
+  }, [initialAction, onActionConsumed]);
 
   const openDedupe = async () => {
     setDedupeOpen(true);

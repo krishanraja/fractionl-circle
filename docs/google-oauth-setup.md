@@ -22,7 +22,9 @@ In **APIs & Services → Library**, enable:
 - App name: `Circle by Fractionl` (or your own).
 - User support email / Developer contact: your email.
 - App domain: `circle.fractionl.ai` (or your domain).
-- Authorized domains: `fractionl.ai`, `supabase.co`.
+- Authorized domains: `fractionl.ai`. (Add `supabase.co` only if you are still
+  on the raw `<ref>.supabase.co` host; once the Supabase custom auth domain is
+  live — see `supabase-custom-domain.md` — `fractionl.ai` alone is correct.)
 - Save.
 
 On the **Scopes** step, add these and nothing else (non-restricted only):
@@ -49,14 +51,16 @@ published.
 
 - Application type: **Web application**.
 - Name: `Circle — edge functions`.
-- Authorized redirect URIs: add **exactly** this, with your Supabase project
-  ref substituted:
+- Authorized redirect URIs: add **exactly** the callback on your active auth
+  host. Once the Supabase custom domain is live (see
+  `supabase-custom-domain.md`), this is:
 
   ```
-  https://<PROJECT_REF>.supabase.co/functions/v1/oauth-google-callback
+  https://auth.circle.fractionl.ai/functions/v1/oauth-google-callback
   ```
 
-  (For you: `https://ksyuwacuigshvcyptlhe.supabase.co/functions/v1/oauth-google-callback`.)
+  Until cut over, the raw host also works:
+  `https://ksyuwacuigshvcyptlhe.supabase.co/functions/v1/oauth-google-callback`.
 
 - Create. Copy the Client ID and Client Secret.
 

@@ -708,9 +708,17 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 
 The "Continue with Google" button on `AuthPage` uses Supabase's hosted Google provider via `supabase.auth.signInWithOAuth({ provider: 'google' })`. The client code is correct; the provider must be configured in the **Supabase Dashboard** (and the Google Cloud Console) — `supabase/config.toml` does not control deployed-project auth settings. If users see *"Google authentication is not configured"*, check this checklist:
 
+> **Branding the consent screen.** Because this flow runs through Supabase's
+> hosted domain, Google's consent screen shows the raw `<ref>.supabase.co` host
+> ("continue to ksyuwacuigshvcyptlhe.supabase.co"). To replace it with
+> `auth.circle.fractionl.ai`, set up the Supabase custom auth domain — full
+> procedure in `docs/supabase-custom-domain.md`. The redirect URIs below assume
+> that custom domain is live; until cut over, the `<ref>.supabase.co` variants
+> also work.
+
 1. **Google Cloud Console** → APIs & Services → Credentials → OAuth 2.0 Web client:
    - **Authorized JavaScript origins:** `https://circle.fractionl.ai`
-   - **Authorized redirect URIs:** `https://ksyuwacuigshvcyptlhe.supabase.co/auth/v1/callback` (the Supabase callback, **not** the app URL — common mistake)
+   - **Authorized redirect URIs:** `https://auth.circle.fractionl.ai/auth/v1/callback` (the Supabase callback, **not** the app URL — common mistake)
 2. **Supabase Dashboard** → project `ksyuwacuigshvcyptlhe`:
    - Authentication → Providers → **Google: enable**, paste Client ID + Client Secret from step 1.
    - Authentication → URL Configuration → **Site URL:** `https://circle.fractionl.ai`; **Redirect URLs:** add `https://circle.fractionl.ai/**`.
