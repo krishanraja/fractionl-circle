@@ -113,7 +113,7 @@ export const CircleScreen = ({ initialAction, onActionConsumed }: CircleScreenPr
   const sourcesOpenByDefault = !loading && totalPeople === 0;
 
   return (
-    <div className="min-h-full bg-background px-4 pt-6 pb-24">
+    <div className="min-h-full bg-background px-4 pt-6 pb-24 lg:px-8 lg:mx-auto lg:max-w-4xl">
       <motion.header
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}

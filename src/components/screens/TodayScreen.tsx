@@ -7,6 +7,7 @@ import { GettingStarted } from '@/components/today/GettingStarted';
 import { NextMove } from '@/components/today/NextMove';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useIsWide } from '@/hooks/use-mobile';
 import { useIdeas } from '@/hooks/useIdeas';
 import { useCircle } from '@/hooks/useCircle';
 import { useMatches, runMatchEngine } from '@/hooks/useMatches';
@@ -38,6 +39,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
   const [running, setRunning] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<string | undefined>(undefined);
+  const isWide = useIsWide();
 
   const canRun = !ideasLoading && !circleLoading && ideas.length > 0 && totalPeople > 0;
   const hasMatches = matches.length > 0;
@@ -82,7 +84,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
   // is never regressed.
   if (TODAY_FOCUS_ENABLED && hasMatches) {
     return (
-      <div className="min-h-full bg-background px-4 pt-6 pb-24">
+      <div className="min-h-full bg-background px-4 pt-6 pb-24 lg:px-8 lg:mx-auto lg:max-w-2xl">
         <motion.p
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -117,7 +119,9 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
   const showDiagnosis = !hasMatches && !matchesLoading && !matchesError;
 
   return (
-    <div className="min-h-full bg-background px-4 pt-6 pb-24">
+    <div className="min-h-full bg-background px-4 pt-6 pb-24 lg:px-8 lg:mx-auto lg:max-w-3xl xl:max-w-6xl">
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start xl:gap-8">
+        <div className="xl:min-w-0">
       {!showDiagnosis && (
         <motion.header
           initial={{ opacity: 0, y: -6 }}
@@ -134,7 +138,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
         </motion.header>
       )}
 
-      {weekend && <SundayLetterCard canGenerate={canRun} prominent />}
+      {!isWide && weekend && <SundayLetterCard canGenerate={canRun} prominent />}
 
       {showDiagnosis &&
         (NEXT_MOVE_ENABLED ? (
@@ -158,9 +162,9 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
           />
         ))}
 
-      <ConciergeCard />
+      {!isWide && <ConciergeCard />}
 
-      {!weekend && <SundayLetterCard canGenerate={canRun} />}
+      {!isWide && !weekend && <SundayLetterCard canGenerate={canRun} />}
 
       {matchesError && !matchesLoading && (
         <section className="rounded-2xl border border-destructive/40 bg-destructive/5 p-6 mb-6">
@@ -233,6 +237,17 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
           </div>
         </section>
       )}
+
+        </div>
+
+        {isWide && (
+          <aside className="space-y-0">
+            {weekend && <SundayLetterCard canGenerate={canRun} prominent />}
+            <ConciergeCard />
+            {!weekend && <SundayLetterCard canGenerate={canRun} />}
+          </aside>
+        )}
+      </div>
 
       <PricingSheet open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
     </div>

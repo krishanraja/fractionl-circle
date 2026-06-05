@@ -33,13 +33,13 @@
     --foreground-secondary: 28 8% 38%;
     --foreground-muted: 30 6% 56%;
 
-    /* Seal Red - the one rationed accent */
-    --primary: 8 64% 44%;
-    --primary-light: 8 60% 52%;
+    /* Brand violet — the one rationed accent (restores documented #994CCC) */
+    --primary: 284 44% 48%;
+    --primary-light: 284 46% 56%;
     --primary-foreground: 38 30% 97%;
-    --primary-muted: 8 38% 92%;
+    --primary-muted: 284 40% 92%;
 
-    --accent: 8 64% 44%;
+    --accent: 284 44% 48%;
     --accent-foreground: 38 30% 97%;
 
     /* Semantic Colors - calm green, calm amber, muted struck-red */
@@ -61,7 +61,7 @@
     /* Form Elements - warm, low-contrast */
     --border: 34 18% 84%;
     --input: 34 20% 88%;
-    --ring: 8 64% 44%;
+    --ring: 284 44% 48%;
 
     /* Legacy Mappings */
     --secondary: 36 24% 91%;
@@ -98,12 +98,12 @@
     /* Sidebar (for desktop) */
     --sidebar-background: 36 30% 98%;
     --sidebar-foreground: 28 8% 38%;
-    --sidebar-primary: 8 64% 44%;
+    --sidebar-primary: 284 44% 48%;
     --sidebar-primary-foreground: 38 30% 97%;
     --sidebar-accent: 36 24% 91%;
     --sidebar-accent-foreground: 24 16% 12%;
     --sidebar-border: 34 18% 84%;
-    --sidebar-ring: 8 64% 44%;
+    --sidebar-ring: 284 44% 48%;
   }
 
   /* Dark mode override - Walnut desk, cream paper as the bright surface */
@@ -116,9 +116,13 @@
     --foreground-secondary: 34 12% 70%;
     --foreground-muted: 32 8% 52%;
 
-    --primary: 8 62% 54%;
-    --primary-light: 8 58% 62%;
-    --primary-muted: 8 40% 24%;
+    --primary: 280 44% 54%;
+    --primary-light: 280 48% 63%;
+    --primary-muted: 280 32% 26%;
+
+    /* Dark also overrides accent/ring (else they fall through to the light :root) */
+    --accent: 280 44% 54%;
+    --ring: 280 44% 54%;
 
     --success: 142 36% 50%;
     --success-muted: 142 30% 18%;
@@ -149,6 +153,8 @@
 
     --sidebar-background: 28 16% 10%;
     --sidebar-foreground: 34 12% 70%;
+    --sidebar-primary: 280 44% 54%;
+    --sidebar-ring: 280 44% 54%;
     --sidebar-accent: 28 14% 16%;
     --sidebar-accent-foreground: 38 28% 92%;
     --sidebar-border: 28 12% 22%;

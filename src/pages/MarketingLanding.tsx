@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Mic, Sparkles, Moon, ArrowRight, Check } from 'lucide-react';
 import { TIERS } from '@/lib/tiers';
 import { AuthLegalFooter } from '@/components/auth/AuthLegalFooter';
+import { ProductPreview } from '@/components/marketing/ProductPreview';
 
 // Public marketing landing for logged-OUT visitors at "/".
 // Sealed-letter identity: warm cream surfaces, Seal Red (--primary) as the single
@@ -68,7 +69,7 @@ export default function MarketingLanding() {
 
   return (
     <div className="min-h-screen bg-background text-foreground safe-top safe-bottom">
-      <div className="mx-auto w-full max-w-md px-6 md:max-w-2xl">
+      <div className="mx-auto w-full max-w-md px-6 md:max-w-2xl lg:max-w-6xl lg:px-12 xl:max-w-7xl">
         {/* Brand mark */}
         <motion.header
           variants={fadeUp}
@@ -91,57 +92,71 @@ export default function MarketingLanding() {
         </motion.header>
 
         {/* Hero */}
-        <section className="pt-12 pb-16 text-center md:pt-16">
-          <motion.h1
-            variants={fadeUp}
-            initial="initial"
-            animate="animate"
-            transition={{ ...fadeUpTransition, delay: 0.05 }}
-            className="text-display-sentence text-foreground md:text-[3rem] md:leading-[1.08]"
-          >
-            Talk once. Wake to a drafted Move on the right person.
-          </motion.h1>
+        <section className="pt-12 pb-16 text-center md:pt-16 lg:grid lg:grid-cols-2 lg:items-center lg:gap-12 lg:pt-20 lg:pb-24 lg:text-left xl:gap-16">
+          <div>
+            <motion.h1
+              variants={fadeUp}
+              initial="initial"
+              animate="animate"
+              transition={{ ...fadeUpTransition, delay: 0.05 }}
+              className="text-display-sentence text-foreground md:text-[3rem] md:leading-[1.08] lg:text-[3.25rem] lg:leading-[1.05]"
+            >
+              Talk once. Wake to a drafted Move on the right person.
+            </motion.h1>
 
-          <motion.p
-            variants={fadeUp}
-            initial="initial"
-            animate="animate"
-            transition={{ ...fadeUpTransition, delay: 0.15 }}
-            className="mx-auto mt-5 max-w-md text-body text-foreground-secondary"
-          >
-            Circle is the relationship-to-revenue engine for fractional executives,
-            advisors, and portfolio operators. The AI is the operator. You are the
-            relationship.
-          </motion.p>
+            <motion.p
+              variants={fadeUp}
+              initial="initial"
+              animate="animate"
+              transition={{ ...fadeUpTransition, delay: 0.15 }}
+              className="mx-auto mt-5 max-w-md text-body text-foreground-secondary lg:mx-0"
+            >
+              Circle is the relationship-to-revenue engine for fractional executives,
+              advisors, and portfolio operators. The AI is the operator. You are the
+              relationship.
+            </motion.p>
 
+            <motion.div
+              variants={fadeUp}
+              initial="initial"
+              animate="animate"
+              transition={{ ...fadeUpTransition, delay: 0.25 }}
+              className="mt-9 lg:mt-10"
+            >
+              <div className="flex flex-col gap-3 lg:flex-row">
+                <button
+                  onClick={() => navigate('/try')}
+                  className="btn-touch flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-body font-semibold text-primary-foreground shadow-md lg:w-auto lg:px-8"
+                >
+                  Try it now
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="btn-touch flex h-14 w-full items-center justify-center rounded-full border border-border bg-card text-body font-medium text-foreground lg:w-auto lg:px-8"
+                >
+                  Sign in
+                </button>
+              </div>
+              <p className="mt-3 text-caption text-foreground-muted">
+                No signup needed to try. Talk for a few seconds and watch your Ideas land.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Product preview — desktop only */}
           <motion.div
-            variants={fadeUp}
-            initial="initial"
-            animate="animate"
-            transition={{ ...fadeUpTransition, delay: 0.25 }}
-            className="mt-9 flex flex-col gap-3"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...fadeUpTransition, delay: 0.3 }}
+            className="hidden lg:block"
           >
-            <button
-              onClick={() => navigate('/try')}
-              className="btn-touch flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-body font-semibold text-primary-foreground shadow-md"
-            >
-              Try it now
-              <ArrowRight className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => navigate('/auth')}
-              className="btn-touch flex h-14 w-full items-center justify-center rounded-full border border-border bg-card text-body font-medium text-foreground"
-            >
-              Sign in
-            </button>
-            <p className="mt-1 text-caption text-foreground-muted">
-              No signup needed to try. Talk for a few seconds and watch your Ideas land.
-            </p>
+            <ProductPreview />
           </motion.div>
         </section>
 
         {/* How it works */}
-        <section className="border-t border-border py-14">
+        <section className="border-t border-border py-14 lg:py-20">
           <motion.h2
             variants={fadeUp}
             initial="initial"
@@ -156,7 +171,7 @@ export default function MarketingLanding() {
             The pattern fractionals already close with, run for you.
           </p>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-8 space-y-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
             {STEPS.map((step, i) => {
               const Icon = step.icon;
               return (
@@ -188,7 +203,7 @@ export default function MarketingLanding() {
         </section>
 
         {/* Who it is for */}
-        <section className="border-t border-border py-14">
+        <section className="border-t border-border py-14 lg:py-20">
           <motion.h2
             variants={fadeUp}
             initial="initial"
@@ -203,7 +218,7 @@ export default function MarketingLanding() {
             If your circle is your business, this is for you.
           </p>
 
-          <div className="mt-8 space-y-3">
+          <div className="mt-8 space-y-3 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
             {PERSONAS.map((p, i) => (
               <motion.div
                 key={p.who}
@@ -222,7 +237,7 @@ export default function MarketingLanding() {
         </section>
 
         {/* Pricing */}
-        <section className="border-t border-border py-14">
+        <section className="border-t border-border py-14 lg:py-20">
           <motion.h2
             variants={fadeUp}
             initial="initial"
@@ -237,7 +252,7 @@ export default function MarketingLanding() {
             Start free. Most operators upgrade in week two.
           </p>
 
-          <div className="mt-8 space-y-4">
+          <div className="mt-8 space-y-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0 lg:items-start">
             {TIERS.map((tier, i) => (
               <motion.div
                 key={tier.slug}
@@ -248,7 +263,9 @@ export default function MarketingLanding() {
                 transition={{ ...fadeUpTransition, delay: i * 0.08 }}
                 className={
                   'rounded-2xl border bg-card p-6 ' +
-                  (tier.highlighted ? 'border-primary' : 'border-border')
+                  (tier.highlighted
+                    ? 'border-primary lg:scale-[1.02] lg:shadow-lg'
+                    : 'border-border')
                 }
               >
                 <div className="flex items-baseline justify-between">
@@ -280,7 +297,7 @@ export default function MarketingLanding() {
 
           <button
             onClick={() => navigate('/auth')}
-            className="btn-touch mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-body font-semibold text-primary-foreground shadow-md"
+            className="btn-touch mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-body font-semibold text-primary-foreground shadow-md lg:mx-auto lg:mt-10 lg:max-w-md"
           >
             Start free
             <ArrowRight className="h-5 w-5" />

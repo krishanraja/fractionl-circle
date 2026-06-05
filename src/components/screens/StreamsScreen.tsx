@@ -168,7 +168,7 @@ export const StreamsScreen = () => {
   };
 
   return (
-    <div className="min-h-full bg-background px-4 pt-6 pb-24">
+    <div className="min-h-full bg-background px-4 pt-6 pb-24 lg:px-8">
       <motion.header
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
@@ -228,7 +228,7 @@ export const StreamsScreen = () => {
       )}
 
       {!loading && !error && streams.length > 0 && (
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {streams.map((s, i) => (
             <StreamRow key={s.id} stream={s} index={i} onLog={handleLog} />
           ))}
