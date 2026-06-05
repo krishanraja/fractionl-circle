@@ -59,7 +59,7 @@ export const AppShell = ({
 
       <main className={cn(
         "flex-1 overflow-hidden",
-        !isMobile && "max-w-5xl w-full mx-auto"
+        !isMobile && "w-full mx-auto 2xl:max-w-[100rem]"
       )}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

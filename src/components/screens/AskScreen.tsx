@@ -166,7 +166,7 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
   const busy = phase === 'processing';
 
   return (
-    <div className="min-h-full bg-background px-4 pt-6 pb-24 flex flex-col">
+    <div className="min-h-full bg-background px-4 pt-6 pb-24 flex flex-col lg:px-8">
       <motion.header
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
