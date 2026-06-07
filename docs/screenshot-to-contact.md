@@ -128,7 +128,7 @@ Existing secrets used by `contact-enrich` (Apollo / Clearbit / Twilio) and `link
 
 ## Reliability
 
-- All three vision call sites (`parse-screenshot:109` Claude, `parse-screenshot:142` GPT-4o fallback, `parse-contact-image:56` GPT-4o) wrap their fetch with explicit `AbortSignal.timeout(20_000)` since PR #46.
+- All vision call sites wrap their fetch with explicit `AbortSignal.timeout(20_000)` since PR #46.
 - Per-user rate limits enforced via the durable `rate_limits` table (`_shared/compliance.ts`).
 
 ---

@@ -1,4 +1,4 @@
-# Google OAuth setup (Phase 5)
+# Google OAuth setup (Phase 5, updated 2026-06-07)
 
 One-time Google Cloud Console setup for the `Connect Google` source.
 
@@ -27,7 +27,7 @@ In **APIs & Services → Library**, enable:
   live — see `supabase-custom-domain.md` — `fractionl.ai` alone is correct.)
 - Save.
 
-On the **Scopes** step, add these and nothing else (non-restricted only):
+On the **Scopes** step, add these scopes:
 
 ```
 openid
@@ -36,11 +36,17 @@ profile
 https://www.googleapis.com/auth/contacts.readonly
 https://www.googleapis.com/auth/contacts.other.readonly
 https://www.googleapis.com/auth/calendar.events.readonly
+https://www.googleapis.com/auth/gmail.readonly
+https://www.googleapis.com/auth/gmail.send
 ```
 
-Do **not** add `gmail.readonly` or any other restricted scope — that triggers
-Google's annual CASA audit (~$15k, 4–8 weeks). We do not currently use any
-restricted scopes.
+**Important — restricted scopes:** `gmail.readonly` and `gmail.send` are
+restricted scopes that trigger Google's CASA security audit (~$15k, 4–8 weeks)
+if the app is published. The current strategy is to keep the OAuth app in
+**Testing mode** (test users only), which allows restricted scopes without
+the CASA audit. Do NOT submit the OAuth app for publication until the CASA
+audit budget and timeline are approved. When testing, add each test user's
+Gmail account to the test-users list in the OAuth consent screen.
 
 Add test users (any Gmail accounts you'll sign in with) until the app is
 published.
@@ -116,7 +122,8 @@ directly with no user token. State validation in the callback covers auth.
 
 ## Publishing (later)
 
-To let non-test-users connect, submit the OAuth consent screen for
-verification. Since we only use non-restricted + sensitive scopes, this is
-Google's lighter-weight "brand verification" — a few screenshots and a demo
-video, typically a few days' turnaround.
+To let non-test-users connect, the OAuth app must be published. Because the
+app now uses restricted scopes (`gmail.readonly`, `gmail.send`), this requires
+Google's **CASA Tier 2 audit** (approximately $15k, 4–8 weeks). Plan this cost
+and timeline before opening the "Connect Google" flow to the public. Until the
+audit is complete, keep the app in Testing mode and add users manually.

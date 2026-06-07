@@ -8,7 +8,7 @@
 Circle ("we") is the relationship-to-revenue tool for fractional executives at circle.fractionl.ai.
 
 ## 2. What we collect
-- **You give us:** your name, email, voice recordings/transcripts, the Ideas and offers you describe, and details of people in your professional network (names, emails, phones, LinkedIn, company, title).
+- **You give us:** your name, email, voice recordings/transcripts, the Ideas and offers you describe, inferred identity attributes (motivation type, career stage, offer maturity, identity statement — derived from your onboarding voice note), and details of people in your professional network (names, emails, phones, LinkedIn, company, title).
 - **You connect (optional):** Google/Microsoft mail & calendar, via OAuth, to sync contacts.
 - **Automatically:** usage/behaviour analytics, session data, IP address, and marketing attribution (UTM).
 - **Billing:** handled by Stripe; we do not store full card details.
@@ -23,7 +23,7 @@ Circle stores information about third parties in your professional network so yo
 We use the processors listed in `SUBPROCESSORS.md` (Supabase, Vercel, OpenAI, Stripe, Resend, and Google/Microsoft if you connect them). **We do not sell your personal data** or share it for cross-context behavioural advertising.
 
 ## 6. AI processing
-Voice transcripts and Idea/contact text are sent to OpenAI's API to extract Ideas and draft messages. This data is not used to train their models. [Confirm zero-retention configuration.]
+Voice transcripts and Idea/contact text are sent to OpenAI's API (`gpt-4o-mini`, Whisper) to extract Ideas, infer your identity profile, and draft messages. Screenshot images are sent to Anthropic's API (`claude-haiku-4-5-20251001`) for contact extraction. Personalized insights use Google's Gemini model via the Lovable Gateway. None of these providers use API-submitted data for training. [Confirm zero-retention API configuration for each provider before publishing.]
 
 ## 7. International transfers
 Data is stored in the United States (AWS us-east-1). For users in the EU/UK, transfers rely on Standard Contractual Clauses. [Confirm.]

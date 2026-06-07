@@ -39,7 +39,22 @@ Real-human onboarding for Chief-of-Staff users. `concierge_requests` table, `Con
 Checkout + Customer Portal + signature-verified webhook + tier sync. `stripe-checkout`, `stripe-portal`, `stripe-webhook`. Tier catalogue in `src/lib/tiers.ts` (Freemium / Operator / Chief of Staff at $0 / $30 / $79).
 
 ### Compliance surface
-ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent flags on auth. Data export + deletion paths in `useDataPrivacy`.
+ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent flags on auth. Data export + deletion paths in `useDataPrivacy`. Full DSAR erasure path via `delete-account` edge function (PR #54, 2026-06-02).
+
+### P1 — Borrowed-conviction identity first-run (shipped 2026-06-03)
+`IdentityFirstRun.tsx`: Welcome → Talk (90s voice) → Proposal (editable offer/ICP/warm doors) → First Move. Default ON via `VITE_IDENTITY_FIRSTRUN_ENABLED`. `extract-identity` edge function proposes identity statement + offer + ICP from what the user ran and why they left. Identity columns on `user_profiles` (migration `20260603120000`): `motivation_type`, `journey_stage`, `offer_maturity`, `identity_statement`, `first_run_transcript`.
+
+### Dual-role match engine (shipped 2026-06-02)
+`ideas.pain` column is the keystone seed: the specific expensive pain the offer removes. `matches.role` (buyer / amplifier / sharpener) routes the drafted Move's framing. Migration `20260602000001_dual_role_matches.sql`.
+
+### Won → Stream write path (shipped 2026-06-03)
+`log-win` edge function: marks a match `won`, resolves or creates the Stream for the originating Idea, writes the first ledger entry. The only place a Stream is born from a won match. `StreamsScreen` now shows earned-vs-target with per-stream revenue logging.
+
+### Anonymous live-mic demo at /try (shipped 2026-06-06)
+`TryDemo.tsx` at route `/try`. Calls `demo-extract` edge function (no JWT, IP rate-limited 3/hour). No auth, no DB writes. The conversion hook for logged-out visitors.
+
+### Archivo Expanded display face (shipped 2026-06-06)
+GoBold replaced with self-hosted Archivo Variable (Expanded cut). SIL OFL — free for commercial use. File at `public/fonts/archivo-variable.woff2`.
 
 ### Audit-clean (April 2026)
 - TypeScript strict mode on (audit H1).
@@ -99,11 +114,8 @@ Main chunk is 903 KB. Add `rollup-plugin-visualizer` to confirm where the weight
 
 ## New surfaces & features (not from the audit)
 
-### Phase 2 — Voice-first command surface (`AskScreen`)
-The Ask tab is currently a placeholder. Voice command capture is the Phase 2 project. Hold-to-talk → Whisper → intent classifier → command dispatcher (change a setting, voice an Idea, ask a tactical question). Reuses the `FirstVoice` interaction pattern.
-
-**Effort:** 1–2 sessions.
-**Why now:** unlocks Ask-with-memory as a real Operator-tier feature.
+### Voice-first command surface (`AskScreen`) — SHIPPED
+`AskScreen` now has full voice implementation: hold-to-talk → Whisper transcription → `extract-ideas` → Idea cards rendered in place → "Find who this is for" triggers `run-match-engine`. Type fallback available. Resolves fully in-screen; never bounces to Today as a static card. Ask-with-memory (Operator-tier, using `ai_conversations` tables) is the next extension.
 
 ### Per-category auto-send opt-in (Chief of Staff)
 The Chief of Staff tier promises per-category auto-send (e.g. `congrats_promotion`, `congrats_job_change`). Schema needed: `move_category` enum, `autosend_consents` table, worker that dispatches approved-and-consented Moves.
@@ -176,8 +188,8 @@ Read the signal from paying users:
 
 - **Last full audit:** 2026-04-24 (`AUDIT_2026-04-24.md`).
 - **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`).
-- **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
+- **Next recommended audit:** 2026-08-01, or immediately after the next major surface ships. P0–P3 shipped since the last audit; an audit pass of the new surfaces (IdentityFirstRun, extract-identity, log-win, AskScreen voice path, dual-role engine) is overdue.
 - **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
 - **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
 
-Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; the runway is sales and signal.
+Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; P0–P3 rebuild (identity first-run, dual-role match engine, actionable Streams, Archivo Expanded type system, desktop sidebar, /try demo) shipped 2026-06-03 through 2026-06-07. The runway is sales and signal.

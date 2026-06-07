@@ -4,23 +4,26 @@
 
 This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
 
-**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-06-07 (P0–P3 rebuild pass; see `docs/UX_REBUILD_VISION_2026-06-03.md` for the design brief). Prior baselines: 2026-05-30 (Phase 2 security-hardening); 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
 
 ---
 
-## Rebuild status (2026-05-30)
+## Rebuild status (2026-06-07)
 
 Where Circle is in the rebuild, so the fleet never overclaims.
 
-- **Phase 0 (audit / recon): done.** Full app audit landed in PR #46 (2026-04-26); the verified recon of the current surface is the baseline for everything below.
-- **Phase 1 (5X vision): locked.** The unbounded product vision plus the fleet-commerce contract is locked in `_upgrade/fractionl-circle/PHASE-1.md` (dated 2026-05-30). Scope was selected at the gate: SHIP EVERYTHING (Bundles 1 + 2 + 3, the Spine plus Flywheel/Commerce plus Deep Anticipation) across Phases 2 to 4, all four high-sensitivity capabilities approved with their guardrails. This is roadmap, not shipped code.
-- **Phase 2 (security hardening): shipped on branch `upgrade/circle/phase-2`.** Server-side tier gates on dedupe and the OAuth-connect path (no longer client-trust only), Stripe webhook idempotency (`processed_stripe_events`), and the H7 fix (parse-screenshot logs the status code only, no upstream error body). Production promotion (Supabase function deploys, Vercel prod) still waits for explicit approval per the hard rules.
+- **Phase 0 (audit / recon): done.** Full app audit landed in PR #46 (2026-04-26).
+- **Phase 2 (security hardening): shipped.** Server-side tier gates on dedupe and the OAuth-connect path, Stripe webhook idempotency (`processed_stripe_events`), H7 fix (parse-screenshot logs status code only).
+- **P0 (cold-start unblock): shipped.** People seeding from onboarding voice note is ON by default (`VITE_PEOPLE_SEEDING_ENABLED !== 'false'`). Voice is wired into AskScreen. `ExtensionPair` raw-token UI hidden from `AddSourceSheet`. `log-win` edge function closes the Match → Stream write path. `extract-identity` edge function built and called by `IdentityFirstRun`.
+- **P1 (identity foundation + borrowed-conviction first-run): shipped.** `IdentityFirstRun.tsx` (Welcome → Talk → Proposal → First Move) is the default onboarding path (`VITE_IDENTITY_FIRSTRUN_ENABLED !== 'false'`). Identity columns added to `user_profiles` (migration `20260603120000`). `extract-identity` proposes offer/ICP/warm doors from a 90-second voice note; reaction, not interrogation.
+- **P2 (actionable loop): shipped.** `AskScreen` resolves in place into Idea + Match + Move trigger (no bounce to Today). `StreamsScreen` shows the earned-vs-target ladder with per-stream revenue logging. Sunday Letter promoted on Today by day of week. Dual-role match engine ships buyer/amplifier/sharpener (migration `20260602000001`).
+- **P3 (visual system): shipped.** Display face switched to self-hosted **Archivo Variable** (Expanded cut, SIL OFL — free for commercial use). Dark-first walnut theme available as `.dark` class. Desktop sidebar live (`DesktopSidebar.tsx`). Anonymous live-mic demo live at `/try` (`TryDemo.tsx`).
 
 ### LIVE vs ROADMAP (the line the fleet must hold)
 
-- **LIVE NOW.** Voice onboarding that extracts Ideas; a Match Engine that scores Idea x Person and drafts a Move (surfaced via a manual "Surface Matches" action, NOT automatic overnight); the Sunday Letter (text for Operator+, 90-second audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, browser extension, screenshot-to-contact (vision), and voice; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`).
-- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match plus push notifications (today it is a manual button; the PWA has no push); seeding people from the onboarding voice note; the trigger layer (job-change / funding signals); the voice fingerprint; real one-tap sending; the public "Signal" share posts; the anonymous live-mic demo on the landing page; the SSG marketing surface and the `/app` move (the authed app moves to `/app`, marketing lives at the root of `circle.fractionl.ai`).
-- **Honesty gate.** Marketing copy MAY use "talk once, wake to a drafted Move" as the product PROMISE / vision, but must NOT state that automatic-overnight-while-you-sleep delivery is live until the per-user cron plus Web Push ship. Canonical domain is `circle.fractionl.ai` (the company site is a separate surface, not this product).
+- **LIVE NOW.** Voice onboarding (both `FirstVoice` and new `IdentityFirstRun`); Match Engine scoring Idea x Person and drafting a Move (manual "Surface Matches" trigger); dual-role matching (buyer / amplifier / sharpener); Sunday Letter (text for Operator+, audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, screenshot-to-contact (vision), and voice — browser extension is built but hidden from the UI pending Web Store approval; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`); AskScreen with full voice; Streams with won→Stream write path; people seeding from onboarding voice; anonymous live-mic demo at `/try`.
+- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" cron + push notification delivery (the `send-push` function and `push_subscriptions` table exist but VAPID is not active in production — today it is a manual button); real one-tap sending (Gmail/Outlook draft inject or LinkedIn composer); public "Signal" share posts; SSG marketing surface and `/app` move; Sunday Letter public feed (`/feed/sunday-letter.json`); `agent.json` / `llms.txt` machine-readable truth files.
+- **Honesty gate.** Marketing copy MAY use "talk once, wake to a drafted Move" as the product PROMISE / vision, but must NOT state that automatic overnight push delivery is live until the VAPID key is active in production. Canonical domain is `circle.fractionl.ai`.
 
 ### Fleet attribution wiring
 
@@ -309,7 +312,7 @@ The home screen. What's waiting for you, ranked.
 - **Surface Matches button** — manual trigger of the engine (used after a fresh import).
 
 ### Streams (`StreamsScreen.tsx`)
-Ideas that have earned revenue. Currently a placeholder; the loop closes when `log-move-sent` rolls forward into `streams.state = 'live'`.
+Ideas that have earned revenue. The loop is closed: `log-win` edge function mints a Stream from a won Match and writes the first ledger entry; `StreamsScreen` reads streams joined to their originating Idea, sums `ledger_entries`, displays earned vs. monthly target with a progress bar, and surfaces a "Log revenue" verb per card. First dollar logged promotes a `prototyping` stream to `live`.
 
 ### Circle (`CircleScreen.tsx`)
 Every person you know.
@@ -319,7 +322,7 @@ Every person you know.
 - **Find duplicates** — LLM-assisted dedupe sheet (Operator tier feature gate).
 
 ### Ask (`AskScreen.tsx`)
-The voice-first command surface. Currently a placeholder UI; voice capture lands in Phase 2 alongside first-run.
+The voice-first capture brain. Hold-to-talk → Whisper transcription → `extract-ideas` → Ideas inserted and displayed in place → "Find who this is for" triggers `run-match-engine` → navigates to Today. Type fallback available. Rotating prompt starters help users frame their first idea. Resolves fully in-screen; never bounces to Today as a static card.
 
 ### Cross-cutting
 
@@ -332,19 +335,21 @@ The voice-first command surface. Currently a placeholder UI; voice capture lands
 
 ## 9. Onboarding
 
-`src/components/onboarding/FirstVoice.tsx`.
+Two onboarding paths coexist, gated by `VITE_IDENTITY_FIRSTRUN_ENABLED` (defaults ON):
 
-A single-screen voice onboarding:
+**P1 — Borrowed-conviction first-run** (`src/components/onboarding/IdentityFirstRun.tsx`, default).
+Four screens, ~90s, voice-first with type fallback. The "chief of staff arrives with a hypothesis" model — reaction, not interrogation:
+1. **Welcome** — one headline, one button. "You built the capability. Let's build the distribution."
+2. **Talk** — hold-to-talk up to 90s. "What did you run, and what made you go independent?" Whisper transcription → `extract-identity` (gpt-4o-mini) proposes an identity statement, offer, ICP, and three warm doors from the user's own words.
+3. **Proposal** — editable draft of the proposed offer + ICP. User reacts and edits; they do not generate from scratch.
+4. **First Move** — drafted note to a warm door from their existing network. Accepted → Idea + warm-door people seeded → `run-match-engine` queued.
 
-1. **Intro** — "Tell me what you've done." Hold-to-talk button, up to 90 seconds.
-2. **Recording** — live waveform.
-3. **Processing** — Whisper transcription (`transcribe` edge function) → `extract-ideas` (gpt-4o-mini) parses 3 Idea drafts (title, one-liner, offer, price_band, ICP, is_adjacent flag).
-4. **Review** — the 3 Ideas are shown. "Good. Start with these."
-5. **Save** — Ideas are inserted with `status = 'voiced'`. `user_profiles.onboarding_step` advances to 4 (complete).
+Identity columns persisted: `motivation_type`, `journey_stage`, `offer_maturity`, `identity_statement`, `first_run_transcript`, `first_run_completed_at` (migration `20260603120000`).
 
-**Why this is the onboarding:** the moment a user articulates 3 Ideas, the Match Engine has its target. Without Ideas, it has nothing to do. Without a voice-first capture, users would procrastinate and never start.
+**Classic voice onboarding** (`src/components/onboarding/FirstVoice.tsx`, fallback when flag is false).
+Single-screen: hold-to-talk up to 90 seconds → Whisper → `extract-ideas` (gpt-4o-mini) → 3 Idea drafts → save → `user_profiles.onboarding_step` = 4. People seeding from the voice note is ON by default (`VITE_PEOPLE_SEEDING_ENABLED !== 'false'`).
 
-The first Match Engine run happens overnight via `cron-match-engine`. The first Sunday Letter lands at the end of week 1.
+The first Match Engine run happens via the manual "Surface Matches" button on Today or the nightly `cron-match-engine`. The first Sunday Letter lands at the end of week 1.
 
 ---
 
@@ -375,11 +380,11 @@ Lives in `supabase/functions/_shared/matchEngineCore.ts` and is triggered by:
 
 For each user, the engine:
 
-1. **Loads context** — active Ideas, all `circle_person` rows with their `person_raw` provenance and any `signals` from the last 30 days, recent `match` history (to avoid re-surfacing).
+1. **Loads context** — active Ideas (including the new `ideas.pain` keystone field), all `circle_person` rows with their `person_raw` provenance and any `signals` from the last 30 days, recent `match` history (to avoid re-surfacing).
 2. **Pre-filters** — recency × warmth × source quality. Drops people with zero useful fields.
-3. **LLM scoring** — gpt-4o-mini call (`matchEngineCore.ts:209`) ranks (Idea × Person) pairs and writes a one-sentence `match.rationale` for the top results.
-4. **Drafts a Move** — for each surfaced Match, `move.draft_body` is generated in the same call (LinkedIn DM by default, email if the person has an email and not a LinkedIn handle).
-5. **Writes** — `matches` rows + `moves` rows in `state = 'new'` / `'draft'`.
+3. **LLM scoring** — gpt-4o-mini call (`matchEngineCore.ts:209`) ranks (Idea × Person) pairs and assigns a `match.role`: `buyer` (has the pain, fits the ICP), `amplifier` (reaches the ICP — intro/refer/co-market), or `sharpener` (peer who helps refine). Writes a one-sentence `match.rationale`.
+4. **Drafts a Move** — for each surfaced Match, `move.draft_body` is generated in the same call. Move channel and framing differ by role: pitch for buyer, intro-ask for amplifier, react-request for sharpener.
+5. **Writes** — `matches` rows (with `role`) + `moves` rows in `state = 'new'` / `'draft'`.
 6. **Quota check** — respects `LIMITS.matches_per_week` for free, `matches_per_day` for Operator. Returns `quota_blocked: true` to nudge the upgrade.
 
 **Edit-distance taste model.** When the user hits "Mark sent" on a Match, `log-move-sent` computes the Levenshtein distance between the AI draft and what the user actually sent and stores it in `move_edits`. This is the data substrate for the personalization model that prompts future drafts.
@@ -489,7 +494,8 @@ src/
 │   ├── AuthPage.tsx           Email/password + Google OAuth
 │   ├── ErrorBoundary.tsx
 │   ├── onboarding/
-│   │   └── FirstVoice.tsx     90-second voice → 3 Ideas
+│   │   ├── FirstVoice.tsx         90-second voice → 3 Ideas (classic fallback)
+│   │   └── IdentityFirstRun.tsx   P1 borrowed-conviction first-run (default)
 │   ├── screens/
 │   │   ├── TodayScreen.tsx
 │   │   ├── StreamsScreen.tsx
@@ -572,7 +578,7 @@ src/
 └── index.css                  Design tokens, typography, theme
 ```
 
-121 TS/TSX files in `src/` as of 2026-04-26.
+149 TS/TSX files in `src/` as of 2026-06-07.
 
 ---
 
@@ -585,9 +591,9 @@ src/
 | `sources` | Every ingestion source per user. `kind` enum: google · microsoft · linkedin_csv · linkedin_extension · instagram_export · facebook_export · x_export · legacy_crm_csv · sheet_upload · ios_contacts · ios_shortcut · share_sheet · voice_seed · external_enrichment · business_card_photo · inbox_signature_scan · calendar_backscan |
 | `person_raw` | Per-source raw rows, links to canonical `circle_person` |
 | `circle_person` | Canonical, deduplicated person. `handles` jsonb column for social handles (Phase B promotion, 2026-04-22) |
-| `ideas` | Active sellable Ideas. `status`: proposed · voiced · active · retired |
+| `ideas` | Active sellable Ideas. `status`: proposed · voiced · active · retired. `pain` column (dual-role migration `20260602000001`) is the keystone: the specific expensive pain the offer removes; used by the engine to match buyers vs. amplifiers vs. sharpeners. |
 | `signals` | Inbound signals on people or market. `kind`: job_change · promotion · fundraise · hiring · public_post · mention · rfp · trend · calendar_meeting · email_interaction · other |
-| `matches` | (Idea × Person) surfaced by the engine. `state`: new · approved · edited · sent · won · cold · declined |
+| `matches` | (Idea × Person) surfaced by the engine. `state`: new · approved · edited · sent · won · cold · declined. `role`: buyer · amplifier · sharpener (dual-role migration `20260602000001`). |
 | `moves` | Drafted outbound. `channel`: email · linkedin_dm · sms · call · calendar_invite · post · other. `state`: draft · approved · sent · responded · declined |
 | `move_edits` | Edit-distance log between AI draft and user-sent body |
 | `streams` | Ideas that earned revenue. `state`: prototyping · live · paused · retired |
@@ -611,7 +617,7 @@ src/
 
 | Table | Purpose |
 |---|---|
-| `user_profiles` | Account, business context, onboarding state |
+| `user_profiles` | Account, business context, onboarding state. P1 identity columns (migration `20260603120000`): `motivation_type` (pushed/pulled/lifestyle), `journey_stage`, `target_buyer`, `offer_maturity`, `signature_win`, `identity_statement`, `first_run_transcript`, `first_run_completed_at`. |
 | `user_preferences` | Theme, notifications, AI personality |
 | `user_business_context` | Business profile for AI personalization |
 | `user_insights` | AI-generated insights with confidence + priority |
@@ -619,21 +625,23 @@ src/
 | `feature_usage` | Feature adoption tracking |
 | `user_sessions` | Session analytics |
 | `ai_conversations` · `conversation_sessions` · `chat_messages` | Ask history (Phase 2) |
+| `push_subscriptions` | Web Push endpoint registrations per user (migration `20260530000004`). `send-push` edge function exists; VAPID key required in production to activate delivery. |
+| `user_attribution` | First-touch UTM / referrer / anonymous_id capture (migration `20260530000002`). Feeds the Mindmaker OS attribution pipeline. |
 
 **Legacy (pruned from the active surface in PR #45 but tables linger in older migrations):**
 `clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `skills`. Do not write new code against these.
 
-**Migration count:** 43 files in `supabase/migrations/` (2026-05-30).
+**Migration count:** 50 files in `supabase/migrations/` (2026-06-07). Notable recent additions: `20260602000001_dual_role_matches.sql` (ideas.pain + matches.role), `20260602000002_compliance_hardening.sql`, `20260603120000_identity_columns.sql` (P1 identity fields on user_profiles).
 
 **Migration drift note.** As of the PR #46 deploy, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. See the audit-deploy memory for context.
 
 ---
 
-## 19. Edge functions (34 in source, 41 deployed)
+## 19. Edge functions (43 in source)
 
-All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
+All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore, googleOauth, microsoftOauth, circleSync).
 
-**Count note (2026-05-30):** the repo source tree holds 34 functions. The live Supabase project has 41 deployed, the extra 7 being orphan legacy functions that no longer exist in source and no live UI calls (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`). These are slated for removal in the Phase 2 orphan-function cleanup; do not write new code against them.
+**Count note (2026-06-07):** the repo source tree holds 43 named functions (plus `_shared/`). If the live Supabase project still has orphan legacy functions not in source (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`), do not write new code against them and remove when convenient.
 
 **Voice & vision parsing (LLM-backed):**
 - `transcribe` — Whisper audio→text
@@ -641,9 +649,11 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 - `parse-voice-contact` — voice → contact
 - `parse-voice-seed` — voice → batch contact seed (onboarding)
 - `parse-onboarding` — voice → client / revenue setup (legacy onboarding path)
-- `parse-screenshot`: vision LLM (claude-haiku-4-5-20251001 preferred, gpt-4o-mini fallback) for shared screenshots
+- `parse-screenshot` — vision LLM (claude-haiku-4-5-20251001 preferred, gpt-4o-mini fallback) for shared screenshots
 - `parse-contact-image` — vision LLM for business cards / profile shots
 - `extract-ideas` — onboarding voice transcript → 3 Idea drafts
+- `extract-identity` — P1 borrowed-conviction engine: 90-second voice → proposed identity statement + offer + ICP + warm doors. Called by `IdentityFirstRun`. Rate-limited to 8/min per user.
+- `demo-extract` — anonymous (no JWT) live-mic demo: extracts Ideas without writing to DB. IP rate-limited 3/hour. Powers `/try`.
 
 **Match engine & weekly digest:**
 - `run-match-engine` — manual trigger
@@ -664,20 +674,35 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 - `contact-enrich` — Clearbit / Apollo / Twilio enrichment
 - `linkedin-search` — Google CSE-backed LinkedIn lookup
 
+**Match lifecycle & revenue:**
+- `log-win` — closes the loop's far end: marks a match `won`, resolves or creates the Stream for the originating Idea, writes the first ledger entry. The only place a Stream is born from a Match.
+- `log-move-sent` — edit-distance logging on Move send (Levenshtein distance between AI draft and user-sent body → `move_edits`).
+
+**Signals & intelligence:**
+- `generate-signals` — generates `signals` rows from external feeds (job changes, funding rounds, etc.).
+
+**Push & feeds:**
+- `send-push` — Web Push delivery via VAPID. `push_subscriptions` table holds endpoint registrations. Inactive in production until VAPID key is set.
+- `sunday-letter-feed` — serves the Sunday Letter public feed (ROADMAP until SSG build ships).
+- `emit-lifecycle` — emits `signed_up` / `activated` lifecycle events to the Mindmaker OS attribution pipeline.
+
+**Compliance:**
+- `audit-log` — server-side audit trail writer.
+- `delete-account` — DSAR erasure path: deletes all user data and emits the `churned` event.
+
 **Billing & comms:**
 - `stripe-checkout` — create Checkout session
 - `stripe-portal` — open Customer Portal
-- `stripe-webhook`: hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) plus `processed_stripe_events` idempotency ledger, then tier sync
+- `stripe-webhook` — hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) plus `processed_stripe_events` idempotency ledger, then tier sync
 - `send-sms` — Twilio (origin-allowlisted CORS per audit C4)
 - `notify-concierge-event` — Slack + Resend ops notifications
-- `log-move-sent` — edit-distance logging on Move send
 - `test-google-secret` — debug helper (verify_jwt = false; trim before next prod cut)
 
 ---
 
 ## 20. AI / LLM call sites
 
-14 outbound LLM fetches across the codebase. All wrapped with explicit `AbortSignal.timeout` (20s default; 60s on `generate-sunday-letter` and `generate-user-insights`) since PR #46.
+16 outbound LLM fetches across the codebase. All wrapped with explicit `AbortSignal.timeout` (20s default; 60s on `generate-sunday-letter` and `generate-user-insights`) since PR #46.
 
 | # | File:Line | Provider | Model | Purpose |
 |---|---|---|---|---|
@@ -695,6 +720,8 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 | 12 | `parse-contact-image/index.ts:56` | OpenAI | gpt-4o | Contact image vision |
 | 13 | `generate-user-insights/index.ts:391` | Lovable Gateway | google/gemini-3-flash-preview | Personalized insights |
 | 14 | `generate-sunday-letter` (audio path) | OpenAI | gpt-4o-mini-tts | 90-second audio narration (Chief of Staff) |
+| 15 | `extract-identity/index.ts` | OpenAI | gpt-4o-mini | P1 identity proposal: offer + ICP + warm doors from 90-second voice |
+| 16 | `demo-extract/index.ts` | OpenAI | gpt-4o-mini | Anonymous live-mic demo Idea extraction (no DB write) |
 
 **Output validation.** `generate-sunday-letter` runs Zod-validated, length-capped output and rejects empty/placeholder strings (audit C2). `sunday_letters.generation_source` records `llm` vs `rule_based` so we can monitor drift (audit M10).
 
@@ -935,10 +962,10 @@ For prospects who need to see *how* the AI works before they trust it:
 
 | Token | Value | Usage |
 |---|---|---|
-| **Primary** | `#994CCC` / HSL 287 45% 55% | Key actions, brand accents |
+| **Primary** | HSL 284 44% 48% (brand violet, approx `#7B35CC`) | Key actions, brand accents |
 | **Background** | Near-white (light) / Deep charcoal (dark) | Page backgrounds |
 | **Cards** | White (light) / Elevated dark (dark) | Containers |
-| **Display typography** | Source Serif 4 | Headlines, narrative copy |
+| **Display typography** | Archivo Variable (Expanded cut, self-hosted, SIL OFL — commercial use free) | Headlines, brand identity |
 | **Body typography** | Satoshi | Body, labels, UI |
 | **Animation** | Spring easing, 250–400ms | Page transitions, list staggers |
 
@@ -1002,10 +1029,17 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2026-04-22** | Phase B — social handles promoted to first-class `circle_person` column. |
 | **2026-04-24** | Full app audit (`AUDIT_2026-04-24.md`): 4 critical, 7 high, 10 medium, 6 low findings. |
 | **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
-| **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
+| **2026-04-26** | Typography update (Satoshi body). Profile/settings drawer. |
+| **2026-05-30** | Phase 2: security hardening (server-side tier gates, Stripe idempotency ledger, H7 fix). `user_attribution` and `push_subscriptions` tables. `sunday-letter-feed` function. |
+| **2026-06-02** | Dual-role match engine (PR #53): `ideas.pain` + `matches.role` (buyer/amplifier/sharpener). Compliance hardening (full DSAR, retention enforcement). Gmail and Microsoft Mail scopes added to OAuth sync. |
+| **2026-06-03** | P1 identity foundation: `IdentityFirstRun.tsx` (borrowed-conviction first-run), `extract-identity` edge fn, identity columns migration. |
+| **2026-06-03** | P0 cold-start unblock: people seeding ON by default, voice in AskScreen, `log-win` closes the Match → Stream loop, `ExtensionPair` hidden from `AddSourceSheet`. |
+| **2026-06-05** | P2 actionable loop: `AskScreen` resolves in place, `StreamsScreen` live with earned-vs-target, Sunday Letter calendar-aware positioning. |
+| **2026-06-06** | P3 visual/type: Gobold replaced with self-hosted Archivo Variable (Expanded), dark walnut theme, `DesktopSidebar`, anonymous `/try` demo live. |
+| **2026-06-07** | Desktop experience native (commit `45c24a4`). Palette aligned to Archivo Expanded brand face. |
 
-**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
+**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) closed: fixed 2026-05-30 in Phase 2.
 
 ---
 
-*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-30.*
+*This document is the source of truth. If product behavior diverges from what is described here, fix the document or fix the product. Last verified: 2026-06-07.*

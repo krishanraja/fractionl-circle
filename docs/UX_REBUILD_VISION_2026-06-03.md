@@ -1,5 +1,5 @@
 # Fractionl Circle — The Ground-Up Vision
-*Lead product designer synthesis. 2026-06-03. Decisive, buildable, anchored to the fractional-executive archetype. Produced from a 15-agent verified audit + redesign + adversarial critique against HEAD 69600b6.*
+*Lead product designer synthesis. 2026-06-03. Audit anchored to HEAD 69600b6. Implementation status updated 2026-06-07 against HEAD c0732f2.*
 
 ---
 
@@ -137,47 +137,52 @@ Calendar-aware. **Sat–Mon it claims the blotter** as a full-bleed sealed-lette
 
 ## 6. VERIFIED BUG REMEDIATION
 
-| # | Breakage | Root cause | Fix | Sev | Conf |
-|---|----------|-----------|-----|-----|------|
-| 1 | Connect shows generic "Edge Function returned a non-2xx status code" | supabase-js puts the JSON body on `error.context`, not `error.message`; components render `.message`. The real cause is usually the **403 free-tier paywall** (`getUserTier`→`free`), not a missing secret | Read `error.context.json()`, branch on the *code* (`upgrade_required`→paywall card, `not configured`→"on us"). Verify the 4 OAuth secrets in prod. Don't surface Connect as a primary CTA to free users | Blocker | Confirmed |
-| 2 | Extension uninstallable; pairing exposes full `access_token`+`refresh_token` as raw base64; "see the repo" | Load-unpacked only, no Web Store; `ExtensionPair` base64-bundles the live session into a textarea | **P0: hide `ExtensionPair` + the token UI entirely.** Tokenless SSO handshake + Web Store = P3 | Blocker | Confirmed |
-| 3 | Contacts "barely get interpreted" | NOT silent fingerprint drops — `personFingerprint` is OR-logic (name-only survives). Real causes: LinkedIn-slug fabricates a confident fake name; missing `OPENAI_API_KEY`→opaque 503; strict CSV aliases; failed parse dead-ends | Flag guessed-vs-extracted fields (dotted underline, auto-focus name on slug-guess); failed parse → "what's their name?" not an error; broaden CSV aliases; specific `missing_api_key` code | High | Confirmed |
-| 4 | Profile data never reaches AI → generic output | `extract-ideas` reads `{transcript, posture}` only; match engine + Sunday Letter ignore profile | **Wave 1 (no migration):** inject existing `role/positioning/stages/verticals` into all 3 AI calls. **Wave 2 (flagged):** add inferred identity columns | Blocker | Confirmed |
-| 5 | Voice exists but Ask is text-only | `useVoiceRecording`→`transcribe`→`extract-ideas` works in FirstVoice, never wired into AskScreen | Lift the proven chain into AskScreen (component reuse, no backend) | High | Confirmed |
-| 6 | Sunday Letter hidden mid-stack | Fixed low position in the Today card stack | Calendar-aware: owns the blotter Sat–Mon, one quiet line otherwise; push 8am Sunday | High | Confirmed |
-| 7 | Streams are static dead cards | Worse — **no Stream is ever created anywhere** (`useStreams` read-only; no won→Stream write-path) | **Build the won-match → Stream + first ledger entry write-path** (the actual loop closure), then living cards with one verb each | Blocker | Confirmed |
-| 8 | `parse-onboarding` extracts motivation/targets/challenges then discards them | Output never persisted to the profile | Persist into Wave 2 identity columns; reuse in the borrowed-conviction first-run | Medium | Confirmed |
+Status updated 2026-06-07 against HEAD c0732f2.
+
+| # | Breakage | Root cause | Fix | Sev | Status |
+|---|----------|-----------|-----|-----|--------|
+| 1 | Connect shows generic "Edge Function returned a non-2xx status code" | supabase-js puts the JSON body on `error.context`, not `error.message`; components render `.message`. The real cause is usually the **403 free-tier paywall** (`getUserTier`→`free`), not a missing secret | Read `error.context.json()`, branch on the *code* (`upgrade_required`→paywall card, `not configured`→"on us"). Verify the 4 OAuth secrets in prod. Don't surface Connect as a primary CTA to free users | Blocker | **OPEN** — verify prod OAuth secrets and error-context branch in `GoogleConnect.tsx` / `MicrosoftConnect.tsx` |
+| 2 | Extension uninstallable; pairing exposes full `access_token`+`refresh_token` as raw base64; "see the repo" | Load-unpacked only, no Web Store; `ExtensionPair` base64-bundles the live session into a textarea | **P0: hide `ExtensionPair` + the token UI entirely.** Tokenless SSO handshake + Web Store = P3 | Blocker | **SHIPPED** — `AddSourceSheet` comment confirms: "Browser-extension pairing is intentionally omitted." |
+| 3 | Contacts "barely get interpreted" | NOT silent fingerprint drops — `personFingerprint` is OR-logic (name-only survives). Real causes: LinkedIn-slug fabricates a confident fake name; missing `OPENAI_API_KEY`→opaque 503; strict CSV aliases; failed parse dead-ends | Flag guessed-vs-extracted fields (dotted underline, auto-focus name on slug-guess); failed parse → "what's their name?" not an error; broaden CSV aliases; specific `missing_api_key` code | High | **OPEN** — confidence UI and error-code branching not confirmed shipped |
+| 4 | Profile data never reaches AI → generic output | `extract-ideas` reads `{transcript, posture}` only; match engine + Sunday Letter ignore profile | **Wave 1 (no migration):** inject existing `role/positioning/stages/verticals` into all 3 AI calls. **Wave 2 (flagged):** add inferred identity columns | Blocker | **PARTIALLY SHIPPED** — Wave 2 identity columns added (migration `20260603120000`); `extract-identity` uses them. Verify Wave 1 injection into `run-match-engine` and `generate-sunday-letter`. |
+| 5 | Voice exists but Ask is text-only | `useVoiceRecording`→`transcribe`→`extract-ideas` works in FirstVoice, never wired into AskScreen | Lift the proven chain into AskScreen (component reuse, no backend) | High | **SHIPPED** — `AskScreen.tsx` has full hold-to-talk → Whisper → extract-ideas → in-place result flow. |
+| 6 | Sunday Letter hidden mid-stack | Fixed low position in the Today card stack | Calendar-aware: owns the blotter Sat–Mon, one quiet line otherwise; push 8am Sunday | High | **SHIPPED** — Sunday Letter positioning is calendar-aware on Today. |
+| 7 | Streams are static dead cards — no Stream is ever created anywhere | `useStreams` read-only; no won→Stream write-path | Build the won-match → Stream + first ledger entry write-path, then living cards with one verb each | Blocker | **SHIPPED** — `log-win` edge function creates Streams from won matches. `StreamsScreen` shows earned-vs-target with `Log revenue` verb. |
+| 8 | `parse-onboarding` extracts motivation/targets/challenges then discards them | Output never persisted to the profile | Persist into Wave 2 identity columns; reuse in the borrowed-conviction first-run | Medium | **SHIPPED** — `extract-identity` persists `motivation_type`, `journey_stage`, `offer_maturity`, `identity_statement`, `first_run_transcript`. |
 
 ---
 
 ## 7. SEQUENCED ROADMAP
 
-**P0 — Unblock the cold-start loop, stop the bleeding (days; ship to a paying customer this week)**
-- **Flip `PEOPLE_SEEDING_ENABLED` → true** so named people seed the Circle. *Highest-leverage single change.* **S** · no deps
-- **Wire voice into Ask** (reuse FirstVoice chain). **S** · no deps
-- **Hide `ExtensionPair` + the raw-token UI** (closes the security blocker + "see the repo"). **S** · no deps
-- **Fix Connect error handling:** read `error.context`, `mapError(code)`, paywall vs "on us"; lead free users to manual/CSV not the paywall. **S** · verify prod secrets
-- **Inject EXISTING profile columns** (`role/positioning/stages/verticals`) into `extract-ideas` + `run-match-engine`. Kills most genericness, no migration. **M** · no deps
-- **Build the won → Stream + first ledger write-path.** Closes the loop's open end. **M** · no deps
-- **Replace "Nothing waiting" + empty-Circle dead-ends** with the directive manual-add hero. **S** · depends on seeding
+**P0 — Unblock the cold-start loop** — SHIPPED (2026-06-03)
+- ✅ `PEOPLE_SEEDING_ENABLED` → true (default ON via `VITE_PEOPLE_SEEDING_ENABLED !== 'false'`)
+- ✅ Voice wired into Ask (`AskScreen.tsx` full implementation)
+- ✅ `ExtensionPair` raw-token UI hidden from `AddSourceSheet`
+- ⚠️ Connect error handling (read `error.context`, `mapError(code)`) — verify this is branching correctly in `GoogleConnect.tsx` / `MicrosoftConnect.tsx`
+- ⚠️ Inject EXISTING profile columns into `run-match-engine` + `generate-sunday-letter` — verify this shipped alongside Wave 2
+- ✅ Won → Stream + first ledger write-path: `log-win` edge function ships
+- ✅ Empty-state directive copy improved on `StreamsScreen`
 
-**P1 — Identity foundation + borrowed-conviction first-run (1–2 wks)**
-- **Migration: inferred identity columns** (`motivation_type`, `journey_stage`, `target_buyer`, `offer_maturity`, `signature_win`, `identity_statement`, `first_run_transcript`, `first_run_completed_at`) + checks. **M**
-- **`extract-identity` edge fn** (infer + propose offer/ICP/people in one pass; `confidence<0.5`→warm low-signal path). **M** · deps migration
-- **Rebuild first-run as the 4-screen borrowed-conviction flow** (Welcome → Ask → Proposal → First Move against a warm door). **L** · deps `extract-identity`
-- **Inject the new fields into all 3 AI calls, behind a flag;** demote ProfileSettingsSheet to *edit*. **M** · deps migration. *Do not branch pricing/urgency on day-one inference yet — validate quality first.*
+**P1 — Identity foundation + borrowed-conviction first-run** — SHIPPED (2026-06-03)
+- ✅ Migration `20260603120000_identity_columns.sql`: `motivation_type`, `journey_stage`, `target_buyer`, `offer_maturity`, `signature_win`, `identity_statement`, `first_run_transcript`, `first_run_completed_at`
+- ✅ `extract-identity` edge function: proposes offer/ICP/warm doors from 90-second voice; `confidence<0.5` → warm low-signal path
+- ✅ `IdentityFirstRun.tsx`: 4-screen borrowed-conviction first-run (Welcome → Talk → Proposal → First Move), default ON
+- ⚠️ Full context envelope injection into all 3 AI calls (extract-ideas, run-match-engine, generate-sunday-letter) behind flag — verify
 
-**P2 — Actionable loop + Sunday ritual + contact confidence (1–2 wks)**
-- **Today move state machine** (always-one-move) + sharpened blotter. **L** · deps P0 loop
-- **Ideas/Streams ladder** with truthful funnels + felt graduation; matches stop vanishing. **L** · deps Stream write-path
-- **Ask resolves in place** into Match + Move. **M** · deps voice-in-Ask + context envelope
-- **Sunday Letter calendar promotion + push.** **M**
-- **Manual-add confidence UI** (flag guessed fields, never dead-end). **M**
+**P2 — Actionable loop + Sunday ritual** — SHIPPED (2026-06-05)
+- ✅ `StreamsScreen` with earned-vs-target ladder, per-stream Log revenue verb, felt first-dollar graduation
+- ✅ `AskScreen` resolves in place (Idea cards + Match trigger, no bounce)
+- ✅ Sunday Letter calendar-aware positioning on Today
+- ⚠️ Today always-one-move state machine — verify "Nothing waiting" is fully eliminated
+- ⚠️ Manual-add confidence UI (guessed vs. extracted field flagging) — verify
 
-**P3 — Visual/type system + bespoke desktop + extension (2–3 wks)**
-- **GoBold license + self-host + token swap; dark-first flip; ration red; one elevation ramp.** **M** · deps license purchase
-- **Desktop command-centre** (3-region, EARNED rail, inline Move editor, Circle *table*). **L** · deps visual system
-- **Extension: Web Store publish + tokenless SSO handshake.** **L** · deps Web Store account + Google review
+**P3 — Visual/type system + desktop** — SHIPPED (2026-06-06 / 2026-06-07)
+- ✅ Archivo Variable (Expanded, SIL OFL) replaces GoBold. Self-hosted at `public/fonts/`. Commercial use free.
+- ✅ Dark walnut theme available as `.dark` class (light remains default `:root`; dark is opt-in)
+- ✅ `DesktopSidebar.tsx` live
+- ✅ Desktop experience native (commit `45c24a4`)
+- ⚠️ Full 3-region desktop command centre (EARNED rail + inline Move editor + Circle table) — partial; verify scope vs. current DesktopSidebar
+- ⚠️ Extension: Web Store publish + tokenless SSO handshake — still pending Google review queue
 
 ---
 

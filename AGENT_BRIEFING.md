@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo:** README.md, DOCS.md, src/lib/tiers.ts, _upgrade/fractionl-circle/PHASE-1.md.
+**Last verified against repo:** 2026-06-07. README.md, DOCS.md, src/lib/tiers.ts, src/App.tsx, supabase/functions/ (all 43).
 
 ---
 
@@ -15,7 +15,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 
 **The promise (one paragraph):** "Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know overnight, and drops a hand-drafted Move on the right person while you sleep." A fractional CMO runs four retainers, 200 warm LinkedIn leads, three product ideas she is not sure are real, and zero time. Her CRM is a stale Google Sheet and a Notes file called ideas??.md. Circle automates the exact way she actually closes business (someone she met remembers her, a message goes out, the deal happens) by extracting sellable Ideas from a 90-second voice note, unifying every person she knows across LinkedIn, contacts, the browser, and screenshots into one deduplicated Circle, scoring Idea x Person for fit, and drafting the Move (the DM or email) so all she has to do is hit send. She sells more by sending fewer, better messages to the right people. The AI is the operator. She is the relationship.
 
-**Honesty note for the fleet:** "talk once, wake to a drafted Move" is the product PROMISE and is fair to say as the vision. Do NOT state that automatic overnight, while-you-sleep delivery (cron plus push) is live. Today the Match Engine and drafted Move are real but surfaced via a manual "Surface Matches" action, and the PWA has no push. See Section 9 for the exact line.
+**Honesty note for the fleet:** "talk once, wake to a drafted Move" is the product PROMISE and is fair to say as the vision. Do NOT state that automatic overnight, while-you-sleep push delivery is live. Today the Match Engine and drafted Move are real and surfaced via a manual "Surface Matches" action; the push infrastructure exists but is not active in production (VAPID key not set). See Section 9 for the exact line.
 
 ---
 
@@ -226,13 +226,13 @@ The single hard rule: marketing copy may say "talk once, wake to a drafted Move"
 | LLM cross-source dedupe (Operator+) | LIVE | Claim freely. |
 | Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
 | 14-day Operator-equivalent trial | LIVE | Claim freely. |
-| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Frame ONLY as the promise/vision. Today it is a manual button and the PWA has no push. |
-| Seeding people from the onboarding voice note | ROADMAP | Do not claim as live. |
+| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Frame ONLY as the promise/vision. Today it is a manual button. The push infrastructure (send-push function, push_subscriptions table) exists but VAPID key is not active in production. |
+| Seeding people from the onboarding voice note | LIVE | Claim freely. People seeding from the onboarding voice note is on by default. |
 | Trigger layer (job-change / funding / news signals driving Moves) | ROADMAP | Do not claim as live (external signal feeds appear in tier copy as the vision). |
 | Voice fingerprint (drafts in your sent-mail/DM style) | ROADMAP | Do not claim; today personalization is the logged edit-distance substrate. |
 | Real one-tap sending (Gmail/Outlook draft or LinkedIn composer inject) | ROADMAP | Do not claim; today it is draft + manual send. |
 | Public "Signal" share posts | ROADMAP | Do not claim as live. |
-| Anonymous live-mic demo on the landing page | ROADMAP | Do not claim as live. |
+| Anonymous live-mic demo at /try | LIVE | Claim freely. Available at circle.fractionl.ai/try — no sign-in required. |
 | SSG marketing surface and the /app move (authed app to /app, marketing at root) | ROADMAP | Do not claim as live. |
 | Sunday Letter public feed (/feed/sunday-letter.json) | ROADMAP | Do not claim as live. |
 

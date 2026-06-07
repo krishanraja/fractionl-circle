@@ -1,4 +1,4 @@
-# Microsoft Graph OAuth setup (Phase 5b)
+# Microsoft Graph OAuth setup (Phase 5b, updated 2026-06-07)
 
 One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the
 Google setup; same token storage, same callback shape, same user UX.
@@ -31,7 +31,7 @@ Copy the **Application (client) ID**.
 ## 3. API permissions
 
 **API permissions** → **Add a permission** → **Microsoft Graph** →
-**Delegated permissions** → add **only**:
+**Delegated permissions** → add:
 
 ```
 openid
@@ -41,13 +41,19 @@ offline_access
 User.Read
 Contacts.Read
 Calendars.Read
+Mail.Read
+Mail.Send
 ```
 
-Do **not** add `Mail.Read` or any `Mail.*` scope. We deliberately stay out
-of mail bodies (parallel to Google's restricted Gmail scope).
+`Mail.Read` and `Mail.Send` are user-consent delegated scopes — no admin
+consent required for personal and most work accounts. They are parallel to
+the Google Gmail scopes and are included in the active `MS_SCOPES` list in
+`supabase/functions/_shared/microsoftOauth.ts`.
 
 You typically don't need admin consent for these — they're standard user
-scopes.
+scopes. Some tenants may restrict `Mail.Read` via Conditional Access policies;
+users from those tenants will see an admin-consent error. Handle this in the
+Connect flow UI with a specific error code.
 
 ## 4. Set edge-function secrets
 

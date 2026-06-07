@@ -1,5 +1,7 @@
 # The Fractional Executive — ICP & Archetype (deep reference)
 
+**Last verified:** 2026-06-07. No code-facing claims; verified clean against the product and market data sources cited.
+
 > A grounded profile of the recently independent senior leader who has decided to test fractional executive work. This is the canonical "who is the buyer, deeply" reference behind the concise operational ICP in [DOCS.md § 3](../DOCS.md#3-icp--who-circle-is-for) and the fleet pitch brief in [AGENT_BRIEFING.md § 2](../AGENT_BRIEFING.md). Those two are the quick-reference; this is the depth — motivations, psychology, the buying-trigger window, and the market data underneath.
 
 Built for Circle/Pulse positioning, outbound targeting, and product-wedge decisions. Compiled from 2025–2026 published research (see [Sources](#sources--further-reading)).

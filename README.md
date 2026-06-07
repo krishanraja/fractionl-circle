@@ -43,9 +43,9 @@ If you build six- and seven-figure income from a network you can't fit in a spre
 - **Today** — what's waiting for you today: Matches the engine surfaced overnight, this week's Sunday Letter, your concierge banner if you're on Chief of Staff.
 - **Streams** — Ideas that earned revenue. The closed-loop view of what's working.
 - **Circle** — every person you know, unified across LinkedIn / Google / Microsoft / browser extension / screenshots / voice. Dedupe lives here.
-- **Ask** — voice-first command surface (Phase 2).
+- **Ask** — hold-to-talk voice capture (or type). Extracts Ideas, triggers a Match run, and resolves in-screen. No bounce to Today.
 
-**Browser extension** — capture LinkedIn profiles into your Circle as you naturally browse. Zero scraping; works only in your authenticated session.
+**Browser extension** — captures LinkedIn profiles as you naturally browse. Zero scraping; works only in your authenticated session. The pairing UI is hidden from the app pending Chrome Web Store approval.
 
 **Screenshot → Contact** — share a profile screenshot from your phone (Android share target, iOS Apple Shortcut). Vision AI extracts the contact. Dedupe runs automatically.
 
@@ -67,9 +67,9 @@ Full breakdown in [DOCS.md § Pricing](./DOCS.md#pricing--gating).
 
 ## Tech
 
-React 18 + TypeScript (strict) · Vite · Tailwind · shadcn/Radix · Framer Motion · Supabase (Postgres + RLS + Edge Functions / Deno) · OpenAI (Whisper, GPT-4o, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) · Stripe · Twilio · Resend · Vercel.
+React 18 + TypeScript (strict) · Vite · Tailwind · shadcn/Radix · Framer Motion · Supabase (Postgres + RLS + Edge Functions / Deno) · OpenAI (Whisper, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) · Stripe · Twilio · Resend · Vercel.
 
-35 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)).
+43 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)). P0–P3 rebuild shipped 2026-06-03 through 2026-06-07.
 
 ---
 
@@ -90,10 +90,12 @@ Edge function secrets are set via `supabase secrets set` — see [.env.example](
 - **[DOCS.md](./DOCS.md)** — full source of truth: product, architecture, schema, sales/marketing anchors, ICP, objection handling, channel-ready copy.
 - **[docs/icp-archetype.md](./docs/icp-archetype.md)** — deep ICP & archetype reference: who the fractional executive really is, why they go independent, the psychology, the buying-trigger window, and the market data behind the ICP.
 - **[docs/roadmap.md](./docs/roadmap.md)** — what shipped, what's next, sized honestly.
+- **[docs/UX_REBUILD_VISION_2026-06-03.md](./docs/UX_REBUILD_VISION_2026-06-03.md)** — P0–P3 design brief and bug remediation log.
 - **[AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)** — last full audit + remediation log.
 - **[docs/google-oauth-setup.md](./docs/google-oauth-setup.md)** · **[docs/microsoft-oauth-setup.md](./docs/microsoft-oauth-setup.md)** — one-time provider setup.
 - **[docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md)** — Android share target + iOS Apple Shortcut.
-- **[extension/README.md](./extension/README.md)** — browser extension install + pairing.
+- **[docs/privacy-policy.md](./docs/privacy-policy.md)** · **[docs/RoPA.md](./docs/RoPA.md)** — compliance scaffold (DRAFT; requires counsel review before publishing).
+- **[extension/README.md](./extension/README.md)** — browser extension (built; pairing UI hidden pending Web Store approval).
 
 ---
 

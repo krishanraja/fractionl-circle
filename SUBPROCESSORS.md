@@ -1,12 +1,14 @@
 # Circle — Subprocessors
 
-**Last reviewed:** 2026-06-02. This is the list of third parties that may process personal data on Circle's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing — some are conditional on features a given user enables.
+**Last reviewed:** 2026-06-07. This is the list of third parties that may process personal data on Circle's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing — some are conditional on features a given user enables.
 
 | Subprocessor | Purpose | Personal data processed | Region | DPA |
 |---|---|---|---|---|
 | **Supabase** (AWS) | Database, auth, edge functions, storage | All app data, account identifiers | AWS `us-east-1` (USA) | Required — Supabase offers a DPA |
 | **Vercel** | Web hosting, CDN, edge delivery | IP addresses, request metadata | Global edge / USA | Required — Vercel DPA |
-| **OpenAI** (API) | Idea extraction, match drafting, voice transcription (`gpt-4o-mini`) | Voice transcripts, idea text, contact names/titles sent in prompts | USA | Required — OpenAI API DPA; API data not used for training. Consider zero-retention endpoint for sensitive text |
+| **OpenAI** (API) | Idea extraction, identity inference, match drafting, voice transcription (`gpt-4o-mini`, Whisper, `gpt-4o-mini-tts`) | Voice transcripts, idea text, contact names/titles sent in prompts | USA | Required — OpenAI API DPA; API data not used for training. Consider zero-retention endpoint for sensitive text |
+| **Anthropic** (API) | Screenshot vision parsing (`claude-haiku-4-5-20251001`) — preferred model in `parse-screenshot` and `parse-contact-image` | Screenshot image content (processed, not stored); extracted contact fields | USA | Required — Anthropic API usage policy; verify zero data-retention posture for image content |
+| **Google** (Lovable Gateway / Gemini API) | Personalized user insights (`google/gemini-3-flash-preview` via Lovable Gateway, called from `generate-user-insights`) | User behavior data, business context sent in prompts | USA | Required — confirm DPA with Lovable Gateway operator; verify data-retention policy |
 | **Stripe** | Subscription billing | Name, email, billing/payment data | USA/global | Required — Stripe DPA |
 | **Resend** | Transactional email | Email address, message content | USA | Required — Resend DPA |
 | **Google** (OAuth / Gmail API) | Contact & calendar sync **for users who connect it** | OAuth tokens, contacts, message metadata | USA/global | Conditional on user connection; Google API Services User Data Policy applies |
