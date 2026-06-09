@@ -10,6 +10,7 @@ import { DedupeReviewSheet } from '@/components/circle/DedupeReviewSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import type { Source } from '@/hooks/useCircle';
 import { haptics } from '@/utils/haptics';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { CIRCLE_DATA_CHANGED, type CircleIntent } from '@/pages/Index';
 
 const SOURCE_ICON = (kind: Source['kind']) => {
@@ -55,6 +56,7 @@ export const CircleScreen = ({ initialAction, onActionConsumed }: CircleScreenPr
   const [sheetOpen, setSheetOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [dedupeOpen, setDedupeOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Honor a deep-link intent once, then tell the parent to clear it so the
   // sheet doesn't re-open on the next render.
@@ -111,6 +113,127 @@ export const CircleScreen = ({ initialAction, onActionConsumed }: CircleScreenPr
   // Default the disclosure open when there's nothing else to do (empty Circle),
   // collapsed once the user has people to scroll.
   const sourcesOpenByDefault = !loading && totalPeople === 0;
+
+  // Sheets are identical across layouts; share one copy so both the mobile
+  // frame and the desktop document drive the same controlled state.
+  const sheets = (
+    <>
+      <AddToCircleSheet
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onAdded={() => {
+          void refresh();
+        }}
+        onConnectSourceClick={() => {
+          setAddOpen(false);
+          window.setTimeout(() => setSheetOpen(true), 200);
+        }}
+      />
+      <AddSourceSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onIngested={() => {
+          void refresh();
+        }}
+      />
+      <DedupeReviewSheet
+        open={dedupeOpen}
+        onOpenChange={setDedupeOpen}
+        suggestions={dedupe.suggestions}
+        scanning={dedupe.scanning}
+        merging={dedupe.merging}
+        lastScan={dedupe.lastScan}
+        onScan={dedupe.scan}
+        onAccept={async (s) => {
+          await dedupe.accept(s);
+          void refresh();
+        }}
+        onReject={dedupe.reject}
+      />
+    </>
+  );
+
+  // ── Mobile: zero-scroll frame. Header + count + add pinned at top, the people
+  // directory fills the middle as the single bounded scroll surface, and a
+  // compact action row sits pinned at the bottom. The page never scrolls. ──
+  if (isMobile) {
+    return (
+      <div className="flex h-full flex-col overflow-hidden bg-background px-4 pt-4 pb-3">
+        <header className="shrink-0 mb-3">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-title-1 text-foreground">Your Circle</h1>
+            <div className="flex items-center gap-3">
+              {!loading && (
+                <span className="text-sm font-medium text-foreground-secondary tabular-nums">
+                  {totalPeople.toLocaleString()}
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  haptics.tap();
+                  setAddOpen(true);
+                }}
+                aria-label="Add to Circle"
+                className={cn(
+                  'shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
+                  'bg-primary text-primary-foreground shadow-md shadow-primary/25',
+                  'active:scale-95 transition-transform duration-100'
+                )}
+              >
+                <Plus className="w-5 h-5" strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <CirclePeopleList
+          framed
+          totalPeople={totalPeople}
+          circleLoading={loading}
+          onQuickAdd={() => setAddOpen(true)}
+        />
+
+        <div className="shrink-0 pt-3 flex items-center justify-between gap-2">
+          <button
+            onClick={() => setSheetOpen(true)}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/50 backdrop-blur',
+              'px-3.5 h-9 text-xs font-medium text-foreground transition-colors hover:bg-card'
+            )}
+          >
+            <Users2 className="w-3.5 h-3.5 text-foreground-secondary" />
+            Sources & tools
+            {!loading && activeSources.length > 0 && (
+              <span className="text-foreground-muted">· {activeSources.length}</span>
+            )}
+          </button>
+
+          {!loading && totalPeople >= 2 && (
+            <button
+              onClick={openDedupe}
+              className="inline-flex items-center gap-1.5 px-2.5 h-9 text-xs font-medium text-foreground-secondary hover:text-foreground transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {dedupe.suggestions.length > 0
+                ? `${dedupe.suggestions.length} dup${dedupe.suggestions.length === 1 ? '' : 's'}`
+                : 'Find dupes'}
+            </button>
+          )}
+        </div>
+
+        {failedSources.length > 0 && !loading && (
+          <div className="shrink-0 mt-2 flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2">
+            <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
+            <p className="text-[11px] text-foreground-secondary truncate">
+              {failedSources.length} source{failedSources.length === 1 ? '' : 's'} failed — tap Sources to retry
+            </p>
+          </div>
+        )}
+
+        {sheets}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-background px-4 pt-6 pb-24 lg:px-8 lg:mx-auto lg:max-w-4xl">

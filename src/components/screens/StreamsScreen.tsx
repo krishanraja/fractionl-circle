@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { CardDeck } from '@/components/ui/CardDeck';
 import { useStreams, type EnrichedStream } from '@/hooks/useStreams';
 
 const formatUsd = (cents: number): string => {
@@ -136,6 +138,7 @@ const StreamRow = ({
 
 export const StreamsScreen = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { streams, loading, error, refresh } = useStreams();
 
   const totalEarned = streams.reduce((s, x) => s + x.earnedCents, 0);
@@ -166,6 +169,72 @@ export const StreamsScreen = () => {
       toast.error(e instanceof Error ? e.message : 'Could not log revenue');
     }
   };
+
+  // ── Mobile: zero-scroll frame. Header pinned, streams become a swipe deck so
+  // the page never scrolls regardless of how many Streams exist. ──
+  if (isMobile) {
+    const totalsLine = !loading && !error && streams.length > 0 && (
+      <p className="mt-2 text-sm text-foreground tabular-nums">
+        <span className="font-semibold text-success">{formatUsd(totalEarned)}</span>
+        <span className="text-foreground-muted"> earned</span>
+        {totalTarget > 0 && (
+          <span className="text-foreground-secondary"> · {formatUsd(totalTarget)}/mo target</span>
+        )}
+      </p>
+    );
+
+    return (
+      <div className="flex h-full flex-col overflow-hidden bg-background px-4 pt-4 pb-3">
+        <header className="shrink-0 mb-3">
+          <h1 className="text-title-1 text-foreground">Streams</h1>
+          <p className="mt-0.5 text-sm text-foreground-secondary">Ideas that earned their way in.</p>
+          {totalsLine}
+        </header>
+
+        <div className="flex min-h-0 flex-1 flex-col">
+          {loading ? (
+            <div className="flex flex-1 items-center justify-center text-foreground-muted">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <div className="mb-3 rounded-full bg-destructive/10 p-2.5">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <p className="text-sm font-medium text-foreground">{error}</p>
+              <button onClick={() => void refresh()} className="mt-2 text-sm font-medium text-primary">
+                Retry
+              </button>
+            </div>
+          ) : streams.length === 0 ? (
+            <div className="flex flex-1 flex-col items-center justify-center px-2 text-center">
+              <div className="mb-4 rounded-2xl bg-primary/10 p-3">
+                <Trophy className="h-6 w-6 text-primary" />
+              </div>
+              <p className="text-base font-semibold text-foreground">Your first Stream starts with a yes.</p>
+              <p className="mt-2 max-w-xs text-sm leading-relaxed text-foreground-secondary">
+                When someone says yes to a Move on Today, tap{' '}
+                <span className="font-medium text-foreground">"They said yes — log the win"</span> and that
+                Idea graduates into a Stream you can track here.
+              </p>
+            </div>
+          ) : (
+            <CardDeck
+              items={streams}
+              getKey={(s) => s.id}
+              resetKey={streams.length}
+              ariaLabel="Your Streams"
+              renderItem={(s, i) => (
+                <div className="flex h-full flex-col justify-center">
+                  <StreamRow stream={s} index={i} onLog={handleLog} />
+                </div>
+              )}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full bg-background px-4 pt-6 pb-24 lg:px-8">

@@ -182,6 +182,24 @@
     overscroll-behavior: none;
   }
 
+  /* Zero-scroll app lock. Applied to <html> only while a fixed-frame surface
+     (the mobile app shell, onboarding, auth) is mounted — so marketing/legal
+     routes keep scrolling normally. position:fixed on <body> is the only way
+     to fully defeat iOS Safari rubber-band/overscroll; the frame supplies its
+     own height, so nothing relies on body scroll. */
+  html.app-locked,
+  html.app-locked body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  html.app-locked body {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    touch-action: pan-x pan-y;
+  }
+
   /* Typography Scale — Premium */
   /* Big brand header — the ONLY place the display face is used. Archivo set in
      expanded width, uppercase, with wide tracking reads as a squared,
@@ -414,6 +432,45 @@
 
 .has-bottom-nav {
   padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
+}
+
+/* ============================================
+   ZERO-SCROLL MOBILE FRAME
+   ============================================ */
+
+/* The locked app viewport. Layered height so every device gets the right
+   value: 100vh (legacy), 100dvh (modern, tracks the visual viewport), and
+   --app-height (JS-measured innerHeight — the belt-and-braces value that is
+   correct even on old iOS Safari where vh is wrong and dvh is unsupported).
+   The last valid declaration wins, so JS-set px overrides everything. */
+.app-frame {
+  height: 100vh;
+  height: 100dvh;
+  height: var(--app-height, 100dvh);
+  width: 100%;
+  overflow: hidden;
+}
+
+/* A bounded region that may scroll internally (the single permitted scroll
+   surface) without ever showing a scrollbar or leaking to the page. */
+.fit-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.fit-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Reserve the home-indicator inset at the bottom of the in-flow bottom nav. */
+.frame-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.frame-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Focus States */

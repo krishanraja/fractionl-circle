@@ -11,9 +11,12 @@ interface CirclePeopleListProps {
   totalPeople: number;
   circleLoading: boolean;
   onQuickAdd?: () => void;
+  /** Framed mode: fill the parent's bounded height with a pinned search bar and
+   *  a single internally-scrolling list, so the page itself never scrolls. */
+  framed?: boolean;
 }
 
-export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: CirclePeopleListProps) => {
+export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, framed = false }: CirclePeopleListProps) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -44,7 +47,10 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
 
   if (!circleLoading && totalPeople === 0) {
     return (
-      <section className="flex flex-col items-center text-center px-6 py-12 mb-6">
+      <section className={cn(
+        'flex flex-col items-center text-center px-6',
+        framed ? 'h-full justify-center' : 'py-12 mb-6'
+      )}>
         <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mb-5">
           <Sparkles className="w-8 h-8 text-primary" strokeWidth={1.6} />
         </div>
@@ -74,11 +80,12 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
   }
 
   return (
-    <section className="mb-6">
+    <section className={cn(framed ? 'flex min-h-0 flex-1 flex-col' : 'mb-6')}>
       <div
         className={cn(
           'flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'px-3 h-11 mb-3'
+          'px-3 h-11 mb-3',
+          framed && 'shrink-0'
         )}
       >
         <Search className="w-4 h-4 text-foreground-muted shrink-0" />
@@ -96,33 +103,35 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd }: Cir
       </div>
 
       {error && (
-        <p className="text-xs text-destructive mb-3">Could not load contacts: {error}</p>
+        <p className="text-xs text-destructive mb-3 shrink-0">Could not load contacts: {error}</p>
       )}
 
-      {loading && people.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-5 h-5 text-primary animate-spin" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <p className="text-sm text-foreground-secondary py-6 text-center">
-          {debouncedQuery
-            ? `No matches for "${debouncedQuery}".`
-            : 'No people to show.'}
-        </p>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map((p) => (
-            <CircleListRow
-              key={p.id}
-              person={p}
-              raws={rawsByPerson.get(p.id) ?? []}
-            />
-          ))}
-        </div>
-      )}
+      <div className={cn(framed && 'fit-scroll min-h-0 flex-1')}>
+        {loading && people.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-5 h-5 text-primary animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-foreground-secondary py-6 text-center">
+            {debouncedQuery
+              ? `No matches for "${debouncedQuery}".`
+              : 'No people to show.'}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((p) => (
+              <CircleListRow
+                key={p.id}
+                person={p}
+                raws={rawsByPerson.get(p.id) ?? []}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {truncated && (
-        <p className="mt-3 text-[11px] text-foreground-muted text-center">
+        <p className={cn('mt-3 text-[11px] text-foreground-muted text-center', framed && 'shrink-0')}>
           Showing {people.length} of {totalPeople.toLocaleString()} — refine your
           search to find a specific person.
         </p>

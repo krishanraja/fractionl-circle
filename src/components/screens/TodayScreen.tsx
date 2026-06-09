@@ -7,10 +7,11 @@ import { GettingStarted } from '@/components/today/GettingStarted';
 import { NextMove } from '@/components/today/NextMove';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useIsWide } from '@/hooks/use-mobile';
+import { useIsWide, useIsMobile } from '@/hooks/use-mobile';
 import { useIdeas } from '@/hooks/useIdeas';
 import { useCircle } from '@/hooks/useCircle';
 import { useMatches, runMatchEngine } from '@/hooks/useMatches';
+import { CardDeck } from '@/components/ui/CardDeck';
 import { MatchCard } from '@/components/today/MatchCard';
 import { FocusMove } from '@/components/today/FocusMove';
 import { SundayLetterCard } from '@/components/today/SundayLetterCard';
@@ -40,6 +41,7 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<string | undefined>(undefined);
   const isWide = useIsWide();
+  const isMobile = useIsMobile();
 
   const canRun = !ideasLoading && !circleLoading && ideas.length > 0 && totalPeople > 0;
   const hasMatches = matches.length > 0;
@@ -76,6 +78,157 @@ export const TodayScreen = ({ onNavigate }: TodayScreenProps) => {
       setRunning(false);
     }
   };
+
+  // ── Mobile: zero-scroll frame. The page never scrolls regardless of device
+  // height or how many Matches/Ideas exist. Header is pinned; the body is a
+  // single bounded region. Matches become a swipe deck (one Move at a time);
+  // Ideas / Concierge / Sunday Letter recede into a trailing bounded panel that
+  // fit-scrolls inside its own card, never the page. ──
+  if (isMobile) {
+    const showDiagnosis = !hasMatches && !matchesLoading && !matchesError;
+
+    // A trailing "extras" panel folds the secondary surfaces (weekend Sunday
+    // Letter, Concierge upsell, Ideas list, "find more") into one swipeable
+    // card so nothing is lost when Matches take the lead.
+    const extrasPanel = (
+      <div className="fit-scroll flex h-full flex-col gap-3 pb-1">
+        {weekend ? <SundayLetterCard canGenerate={canRun} prominent /> : null}
+        <ConciergeCard />
+        {!weekend ? <SundayLetterCard canGenerate={canRun} /> : null}
+        {!ideasLoading && ideas.length > 0 ? (
+          <section>
+            <div className="mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-foreground-secondary" />
+              <h2 className="text-xs font-medium uppercase tracking-wide text-foreground-secondary">
+                Your Ideas
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {ideas.map((idea) => (
+                <div
+                  key={idea.id}
+                  className="rounded-xl border border-border/60 bg-card/50 p-3 backdrop-blur"
+                >
+                  <h3 className="text-sm font-semibold text-foreground">{idea.title}</h3>
+                  {idea.one_liner ? (
+                    <p className="mt-1 text-xs leading-relaxed text-foreground-secondary">
+                      {idea.one_liner}
+                    </p>
+                  ) : null}
+                  <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-foreground-muted">
+                    {idea.price_band ? <span>{idea.price_band}</span> : null}
+                    {idea.icp ? <span>· {idea.icp}</span> : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+        {canRun ? (
+          <button
+            onClick={handleRun}
+            disabled={running}
+            className={cn(
+              'mt-1 h-10 w-full rounded-full border border-border/60 bg-card/50 backdrop-blur',
+              'flex items-center justify-center gap-1.5 text-xs font-medium text-foreground-secondary',
+              'disabled:opacity-70'
+            )}
+          >
+            {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+            {running ? 'Finding more…' : 'Find more Matches'}
+          </button>
+        ) : null}
+      </div>
+    );
+
+    // Deck: one card per Match, then the extras panel as the final card. Keyed
+    // union so CardDeck stays generic and nothing relies on array position.
+    type TodayCard =
+      | { kind: 'match'; match: (typeof matches)[number] }
+      | { kind: 'extras' };
+    const deckItems: TodayCard[] = [
+      ...matches.map((m) => ({ kind: 'match' as const, match: m })),
+      { kind: 'extras' as const },
+    ];
+
+    return (
+      <div className="flex h-full flex-col overflow-hidden bg-background px-4 pb-3 pt-4">
+        {!showDiagnosis ? (
+          <header className="mb-3 shrink-0">
+            <p className="text-sm leading-relaxed text-foreground-secondary">
+              Overnight I looked for Matches across your Ideas and Circle.
+            </p>
+            <h1 className="mt-1 text-title-1 text-foreground">{headline}</h1>
+          </header>
+        ) : null}
+
+        <div className="flex min-h-0 flex-1 flex-col">
+          {matchesLoading && !hasMatches ? (
+            <div className="flex flex-1 items-center justify-center text-foreground-muted">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          ) : matchesError ? (
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <div className="mb-3 rounded-full bg-destructive/10 p-2.5">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <p className="text-sm font-medium text-foreground">{matchesError}</p>
+              <button onClick={() => void refresh()} className="mt-2 text-sm font-medium text-primary">
+                Retry
+              </button>
+            </div>
+          ) : showDiagnosis ? (
+            <div className="fit-scroll flex min-h-0 flex-1 flex-col gap-3">
+              {weekend ? <SundayLetterCard canGenerate={canRun} prominent /> : null}
+              {NEXT_MOVE_ENABLED ? (
+                <NextMove
+                  ideasCount={ideas.length}
+                  peopleCount={totalPeople}
+                  canRun={canRun}
+                  running={running}
+                  onRun={handleRun}
+                  onNavigate={onNavigate}
+                  topIdeaTitle={ideas[0]?.title}
+                />
+              ) : (
+                <GettingStarted
+                  ideasCount={ideas.length}
+                  peopleCount={totalPeople}
+                  canRun={canRun}
+                  running={running}
+                  onRun={handleRun}
+                  onNavigate={onNavigate}
+                />
+              )}
+              <ConciergeCard />
+            </div>
+          ) : (
+            <CardDeck
+              items={deckItems}
+              getKey={(c) => (c.kind === 'match' ? c.match.match.id : 'extras')}
+              resetKey={matches.length}
+              ariaLabel="Today — your Moves"
+              renderItem={(c) =>
+                c.kind === 'match' ? (
+                  // min-h-full (not h-full): centers a short card, but lets a
+                  // tall one grow past the bounded region so the parent
+                  // fit-scroll can reach its tail (Approve/Pass) on short
+                  // devices instead of clipping it.
+                  <div className="flex min-h-full flex-col justify-center py-1">
+                    <MatchCard match={c.match} onStateChange={updateMatchState} />
+                  </div>
+                ) : (
+                  extrasPanel
+                )
+              }
+            />
+          )}
+        </div>
+
+        <PricingSheet open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
+      </div>
+    );
+  }
 
   // FOCUS layout: flag on AND there is at least one match. The headline and the
   // hero Move come first; ConciergeCard / SundayLetterCard recede below. The
