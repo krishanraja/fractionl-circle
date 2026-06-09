@@ -33,10 +33,10 @@ export const PageHeader = ({
     return (
       <header
         className={cn(
-          "sticky top-0 z-40",
+          "shrink-0 z-40",
           "bg-background/95 backdrop-blur-xl",
           "shadow-sm",
-          "safe-top",
+          "frame-safe-top",
           isCircle && "circle-hero-bg"
         )}
       >

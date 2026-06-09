@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
 import type { TabId } from '@/components/layout/BottomNav';
 
@@ -45,6 +46,7 @@ type Phase = 'idle' | 'recording' | 'processing' | 'done';
 
 export const AskScreen = ({ onNavigate }: AskScreenProps) => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [typed, setTyped] = useState('');
   const [showType, setShowType] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -166,21 +168,26 @@ export const AskScreen = ({ onNavigate }: AskScreenProps) => {
   const busy = phase === 'processing';
 
   return (
-    <div className="min-h-full bg-background px-4 pt-6 pb-24 flex flex-col lg:px-8">
+    <div
+      className={cn(
+        'bg-background flex flex-col lg:px-8',
+        isMobile ? 'h-full overflow-hidden px-4 pt-4 pb-3' : 'min-h-full px-4 pt-6 pb-24'
+      )}
+    >
       <motion.header
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-6"
+        className={cn('shrink-0', isMobile ? 'mb-3' : 'mb-6')}
       >
-        <h1 className="text-display text-foreground">Ask</h1>
+        <h1 className={cn('text-foreground', isMobile ? 'text-title-1' : 'text-display')}>Ask</h1>
         <p className="mt-1 text-sm text-foreground-secondary leading-relaxed">
           Talk to me. Tell me what you could sell, what just happened, or who you met —
           I'll turn it into your next move.
         </p>
       </motion.header>
 
-      <section className="flex-1 flex flex-col items-center">
+      <section className={cn('flex-1 flex flex-col items-center', isMobile && 'min-h-0 fit-scroll w-full')}>
         <AnimatePresence mode="wait">
           {phase === 'done' ? (
             <motion.div

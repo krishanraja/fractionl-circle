@@ -28,7 +28,7 @@ export const BottomNav = ({ currentTab, onTabChange }: BottomNavProps) => {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50",
+        "relative z-50 shrink-0",
         "bg-background/80 backdrop-blur-2xl",
         "border-t border-border/30",
       )}
