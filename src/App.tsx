@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import Index from "./pages/Index";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -127,9 +128,35 @@ function AuthenticatedShell() {
   );
 }
 
+/**
+ * Failed email links (expired confirmation, used reset link) redirect back to
+ * "/" with the failure in the URL hash. supabase-js only consumes success
+ * tokens, so these errors were silently ignored — the user just saw the
+ * landing page with no explanation. Surface them once, then clean the URL.
+ */
+function AuthHashErrorNotice() {
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.includes('error_code=')) return;
+    const params = new URLSearchParams(hash.slice(1));
+    const code = params.get('error_code');
+    if (!code) return;
+    const expired = code === 'otp_expired';
+    toast.error(expired ? 'That email link has expired' : 'Sign-in link problem', {
+      description: expired
+        ? 'Sign in with your email and password and we will send you a fresh confirmation link.'
+        : params.get('error_description') || 'Please try signing in again.',
+      duration: 12000,
+    });
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }, []);
+  return null;
+}
+
 function AppRoutes() {
   return (
   <>
+      <AuthHashErrorNotice />
       <Routes>
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />
