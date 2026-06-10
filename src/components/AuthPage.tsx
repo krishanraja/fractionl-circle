@@ -451,13 +451,13 @@ const SignUpContent = ({
           <Input
             id="signup-password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Min. 6 characters"
+            placeholder="Min. 8 characters"
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             className="h-12 text-body pr-12 bg-input border-border"
             autoComplete="new-password"
             required
-            minLength={6}
+            minLength={8}
             autoFocus
           />
           <button
@@ -608,7 +608,26 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
       });
 
       if (error) {
-        setError({ title: 'Sign in failed', message: error.message });
+        // Six of the last nine signups are stuck unconfirmed (emails lost to the
+        // 2/hr Supabase mailer limit). Auto-resend the confirmation so they can
+        // recover instead of dead-ending on "Email not confirmed".
+        if (error.code === 'email_not_confirmed' || /email not confirmed/i.test(error.message)) {
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: { emailRedirectTo: `${window.location.origin}/` },
+          });
+          if (resendError) {
+            setError({
+              title: 'Confirm your email first',
+              message: 'Your account exists but the email was never confirmed, and we could not send a new link right now. Try again in an hour.',
+            });
+          } else {
+            setSuccessMessage('Your email is not confirmed yet, so we just sent you a fresh confirmation link. Open it, then sign in.');
+          }
+        } else {
+          setError({ title: 'Sign in failed', message: error.message });
+        }
       } else {
         onAuthenticated();
       }
