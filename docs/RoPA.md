@@ -1,6 +1,6 @@
 # Records of Processing Activities (RoPA) — GDPR Art. 30
 
-**Last reviewed:** 2026-06-02. **Status: DRAFT — for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
+**Last reviewed:** 2026-06-14. **Status: DRAFT — for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
 
 **Controller:** fractionl (Circle). **Contact:** privacy@fractionl.ai
 

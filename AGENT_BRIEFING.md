@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo:** README.md, DOCS.md, src/lib/tiers.ts, _upgrade/fractionl-circle/PHASE-1.md.
+**Last verified against repo:** 2026-06-14. Sources: README.md, DOCS.md, src/lib/tiers.ts, tailwind.config.ts, supabase/functions/ (43 functions), supabase/migrations/ (51 files), _upgrade/fractionl-circle/PHASE-1.md.
 
 ---
 
@@ -226,7 +226,7 @@ The single hard rule: marketing copy may say "talk once, wake to a drafted Move"
 | LLM cross-source dedupe (Operator+) | LIVE | Claim freely. |
 | Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
 | 14-day Operator-equivalent trial | LIVE | Claim freely. |
-| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Frame ONLY as the promise/vision. Today it is a manual button and the PWA has no push. |
+| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Frame ONLY as the promise/vision. Today the Match Engine runs on a manual button. The `send-push` function and `push_subscriptions` table are deployed but INERT until VAPID keys are configured and the client-side subscription prompt ships. |
 | Seeding people from the onboarding voice note | ROADMAP | Do not claim as live. |
 | Trigger layer (job-change / funding / news signals driving Moves) | ROADMAP | Do not claim as live (external signal feeds appear in tier copy as the vision). |
 | Voice fingerprint (drafts in your sent-mail/DM style) | ROADMAP | Do not claim; today personalization is the logged edit-distance substrate. |

@@ -35,6 +35,31 @@ Weekly narrative with stats sidebar. Text on Operator+, 90-second TTS audio on C
 ### Concierge (Chief of Staff)
 Real-human onboarding for Chief-of-Staff users. `concierge_requests` table, `ConciergeCard` on Today, `notify-concierge-event` Slack/Resend ops alerts, `scripts/concierge-inbox.mjs` CLI for the queue.
 
+### Dual-role match engine (PR #54, 2026-06-02)
+Matches now carry a `role` dimension: **buyer** (direct engagement fit), **amplifier** (connector / referral path), **sharpener** (advisor / feedback fit). Migration `20260602000001_dual_role_matches.sql`. Move drafts differentiate by role; this increases signal clarity and reduces generic DM fatigue.
+
+### Identity-first-run onboarding (2026-06-03)
+`IdentityFirstRun.tsx` replaces `FirstVoice.tsx` as the default new-user flow (feature flag `VITE_IDENTITY_FIRSTRUN_ENABLED=true`). The "borrowed conviction" reframe: Circle proposes a confident, specific, editable identity hypothesis from what the user ran — so they react to a sharp wrong answer rather than generating a right one from scratch. Requires `extract-identity` edge function and `practice_profile` table (migration `20260516000001_user_practice_profile.sql`).
+
+### Attribution wiring (2026-05-30)
+`emit-lifecycle` edge function + `user_attribution` table (migration `20260530000002`). Captures first-touch utm_*, campaign_id, agent, referrer on landing; emits signed_up / activated / purchased / refunded / churned to the Mindmaker OS warehouse. Attribution stamps survive the OAuth round-trip and flow through to the Stripe webhook.
+
+### Push subscription infrastructure (2026-05-30, inert)
+`push_subscriptions` table (migration `20260530000004`) and `send-push` edge function are deployed. The function is deliberately INERT: returns `{ sent: 0, skipped: "vapid_unconfigured" }` until VAPID keys are set. The cron-match-engine calls it as a fire-and-forget; no end-user notifications are sent yet. Client-side subscription prompt (`useWebPush` hook and `VITE_VAPID_PUBLIC_KEY` env flag) is wired but off by default.
+
+### Mobile zero-scroll + desktop native (PRs #58 and #59, 2026-06-08)
+100% zero-scroll mobile PWA across every surface (PR #59). Desktop experience made native-feeling with the palette aligned to the logo (PR #58).
+
+### Archivo Variable display font (PR #57, 2026-06-08)
+Display font changed from Source Serif 4 → self-hosted Archivo Variable (Archivo Expanded). Satoshi unchanged for heading/body. Defined in `tailwind.config.ts` `fontFamily.display`.
+
+### Cascade user deletes (PR #61, 2026-06-10)
+Five blocking FK constraints on `auth.users` were added with `ON DELETE CASCADE`, so the `delete-account` edge function can complete without hitting FK violations. Affects `user_profiles`, `subscriptions`, `sources`, `oauth_tokens`, `rate_limits` (and others).
+
+### Auth fixes (PRs #60 and #62, 2026-06-10–11)
+- **CSP fix (P0):** branded auth domain `auth.circle.fractionl.ai` was missing from the `Content-Security-Policy` header, blocking all email-link auth in production. Fixed.
+- **Email-link errors (P2):** expired / invalid email-link tokens were silently swallowed; users saw a blank screen. Now surfaced as a clear error message.
+
 ### Stripe billing
 Checkout + Customer Portal + signature-verified webhook + tier sync. `stripe-checkout`, `stripe-portal`, `stripe-webhook`. Tier catalogue in `src/lib/tiers.ts` (Freemium / Operator / Chief of Staff at $0 / $30 / $79).
 
@@ -176,8 +201,9 @@ Read the signal from paying users:
 
 - **Last full audit:** 2026-04-24 (`AUDIT_2026-04-24.md`).
 - **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`).
-- **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
-- **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
+- **Next recommended audit:** overdue (was 2026-06-01; deferred). Schedule after the identity-first-run flow stabilises and before push notifications go live.
+- **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API. Migration count as of 2026-06-14: 51 files.
 - **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
+- **Open hardening items from SECURITY.md:** (1) OAuth token application-layer encryption; (2) password minimum length ≥ 8 + reauthentication on change; (3) Point-in-Time Recovery on production DB. None are blockers but all belong in the next audit scope.
 
 Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; the runway is sales and signal.

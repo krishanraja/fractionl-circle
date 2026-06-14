@@ -1,5 +1,7 @@
 # Security Policy — Circle
 
+**Last reviewed:** 2026-06-14
+
 ## Reporting a vulnerability
 Email **security@fractionl.ai**. Please include steps to reproduce and impact. We aim to acknowledge within 2 business days. Do not publicly disclose before we've had a chance to remediate. See also `/.well-known/security.txt`.
 

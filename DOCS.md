@@ -4,7 +4,7 @@
 
 This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
 
-**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-06-14 (PRs #54–#62: dual-role match engine, identity-first-run, compliance hardening, cascade user deletes, auth CSP fix, email-link error surfacing, mobile zero-scroll, Archivo Variable font). Prior verified: 2026-05-30 (Phase 2 security-hardening pass). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
 
 ---
 
@@ -19,7 +19,7 @@ Where Circle is in the rebuild, so the fleet never overclaims.
 ### LIVE vs ROADMAP (the line the fleet must hold)
 
 - **LIVE NOW.** Voice onboarding that extracts Ideas; a Match Engine that scores Idea x Person and drafts a Move (surfaced via a manual "Surface Matches" action, NOT automatic overnight); the Sunday Letter (text for Operator+, 90-second audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, browser extension, screenshot-to-contact (vision), and voice; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`).
-- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match plus push notifications (today it is a manual button; the PWA has no push); seeding people from the onboarding voice note; the trigger layer (job-change / funding signals); the voice fingerprint; real one-tap sending; the public "Signal" share posts; the anonymous live-mic demo on the landing page; the SSG marketing surface and the `/app` move (the authed app moves to `/app`, marketing lives at the root of `circle.fractionl.ai`).
+- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match plus end-to-end push notifications (today the Match Engine runs on a manual button; the `send-push` edge function and `push_subscriptions` table are deployed but INERT until VAPID keys are configured and the client-side subscription prompt ships); seeding people from the onboarding voice note (the feature flag `VITE_PEOPLE_SEEDING_ENABLED` is on but the end-to-end flow is not yet fully live); the trigger layer (job-change / funding signals); the voice fingerprint; real one-tap sending; the public "Signal" share posts; the anonymous live-mic demo on the landing page; the SSG marketing surface and the `/app` move (the authed app moves to `/app`, marketing lives at the root of `circle.fractionl.ai`).
 - **Honesty gate.** Marketing copy MAY use "talk once, wake to a drafted Move" as the product PROMISE / vision, but must NOT state that automatic-overnight-while-you-sleep delivery is live until the per-user cron plus Web Push ship. Canonical domain is `circle.fractionl.ai` (the company site is a separate surface, not this product).
 
 ### Fleet attribution wiring
@@ -460,7 +460,6 @@ Chief of Staff tier ships with a real human concierge — the relationship manag
 | **Animation** | Framer Motion | 153 `motion.*` instances; all have `initial` + `animate` to avoid first-render flash. |
 | **Forms** | (currently raw `useState`) | `react-hook-form` + Zod scaffolding present (`src/components/ui/form.tsx`) but not yet adopted on most call sites — see audit H3 in [docs/roadmap.md](./docs/roadmap.md). |
 | **Data fetching** | TanStack React Query (provider mounted, partial adoption) | Direct `supabase.functions.invoke` is still common; full migration is a deferred audit item. |
-| **Charts** | Recharts | Used in admin/analytics surfaces. |
 | **Backend** | Supabase (Postgres + Auth + Edge Functions / Deno) | Project: `ksyuwacuigshvcyptlhe`. |
 | **Edge runtime** | Deno (Supabase Edge Functions) | 34 functions in source (41 deployed, 7 orphan legacy); see §19. |
 | **AI providers** | OpenAI (Whisper, GPT-4o-mini, gpt-4o-mini-tts) · Anthropic (claude-haiku-4-5-20251001) · Lovable Gateway (google/gemini-3-flash-preview) | 14 LLM call sites, all with explicit `AbortSignal.timeout`. |
@@ -572,7 +571,7 @@ src/
 └── index.css                  Design tokens, typography, theme
 ```
 
-121 TS/TSX files in `src/` as of 2026-04-26.
+130+ TS/TSX files in `src/` as of 2026-06-14 (was 121 at 2026-04-26; additions include `IdentityFirstRun.tsx`, `MarketingLanding.tsx`, `TryDemo.tsx`, and other new onboarding and marketing components).
 
 ---
 
@@ -605,6 +604,8 @@ src/
 | `usage_tracking` | Per-feature, per-period counts (Match cap enforcement) |
 | `ledger_entries` | Inferred revenue from inbox + calendar (Operator+) |
 | `rate_limits` | Durable per-user / per-bucket rate limiter (audit H4) |
+| `push_subscriptions` | Web Push service-worker subscriptions (endpoint, p256dh, auth); fan-out via `send-push` edge function |
+| `user_attribution` | First-touch attribution context per user (utm_*, campaign_id, agent, referrer, landing_path, anonymous_id) |
 | `reminders` | Nudge scheduling (legacy; not currently used by active surface) |
 
 **User & analytics:**
@@ -614,6 +615,7 @@ src/
 | `user_profiles` | Account, business context, onboarding state |
 | `user_preferences` | Theme, notifications, AI personality |
 | `user_business_context` | Business profile for AI personalization |
+| `practice_profile` | User's self-described practice (role, function, experience, revenue_band, concurrent_engagements, verticals, positioning) — feeds `extract-identity` and the new onboarding flow |
 | `user_insights` | AI-generated insights with confidence + priority |
 | `user_behavior_logs` | Behavioral analytics |
 | `feature_usage` | Feature adoption tracking |
@@ -623,17 +625,17 @@ src/
 **Legacy (pruned from the active surface in PR #45 but tables linger in older migrations):**
 `clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `skills`. Do not write new code against these.
 
-**Migration count:** 43 files in `supabase/migrations/` (2026-05-30).
+**Migration count:** 51 files in `supabase/migrations/` (2026-06-14).
 
 **Migration drift note.** As of the PR #46 deploy, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. See the audit-deploy memory for context.
 
 ---
 
-## 19. Edge functions (34 in source, 41 deployed)
+## 19. Edge functions (43 in source)
 
 All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
 
-**Count note (2026-05-30):** the repo source tree holds 34 functions. The live Supabase project has 41 deployed, the extra 7 being orphan legacy functions that no longer exist in source and no live UI calls (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`). These are slated for removal in the Phase 2 orphan-function cleanup; do not write new code against them.
+**Count note (2026-06-14):** the repo source tree holds 43 functions. 9 functions were added since the 2026-05-30 baseline: `audit-log`, `delete-account`, `demo-extract`, `emit-lifecycle`, `extract-identity`, `generate-signals`, `log-win`, `send-push`, and `sunday-letter-feed` — all documented below. The 7 orphan legacy functions that previously existed only in the deployed Supabase project (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`) remain slated for removal; do not write new code against them.
 
 **Voice & vision parsing (LLM-backed):**
 - `transcribe` — Whisper audio→text
@@ -641,15 +643,19 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 - `parse-voice-contact` — voice → contact
 - `parse-voice-seed` — voice → batch contact seed (onboarding)
 - `parse-onboarding` — voice → client / revenue setup (legacy onboarding path)
-- `parse-screenshot`: vision LLM (claude-haiku-4-5-20251001 preferred, gpt-4o-mini fallback) for shared screenshots
+- `parse-screenshot` — vision LLM (claude-haiku-4-5-20251001 preferred, gpt-4o-mini fallback) for shared screenshots
 - `parse-contact-image` — vision LLM for business cards / profile shots
 - `extract-ideas` — onboarding voice transcript → 3 Idea drafts
+- `extract-identity` — voice / practice-profile input → user identity hypothesis for the new identity-first-run onboarding flow (`IdentityFirstRun.tsx`)
+- `demo-extract` — public demo endpoint; extracts Ideas from an input without requiring auth (rate-limited; for the anonymous live-mic demo surface)
 
 **Match engine & weekly digest:**
 - `run-match-engine` — manual trigger
-- `cron-match-engine` — nightly trigger
+- `cron-match-engine` — nightly trigger; calls `send-push` after each user's matches are written
 - `generate-sunday-letter` — manual trigger
 - `cron-sunday-letter` — Sunday morning trigger
+- `sunday-letter-feed` — serves the public Sunday Letter feed endpoint (`/feed/sunday-letter.json`); infrastructure live, endpoint is ROADMAP until the SSG surface ships
+- `generate-signals` — generates internal signals (warmth-decay events, recency nudges) that feed the Match Engine
 - `generate-user-insights` — personalized business insights (gated by auth + body validation per audit C1)
 - `dedupe-circle` — LLM-assisted person dedupe (Operator+ feature)
 
@@ -665,12 +671,17 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 - `linkedin-search` — Google CSE-backed LinkedIn lookup
 
 **Billing & comms:**
-- `stripe-checkout` — create Checkout session
+- `stripe-checkout` — create Checkout session; stamps attribution metadata on Stripe customer + subscription
 - `stripe-portal` — open Customer Portal
-- `stripe-webhook`: hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) plus `processed_stripe_events` idempotency ledger, then tier sync
+- `stripe-webhook` — hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) plus `processed_stripe_events` idempotency ledger, then tier sync
 - `send-sms` — Twilio (origin-allowlisted CORS per audit C4)
+- `send-push` — Web Push fan-out via VAPID; service-role-keyed; INERT (returns `{ sent: 0, skipped: "vapid_unconfigured" }`) if VAPID env vars are absent — safe to wire before keys exist
 - `notify-concierge-event` — Slack + Resend ops notifications
+- `emit-lifecycle` — emits signed_up / activated / purchased / refunded / churned events to the Mindmaker OS warehouse (`ingest-attribution`); fire-and-forget, no-op if `ATTRIBUTION_INGEST_SECRET` is unset
 - `log-move-sent` — edit-distance logging on Move send
+- `log-win` — logs a closed deal / inbound win to the `streams` or `ledger_entries` table
+- `audit-log` — writes user-action events server-side for the compliance audit trail
+- `delete-account` — cascade-deletes a user's account and all associated data; wired to the "Delete account" action in ProfileSettingsSheet
 - `test-google-secret` — debug helper (verify_jwt = false; trim before next prod cut)
 
 ---
@@ -938,7 +949,7 @@ For prospects who need to see *how* the AI works before they trust it:
 | **Primary** | `#994CCC` / HSL 287 45% 55% | Key actions, brand accents |
 | **Background** | Near-white (light) / Deep charcoal (dark) | Page backgrounds |
 | **Cards** | White (light) / Elevated dark (dark) | Containers |
-| **Display typography** | Source Serif 4 | Headlines, narrative copy |
+| **Display typography** | Archivo Variable | Headlines, narrative copy |
 | **Body typography** | Satoshi | Body, labels, UI |
 | **Animation** | Spring easing, 250–400ms | Page transitions, list staggers |
 
@@ -1003,9 +1014,17 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2026-04-24** | Full app audit (`AUDIT_2026-04-24.md`): 4 critical, 7 high, 10 medium, 6 low findings. |
 | **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
 | **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
+| **2026-05-30** | Phase 2 security hardening (`upgrade/circle/phase-2`): H7 closed (parse-screenshot logs status only, no upstream body), Stripe webhook idempotency (`processed_stripe_events`), server-side tier gates on dedupe and OAuth-connect. New tables: `push_subscriptions`, `user_attribution`, `processed_stripe_events`. New functions: `emit-lifecycle` (attribution wiring), `send-push` (Web Push infrastructure, INERT until VAPID configured), `sunday-letter-feed` (feed schema). |
+| **2026-06-02 (PR #54)** | Dual-role match engine — Matches now carry a `role` dimension (buyer / amplifier / sharpener) enabling differentiated Move drafting per relationship type. Compliance hardening: full-coverage DSAR, retention enforcement, security headers. |
+| **2026-06-03** | Identity-first-run flow (`IdentityFirstRun.tsx`) replaces `FirstVoice` as the default new-user onboarding (feature-flagged via `VITE_IDENTITY_FIRSTRUN_ENABLED`). `extract-identity` edge function. `practice_profile` table (migration 2026-05-16). `generate-signals` edge function. People-seeding from onboarding voice enabled (`VITE_PEOPLE_SEEDING_ENABLED`). |
+| **2026-06-08 (PR #58)** | Desktop experience made native-feeling; palette aligned to logo. Mobile zero-scroll: 100% zero-scroll PWA across every surface (PR #59). |
+| **2026-06-08 (PR #57)** | Display font changed from Source Serif 4 → self-hosted Archivo Variable (Archivo Expanded). Satoshi unchanged for body. |
+| **2026-06-10 (PR #61)** | Cascade user deletes: five blocking FK constraints fixed so `delete-account` can complete without 500 errors. |
+| **2026-06-11 (PR #60)** | Auth CSP fix: branded auth domain (`auth.circle.fractionl.ai`) added to CSP; unblocks email auth in production. |
+| **2026-06-11 (PR #62)** | Auth error surfacing: expired/invalid email-link errors now surfaced to the user instead of silently swallowed. |
 
 **Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
 
 ---
 
-*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-30.*
+*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-06-14.*

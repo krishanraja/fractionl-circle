@@ -69,7 +69,7 @@ Full breakdown in [DOCS.md § Pricing](./DOCS.md#pricing--gating).
 
 React 18 + TypeScript (strict) · Vite · Tailwind · shadcn/Radix · Framer Motion · Supabase (Postgres + RLS + Edge Functions / Deno) · OpenAI (Whisper, GPT-4o, GPT-4o-mini, TTS) · Anthropic (Claude Haiku 4.5) · Lovable Gateway (Gemini 3 Flash) · Stripe · Twilio · Resend · Vercel.
 
-35 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit-clean as of 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)).
+43 edge functions. RLS on every user-scoped table. LLM timeouts on every call site. Audit baseline: 2026-04-26 (PR #46 — see [AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)). Subsequent fixes: cascade user deletes (PR #61), auth CSP (PR #60), email-link errors (PR #62).
 
 ---
 
@@ -88,8 +88,10 @@ Edge function secrets are set via `supabase secrets set` — see [.env.example](
 ## Documentation
 
 - **[DOCS.md](./DOCS.md)** — full source of truth: product, architecture, schema, sales/marketing anchors, ICP, objection handling, channel-ready copy.
+- **[AGENT_BRIEFING.md](./AGENT_BRIEFING.md)** — fleet brief for prospecting/content/revenue agents; LIVE-vs-ROADMAP honesty gate; attribution wiring.
 - **[docs/icp-archetype.md](./docs/icp-archetype.md)** — deep ICP & archetype reference: who the fractional executive really is, why they go independent, the psychology, the buying-trigger window, and the market data behind the ICP.
 - **[docs/roadmap.md](./docs/roadmap.md)** — what shipped, what's next, sized honestly.
+- **[docs/UX_REBUILD_VISION_2026-06-03.md](./docs/UX_REBUILD_VISION_2026-06-03.md)** — ground-up UX vision from the 2026-06-03 redesign sprint; defines the new spine, object model, identity-first-run, and the "borrowed conviction" reframe.
 - **[AUDIT_2026-04-24.md](./AUDIT_2026-04-24.md)** — last full audit + remediation log.
 - **[docs/google-oauth-setup.md](./docs/google-oauth-setup.md)** · **[docs/microsoft-oauth-setup.md](./docs/microsoft-oauth-setup.md)** — one-time provider setup.
 - **[docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md)** — Android share target + iOS Apple Shortcut.

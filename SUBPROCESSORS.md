@@ -1,6 +1,6 @@
 # Circle — Subprocessors
 
-**Last reviewed:** 2026-06-02. This is the list of third parties that may process personal data on Circle's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing — some are conditional on features a given user enables.
+**Last reviewed:** 2026-06-14. This is the list of third parties that may process personal data on Circle's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing — some are conditional on features a given user enables.
 
 | Subprocessor | Purpose | Personal data processed | Region | DPA |
 |---|---|---|---|---|
