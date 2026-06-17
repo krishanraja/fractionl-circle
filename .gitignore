@@ -30,3 +30,6 @@ dist-ssr
 # Seed scripts
 seed-data.ts
 supabase/.temp/
+
+# local resume ledger (not shipped)
+_STATE.md
