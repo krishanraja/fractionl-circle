@@ -36,7 +36,7 @@ export const PageLoader = ({ message = 'Loading...' }: { message?: string }) => 
       <div className="relative">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
           <img
-            src="/lovable-uploads/63570a7c-6a51-4c13-8694-b6719861a79b.png"
+            src="/brand/fractionl-icon.png"
             alt="Fractionl"
             className="w-10 h-10"
           />
