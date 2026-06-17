@@ -41,6 +41,14 @@ const css = `
 .prr .navOn { color:${C.accent}; }
 .prr .led { display:flex; gap:14px; padding:14px 0; border-top:1px solid ${C.line}; }
 .prr .disc { width:30px; height:30px; border-radius:50%; background:${C.panel3}; border:1px solid ${C.line2}; display:flex; align-items:center; justify-content:center; font-family:${MONO}; font-size:11px; color:${C.mid}; flex:0 0 auto; }
+.prr .cmd { display:grid; grid-template-columns:300px 1fr 340px; max-width:1320px; margin:0 auto; min-height:100vh; }
+.prr .railL { border-right:1px solid ${C.line}; padding:28px 22px; display:flex; flex-direction:column; }
+.prr .railC { padding:34px 38px; }
+.prr .railR { border-left:1px solid ${C.line}; padding:28px 22px; }
+.prr .spine { position:relative; padding-left:18px; margin-top:26px; flex:1; }
+.prr .spineLine { position:absolute; left:4px; top:4px; bottom:8px; width:1px; background:${C.line2}; }
+.prr .srow { position:relative; height:50px; }
+.prr .sdot { position:absolute; left:-18px; top:3px; width:9px; height:9px; border-radius:50%; }
 `;
 
 function Gauge({ s }: { s: SessionRead }) {
@@ -177,6 +185,85 @@ function Onboarding({ onDone }: { onDone: (segment: Segment, fn: string) => void
   );
 }
 
+function useIsDesktop() {
+  const [d, setD] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const on = () => setD(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return d;
+}
+
+function DesktopHome({ s, circle, ledger, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ledger: LedgerEntry[]; onOpenFork: () => void }) {
+  return (
+    <div className="cmd">
+      {/* LEFT: the Read + the Path spine + ledger */}
+      <div className="railL">
+        <span className="ovl">The Path · {s.pathTitle}</span>
+        <div className="mono" style={{ fontSize: 11, color: C.mid, marginTop: 12, lineHeight: 1.7 }}>
+          {s.segment === 'seasoned' ? 'Seasoned' : 'New fractional'}<br />lit fork: <span style={{ color: C.accent }}>{s.litForkLabel}</span>
+        </div>
+        <div className="spine">
+          <div className="spineLine" />
+          {s.stages.map((st, i) => {
+            const marker = Math.round(s.markerIndex) === i, lit = i === s.litForkIndex;
+            return (
+              <div className="srow" key={st.key}>
+                <div className="sdot" style={{ background: marker ? C.hi : lit ? C.accent : C.bg, border: `1.5px solid ${lit ? C.accent : marker ? C.hi : C.line2}` }} />
+                <div className="mono" style={{ fontSize: 10.5, letterSpacing: '0.1em', color: lit ? C.accent : marker ? C.hi : C.lo }}>{st.label}</div>
+                {marker ? <div className="mono" style={{ fontSize: 9, color: C.lo, marginTop: 2 }}>you are here</div> : null}
+                {lit ? <div className="mono" style={{ fontSize: 9, color: C.accent, marginTop: 2 }}>decision live</div> : null}
+              </div>
+            );
+          })}
+        </div>
+        <span className="ovl" style={{ color: C.lo }}>Ledger · {ledger.length} decision{ledger.length === 1 ? '' : 's'}</span>
+      </div>
+
+      {/* CENTER: recognition + decision */}
+      <div className="railC">
+        <p className="recog" style={{ fontSize: 23, maxWidth: 580 }}>{s.recognition.split('.').slice(0, 1).join('.')}.{' '}<span className="em">{s.recognition.split('.').slice(1).join('.').trim()}</span></p>
+        <div className="panel" style={{ background: C.panel2, padding: 22, marginTop: 24 }}>
+          <div className="ovl" style={{ color: C.accent }}>Decision · {s.litForkLabel}</div>
+          <div className="decTitle" style={{ marginTop: 9, fontSize: 30 }}>{s.litFork === 'icp_positioning' ? 'Narrow your niche.' : s.litFork === 'scaling_leverage' ? 'Break the plateau.' : s.litFork === 'offer_pricing' ? 'Price the offer.' : 'Work your network.'}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 36px', marginTop: 16 }}>
+            <div>{s.gap.map((g) => (
+              <div className="gaprow" key={g.label}><span className="gaplabel">{g.label}</span><span className="gapval">{g.value}{g.flag ? <span className={'flag ' + (g.flag === 'risk' ? 'flagRisk' : 'flagGen')}>{g.flag}</span> : null}</span></div>
+            ))}</div>
+            {s.benchmarkBand ? (
+              <div>
+                <div className="ovl" style={{ marginBottom: 2 }}>Benchmark</div>
+                <div className="band"><div className="btrack" /><div className="bfill" style={{ left: `${s.benchmarkBand.bandStartPct}%`, right: '8%' }} /><div className="byou" style={{ left: `${s.benchmarkBand.youPct}%` }} />
+                  <span className="mono" style={{ position: 'absolute', top: 0, left: `${s.benchmarkBand.youPct - 4}%`, fontSize: 9, color: C.hi }}>{s.benchmarkBand.youLabel}</span>
+                  <span className="mono" style={{ position: 'absolute', top: 0, left: `${s.benchmarkBand.bandStartPct + 4}%`, fontSize: 9, color: C.accent }}>{s.benchmarkBand.bandLabel}</span></div>
+                {!s.cohortHasN ? <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 10 }}>benchmark says · cohort builds as you go</div> : null}
+              </div>
+            ) : null}
+          </div>
+          <button className="cta" style={{ marginTop: 22, width: 240 }} onClick={onOpenFork}><span>Open decision</span><span className="mono">→</span></button>
+        </div>
+        {s.landmine ? <div style={{ marginTop: 22 }}><span className="ovl" style={{ color: C.lo }}>Ahead · {s.landmine.name}</span><div style={{ fontSize: 13, color: C.lo, fontStyle: 'italic', marginTop: 5 }}>{s.landmine.note}</div></div> : null}
+      </div>
+
+      {/* RIGHT: the living inner circle */}
+      <div className="railR">
+        <span className="ovl">Who this touches</span>
+        {circle.length === 0 ? <div className="mono" style={{ fontSize: 11, color: C.lo, marginTop: 14 }}>add people to your circle</div> : null}
+        {circle.slice(0, 5).map((p) => (
+          <div key={p.id} style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+            <div className="disc">{(p.display_name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
+            <div><div style={{ fontSize: 13.5, fontWeight: 600 }}>{p.display_name}</div><div style={{ fontSize: 12, color: C.mid }}>{[p.title, p.company].filter(Boolean).join(' · ')}</div></div>
+          </div>
+        ))}
+        <hr style={{ border: 0, height: 1, background: C.line, margin: '20px 0 10px' }} />
+        <div className="ovl" style={{ color: C.lo, lineHeight: 1.6 }}>Re-ranks the moment<br />your direction changes</div>
+      </div>
+    </div>
+  );
+}
+
 export default function PathRoomApp() {
   const { user } = useAuth();
   const userId = user?.id;
@@ -188,6 +275,7 @@ export default function PathRoomApp() {
   const [ledger, setLedger] = useState<LedgerEntry[]>([]);
   const [view, setView] = useState<'path' | 'decision' | 'ledger'>('path');
   const [busy, setBusy] = useState(false);
+  const isDesktop = useIsDesktop();
 
   async function load() {
     if (!userId) return;
@@ -233,7 +321,9 @@ export default function PathRoomApp() {
 
   return (
     <div className="prr"><style>{css}</style>
-      {view === 'path' && session ? <PathScreen s={session} circle={circle} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} /> : null}
+      {view === 'path' && session ? (isDesktop
+        ? <DesktopHome s={session} circle={circle} ledger={ledger} onOpenFork={() => setView('decision')} />
+        : <PathScreen s={session} circle={circle} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} />) : null}
       {view === 'decision' && session ? <DecisionRoom s={session} busy={busy} onCommit={goCommit} onBack={() => setView('path')} /> : null}
       {view === 'ledger' ? <Ledger entries={ledger} /> : null}
       <div className="nav">
