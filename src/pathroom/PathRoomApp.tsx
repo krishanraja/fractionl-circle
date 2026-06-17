@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { C, FONT, MONO } from './tokens';
 import { computeSession, NEXT_FORK, forkStageKey, type SessionRead, type Segment, type ForkDomain, type TheRead, type LedgerEntry } from './engine';
-import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, type CirclePerson } from './data';
+import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, extractRead, type CirclePerson } from './data';
 
 const css = `
 .prr * { box-sizing:border-box; margin:0; padding:0; }
@@ -160,9 +160,11 @@ function Ledger({ entries }: { entries: LedgerEntry[] }) {
 const SEG_Q = ['Just left a senior role', 'A few months in, finding my feet', 'Established, scaling a portfolio', 'Still in a role, exploring'];
 const FN_Q = ['Marketing', 'Finance', 'Revenue', 'Operations', 'Product', 'People'];
 
-function Onboarding({ onDone }: { onDone: (segment: Segment, fn: string) => void }) {
+function Onboarding({ onDone, onDescribe }: { onDone: (segment: Segment, fn: string) => void; onDescribe: (text: string) => Promise<void> }) {
   const [step, setStep] = useState(0);
   const [seg, setSeg] = useState<string | null>(null);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '40px 20px' }}>
       <span className="ovl">A couple of quick things</span>
@@ -172,6 +174,15 @@ function Onboarding({ onDone }: { onDone: (segment: Segment, fn: string) => void
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 18 }}>
             {SEG_Q.map((q) => <button key={q} className={'pill' + (seg === q ? ' pillSel' : '')} onClick={() => { setSeg(q); setStep(1); }}>{q}</button>)}
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '22px 0 12px' }}>
+            <div style={{ flex: 1, height: 1, background: C.line }} /><span className="mono" style={{ fontSize: 10, color: C.lo, letterSpacing: '0.1em' }}>OR DESCRIBE IT</span><div style={{ flex: 1, height: 1, background: C.line }} />
+          </div>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Left my VP Marketing role 4 months ago, one client, not sure who to chase next."
+            style={{ width: '100%', minHeight: 84, background: C.panel, border: `1px solid ${C.line2}`, borderRadius: 8, padding: '12px 13px', color: C.hi, fontSize: 13.5, lineHeight: 1.5, fontFamily: FONT, resize: 'none' }} />
+          <button className="cta" disabled={busy || !text.trim()} style={{ marginTop: 10, opacity: busy || !text.trim() ? 0.5 : 1 }}
+            onClick={async () => { setBusy(true); try { await onDescribe(text); } finally { setBusy(false); } }}>
+            <span>{busy ? 'reading your situation…' : 'Read me'}</span><span className="mono">›</span>
+          </button>
         </>
       ) : (
         <>
@@ -290,11 +301,14 @@ export default function PathRoomApp() {
 
   if (phase === 'onboarding') {
     return <div className="prr"><style>{css}</style>
-      <Onboarding onDone={async (segment, fn) => {
-        if (!userId) return;
-        await upsertRead(userId, { segment, function: fn, lit_fork_domain: segment === 'seasoned' ? 'scaling_leverage' : 'icp_positioning' });
-        await load();
-      }} /></div>;
+      <Onboarding
+        onDone={async (segment, fn) => {
+          if (!userId) return;
+          await upsertRead(userId, { segment, function: fn, lit_fork_domain: segment === 'seasoned' ? 'scaling_leverage' : 'icp_positioning' });
+          await load();
+        }}
+        onDescribe={async (text) => { await extractRead(text); await load(); }}
+      /></div>;
   }
 
   const goCommit = async (branchTitle: string) => {

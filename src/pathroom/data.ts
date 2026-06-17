@@ -60,6 +60,12 @@ export async function getInnerCircle(userId: string): Promise<CirclePerson[]> {
   return (data as CirclePerson[]) ?? [];
 }
 
+// The smart onboarding path: infer the Read from the user's own words (Gemini).
+export async function extractRead(text: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('extract-read', { body: { text } });
+  if (error) throw error;
+}
+
 // Onboarding pill answers -> the_read fields.
 export function segmentFromAnswer(a: string): Segment {
   if (a.startsWith('Just left') || a.startsWith('A few months')) return 'new';
