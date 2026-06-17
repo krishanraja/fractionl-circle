@@ -18,13 +18,12 @@ Deno.test('recencyDays', () => {
 
 Deno.test('candidateFacts keeps nulls and shapes the signal', () => {
   const f = candidateFacts(
-    { warmth: 0.8, response_rate: null, last_interaction_at: null, source: 'referral' },
+    { warmth: 0.8, response_rate: null, last_interaction_at: null },
     null,
   );
   eq(f.warmth, 0.8, 'warmth');
   eq(f.response_rate, null, 'response_rate kept null');
   eq(f.recency_days, null, 'recency null');
-  eq(f.source, 'referral', 'source');
   eq(f.signal, null, 'no signal');
 
   const g = candidateFacts({}, { kind: 'job_change', headline: 'New CFO at Acme', occurred_at: '2026-06-01' });

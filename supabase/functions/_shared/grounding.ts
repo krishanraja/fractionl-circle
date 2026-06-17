@@ -29,7 +29,6 @@ export const candidateFacts = (
     warmth?: number | null;
     response_rate?: number | null;
     last_interaction_at?: string | null;
-    source?: string | null;
   },
   signal: PersonSignal | null,
   now?: number,
@@ -37,7 +36,6 @@ export const candidateFacts = (
   warmth: p.warmth ?? null,
   response_rate: p.response_rate ?? null,
   recency_days: recencyDays(p.last_interaction_at, now),
-  source: p.source ?? null,
   signal: signal
     ? { kind: signal.kind, headline: signal.headline, occurred_at: signal.occurred_at ?? null }
     : null,
