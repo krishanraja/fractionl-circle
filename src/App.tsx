@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import ShareContact from "./pages/ShareContact";
 import TryDemo from "./pages/TryDemo";
 import MarketingLanding from "./pages/MarketingLanding";
+import PathRoomApp from "./pathroom/PathRoomApp";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
@@ -38,6 +39,10 @@ const MARKETING_ENABLED = import.meta.env.VITE_MARKETING_LANDING_ENABLED === 'tr
 // =false to fall back to the original FirstVoice. Only affects users who still
 // need onboarding, so existing accounts are untouched.
 const IDENTITY_FIRSTRUN_ENABLED = import.meta.env.VITE_IDENTITY_FIRSTRUN_ENABLED !== 'false';
+
+// The Path Room (re-visioned product). Default OFF: the existing app is untouched.
+// When true, /path renders the new adaptive decisioning surface.
+const PATH_ROOM_ENABLED = import.meta.env.VITE_PATH_ROOM_ENABLED === 'true';
 
 /**
  * Public /auth route. Renders the working AuthPage (Google OAuth + email).
@@ -163,6 +168,7 @@ function AppRoutes() {
         <Route path="/share-contact" element={<ShareContact />} />
         <Route path="/try" element={<TryDemo />} />
         <Route path="/auth" element={<AuthRoute />} />
+        {PATH_ROOM_ENABLED ? <Route path="/path" element={<PathRoomApp />} /> : null}
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
