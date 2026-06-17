@@ -41,7 +41,6 @@ interface Person {
   last_interaction_at: string | null;
   warmth: number | null;
   response_rate: number | null;
-  source: string | null;
 }
 
 interface LlmMatch {
@@ -136,7 +135,7 @@ Return JSON: { "matches": [ { "candidate_id": string, "role": "buyer" | "amplifi
 Rules:
 - Pick from candidates only — use their exact candidate_id string.
 - "role" must reflect this person's actual relationship to THIS offer based on their title/company. When unsure between buyer and amplifier, prefer the one the data supports; default to "buyer" only if they plausibly have the pain.
-- Each candidate carries real relationship facts: warmth and response_rate (0..1), recency_days since last contact, source (how they entered the network), and signal (their most recent event). USE THESE. "why now" must be anchored to one of them (a recent signal, low recency_days, high warmth). If no fact supports urgency, do not manufacture it.
+- Each candidate carries real relationship facts: warmth and response_rate (0..1), recency_days since last contact, and signal (their most recent event). USE THESE. "why now" must be anchored to one of them (a recent signal, low recency_days, high warmth). If no fact supports urgency, do not manufacture it.
 - "rationale" is one tight sentence: why this person, in this role, why now, grounded in the facts above. For amplifiers, say WHO they reach. For sharpeners, say what they'd sharpen.
 - "warm_path" must cite a SPECIFIC shared fact (a prior shared company, where they met, a mutual contact, a real event, or a recent signal). NEVER use role or category equivalence as a warm path: "both are fractional executives", "shared title", "same role" are NOT warm paths and will be rejected by the server. If no specific fact supports a warm path, return both fields null. A null warm_path is correct and expected when the data is thin.
 - "draft" is a short (under 450 chars) message the user could plausibly send, MATCHED TO THE ROLE: a buyer gets a value-led ask tied to their pain; an amplifier gets an intro/collaboration ask (never pitch them as if they're the customer); a sharpener gets a "can I run this by you" ask. Use their first name, reference the warm path, ask ONE clear thing. No "I hope this finds you well" schlock.
@@ -218,7 +217,7 @@ export async function runMatchEngineForUser(
 
   const { data: circle, error: circleErr } = await supabase
     .from('circle_person')
-    .select('id, display_name, company, title, primary_email, linkedin_url, last_interaction_at, warmth, response_rate, source')
+    .select('id, display_name, company, title, primary_email, linkedin_url, last_interaction_at, warmth, response_rate')
     .eq('user_id', userId)
     .order('last_interaction_at', { ascending: false })
     .limit(500);
