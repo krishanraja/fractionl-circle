@@ -26,7 +26,7 @@ export const MobileHeader = ({
       <div className="flex items-center justify-between px-4 h-14">
         {/* Logo */}
         <img 
-          src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png" 
+          src="/brand/fractionl-wordmark.png" 
           alt="Fractionl.ai" 
           className="h-6"
         />

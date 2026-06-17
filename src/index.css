@@ -34,13 +34,13 @@
     --foreground-muted: 30 6% 56%;
 
     /* Brand violet — the one rationed accent (restores documented #994CCC) */
-    --primary: 284 44% 48%;
-    --primary-light: 284 46% 56%;
-    --primary-foreground: 38 30% 97%;
-    --primary-muted: 284 40% 92%;
+    --primary: 37 73% 56%;
+    --primary-light: 37 78% 64%;
+    --primary-foreground: 30 45% 8%;
+    --primary-muted: 37 50% 92%;
 
-    --accent: 284 44% 48%;
-    --accent-foreground: 38 30% 97%;
+    --accent: 37 73% 56%;
+    --accent-foreground: 30 45% 8%;
 
     /* Semantic Colors - calm green, calm amber, muted struck-red */
     --success: 142 40% 38%;
@@ -61,7 +61,7 @@
     /* Form Elements - warm, low-contrast */
     --border: 34 18% 84%;
     --input: 34 20% 88%;
-    --ring: 284 44% 48%;
+    --ring: 37 73% 56%;
 
     /* Legacy Mappings */
     --secondary: 36 24% 91%;
@@ -98,12 +98,12 @@
     /* Sidebar (for desktop) */
     --sidebar-background: 36 30% 98%;
     --sidebar-foreground: 28 8% 38%;
-    --sidebar-primary: 284 44% 48%;
-    --sidebar-primary-foreground: 38 30% 97%;
+    --sidebar-primary: 37 73% 56%;
+    --sidebar-primary-foreground: 30 45% 8%;
     --sidebar-accent: 36 24% 91%;
     --sidebar-accent-foreground: 24 16% 12%;
     --sidebar-border: 34 18% 84%;
-    --sidebar-ring: 284 44% 48%;
+    --sidebar-ring: 37 73% 56%;
   }
 
   /* Dark mode override - Walnut desk, cream paper as the bright surface */
@@ -116,13 +116,13 @@
     --foreground-secondary: 34 12% 70%;
     --foreground-muted: 32 8% 52%;
 
-    --primary: 280 44% 54%;
-    --primary-light: 280 48% 63%;
-    --primary-muted: 280 32% 26%;
+    --primary: 37 73% 56%;
+    --primary-light: 37 78% 64%;
+    --primary-muted: 37 30% 22%;
 
     /* Dark also overrides accent/ring (else they fall through to the light :root) */
-    --accent: 280 44% 54%;
-    --ring: 280 44% 54%;
+    --accent: 37 73% 56%;
+    --ring: 37 73% 56%;
 
     --success: 142 36% 50%;
     --success-muted: 142 30% 18%;
@@ -153,8 +153,8 @@
 
     --sidebar-background: 28 16% 10%;
     --sidebar-foreground: 34 12% 70%;
-    --sidebar-primary: 280 44% 54%;
-    --sidebar-ring: 280 44% 54%;
+    --sidebar-primary: 37 73% 56%;
+    --sidebar-ring: 37 73% 56%;
     --sidebar-accent: 28 14% 16%;
     --sidebar-accent-foreground: 38 28% 92%;
     --sidebar-border: 28 12% 22%;

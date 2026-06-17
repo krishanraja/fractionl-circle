@@ -79,7 +79,7 @@ export default function MarketingLanding() {
           className="flex items-center justify-between pt-8 pb-2"
         >
           <img
-            src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
+            src="/brand/fractionl-wordmark.png"
             alt="Circle"
             className="h-7"
           />

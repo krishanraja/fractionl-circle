@@ -42,7 +42,7 @@ export const PageHeader = ({
       >
         <div className="flex items-center justify-between px-4 h-14">
           <img
-            src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
+            src="/brand/fractionl-wordmark.png"
             alt="Fractionl"
             className="h-6"
           />
@@ -77,7 +77,7 @@ export const PageHeader = ({
     >
       <div className="flex items-center justify-between h-14 px-4">
         <img
-          src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
+          src="/brand/fractionl-wordmark.png"
           alt="Fractionl"
           className="h-6"
         />

@@ -35,7 +35,7 @@ export const DesktopSidebar = ({ currentTab, onTabChange }: DesktopSidebarProps)
     <aside className="fixed left-0 top-0 bottom-0 w-60 bg-background border-r border-border flex flex-col z-40">
       <div className="flex items-center h-16 px-6">
         <img
-          src="/lovable-uploads/30f9efde-5245-4c24-b26e-1e368f4a5a1b.png"
+          src="/brand/fractionl-wordmark.png"
           alt="Fractionl"
           className="h-6"
         />
