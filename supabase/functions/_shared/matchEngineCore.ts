@@ -8,6 +8,7 @@
 import { getUserTier, QUOTAS, countMatchesSince, startOfWeekIso } from './tiers.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from './aiPersonality.ts';
 import { loadProfileContext, profilePromptBlock } from './profileContext.ts';
+import { candidateFacts, groundWarmPath, type PersonSignal } from './grounding.ts';
 
 interface Idea {
   id: string;
@@ -37,6 +38,9 @@ interface Person {
   primary_email: string | null;
   linkedin_url: string | null;
   last_interaction_at: string | null;
+  warmth: number | null;
+  response_rate: number | null;
+  source: string | null;
 }
 
 interface LlmMatch {
@@ -116,6 +120,7 @@ const buildPrompt = (
   candidates: Person[],
   personalitySuffix = '',
   profileBlock = '',
+  signalByPerson: Map<string, PersonSignal> = new Map(),
 ): { system: string; user: string } => {
   const system = `You match a fractional executive's Idea (an offer they want to sell) to the right people in their personal network. The key insight: the most valuable person is often NOT a buyer. Classify each pick by ROLE:
 
@@ -130,8 +135,9 @@ Return JSON: { "matches": [ { "candidate_id": string, "role": "buyer" | "amplifi
 Rules:
 - Pick from candidates only — use their exact candidate_id string.
 - "role" must reflect this person's actual relationship to THIS offer based on their title/company. When unsure between buyer and amplifier, prefer the one the data supports; default to "buyer" only if they plausibly have the pain.
-- "rationale" is one tight sentence: why this person, in this role, why now. For amplifiers, say WHO they reach. For sharpeners, say what they'd sharpen.
-- "warm_path" is how the user plausibly knows them (prior company, shared title, etc.). If the raw data doesn't support a warm path, return both fields as null.
+- Each candidate carries real relationship facts: warmth and response_rate (0..1), recency_days since last contact, source (how they entered the network), and signal (their most recent event). USE THESE. "why now" must be anchored to one of them (a recent signal, low recency_days, high warmth). If no fact supports urgency, do not manufacture it.
+- "rationale" is one tight sentence: why this person, in this role, why now, grounded in the facts above. For amplifiers, say WHO they reach. For sharpeners, say what they'd sharpen.
+- "warm_path" must cite a SPECIFIC shared fact (a prior shared company, where they met, a mutual contact, a real event, or a recent signal). NEVER use role or category equivalence as a warm path: "both are fractional executives", "shared title", "same role" are NOT warm paths and will be rejected by the server. If no specific fact supports a warm path, return both fields null. A null warm_path is correct and expected when the data is thin.
 - "draft" is a short (under 450 chars) message the user could plausibly send, MATCHED TO THE ROLE: a buyer gets a value-led ask tied to their pain; an amplifier gets an intro/collaboration ask (never pitch them as if they're the customer); a sharpener gets a "can I run this by you" ask. Use their first name, reference the warm path, ask ONE clear thing. No "I hope this finds you well" schlock.
 - "channel" defaults to linkedin_dm if a linkedin_url exists, else email if primary_email exists, else linkedin_dm.
 - Be conservative. If no one is a credible fit in any role, return an empty array.${profileBlock}${personalitySuffix}`;
@@ -152,6 +158,10 @@ Rules:
       title: p.title,
       has_email: !!p.primary_email,
       has_linkedin: !!p.linkedin_url,
+      // Real relationship facts so "why this person, why now" is grounded, not
+      // invented. warmth/response_rate 0..1; recency_days since last contact;
+      // source = how they entered the circle; signal = most recent event.
+      ...candidateFacts(p, signalByPerson.get(p.id) ?? null),
     })),
   });
   return { system, user };
@@ -208,7 +218,7 @@ export async function runMatchEngineForUser(
 
   const { data: circle, error: circleErr } = await supabase
     .from('circle_person')
-    .select('id, display_name, company, title, primary_email, linkedin_url, last_interaction_at')
+    .select('id, display_name, company, title, primary_email, linkedin_url, last_interaction_at, warmth, response_rate, source')
     .eq('user_id', userId)
     .order('last_interaction_at', { ascending: false })
     .limit(500);
@@ -239,18 +249,27 @@ export async function runMatchEngineForUser(
   // Recent INTERNAL signals (warmth-decay / mention, written by generate-signals)
   // give their person a small prefilter nudge. Best-effort: a signals read error
   // must never break matching — we just fall back to an empty set (no nudge).
+  // The signal also gives the model a real "why now" per person (the most recent
+  // event), so urgency is grounded in a fact rather than invented.
   const signalPersonIds = new Set<string>();
+  const signalByPerson = new Map<string, PersonSignal>();
   try {
     const signalsSince = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString();
     const { data: recentSignals } = await supabase
       .from('signals')
-      .select('circle_person_id')
+      .select('circle_person_id, kind, headline, occurred_at, created_at')
       .eq('user_id', userId)
       .not('circle_person_id', 'is', null)
       .gte('created_at', signalsSince)
+      .order('created_at', { ascending: false })
       .limit(500);
-    for (const s of (recentSignals ?? []) as Array<{ circle_person_id: string | null }>) {
-      if (s.circle_person_id) signalPersonIds.add(s.circle_person_id);
+    for (const s of (recentSignals ?? []) as Array<{ circle_person_id: string | null; kind: string; headline: string; occurred_at: string | null }>) {
+      if (!s.circle_person_id) continue;
+      signalPersonIds.add(s.circle_person_id);
+      // Rows arrive newest-first, so the first one seen per person is the latest.
+      if (!signalByPerson.has(s.circle_person_id)) {
+        signalByPerson.set(s.circle_person_id, { kind: s.kind, headline: s.headline, occurred_at: s.occurred_at });
+      }
     }
   } catch (_e) {
     // No signals table read access / transient error: proceed with no nudge.
@@ -267,7 +286,7 @@ export async function runMatchEngineForUser(
   for (const idea of ideas as Idea[]) {
     const candidates = prefilter(idea, circle as Person[], signalPersonIds);
     if (!candidates.length) continue;
-    const { system, user } = buildPrompt(idea, candidates, personalitySuffix, profileBlock);
+    const { system, user } = buildPrompt(idea, candidates, personalitySuffix, profileBlock, signalByPerson);
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -320,7 +339,9 @@ export async function runMatchEngineForUser(
       idea_id: idea.id,
       circle_person_id: m.candidate_id,
       role: coerceRole(m.role),
-      warm_path: m.warm_path ?? null,
+      // Server-side backstop: null any warm_path that restates role-equivalence
+      // with no specific fact, even if the model ignored the prompt rule.
+      warm_path: groundWarmPath(m.warm_path),
       rationale: m.rationale,
       score: Math.max(0, Math.min(1, Number(m.score) || 0)),
       state: 'new' as const,
