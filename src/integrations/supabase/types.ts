@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       activity_logs: {
@@ -97,6 +122,51 @@ export type Database = {
           question?: string
           response?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      benchmarks: {
+        Row: {
+          function: string | null
+          id: string
+          metric: string
+          niche: string | null
+          refreshed_at: string
+          source_ref: string | null
+          source_tier: string
+          stage: string | null
+          unit: string | null
+          value_high: number | null
+          value_low: number | null
+          value_mid: number | null
+        }
+        Insert: {
+          function?: string | null
+          id?: string
+          metric: string
+          niche?: string | null
+          refreshed_at?: string
+          source_ref?: string | null
+          source_tier?: string
+          stage?: string | null
+          unit?: string | null
+          value_high?: number | null
+          value_low?: number | null
+          value_mid?: number | null
+        }
+        Update: {
+          function?: string | null
+          id?: string
+          metric?: string
+          niche?: string | null
+          refreshed_at?: string
+          source_ref?: string | null
+          source_tier?: string
+          stage?: string | null
+          unit?: string | null
+          value_high?: number | null
+          value_low?: number | null
+          value_mid?: number | null
         }
         Relationships: []
       }
@@ -243,6 +313,63 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      comparable_cohort: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          decision_sequence: Json | null
+          fork_domain: string | null
+          function: string | null
+          id: string
+          motivation_type: string | null
+          n_count: number
+          niche: string | null
+          revenue_band: string | null
+          source: string
+          source_ref: string | null
+          stage_band: string | null
+          tenure_band: string | null
+          what_happened: string | null
+          what_they_chose: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          decision_sequence?: Json | null
+          fork_domain?: string | null
+          function?: string | null
+          id?: string
+          motivation_type?: string | null
+          n_count?: number
+          niche?: string | null
+          revenue_band?: string | null
+          source?: string
+          source_ref?: string | null
+          stage_band?: string | null
+          tenure_band?: string | null
+          what_happened?: string | null
+          what_they_chose?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          decision_sequence?: Json | null
+          fork_domain?: string | null
+          function?: string | null
+          id?: string
+          motivation_type?: string | null
+          n_count?: number
+          niche?: string | null
+          revenue_band?: string | null
+          source?: string
+          source_ref?: string | null
+          stage_band?: string | null
+          tenure_band?: string | null
+          what_happened?: string | null
+          what_they_chose?: string | null
         }
         Relationships: []
       }
@@ -546,6 +673,48 @@ export type Database = {
         }
         Relationships: []
       }
+      decision_ledger: {
+        Row: {
+          benchmark_snapshot: Json | null
+          branches_considered: Json | null
+          chosen_branch: string | null
+          committed_at: string
+          decision_one_liner: string
+          fork_domain: string | null
+          id: string
+          outcome: string | null
+          outcome_logged_at: string | null
+          reasoning: string | null
+          user_id: string
+        }
+        Insert: {
+          benchmark_snapshot?: Json | null
+          branches_considered?: Json | null
+          chosen_branch?: string | null
+          committed_at?: string
+          decision_one_liner: string
+          fork_domain?: string | null
+          id?: string
+          outcome?: string | null
+          outcome_logged_at?: string | null
+          reasoning?: string | null
+          user_id: string
+        }
+        Update: {
+          benchmark_snapshot?: Json | null
+          branches_considered?: Json | null
+          chosen_branch?: string | null
+          committed_at?: string
+          decision_one_liner?: string
+          fork_domain?: string | null
+          id?: string
+          outcome?: string | null
+          outcome_logged_at?: string | null
+          reasoning?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       engagement_analytics: {
         Row: {
           created_at: string
@@ -657,6 +826,42 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      landmines: {
+        Row: {
+          description: string | null
+          fork_domain: string | null
+          function: string | null
+          id: string
+          name: string
+          niche: string | null
+          source_ref: string | null
+          survivor_pattern: string | null
+          trigger_position: string | null
+        }
+        Insert: {
+          description?: string | null
+          fork_domain?: string | null
+          function?: string | null
+          id?: string
+          name: string
+          niche?: string | null
+          source_ref?: string | null
+          survivor_pattern?: string | null
+          trigger_position?: string | null
+        }
+        Update: {
+          description?: string | null
+          fork_domain?: string | null
+          function?: string | null
+          id?: string
+          name?: string
+          niche?: string | null
+          source_ref?: string | null
+          survivor_pattern?: string | null
+          trigger_position?: string | null
         }
         Relationships: []
       }
@@ -1153,6 +1358,36 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           bucket_key: string
@@ -1549,7 +1784,10 @@ export type Database = {
           created_at: string
           generation_source: string | null
           id: string
+          is_publishable: boolean
           model: string | null
+          preview_text: string | null
+          public_slug: string | null
           stats: Json | null
           text_body: string
           text_length: number | null
@@ -1561,7 +1799,10 @@ export type Database = {
           created_at?: string
           generation_source?: string | null
           id?: string
+          is_publishable?: boolean
           model?: string | null
+          preview_text?: string | null
+          public_slug?: string | null
           stats?: Json | null
           text_body: string
           text_length?: number | null
@@ -1573,7 +1814,10 @@ export type Database = {
           created_at?: string
           generation_source?: string | null
           id?: string
+          is_publishable?: boolean
           model?: string | null
+          preview_text?: string | null
+          public_slug?: string | null
           stats?: Json | null
           text_body?: string
           text_length?: number | null
@@ -1941,6 +2185,63 @@ export type Database = {
           },
         ]
       }
+      the_read: {
+        Row: {
+          client_count: number | null
+          current_position: string | null
+          function: string | null
+          hold_position: boolean
+          lit_fork_domain: string | null
+          manual_override: boolean
+          motivation_type: string | null
+          niche: string | null
+          offer_one_liner: string | null
+          revenue_band: string | null
+          segment: string | null
+          segment_confidence: number | null
+          stage: string | null
+          tenure_band: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_count?: number | null
+          current_position?: string | null
+          function?: string | null
+          hold_position?: boolean
+          lit_fork_domain?: string | null
+          manual_override?: boolean
+          motivation_type?: string | null
+          niche?: string | null
+          offer_one_liner?: string | null
+          revenue_band?: string | null
+          segment?: string | null
+          segment_confidence?: number | null
+          stage?: string | null
+          tenure_band?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_count?: number | null
+          current_position?: string | null
+          function?: string | null
+          hold_position?: boolean
+          lit_fork_domain?: string | null
+          manual_override?: boolean
+          motivation_type?: string | null
+          niche?: string | null
+          offer_one_liner?: string | null
+          revenue_band?: string | null
+          segment?: string | null
+          segment_confidence?: number | null
+          stage?: string | null
+          tenure_band?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       usage_tracking: {
         Row: {
           count: number
@@ -2280,11 +2581,17 @@ export type Database = {
           created_at: string
           currency: string | null
           email: string | null
+          first_run_completed_at: string | null
+          first_run_transcript: string | null
           fiscal_year_start: number | null
           full_name: string | null
           id: string
+          identity_statement: string | null
           industry: string | null
+          journey_stage: string | null
           last_active_at: string | null
+          motivation_type: string | null
+          offer_maturity: string | null
           onboarding_completed: boolean | null
           onboarding_completed_at: string | null
           onboarding_step: number | null
@@ -2292,6 +2599,8 @@ export type Database = {
           revenue_range: string | null
           role: string | null
           service_types: string[] | null
+          signature_win: string | null
+          target_buyer: string | null
           target_market: string | null
           timezone: string | null
           total_sessions: number | null
@@ -2306,11 +2615,17 @@ export type Database = {
           created_at?: string
           currency?: string | null
           email?: string | null
+          first_run_completed_at?: string | null
+          first_run_transcript?: string | null
           fiscal_year_start?: number | null
           full_name?: string | null
           id: string
+          identity_statement?: string | null
           industry?: string | null
+          journey_stage?: string | null
           last_active_at?: string | null
+          motivation_type?: string | null
+          offer_maturity?: string | null
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
           onboarding_step?: number | null
@@ -2318,6 +2633,8 @@ export type Database = {
           revenue_range?: string | null
           role?: string | null
           service_types?: string[] | null
+          signature_win?: string | null
+          target_buyer?: string | null
           target_market?: string | null
           timezone?: string | null
           total_sessions?: number | null
@@ -2332,11 +2649,17 @@ export type Database = {
           created_at?: string
           currency?: string | null
           email?: string | null
+          first_run_completed_at?: string | null
+          first_run_transcript?: string | null
           fiscal_year_start?: number | null
           full_name?: string | null
           id?: string
+          identity_statement?: string | null
           industry?: string | null
+          journey_stage?: string | null
           last_active_at?: string | null
+          motivation_type?: string | null
+          offer_maturity?: string | null
           onboarding_completed?: boolean | null
           onboarding_completed_at?: string | null
           onboarding_step?: number | null
@@ -2344,6 +2667,8 @@ export type Database = {
           revenue_range?: string | null
           role?: string | null
           service_types?: string[] | null
+          signature_win?: string | null
+          target_buyer?: string | null
           target_market?: string | null
           timezone?: string | null
           total_sessions?: number | null
@@ -2483,12 +2808,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _dsar_assert_self: {
+        Args: { target_user_id: string }
+        Returns: undefined
+      }
+      _dsar_retained_tables: { Args: never; Returns: string[] }
+      _dsar_user_tables: { Args: never; Returns: string[] }
       check_rate_limit: {
         Args: { p_key: string; p_max: number; p_window_seconds: number }
         Returns: boolean
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
-      erase_user_data: { Args: { target_user_id: string }; Returns: boolean }
+      enforce_data_retention: { Args: never; Returns: Json }
+      erase_user_data: { Args: { target_user_id: string }; Returns: Json }
       export_user_data: { Args: { target_user_id: string }; Returns: Json }
       get_user_google_tokens: {
         Args: { target_user_id: string }
@@ -2762,6 +3094,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
