@@ -9,7 +9,7 @@ import { runMatchEngineForUser } from '../_shared/matchEngineCore.ts';
 const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? '';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') ?? '';
+const HAS_LLM = !!(Deno.env.get('OPENAI_API_KEY') || Deno.env.get('LOVABLE_API_KEY') || Deno.env.get('ANTHROPIC_API_KEY'));
 
 const MAX_USERS_PER_RUN = 200;
 
@@ -21,8 +21,8 @@ Deno.serve(async (req) => {
   if (!CRON_SECRET || secret !== CRON_SECRET) {
     return new Response('Unauthorized', { status: 401 });
   }
-  if (!OPENAI_API_KEY) {
-    return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),
+  if (!HAS_LLM) {
+    return new Response(JSON.stringify({ error: 'No LLM provider configured' }),
       { status: 503, headers: { 'Content-Type': 'application/json' } });
   }
 
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
 
   for (const userId of targetUsers) {
     try {
-      const result = await runMatchEngineForUser(userId, admin, OPENAI_API_KEY);
+      const result = await runMatchEngineForUser(userId, admin);
       processed++;
       totalMatches += result.matchesCreated;
       totalDuplicates += result.duplicatesSkipped;

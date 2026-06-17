@@ -13,8 +13,8 @@ Deno.serve(async (req) => {
     const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`run-match-engine:${userId}`, 6, 60_000);
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
+    const hasLlm = !!(Deno.env.get('OPENAI_API_KEY') || Deno.env.get('LOVABLE_API_KEY') || Deno.env.get('ANTHROPIC_API_KEY'));
+    if (!hasLlm) {
       return new Response(JSON.stringify({ error: 'Service unavailable' }), {
         status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
     const ideaIds: string[] | undefined = Array.isArray(body?.idea_ids) ? body.idea_ids : undefined;
 
-    const result = await runMatchEngineForUser(userId, supabase, openaiApiKey, { ideaIds });
+    const result = await runMatchEngineForUser(userId, supabase, { ideaIds });
 
     return new Response(JSON.stringify({
       matches_created: result.matchesCreated,
