@@ -9,6 +9,7 @@ import { getUserTier, QUOTAS, countMatchesSince, startOfWeekIso } from './tiers.
 import { loadUserAiPreferences, personalitySystemSuffix } from './aiPersonality.ts';
 import { loadProfileContext, profilePromptBlock } from './profileContext.ts';
 import { candidateFacts, groundWarmPath, type PersonSignal } from './grounding.ts';
+import { chatJSON } from './llm.ts';
 
 interface Idea {
   id: string;
@@ -170,7 +171,6 @@ Rules:
 export async function runMatchEngineForUser(
   userId: string,
   supabase: any,
-  openaiApiKey: string,
   options?: { ideaIds?: string[] }
 ): Promise<MatchEngineResult> {
   // Tier quota gate. Free users get 1 Match / week; Operator 21 / week
@@ -288,31 +288,15 @@ export async function runMatchEngineForUser(
     if (!candidates.length) continue;
     const { system, user } = buildPrompt(idea, candidates, personalitySuffix, profileBlock, signalByPerson);
 
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${openaiApiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
-        store: false,
-      }),
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!resp.ok) {
-      errors.push(`idea ${idea.id}: OpenAI ${resp.status}`);
-      continue;
-    }
-    const result = await resp.json();
+    // Provider-fallback (OpenAI -> Gemini gateway -> Anthropic). One catch covers
+    // both a total provider failure and malformed JSON, so a single bad idea is
+    // skipped rather than aborting the run.
     let parsed: { matches?: LlmMatch[] };
     try {
-      parsed = JSON.parse(result.choices[0].message.content);
-    } catch {
-      errors.push(`idea ${idea.id}: malformed JSON`);
+      const { content } = await chatJSON({ system, user, temperature: 0.3 });
+      parsed = JSON.parse(content);
+    } catch (e) {
+      errors.push(`idea ${idea.id}: ${e instanceof Error ? e.message : 'LLM error'}`);
       continue;
     }
 
