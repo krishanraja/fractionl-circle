@@ -122,7 +122,7 @@ function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: Session
   );
 }
 
-function DecisionRoom({ s, busy, onCommit, onBack }: { s: SessionRead; busy: boolean; onCommit: (branchTitle: string) => void; onBack: () => void }) {
+function DecisionRoom({ s, busy, onCommit, onBack, isDesktop }: { s: SessionRead; busy: boolean; onCommit: (branchTitle: string) => void; onBack: () => void; isDesktop?: boolean }) {
   const [brief, setBrief] = useState<DecisionBrief | null>(null);
   const [briefLoading, setBriefLoading] = useState(true);
   useEffect(() => {
@@ -131,10 +131,10 @@ function DecisionRoom({ s, busy, onCommit, onBack }: { s: SessionRead; busy: boo
     return () => { live = false; };
   }, [s.litFork]);
   return (
-    <div style={{ maxWidth: 460, margin: '0 auto', padding: '20px 18px 90px' }}>
+    <div style={{ maxWidth: isDesktop ? 980 : 460, margin: '0 auto', padding: isDesktop ? '30px 40px 90px' : '20px 18px 90px' }}>
       <button className="navbtn" style={{ paddingLeft: 0 }} onClick={onBack}>‹ the path</button>
       <div className="ovl" style={{ color: C.accent, marginTop: 8 }}>Decision · {s.litForkLabel}</div>
-      <div className="decTitle" style={{ marginTop: 8, fontSize: 22 }}>Pick the one you would commit to.</div>
+      <div className="decTitle" style={{ marginTop: 8, fontSize: isDesktop ? 28 : 22 }}>Pick the one you would commit to.</div>
       <div className="panel" style={{ background: C.panel2, padding: 15, marginTop: 14 }}>
         {briefLoading ? <div className="mono" style={{ fontSize: 11, color: C.lo }}>reading the room...</div> : brief ? (
           <>
@@ -146,6 +146,7 @@ function DecisionRoom({ s, busy, onCommit, onBack }: { s: SessionRead; busy: boo
           </>
         ) : null}
       </div>
+      <div style={isDesktop ? { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px', marginTop: 4, alignItems: 'start' } : undefined}>
       {s.branches.map((b) => (
         <div key={b.title} className={'branch' + (b.recommended ? ' branchRec' : '')} onClick={() => !busy && onCommit(b.title)}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
@@ -160,6 +161,7 @@ function DecisionRoom({ s, busy, onCommit, onBack }: { s: SessionRead; busy: boo
           <div className="mono" style={{ fontSize: 11, color: b.recommended ? C.accent : C.lo, marginTop: 10 }}>{busy ? 'committing...' : 'commit this →'}</div>
         </div>
       ))}
+      </div>
       <div className="mono" style={{ fontSize: 11, color: C.lo, marginTop: 16, lineHeight: 1.5 }}>Deciding advances your marker and writes the ledger. Nothing is sent.</div>
     </div>
   );
@@ -383,7 +385,7 @@ export default function PathRoomApp() {
       {view === 'path' && session ? (isDesktop
         ? <DesktopHome s={session} circle={circle} ranked={ranked} ledger={ledger} onOpenFork={() => setView('decision')} />
         : <PathScreen s={session} circle={circle} ranked={ranked} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} />) : null}
-      {view === 'decision' && session ? <DecisionRoom s={session} busy={busy} onCommit={goCommit} onBack={() => setView('path')} /> : null}
+      {view === 'decision' && session ? <DecisionRoom s={session} busy={busy} onCommit={goCommit} onBack={() => setView('path')} isDesktop={isDesktop} /> : null}
       {view === 'ledger' ? <Ledger entries={ledger} /> : null}
       <div className="nav">
         <button className={'navbtn' + (view === 'path' ? ' navOn' : '')} onClick={() => setView('path')}>Path</button>
