@@ -60,6 +60,18 @@ export async function getInnerCircle(userId: string): Promise<CirclePerson[]> {
   return (data as CirclePerson[]) ?? [];
 }
 
+// The living inner circle: who + why + role for the current direction. Reads the
+// cache on the_read when it matches the lit fork; otherwise re-ranks (Gemini), which
+// also refreshes the cache. Re-ranks on direction change, cheap on every paint.
+export interface RankedPerson { id: string; name: string; title: string | null; company: string | null; role: string; why: string }
+export async function getRankedInnerCircle(read: TheRead): Promise<RankedPerson[]> {
+  if (Array.isArray(read.inner_circle) && read.inner_circle_fork === read.lit_fork_domain) {
+    return read.inner_circle as RankedPerson[];
+  }
+  const { data } = await supabase.functions.invoke('rank-inner-circle', { body: {} });
+  return ((data as { people?: RankedPerson[] })?.people) ?? [];
+}
+
 // The smart onboarding path: infer the Read from the user's own words (Gemini).
 export async function extractRead(text: string): Promise<void> {
   const { error } = await supabase.functions.invoke('extract-read', { body: { text } });

@@ -17,6 +17,8 @@ export interface TheRead {
   lit_fork_domain: ForkDomain | null;
   hold_position: boolean;
   offer_one_liner: string | null;
+  inner_circle?: unknown;
+  inner_circle_fork?: string | null;
 }
 export interface Benchmark {
   metric: string; function: string | null; niche: string | null; stage: string | null;

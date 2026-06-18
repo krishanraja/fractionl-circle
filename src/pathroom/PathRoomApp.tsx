@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { C, FONT, MONO } from './tokens';
 import { computeSession, NEXT_FORK, forkStageKey, type SessionRead, type Segment, type ForkDomain, type TheRead, type LedgerEntry } from './engine';
-import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, extractRead, type CirclePerson } from './data';
+import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, getRankedInnerCircle, extractRead, type CirclePerson, type RankedPerson } from './data';
 
 const css = `
 .prr * { box-sizing:border-box; margin:0; padding:0; }
@@ -49,6 +49,8 @@ const css = `
 .prr .spineLine { position:absolute; left:4px; top:4px; bottom:8px; width:1px; background:${C.line2}; }
 .prr .srow { position:relative; height:50px; }
 .prr .sdot { position:absolute; left:-18px; top:3px; width:9px; height:9px; border-radius:50%; }
+.prr .role { font-family:${MONO}; font-size:8.5px; letter-spacing:0.12em; color:${C.accent}; border:1px solid ${C.accentEdge}; border-radius:3px; padding:1px 5px; flex:0 0 auto; }
+.prr .why { font-size:12px; color:${C.mid}; line-height:1.42; margin-top:3px; }
 `;
 
 function Gauge({ s }: { s: SessionRead }) {
@@ -67,7 +69,7 @@ function Gauge({ s }: { s: SessionRead }) {
   );
 }
 
-function PathScreen({ s, circle, ledgerCount, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ledgerCount: number; onOpenFork: () => void }) {
+function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ranked: RankedPerson[]; ledgerCount: number; onOpenFork: () => void }) {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '24px 18px 90px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span className="ovl">The Path</span><span className="ovl">{s.pathTitle}</span></div>
@@ -93,15 +95,25 @@ function PathScreen({ s, circle, ledgerCount, onOpenFork }: { s: SessionRead; ci
         <button className="cta" style={{ marginTop: 16 }} onClick={onOpenFork}><span>Open decision</span><span className="mono">→</span></button>
         {!s.cohortHasN ? <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 8 }}>benchmark says · cohort builds as you go</div> : null}
       </div>
-      {circle.length ? (
+      {(ranked.length || circle.length) ? (
         <div style={{ marginTop: 20 }}>
           <div className="ovl">Who this touches</div>
-          {circle.slice(0, 2).map((p) => (
-            <div key={p.id} style={{ display: 'flex', gap: 11, marginTop: 12 }}>
-              <div className="disc">{(p.display_name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
-              <div><div style={{ fontSize: 14, fontWeight: 600 }}>{p.display_name}</div><div style={{ fontSize: 12, color: C.mid }}>{[p.title, p.company].filter(Boolean).join(' · ')}</div></div>
-            </div>
-          ))}
+          {ranked.length
+            ? ranked.slice(0, 3).map((p) => (
+              <div key={p.id} style={{ display: 'flex', gap: 11, marginTop: 13 }}>
+                <div className="disc">{(p.name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</span><span className="role">{p.role}</span></div>
+                  <div className="why">{p.why}</div>
+                </div>
+              </div>
+            ))
+            : circle.slice(0, 2).map((p) => (
+              <div key={p.id} style={{ display: 'flex', gap: 11, marginTop: 12 }}>
+                <div className="disc">{(p.display_name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
+                <div><div style={{ fontSize: 14, fontWeight: 600 }}>{p.display_name}</div><div style={{ fontSize: 12, color: C.mid }}>{[p.title, p.company].filter(Boolean).join(' · ')}</div></div>
+              </div>
+            ))}
         </div>
       ) : null}
       {s.landmine ? <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.line}` }}><span className="ovl" style={{ color: C.lo }}>Ahead · {s.landmine.name}</span><div style={{ fontSize: 12, color: C.lo, fontStyle: 'italic', marginTop: 4, lineHeight: 1.4 }}>{s.landmine.note}</div></div> : null}
@@ -207,7 +219,7 @@ function useIsDesktop() {
   return d;
 }
 
-function DesktopHome({ s, circle, ledger, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ledger: LedgerEntry[]; onOpenFork: () => void }) {
+function DesktopHome({ s, circle, ranked, ledger, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ranked: RankedPerson[]; ledger: LedgerEntry[]; onOpenFork: () => void }) {
   return (
     <div className="cmd">
       {/* LEFT: the Read + the Path spine + ledger */}
@@ -261,13 +273,23 @@ function DesktopHome({ s, circle, ledger, onOpenFork }: { s: SessionRead; circle
       {/* RIGHT: the living inner circle */}
       <div className="railR">
         <span className="ovl">Who this touches</span>
-        {circle.length === 0 ? <div className="mono" style={{ fontSize: 11, color: C.lo, marginTop: 14 }}>add people to your circle</div> : null}
-        {circle.slice(0, 5).map((p) => (
-          <div key={p.id} style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-            <div className="disc">{(p.display_name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
-            <div><div style={{ fontSize: 13.5, fontWeight: 600 }}>{p.display_name}</div><div style={{ fontSize: 12, color: C.mid }}>{[p.title, p.company].filter(Boolean).join(' · ')}</div></div>
-          </div>
-        ))}
+        {(ranked.length === 0 && circle.length === 0) ? <div className="mono" style={{ fontSize: 11, color: C.lo, marginTop: 14 }}>add people to your circle</div> : null}
+        {ranked.length
+          ? ranked.slice(0, 5).map((p) => (
+            <div key={p.id} style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <div className="disc">{(p.name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}><span style={{ fontSize: 13.5, fontWeight: 600 }}>{p.name}</span><span className="role">{p.role}</span></div>
+                <div className="why">{p.why}</div>
+              </div>
+            </div>
+          ))
+          : circle.slice(0, 5).map((p) => (
+            <div key={p.id} style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <div className="disc">{(p.display_name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
+              <div><div style={{ fontSize: 13.5, fontWeight: 600 }}>{p.display_name}</div><div style={{ fontSize: 12, color: C.mid }}>{[p.title, p.company].filter(Boolean).join(' · ')}</div></div>
+            </div>
+          ))}
         <hr style={{ border: 0, height: 1, background: C.line, margin: '20px 0 10px' }} />
         <div className="ovl" style={{ color: C.lo, lineHeight: 1.6 }}>Re-ranks the moment<br />your direction changes</div>
       </div>
@@ -283,6 +305,7 @@ export default function PathRoomApp() {
   const [data, setData] = useState<{ benchmarks: never[]; landmines: never[]; cohort: never[] } | null>(null);
   const [session, setSession] = useState<SessionRead | null>(null);
   const [circle, setCircle] = useState<CirclePerson[]>([]);
+  const [ranked, setRanked] = useState<RankedPerson[]>([]);
   const [ledger, setLedger] = useState<LedgerEntry[]>([]);
   const [view, setView] = useState<'path' | 'decision' | 'ledger'>('path');
   const [busy, setBusy] = useState(false);
@@ -294,6 +317,10 @@ export default function PathRoomApp() {
     setData(d as never); setLedger(l); setCircle(c);
     if (!r || !r.segment) { setPhase('onboarding'); return; }
     setRead(r); setSession(computeSession(r, d)); setPhase('home');
+    // The living inner circle: cache hit paints instantly; a direction change misses
+    // and re-ranks (Gemini) in the background, falling back to the plain glimpse meanwhile.
+    setRanked([]);
+    getRankedInnerCircle(r).then(setRanked).catch(() => {});
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [userId]);
 
@@ -336,8 +363,8 @@ export default function PathRoomApp() {
   return (
     <div className="prr"><style>{css}</style>
       {view === 'path' && session ? (isDesktop
-        ? <DesktopHome s={session} circle={circle} ledger={ledger} onOpenFork={() => setView('decision')} />
-        : <PathScreen s={session} circle={circle} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} />) : null}
+        ? <DesktopHome s={session} circle={circle} ranked={ranked} ledger={ledger} onOpenFork={() => setView('decision')} />
+        : <PathScreen s={session} circle={circle} ranked={ranked} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} />) : null}
       {view === 'decision' && session ? <DecisionRoom s={session} busy={busy} onCommit={goCommit} onBack={() => setView('path')} /> : null}
       {view === 'ledger' ? <Ledger entries={ledger} /> : null}
       <div className="nav">
