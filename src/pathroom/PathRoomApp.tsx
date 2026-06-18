@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { C, FONT, MONO } from './tokens';
 import { computeSession, NEXT_FORK, forkStageKey, type SessionRead, type Segment, type ForkDomain, type TheRead, type LedgerEntry } from './engine';
-import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, getRankedInnerCircle, extractRead, type CirclePerson, type RankedPerson } from './data';
+import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, getRankedInnerCircle, getDecisionBrief, extractRead, type CirclePerson, type RankedPerson, type DecisionBrief } from './data';
 
 const css = `
 .prr * { box-sizing:border-box; margin:0; padding:0; }
@@ -123,11 +123,29 @@ function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: Session
 }
 
 function DecisionRoom({ s, busy, onCommit, onBack }: { s: SessionRead; busy: boolean; onCommit: (branchTitle: string) => void; onBack: () => void }) {
+  const [brief, setBrief] = useState<DecisionBrief | null>(null);
+  const [briefLoading, setBriefLoading] = useState(true);
+  useEffect(() => {
+    let live = true; setBriefLoading(true);
+    getDecisionBrief(s.litFork).then((b) => { if (live) { setBrief(b); setBriefLoading(false); } }).catch(() => { if (live) setBriefLoading(false); });
+    return () => { live = false; };
+  }, [s.litFork]);
   return (
     <div style={{ maxWidth: 460, margin: '0 auto', padding: '20px 18px 90px' }}>
       <button className="navbtn" style={{ paddingLeft: 0 }} onClick={onBack}>‹ the path</button>
       <div className="ovl" style={{ color: C.accent, marginTop: 8 }}>Decision · {s.litForkLabel}</div>
       <div className="decTitle" style={{ marginTop: 8, fontSize: 22 }}>Pick the one you would commit to.</div>
+      <div className="panel" style={{ background: C.panel2, padding: 15, marginTop: 14 }}>
+        {briefLoading ? <div className="mono" style={{ fontSize: 11, color: C.lo }}>reading the room...</div> : brief ? (
+          <>
+            {brief.headline ? <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>{brief.headline}</div> : null}
+            {brief.consequence ? <div className="meta" style={{ marginTop: 10 }}><span className="metaK">if you commit</span><span className="metaV">{brief.consequence}</span></div> : null}
+            {brief.watch_out ? <div className="meta"><span className="metaK">watch out</span><span className="metaV">{brief.watch_out}</span></div> : null}
+            {brief.question ? <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.line}`, fontSize: 13, color: C.accent, fontStyle: 'italic', lineHeight: 1.4 }}>{brief.question}</div> : null}
+            {!brief.grounded ? <div className="mono" style={{ fontSize: 9.5, color: C.lo, marginTop: 8 }}>from the benchmark, not yet a cohort</div> : null}
+          </>
+        ) : null}
+      </div>
       {s.branches.map((b) => (
         <div key={b.title} className={'branch' + (b.recommended ? ' branchRec' : '')} onClick={() => !busy && onCommit(b.title)}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>

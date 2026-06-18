@@ -72,6 +72,14 @@ export async function getRankedInnerCircle(read: TheRead): Promise<RankedPerson[
   return ((data as { people?: RankedPerson[] })?.people) ?? [];
 }
 
+// The reasoning inside the Decision Room: a personalised read-back + the consequence of
+// deciding + the honest trade-off + the sharpening question (decision-engine, Gemini).
+export interface DecisionBrief { headline: string | null; consequence: string | null; watch_out: string | null; question: string | null; grounded: boolean }
+export async function getDecisionBrief(forkDomain: string): Promise<DecisionBrief | null> {
+  const { data } = await supabase.functions.invoke('decision-engine', { body: { fork_domain: forkDomain } });
+  return ((data as { brief?: DecisionBrief })?.brief) ?? null;
+}
+
 // The smart onboarding path: infer the Read from the user's own words (Gemini).
 export async function extractRead(text: string): Promise<void> {
   const { error } = await supabase.functions.invoke('extract-read', { body: { text } });
