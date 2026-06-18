@@ -4,11 +4,13 @@
 // Deterministic compute on the corpus seed; no LLM (that is P0.5). Quiet Instrument.
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import { getPriceId } from '@/lib/tiers';
 import { C, FONT, MONO } from './tokens';
 import { computeSession, NEXT_FORK, forkStageKey, type SessionRead, type Segment, type ForkDomain, type TheRead, type LedgerEntry } from './engine';
 import { getRead, upsertRead, getEngineData, getLedger, commitDecision, getInnerCircle, getRankedInnerCircle, getDecisionBrief, extractRead, type CirclePerson, type RankedPerson, type DecisionBrief } from './data';
 
-const css = `
+export const css = `
 .prr * { box-sizing:border-box; margin:0; padding:0; }
 .prr { background:${C.bg}; color:${C.hi}; font-family:${FONT}; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; min-height:100vh; }
 .prr .ovl { font-family:${MONO}; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:${C.lo}; }
@@ -69,7 +71,7 @@ function Gauge({ s }: { s: SessionRead }) {
   );
 }
 
-function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ranked: RankedPerson[]; ledgerCount: number; onOpenFork: () => void }) {
+export function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork, locked, onUnlock }: { s: SessionRead; circle: CirclePerson[]; ranked: RankedPerson[]; ledgerCount: number; onOpenFork: () => void; locked?: boolean; onUnlock?: () => void }) {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '24px 18px 90px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span className="ovl">The Path</span><span className="ovl">{s.pathTitle}</span></div>
@@ -77,14 +79,14 @@ function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: Session
       <p className="recog" style={{ marginTop: 14 }}>{s.recognition.split('.').slice(0, 1).join('.')}.{' '}<span className="em">{s.recognition.split('.').slice(1).join('.').trim()}</span></p>
       <div className="panel" style={{ background: C.panel2, padding: 16, marginTop: 18 }}>
         <div className="ovl" style={{ color: C.accent }}>Decision · {s.litForkLabel}</div>
-        <div className="decTitle" style={{ marginTop: 8 }}>{s.litFork === 'icp_positioning' ? 'Narrow your niche.' : s.litFork === 'scaling_leverage' ? 'Break the plateau.' : s.litFork === 'offer_pricing' ? 'Price the offer.' : 'Work your network.'}</div>
+        <div className="decTitle" style={{ marginTop: 8 }}>{s.decisionTitle}</div>
         <div style={{ marginTop: 12 }}>
           {s.gap.map((g) => (
             <div className="gaprow" key={g.label}><span className="gaplabel">{g.label}</span>
-              <span className="gapval">{g.value}{g.flag ? <span className={'flag ' + (g.flag === 'risk' ? 'flagRisk' : 'flagGen')}>{g.flag}</span> : null}</span></div>
+              <span className="gapval">{locked ? <span style={{ filter: 'blur(5px)', userSelect: 'none' }}>{g.value}</span> : g.value}{!locked && g.flag ? <span className={'flag ' + (g.flag === 'risk' ? 'flagRisk' : 'flagGen')}>{g.flag}</span> : null}</span></div>
           ))}
         </div>
-        {s.benchmarkBand ? (
+        {!locked && s.benchmarkBand ? (
           <div style={{ marginTop: 12 }}>
             <div className="ovl" style={{ marginBottom: 2 }}>Benchmark</div>
             <div className="band"><div className="btrack" /><div className="bfill" style={{ left: `${s.benchmarkBand.bandStartPct}%`, right: '8%' }} /><div className="byou" style={{ left: `${s.benchmarkBand.youPct}%` }} />
@@ -92,8 +94,11 @@ function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: Session
               <span className="mono" style={{ position: 'absolute', top: 0, left: `${s.benchmarkBand.bandStartPct + 4}%`, fontSize: 9, color: C.accent }}>{s.benchmarkBand.bandLabel}</span></div>
           </div>
         ) : null}
-        <button className="cta" style={{ marginTop: 16 }} onClick={onOpenFork}><span>Open decision</span><span className="mono">→</span></button>
-        {!s.cohortHasN ? <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 8 }}>benchmark says · cohort builds as you go</div> : null}
+        {locked
+          ? <button className="cta" style={{ marginTop: 16 }} onClick={onUnlock}><span>Unlock the full read</span><span className="mono">→</span></button>
+          : <button className="cta" style={{ marginTop: 16 }} onClick={onOpenFork}><span>Open decision</span><span className="mono">→</span></button>}
+        {locked ? <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 8 }}>Free shows the shape. Pro shows the read, the benchmark, and the decision.</div>
+          : !s.cohortHasN ? <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 8 }}>benchmark says · cohort builds as you go</div> : null}
       </div>
       {(ranked.length || circle.length) ? (
         <div style={{ marginTop: 20 }}>
@@ -104,7 +109,7 @@ function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: Session
                 <div className="disc">{(p.name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</span><span className="role">{p.role}</span></div>
-                  <div className="why">{p.why}</div>
+                  {locked ? null : <div className="why">{p.why}</div>}
                 </div>
               </div>
             ))
@@ -122,14 +127,15 @@ function PathScreen({ s, circle, ranked, ledgerCount, onOpenFork }: { s: Session
   );
 }
 
-function DecisionRoom({ s, busy, onCommit, onBack, isDesktop }: { s: SessionRead; busy: boolean; onCommit: (branchTitle: string) => void; onBack: () => void; isDesktop?: boolean }) {
-  const [brief, setBrief] = useState<DecisionBrief | null>(null);
-  const [briefLoading, setBriefLoading] = useState(true);
+export function DecisionRoom({ s, busy, onCommit, onBack, isDesktop, briefOverride }: { s: SessionRead; busy: boolean; onCommit: (branchTitle: string) => void; onBack: () => void; isDesktop?: boolean; briefOverride?: DecisionBrief | null }) {
+  const [brief, setBrief] = useState<DecisionBrief | null>(briefOverride ?? null);
+  const [briefLoading, setBriefLoading] = useState(briefOverride === undefined);
   useEffect(() => {
+    if (briefOverride !== undefined) { setBrief(briefOverride); setBriefLoading(false); return; }
     let live = true; setBriefLoading(true);
     getDecisionBrief(s.litFork).then((b) => { if (live) { setBrief(b); setBriefLoading(false); } }).catch(() => { if (live) setBriefLoading(false); });
     return () => { live = false; };
-  }, [s.litFork]);
+  }, [s.litFork, briefOverride]);
   return (
     <div style={{ maxWidth: isDesktop ? 980 : 460, margin: '0 auto', padding: isDesktop ? '30px 40px 90px' : '20px 18px 90px' }}>
       <button className="navbtn" style={{ paddingLeft: 0 }} onClick={onBack}>‹ the path</button>
@@ -167,7 +173,7 @@ function DecisionRoom({ s, busy, onCommit, onBack, isDesktop }: { s: SessionRead
   );
 }
 
-function Ledger({ entries }: { entries: LedgerEntry[] }) {
+export function Ledger({ entries }: { entries: LedgerEntry[] }) {
   return (
     <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 18px 90px' }}>
       <div className="ovl">Your ledger</div>
@@ -192,7 +198,7 @@ function Ledger({ entries }: { entries: LedgerEntry[] }) {
 const SEG_Q = ['Just left a senior role', 'A few months in, finding my feet', 'Established, scaling a portfolio', 'Still in a role, exploring'];
 const FN_Q = ['Marketing', 'Finance', 'Revenue', 'Operations', 'Product', 'People'];
 
-function Onboarding({ onDone, onDescribe }: { onDone: (segment: Segment, fn: string) => void; onDescribe: (text: string) => Promise<void> }) {
+export function Onboarding({ onDone, onDescribe }: { onDone: (segment: Segment, fn: string) => void; onDescribe: (text: string) => Promise<void> }) {
   const [step, setStep] = useState(0);
   const [seg, setSeg] = useState<string | null>(null);
   const [text, setText] = useState('');
@@ -239,7 +245,7 @@ function useIsDesktop() {
   return d;
 }
 
-function DesktopHome({ s, circle, ranked, ledger, onOpenFork }: { s: SessionRead; circle: CirclePerson[]; ranked: RankedPerson[]; ledger: LedgerEntry[]; onOpenFork: () => void }) {
+export function DesktopHome({ s, circle, ranked, ledger, onOpenFork, locked, onUnlock }: { s: SessionRead; circle: CirclePerson[]; ranked: RankedPerson[]; ledger: LedgerEntry[]; onOpenFork: () => void; locked?: boolean; onUnlock?: () => void }) {
   return (
     <div className="cmd">
       {/* LEFT: the Read + the Path spine + ledger */}
@@ -270,12 +276,12 @@ function DesktopHome({ s, circle, ranked, ledger, onOpenFork }: { s: SessionRead
         <p className="recog" style={{ fontSize: 23, maxWidth: 580 }}>{s.recognition.split('.').slice(0, 1).join('.')}.{' '}<span className="em">{s.recognition.split('.').slice(1).join('.').trim()}</span></p>
         <div className="panel" style={{ background: C.panel2, padding: 22, marginTop: 24 }}>
           <div className="ovl" style={{ color: C.accent }}>Decision · {s.litForkLabel}</div>
-          <div className="decTitle" style={{ marginTop: 9, fontSize: 30 }}>{s.litFork === 'icp_positioning' ? 'Narrow your niche.' : s.litFork === 'scaling_leverage' ? 'Break the plateau.' : s.litFork === 'offer_pricing' ? 'Price the offer.' : 'Work your network.'}</div>
+          <div className="decTitle" style={{ marginTop: 9, fontSize: 30 }}>{s.decisionTitle}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 36px', marginTop: 16 }}>
             <div>{s.gap.map((g) => (
-              <div className="gaprow" key={g.label}><span className="gaplabel">{g.label}</span><span className="gapval">{g.value}{g.flag ? <span className={'flag ' + (g.flag === 'risk' ? 'flagRisk' : 'flagGen')}>{g.flag}</span> : null}</span></div>
+              <div className="gaprow" key={g.label}><span className="gaplabel">{g.label}</span><span className="gapval">{locked ? <span style={{ filter: 'blur(5px)', userSelect: 'none' }}>{g.value}</span> : g.value}{!locked && g.flag ? <span className={'flag ' + (g.flag === 'risk' ? 'flagRisk' : 'flagGen')}>{g.flag}</span> : null}</span></div>
             ))}</div>
-            {s.benchmarkBand ? (
+            {!locked && s.benchmarkBand ? (
               <div>
                 <div className="ovl" style={{ marginBottom: 2 }}>Benchmark</div>
                 <div className="band"><div className="btrack" /><div className="bfill" style={{ left: `${s.benchmarkBand.bandStartPct}%`, right: '8%' }} /><div className="byou" style={{ left: `${s.benchmarkBand.youPct}%` }} />
@@ -285,7 +291,8 @@ function DesktopHome({ s, circle, ranked, ledger, onOpenFork }: { s: SessionRead
               </div>
             ) : null}
           </div>
-          <button className="cta" style={{ marginTop: 22, width: 240 }} onClick={onOpenFork}><span>Open decision</span><span className="mono">→</span></button>
+          <button className="cta" style={{ marginTop: 22, width: 240 }} onClick={locked ? onUnlock : onOpenFork}><span>{locked ? 'Unlock the full read' : 'Open decision'}</span><span className="mono">→</span></button>
+          {locked ? <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 10 }}>Free shows the shape. Pro shows the read, the benchmark, and the decision.</div> : null}
         </div>
         {s.landmine ? <div style={{ marginTop: 22 }}><span className="ovl" style={{ color: C.lo }}>Ahead · {s.landmine.name}</span><div style={{ fontSize: 13, color: C.lo, fontStyle: 'italic', marginTop: 5 }}>{s.landmine.note}</div></div> : null}
       </div>
@@ -300,7 +307,7 @@ function DesktopHome({ s, circle, ranked, ledger, onOpenFork }: { s: SessionRead
               <div className="disc">{(p.name || '?').split(/\s+/).map((w) => w[0]).slice(0, 2).join('')}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}><span style={{ fontSize: 13.5, fontWeight: 600 }}>{p.name}</span><span className="role">{p.role}</span></div>
-                <div className="why">{p.why}</div>
+                {locked ? null : <div className="why">{p.why}</div>}
               </div>
             </div>
           ))
@@ -320,6 +327,9 @@ function DesktopHome({ s, circle, ranked, ledger, onOpenFork }: { s: SessionRead
 export default function PathRoomApp() {
   const { user } = useAuth();
   const userId = user?.id;
+  const { isProOrAbove, openCheckout } = useSubscription();
+  const locked = !isProOrAbove; // Free = oriented; Pro = depth.
+  const onUnlock = async () => { const pid = getPriceId('pro'); if (pid) await openCheckout(pid); };
   const [phase, setPhase] = useState<'loading' | 'onboarding' | 'home'>('loading');
   const [read, setRead] = useState<TheRead | null>(null);
   const [data, setData] = useState<{ benchmarks: never[]; landmines: never[]; cohort: never[] } | null>(null);
@@ -383,8 +393,8 @@ export default function PathRoomApp() {
   return (
     <div className="prr"><style>{css}</style>
       {view === 'path' && session ? (isDesktop
-        ? <DesktopHome s={session} circle={circle} ranked={ranked} ledger={ledger} onOpenFork={() => setView('decision')} />
-        : <PathScreen s={session} circle={circle} ranked={ranked} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} />) : null}
+        ? <DesktopHome s={session} circle={circle} ranked={ranked} ledger={ledger} onOpenFork={() => setView('decision')} locked={locked} onUnlock={onUnlock} />
+        : <PathScreen s={session} circle={circle} ranked={ranked} ledgerCount={ledger.length} onOpenFork={() => setView('decision')} locked={locked} onUnlock={onUnlock} />) : null}
       {view === 'decision' && session ? <DecisionRoom s={session} busy={busy} onCommit={goCommit} onBack={() => setView('path')} isDesktop={isDesktop} /> : null}
       {view === 'ledger' ? <Ledger entries={ledger} /> : null}
       <div className="nav">
