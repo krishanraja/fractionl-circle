@@ -47,7 +47,9 @@ export interface SessionRead {
   litForkIndex: number;
   litFork: ForkDomain;
   litForkLabel: string;
+  decisionTitle: string;
   recognition: string;
+  holdPosition: boolean;
   gap: GapRow[];
   branches: Branch[];
   benchmarkBand: { youPct: number; bandStartPct: number; youLabel: string; bandLabel: string } | null;
@@ -63,6 +65,16 @@ const LEVERAGE_STAGES: PathStage[] = [
   { key: 'three_clients', label: '3 clients' }, { key: 'productize', label: 'Productize' },
   { key: 'pod', label: 'Pod' }, { key: 'equity', label: 'Equity' }, { key: 'audience', label: 'Audience' },
 ];
+// The lifestyle / encore path: the position is chosen, the work is holding it well, not growing.
+const LIFESTYLE_STAGES: PathStage[] = [
+  { key: 'portfolio', label: 'Portfolio' }, { key: 'protect', label: 'Protect' },
+  { key: 'optimize', label: 'Optimize' }, { key: 'handoff', label: 'Hand off' },
+];
+
+const DECISION_TITLE: Record<ForkDomain, string> = {
+  icp_positioning: 'Narrow your niche.', scaling_leverage: 'Break the plateau.',
+  offer_pricing: 'Price the offer.', network_strategy: 'Work your network.',
+};
 
 export const FORK_LABEL: Record<ForkDomain, string> = {
   offer_pricing: 'Offer & pricing',
@@ -153,6 +165,32 @@ function buildBranches(fork: ForkDomain, cohort: Cohort[]): Branch[] {
 
 export function computeSession(read: TheRead, data: { benchmarks: Benchmark[]; landmines: Landmine[]; cohort: Cohort[] }): SessionRead {
   const segment: Segment = read.segment ?? 'new';
+
+  // Lifestyle / encore: the position is chosen. The work is holding it well, not advancing.
+  if (segment === 'lifestyle') {
+    const litFork: ForkDomain = read.lit_fork_domain ?? 'offer_pricing';
+    const conc = Math.round((num(data.benchmarks, 'anchor_concentration_risk') ?? 0.45) * 100);
+    const lm = data.landmines.find((l) => l.fork_domain === litFork);
+    return {
+      segment, pathTitle: 'Portfolio', stages: LIFESTYLE_STAGES, markerIndex: 1, litForkIndex: 1, litFork,
+      litForkLabel: 'Protect and optimize', decisionTitle: 'Protect the position.', holdPosition: true,
+      recognition: 'You built the portfolio you wanted. The work now is protecting the margin and the calendar, not adding to them.',
+      gap: [
+        { label: 'Utilization', value: 'near full, no slack' },
+        { label: 'Rate vs effort', value: 'underpriced for the calendar it costs' },
+        { label: 'Concentration', value: `${conc}% in one client`, flag: 'risk' },
+      ],
+      branches: [
+        { title: 'Raise rates on renewal, keep the roster', fit: 'Protects the margin without adding hours.', benchmark: 'The sustainable ones raised before resentment set in.', obstacle: 'The conversation you have been avoiding.', recommended: true },
+        { title: 'Trim the lowest-margin client', fit: 'Buys back the calendar.', benchmark: 'Less revenue, more life.', obstacle: 'Saying no to money.', recommended: false },
+        { title: 'Hold exactly as is', fit: 'Nothing changes.', benchmark: 'Fine until the anchor leaves.', obstacle: 'The concentration risk stays.', recommended: false },
+      ],
+      benchmarkBand: null,
+      landmine: lm ? { name: lm.name, note: lm.survivor_pattern ?? lm.description ?? '' } : { name: 'The slow slide back to a job', note: 'Saying yes to one more client is how the lifestyle quietly becomes the thing you left.' },
+      cohortHasN: false,
+    };
+  }
+
   const stages = segment === 'seasoned' ? LEVERAGE_STAGES : LAUNCH_STAGES;
   const pathTitle = segment === 'seasoned' ? 'Leverage' : 'Launch';
   const defaultFork: ForkDomain = segment === 'seasoned' ? 'scaling_leverage' : 'icp_positioning';
@@ -184,6 +222,7 @@ export function computeSession(read: TheRead, data: { benchmarks: Benchmark[]; l
 
   return {
     segment, pathTitle, stages, markerIndex, litForkIndex, litFork,
-    litForkLabel: FORK_LABEL[litFork], recognition, gap, branches, benchmarkBand, landmine, cohortHasN,
+    litForkLabel: FORK_LABEL[litFork], decisionTitle: DECISION_TITLE[litFork], holdPosition: read.hold_position ?? false,
+    recognition, gap, branches, benchmarkBand, landmine, cohortHasN,
   };
 }

@@ -15,6 +15,7 @@ import ShareContact from "./pages/ShareContact";
 import TryDemo from "./pages/TryDemo";
 import MarketingLanding from "./pages/MarketingLanding";
 import PathRoomApp from "./pathroom/PathRoomApp";
+import PathRoomPreview from "./pathroom/PathRoomPreview";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
@@ -169,6 +170,7 @@ function AppRoutes() {
         <Route path="/try" element={<TryDemo />} />
         <Route path="/auth" element={<AuthRoute />} />
         {PATH_ROOM_ENABLED ? <Route path="/path" element={<PathRoomApp />} /> : null}
+        {PATH_ROOM_ENABLED ? <Route path="/path-preview" element={<PathRoomPreview />} /> : null}
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
