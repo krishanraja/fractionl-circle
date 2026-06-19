@@ -7,23 +7,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import Index from "./pages/Index";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
-import ShareContact from "./pages/ShareContact";
-import TryDemo from "./pages/TryDemo";
-import MarketingLanding from "./pages/MarketingLanding";
-import PathRoomApp from "./pathroom/PathRoomApp";
-import PathRoomPreview from "./pathroom/PathRoomPreview";
-import ThesisHeroMock from "./pathroom/ThesisHeroMock";
 import ThesisApp from "./pathroom/ThesisApp";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
-import { FirstVoice } from "./components/onboarding/FirstVoice";
-import { IdentityFirstRun } from "./components/onboarding/IdentityFirstRun";
-import { useUserProfile } from "./hooks/useUserProfile";
 import { PageLoader } from "./components/ui/loading-spinner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ConsentBanner } from "./components/compliance/ConsentBanner";
@@ -32,31 +22,10 @@ import { useConsent } from "./hooks/useConsent";
 
 const queryClient = new QueryClient();
 
-// Marketing landing flag. Default OFF: when false, logged-out "/" behaves exactly as
-// before (AuthPage). When true, logged-out "/" renders the marketing landing instead.
-// Instantly reversible via env, no code change.
-const MARKETING_ENABLED = import.meta.env.VITE_MARKETING_LANDING_ENABLED === 'true';
-
-// P1 borrowed-conviction first-run. Default ON: new users get the identity flow
-// (Welcome → Talk → Proposal → First Move). Set VITE_IDENTITY_FIRSTRUN_ENABLED
-// =false to fall back to the original FirstVoice. Only affects users who still
-// need onboarding, so existing accounts are untouched.
-const IDENTITY_FIRSTRUN_ENABLED = import.meta.env.VITE_IDENTITY_FIRSTRUN_ENABLED !== 'false';
-
-// The Path Room (re-visioned product). Default OFF: the existing app is untouched.
-// When true, /path renders the new adaptive decisioning surface.
-const PATH_ROOM_ENABLED = import.meta.env.VITE_PATH_ROOM_ENABLED === 'true';
-
-// Go-live: when true, an authenticated "/" lands on the thesis-validation product
-// (the new first-run) instead of the legacy app. Reversible via env.
-const THESIS_DEFAULT = import.meta.env.VITE_THESIS_DEFAULT === 'true';
-
 /**
- * Public /auth route. Renders the working AuthPage (Google OAuth + email).
- * On a successful password sign-in, AuthPage calls onAuthenticated; we navigate
- * to "/" so the user lands in the app. Google OAuth and email-confirm/reset all
- * redirect to "/" themselves (window.location.origin + "/"), so the app gate
- * picks them up there. This mirrors how AuthenticatedShell uses AuthPage.
+ * Public /auth route. Renders the AuthPage (Google OAuth + email). On a successful
+ * password sign-in we navigate to "/"; OAuth and email-confirm/reset redirect to "/"
+ * themselves, where the app gate picks them up.
  */
 function AuthRoute() {
   const navigate = useNavigate();
@@ -77,10 +46,9 @@ function PrivacyRoute() {
   );
 }
 
-/** Main app shell: auth gate, onboarding, and tabbed home. */
+/** Auth gate. Logged out -> AuthPage. Logged in -> the thesis-validation product. */
 function AuthenticatedShell() {
   const { user, loading: authLoading } = useAuth();
-  const { loading: profileLoading, needsOnboarding, refetch } = useUserProfile();
   const { syncLocalConsents } = useConsent();
   const hasSynced = useRef(false);
   const [passwordRecovery, setPasswordRecovery] = useState(
@@ -89,9 +57,7 @@ function AuthenticatedShell() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setPasswordRecovery(true);
-      }
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -103,9 +69,7 @@ function AuthenticatedShell() {
     }
   }, [user, syncLocalConsents]);
 
-  if (authLoading || (user && profileLoading && !passwordRecovery)) {
-    return <PageLoader message="Loading your workspace..." />;
-  }
+  if (authLoading) return <PageLoader message="Loading..." />;
 
   if (passwordRecovery) {
     return (
@@ -115,42 +79,22 @@ function AuthenticatedShell() {
     );
   }
 
-  if (!user) {
-    // Flag ON: logged-out "/" shows the marketing landing.
-    // Flag OFF: exact prior behavior (logged-out "/" = AuthPage).
-    if (MARKETING_ENABLED) {
-      return <MarketingLanding />;
-    }
-    return <AuthPage onAuthenticated={() => {}} />;
-  }
-
-  // Go-live: the thesis-validation product is the default authed experience. Its own
-  // capture screen is the first run, so the legacy onboarding/Index are bypassed.
-  if (THESIS_DEFAULT) {
-    return <ThesisApp />;
-  }
-
-  if (needsOnboarding) {
-    return IDENTITY_FIRSTRUN_ENABLED
-      ? <IdentityFirstRun onComplete={refetch} />
-      : <FirstVoice onComplete={refetch} />;
-  }
+  if (!user) return <AuthPage onAuthenticated={() => {}} />;
 
   return (
     <>
       <PreferencesApplier />
       <SessionManager />
-      <Index />
+      <ThesisApp />
       <ConsentBanner />
     </>
   );
 }
 
 /**
- * Failed email links (expired confirmation, used reset link) redirect back to
- * "/" with the failure in the URL hash. supabase-js only consumes success
- * tokens, so these errors were silently ignored — the user just saw the
- * landing page with no explanation. Surface them once, then clean the URL.
+ * Failed email links (expired confirmation, used reset link) redirect back to "/" with
+ * the failure in the URL hash. supabase-js only consumes success tokens, so surface the
+ * error once, then clean the URL.
  */
 function AuthHashErrorNotice() {
   useEffect(() => {
@@ -173,18 +117,12 @@ function AuthHashErrorNotice() {
 
 function AppRoutes() {
   return (
-  <>
+    <>
       <AuthHashErrorNotice />
       <Routes>
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />
-        <Route path="/share-contact" element={<ShareContact />} />
-        <Route path="/try" element={<TryDemo />} />
         <Route path="/auth" element={<AuthRoute />} />
-        {PATH_ROOM_ENABLED ? <Route path="/path" element={<PathRoomApp />} /> : null}
-        {PATH_ROOM_ENABLED ? <Route path="/path-preview" element={<PathRoomPreview />} /> : null}
-        {PATH_ROOM_ENABLED ? <Route path="/thesis-preview" element={<ThesisHeroMock />} /> : null}
-        {PATH_ROOM_ENABLED ? <Route path="/thesis" element={<ThesisApp />} /> : null}
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
