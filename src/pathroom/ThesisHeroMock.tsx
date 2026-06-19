@@ -65,9 +65,10 @@ const css = `
 .thx .row:first-of-type { border-top:0; }
 .thx .rtop { display:flex; align-items:center; gap:10px; }
 .thx .rlabel { font-size:14px; font-weight:600; flex:1; }
-.thx .pips { display:flex; gap:3px; }
+.thx .pips { display:flex; gap:3px; flex:0 0 auto; justify-content:flex-end; }
 .thx .pip { width:16px; height:4px; border-radius:2px; background:${C.line2}; }
-.thx .conf { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; border:1px solid ${C.line2}; border-radius:3px; padding:1px 5px; }
+.thx .conf { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; border:1px solid ${C.line2}; border-radius:3px; padding:1px 5px; display:inline-block; min-width:62px; text-align:center; flex:0 0 auto; }
+.thx .risktag { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.risk}; border:1px solid rgba(204,119,119,0.4); border-radius:3px; padding:1px 5px; margin-left:8px; }
 .thx .rev { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:5px; }
 .thx .nav { display:flex; gap:6px; justify-content:center; margin-bottom:16px; }
 .thx .nb { font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; background:none; border:1px solid ${C.line}; border-radius:5px; padding:6px 10px; cursor:pointer; }
@@ -84,8 +85,7 @@ function ScoreRow({ r }: { r: Row }) {
   return (
     <div className="row">
       <div className="rtop">
-        <span className="rlabel">{r.label}</span>
-        {r.band === 'risk' ? <span className="conf" style={{ color: C.risk, borderColor: 'rgba(204,119,119,0.4)' }}>risk</span> : null}
+        <span className="rlabel">{r.label}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
         <Pips band={r.band} />
         <span className="conf">{r.conf}</span>
       </div>
