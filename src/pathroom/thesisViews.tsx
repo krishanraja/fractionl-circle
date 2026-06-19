@@ -93,22 +93,24 @@ function ScoreRow({ r }: { r: ScoreRowT }) {
   );
 }
 
-export function CaptureView({ onSubmit, busy }: { onSubmit: (thesis: string, linkedin: string) => void; busy?: boolean }) {
+export function CaptureView({ onSubmit, busy }: { onSubmit: (thesis: string, linkedin: string, background: string) => void; busy?: boolean }) {
   const [thesis, setThesis] = useState('');
   const [linkedin, setLinkedin] = useState('');
+  const [background, setBackground] = useState('');
   return (
     <>
       <div className="ovl">Start here</div>
       <div className="h" style={{ marginTop: 10 }}>What do you want to offer, and who to?</div>
       <div className="sub">In your words. A sentence is enough. We will go and check if it holds up.</div>
       <textarea style={{ marginTop: 16 }} value={thesis} onChange={(e) => setThesis(e.target.value)} placeholder="Fractional CMO for seed-stage B2B SaaS founders who hired too senior too early and need strategy, not a full-time hire." />
-      <input style={{ marginTop: 10 }} value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/your-profile" />
+      <input style={{ marginTop: 10 }} value={background} onChange={(e) => setBackground(e.target.value)} placeholder="One line on your background, so we can judge your fit (e.g. 12 years B2B SaaS marketing, two exits)" />
+      <input style={{ marginTop: 10 }} value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/your-profile (optional)" />
       <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
         <span className="chip">＋ Snap a business card</span>
         <span className="chip">＋ Screenshot someone you admire</span>
       </div>
       <div className="mono" style={{ fontSize: 10.5, color: C.lo, margin: '14px 0' }}>We will be upfront about anything we are not sure of.</div>
-      <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim())}>
+      <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim(), background.trim())}>
         <span>{busy ? 'starting...' : 'Validate my thesis'}</span><span className="mono">→</span>
       </button>
     </>

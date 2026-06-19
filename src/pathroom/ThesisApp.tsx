@@ -30,12 +30,12 @@ export default function ThesisApp() {
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  async function onSubmit(thesis: string, linkedin: string) {
+  async function onSubmit(thesis: string, linkedin: string, background: string) {
     setErr(null); setDone(false); setShown(0); setPhase('thinking');
     timers.current.forEach(clearTimeout);
     timers.current = CANONICAL_JOURNEY.map((_, i) => window.setTimeout(() => setShown((s) => Math.max(s, i + 1)), 2600 * (i + 1)));
     try {
-      const r = await runValidation(thesis, linkedin);
+      const r = await runValidation(thesis, linkedin, background);
       timers.current.forEach(clearTimeout);
       setData(r); setShown(r.journey?.length || CANONICAL_JOURNEY.length); setDone(true);
     } catch {

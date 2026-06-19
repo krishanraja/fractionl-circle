@@ -14,9 +14,9 @@ export async function getLatestRun(userId: string): Promise<Scorecard | null> {
   return ((data as { result?: Scorecard } | null)?.result) ?? null;
 }
 
-export async function runValidation(thesis: string, linkedin: string): Promise<Scorecard> {
+export async function runValidation(thesis: string, linkedin: string, background: string): Promise<Scorecard> {
   const { data, error } = await supabase.functions.invoke('validate-thesis', {
-    body: { thesis, linkedin_url: linkedin || undefined },
+    body: { thesis, linkedin_url: linkedin || undefined, background: background || undefined },
   });
   if (error) throw error;
   if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
