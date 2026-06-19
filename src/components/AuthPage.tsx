@@ -125,12 +125,12 @@ const WelcomeContent = ({
     <div className="text-center">
       <img 
         src="/brand/fractionl-wordmark.png" 
-        alt="Circle" 
+        alt="Fractionl"
         className="h-12 mx-auto mb-6"
       />
-      <h1 className="text-title-1 text-foreground mb-2">Welcome to Circle</h1>
+      <h1 className="text-title-1 text-foreground mb-2">Validate your fractional thesis</h1>
       <p className="text-body text-foreground-secondary">
-        Track your portfolio, one voice note at a time
+        Check your idea against the real market, then get your first moves
       </p>
     </div>
 
