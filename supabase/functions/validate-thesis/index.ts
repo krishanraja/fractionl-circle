@@ -37,6 +37,8 @@ const STRUCT_SYSTEM = `You turn live market research into an honest scorecard fo
 Return ONLY JSON:
 {
  "read": string,
+ "from": string,
+ "to": string,
  "opportunity": [ {"label": string, "band": "weak"|"mixed"|"strong"|"risk", "evidence": string, "confidence": "high"|"medium"|"low"} ],
  "ability": [ {"label": string, "band": "weak"|"mixed"|"strong"|"risk", "evidence": string, "confidence": "high"|"medium"|"low"} ],
  "flags": [string],
@@ -48,6 +50,7 @@ Rules:
 - "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "Your edge". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics.
 - "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from their background. For "Warm reach", you do NOT yet have their network, so band "mixed" and confidence "low" with evidence telling them connecting their network will score it precisely. This is the honesty rule, follow it.
 - "read": one or two plain sentences, the honest overall call. No jargon, no hype.
+- "from": one plain sentence on where they are now, drawn from their background. "to": one plain sentence on where this thesis takes them, their goal. Both short and concrete.
 - "flags": 3 to 5 short "worth knowing before you commit" notes (income ramp, scope, pricing band, productization, AI risk) only where the research or thesis supports them.
 - "steps": 5 small, ordered, doable moves from where they are to their first retained clients. Each "why" is one plain sentence on why it works. Mark the warm-network / referral move with "big": true (it is the strongest first-client lever). Use "tag":"this week" on the first move.
 - "journey": 5 to 6 short labels describing what the research did (reading background, sizing demand vs supply, scanning buyer pain, checking competition, mapping network, pricing), each with the one-line finding and a plain source label; mark any genuinely uncertain one with "low": true.
@@ -57,7 +60,7 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    const { userId } = await requireAuth(req);
+    const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`validate-thesis:${userId}`, 5, 60_000);
 
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
@@ -83,7 +86,9 @@ Deno.serve(async (req) => {
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    return new Response(JSON.stringify({ ...parsed, citations: research.citations }),
+    const result = { ...parsed, citations: research.citations };
+    await supabase.from('thesis_runs').insert({ user_id: userId, thesis, background: background || null, result });
+    return new Response(JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     return safeErrorResponse(error, getCorsHeaders(req));
