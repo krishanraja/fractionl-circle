@@ -1,0 +1,200 @@
+// Shared presentational layer for the thesis hero, used by both the fixture mock
+// (/thesis-preview) and the live app (/thesis). Pure props in, no data. Quiet-instrument
+// register, plain language. Types match the validate-thesis edge function output.
+import { useState } from 'react';
+import { C, FONT, MONO } from './tokens';
+
+export type Band = 'weak' | 'mixed' | 'strong' | 'risk';
+export interface ScoreRowT { label: string; band: Band; evidence: string; confidence: 'high' | 'medium' | 'low' }
+export interface StepT { title: string; why: string; tag?: string; touches?: string; big?: boolean }
+export interface JourneyT { label: string; finding?: string; source?: string; low?: boolean }
+export interface Scorecard {
+  read: string; from?: string; to?: string;
+  opportunity: ScoreRowT[]; ability: ScoreRowT[]; flags: string[]; steps: StepT[]; journey: JourneyT[]; citations?: string[];
+}
+
+// The canonical journey labels shown while the live research call runs (~19s).
+export const CANONICAL_JOURNEY: JourneyT[] = [
+  { label: 'Reading your background' },
+  { label: 'Sizing demand against supply' },
+  { label: 'Scanning where your buyers complain' },
+  { label: 'Checking who else offers this' },
+  { label: 'Mapping your network to the buyers' },
+  { label: 'Weighing your edge and pricing' },
+];
+
+const BANDVAL: Record<Band, number> = { weak: 1, mixed: 2, strong: 3, risk: 3 };
+
+export const thesisCss = `
+.thx * { box-sizing:border-box; margin:0; padding:0; }
+.thx { background:${C.bg}; color:${C.hi}; font-family:${FONT}; min-height:100vh; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; }
+.thx .wrap { max-width:520px; margin:0 auto; padding:22px 18px 80px; }
+.thx .ovl { font-family:${MONO}; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:${C.lo}; }
+.thx .mono { font-family:${MONO}; font-variant-numeric:tabular-nums; }
+.thx .h { font-size:23px; line-height:1.18; letter-spacing:-0.02em; font-weight:600; }
+.thx .sub { font-size:13.5px; color:${C.mid}; line-height:1.5; margin-top:8px; }
+.thx textarea, .thx input { width:100%; background:${C.panel}; border:1px solid ${C.line2}; border-radius:9px; padding:13px 14px; color:${C.hi}; font-size:14px; font-family:${FONT}; line-height:1.5; }
+.thx textarea { min-height:92px; resize:none; }
+.thx .cta { display:flex; align-items:center; justify-content:space-between; background:${C.accent}; color:#1A1206; border-radius:7px; padding:14px 16px; font-weight:600; font-size:15px; cursor:pointer; border:0; width:100%; }
+.thx .cta:disabled { opacity:0.5; cursor:default; }
+.thx .chip { display:inline-flex; gap:6px; align-items:center; border:1px solid ${C.line2}; border-radius:7px; padding:9px 12px; font-size:12.5px; color:${C.mid}; cursor:pointer; background:${C.panel}; }
+.thx .step { display:flex; gap:12px; padding:13px 0; border-top:1px solid ${C.line}; opacity:0; transform:translateY(4px); transition:opacity .4s ease, transform .4s ease; }
+.thx .step.on { opacity:1; transform:none; }
+.thx .dot { width:16px; height:16px; border-radius:50%; flex:0 0 auto; margin-top:2px; border:1.5px solid ${C.line2}; display:flex; align-items:center; justify-content:center; font-size:10px; color:${C.bg}; }
+.thx .dot.done { background:${C.accent}; border-color:${C.accent}; }
+.thx .dot.spin { border-top-color:${C.accent}; animation:thxspin 0.8s linear infinite; }
+@keyframes thxspin { to { transform:rotate(360deg); } }
+.thx .slabel { font-size:13.5px; color:${C.hi}; font-weight:500; }
+.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:3px; }
+.thx .ssrc { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; margin-top:5px; }
+.thx .panel { background:${C.panel2}; border:1px solid ${C.line}; border-radius:11px; padding:16px; }
+.thx .grp { font-family:${MONO}; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:${C.accent}; }
+.thx .row { padding:11px 0; border-top:1px solid ${C.line}; }
+.thx .row:first-of-type { border-top:0; }
+.thx .rtop { display:flex; align-items:center; gap:10px; }
+.thx .rlabel { font-size:14px; font-weight:600; flex:1; }
+.thx .pips { display:flex; gap:3px; flex:0 0 auto; justify-content:flex-end; }
+.thx .pip { width:16px; height:4px; border-radius:2px; background:${C.line2}; }
+.thx .conf { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; border:1px solid ${C.line2}; border-radius:3px; padding:1px 5px; display:inline-block; min-width:62px; text-align:center; flex:0 0 auto; }
+.thx .risktag { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.risk}; border:1px solid rgba(204,119,119,0.4); border-radius:3px; padding:1px 5px; margin-left:8px; }
+.thx .ft { display:flex; gap:10px; margin-top:14px; }
+.thx .ftcol { flex:1; background:${C.panel}; border:1px solid ${C.line}; border-radius:9px; padding:11px 12px; }
+.thx .ftk { font-family:${MONO}; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:${C.lo}; }
+.thx .ftv { font-size:12.5px; color:${C.hi}; margin-top:5px; line-height:1.4; }
+.thx .plan { margin-top:20px; }
+.thx .pstep { display:flex; gap:13px; padding-bottom:18px; }
+.thx .pnum { width:26px; height:26px; border-radius:50%; border:1px solid ${C.line2}; color:${C.mid}; font-family:${MONO}; font-size:12px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; }
+.thx .pstep.big .pnum { border-color:${C.accentEdge}; color:${C.accent}; }
+.thx .ptitle { font-size:14.5px; font-weight:600; line-height:1.32; }
+.thx .pwhy { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:5px; }
+.thx .vchip { display:inline-flex; align-items:center; gap:6px; font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.good}; margin-top:8px; }
+.thx .ptag { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.accent}; border:1px solid ${C.accentEdge}; border-radius:3px; padding:1px 5px; margin-left:8px; }
+.thx .nav { display:flex; gap:6px; justify-content:center; margin-bottom:16px; flex-wrap:wrap; }
+.thx .nb { font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; background:none; border:1px solid ${C.line}; border-radius:5px; padding:6px 10px; cursor:pointer; }
+.thx .nb.on { color:${C.accent}; border-color:${C.accentEdge}; background:${C.accentDim}; }
+`;
+
+function Pips({ band }: { band: Band }) {
+  const n = BANDVAL[band];
+  const color = band === 'risk' ? C.risk : band === 'strong' ? C.accent : band === 'mixed' ? '#C9A24B' : C.mid;
+  return <div className="pips">{[0, 1, 2].map((i) => <div key={i} className="pip" style={{ background: i < n ? color : C.line2 }} />)}</div>;
+}
+
+function ScoreRow({ r }: { r: ScoreRowT }) {
+  return (
+    <div className="row">
+      <div className="rtop">
+        <span className="rlabel">{r.label}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
+        <Pips band={r.band} />
+        <span className="conf">{r.confidence}</span>
+      </div>
+      <div className="rev" style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.45, marginTop: 5 }}>{r.evidence}</div>
+    </div>
+  );
+}
+
+export function CaptureView({ onSubmit, busy }: { onSubmit: (thesis: string, linkedin: string) => void; busy?: boolean }) {
+  const [thesis, setThesis] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  return (
+    <>
+      <div className="ovl">Start here</div>
+      <div className="h" style={{ marginTop: 10 }}>What do you want to offer, and who to?</div>
+      <div className="sub">In your words. A sentence is enough. We will go and check if it holds up.</div>
+      <textarea style={{ marginTop: 16 }} value={thesis} onChange={(e) => setThesis(e.target.value)} placeholder="Fractional CMO for seed-stage B2B SaaS founders who hired too senior too early and need strategy, not a full-time hire." />
+      <input style={{ marginTop: 10 }} value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/your-profile" />
+      <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+        <span className="chip">＋ Snap a business card</span>
+        <span className="chip">＋ Screenshot someone you admire</span>
+      </div>
+      <div className="mono" style={{ fontSize: 10.5, color: C.lo, margin: '14px 0' }}>We will be upfront about anything we are not sure of.</div>
+      <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim())}>
+        <span>{busy ? 'starting...' : 'Validate my thesis'}</span><span className="mono">→</span>
+      </button>
+    </>
+  );
+}
+
+export function ThinkingView({ steps, shown, done, onSeeRead }: { steps: JourneyT[]; shown: number; done: boolean; onSeeRead: () => void }) {
+  return (
+    <>
+      <div className="ovl">Working on it</div>
+      <div className="h" style={{ marginTop: 10 }}>Pulling the world together on your idea.</div>
+      <div className="sub">Reading your background, sizing the market, listening to your buyers, weighing your edge.</div>
+      <div style={{ marginTop: 16 }}>
+        {steps.map((s, i) => (
+          <div key={i} className={'step' + (i < shown ? ' on' : '')}>
+            <div className={'dot' + (i < shown ? ' done' : i === shown && !done ? ' spin' : '')}>{i < shown ? '✓' : ''}</div>
+            <div style={{ flex: 1 }}>
+              <div className="slabel">{s.label}</div>
+              {i < shown && s.finding ? <div className="sfind" style={s.low ? { color: C.lo, fontStyle: 'italic' } : undefined}>{s.finding}</div> : null}
+              {i < shown && s.source ? <div className="ssrc" style={s.low ? { color: C.risk } : undefined}>{s.source}</div> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+      {done ? <button className="cta" style={{ marginTop: 18 }} onClick={onSeeRead}><span>See your read</span><span className="mono">→</span></button> : null}
+    </>
+  );
+}
+
+export function ReadView({ data, onSteps }: { data: Scorecard; onSteps: () => void }) {
+  return (
+    <>
+      <div className="ovl">Your read</div>
+      <div className="h" style={{ marginTop: 10 }}>{data.read}</div>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 18 }}>
+        <div className="panel" style={{ flex: '1 1 230px' }}>
+          <div className="grp">Is it a real opportunity?</div>
+          <div style={{ marginTop: 10 }}>{data.opportunity.map((r) => <ScoreRow key={r.label} r={r} />)}</div>
+        </div>
+        <div className="panel" style={{ flex: '1 1 230px' }}>
+          <div className="grp">Can you win it, fast?</div>
+          <div style={{ marginTop: 10 }}>{data.ability.map((r) => <ScoreRow key={r.label} r={r} />)}</div>
+        </div>
+      </div>
+      {data.flags?.length ? (
+        <div style={{ marginTop: 16 }}>
+          <div className="ovl">Worth knowing before you commit</div>
+          {data.flags.map((f, i) => (
+            <div key={i} style={{ display: 'flex', gap: 9, marginTop: 9 }}>
+              <span style={{ color: C.lo, marginTop: 1 }}>·</span><span style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.45 }}>{f}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      <button className="cta" style={{ marginTop: 20 }} onClick={onSteps}><span>Show me the steps to get there</span><span className="mono">→</span></button>
+      <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 10, textAlign: 'center' }}>scores are bands with evidence, not exact numbers</div>
+    </>
+  );
+}
+
+export function StepsView({ data, onStart }: { data: Scorecard; onStart: () => void }) {
+  return (
+    <>
+      <div className="ovl">Your path</div>
+      <div className="h" style={{ marginTop: 10 }}>Here is how you get there.</div>
+      <div className="sub">{data.steps.length} moves from where you are to your first retained clients. Small, in order, and each one earns its place.</div>
+      {data.from || data.to ? (
+        <div className="ft">
+          <div className="ftcol"><div className="ftk">Where you are</div><div className="ftv">{data.from || 'Where you are now.'}</div></div>
+          <div className="ftcol"><div className="ftk">Where you are going</div><div className="ftv">{data.to || 'Your goal.'}</div></div>
+        </div>
+      ) : null}
+      <div className="plan">
+        {data.steps.map((s, i) => (
+          <div key={i} className={'pstep' + (s.big ? ' big' : '')}>
+            <div className="pnum">{i + 1}</div>
+            <div style={{ flex: 1 }}>
+              <div className="ptitle">{s.title}{s.tag ? <span className="ptag">{s.tag}</span> : null}{s.big ? <span className="ptag">the big one</span> : null}</div>
+              <div className="pwhy">{s.why}</div>
+              <div className="vchip">✓ validated{s.touches ? ' · touches ' + s.touches : ''}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mono" style={{ fontSize: 11, color: C.lo, lineHeight: 1.55, marginTop: 2 }}>Milestone: your first retained client. Then we run the warm moves again, to three. This is the long ramp made concrete, and we adjust as the world responds.</div>
+      <button className="cta" style={{ marginTop: 18 }} onClick={onStart}><span>Start with move one</span><span className="mono">→</span></button>
+    </>
+  );
+}
