@@ -1,0 +1,91 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
+import { chatJSON } from '../_shared/llm.ts';
+
+// validate-thesis: the real research harness behind the hero. Takes a fractional exec's
+// thesis (+ background), runs live web research via Perplexity (sourced), then structures
+// the findings into the corpus-grounded scorecard + the deconstructed steps via the
+// provider-fallback LLM. Honest: bands with evidence and confidence, never fake numbers;
+// low-confidence findings are flagged, not hidden. The "Can you win it" warm-reach line
+// stays low-confidence until the user's network is connected (later, Apify).
+
+async function perplexity(thesis: string, background: string): Promise<{ text: string; citations: string[] }> {
+  const key = Deno.env.get('PERPLEXITY_API_KEY');
+  if (!key) throw new Error('PERPLEXITY_API_KEY not set');
+  const prompt = `You are validating a fractional executive's business thesis using current, real sources.
+THESIS: ${thesis}
+${background ? `THEIR BACKGROUND: ${background}` : ''}
+Assess concisely, with evidence and inline source numbers:
+1. Demand versus supply for this SPECIFIC niche (not the broad category).
+2. How crowded and competitive this exact niche is.
+3. Real buyer pain and urgency, citing community discussion (Reddit, LinkedIn) where you can find it.
+4. Typical monthly retainer pricing for this kind of work.
+End each point with a confidence of high, medium, or low. Be specific.`;
+  const body = { model: 'sonar', messages: [{ role: 'user', content: prompt }], max_tokens: 800 };
+  const res = await fetch('https://api.perplexity.ai/chat/completions', {
+    method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`perplexity ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const j = await res.json();
+  const text: string = j.choices?.[0]?.message?.content ?? '';
+  const citations: string[] = (j.citations ?? (j.search_results ?? []).map((s: { url?: string }) => s.url)).filter(Boolean);
+  return { text, citations };
+}
+
+const STRUCT_SYSTEM = `You turn live market research into an honest scorecard for a fractional executive deciding whether to pursue a thesis. You are given their thesis, their background, and sourced research.
+
+Return ONLY JSON:
+{
+ "read": string,
+ "opportunity": [ {"label": string, "band": "weak"|"mixed"|"strong"|"risk", "evidence": string, "confidence": "high"|"medium"|"low"} ],
+ "ability": [ {"label": string, "band": "weak"|"mixed"|"strong"|"risk", "evidence": string, "confidence": "high"|"medium"|"low"} ],
+ "flags": [string],
+ "steps": [ {"title": string, "why": string, "tag"?: string, "big"?: boolean} ],
+ "journey": [ {"label": string, "finding": string, "source": string, "low"?: boolean} ]
+}
+
+Rules:
+- "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "Your edge". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics.
+- "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from their background. For "Warm reach", you do NOT yet have their network, so band "mixed" and confidence "low" with evidence telling them connecting their network will score it precisely. This is the honesty rule, follow it.
+- "read": one or two plain sentences, the honest overall call. No jargon, no hype.
+- "flags": 3 to 5 short "worth knowing before you commit" notes (income ramp, scope, pricing band, productization, AI risk) only where the research or thesis supports them.
+- "steps": 5 small, ordered, doable moves from where they are to their first retained clients. Each "why" is one plain sentence on why it works. Mark the warm-network / referral move with "big": true (it is the strongest first-client lever). Use "tag":"this week" on the first move.
+- "journey": 5 to 6 short labels describing what the research did (reading background, sizing demand vs supply, scanning buyer pain, checking competition, mapping network, pricing), each with the one-line finding and a plain source label; mark any genuinely uncertain one with "low": true.
+- Plain, humanized language. No em dashes. No exclamation marks. Bands and words, never invented precise numbers.`;
+
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  try {
+    const { userId } = await requireAuth(req);
+    checkRateLimit(`validate-thesis:${userId}`, 5, 60_000);
+
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const thesis: string = typeof body?.thesis === 'string' ? body.thesis.slice(0, 1000) : '';
+    const background: string = typeof body?.background === 'string' ? body.background.slice(0, 1500) : '';
+    if (!thesis.trim()) {
+      return new Response(JSON.stringify({ error: 'Tell me your thesis: what you want to offer, and to whom.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const research = await perplexity(thesis, background);
+
+    let parsed: Record<string, unknown>;
+    try {
+      const { content } = await chatJSON({
+        system: STRUCT_SYSTEM,
+        user: `THESIS: ${thesis}\n\nBACKGROUND: ${background || '(not provided)'}\n\nSOURCED RESEARCH:\n${research.text}`,
+        temperature: 0.2,
+      });
+      parsed = JSON.parse(content);
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e instanceof Error ? e.message : 'structuring failed' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    return new Response(JSON.stringify({ ...parsed, citations: research.citations }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  } catch (error) {
+    return safeErrorResponse(error, getCorsHeaders(req));
+  }
+});
