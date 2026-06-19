@@ -9,17 +9,19 @@ import { chatJSON } from '../_shared/llm.ts';
 // low-confidence findings are flagged, not hidden. The "Can you win it" warm-reach line
 // stays low-confidence until the user's network is connected (later, Apify).
 
-async function perplexity(thesis: string, background: string): Promise<{ text: string; citations: string[] }> {
+async function perplexity(thesis: string, background: string, linkedin: string): Promise<{ text: string; citations: string[] }> {
   const key = Deno.env.get('PERPLEXITY_API_KEY');
   if (!key) throw new Error('PERPLEXITY_API_KEY not set');
   const prompt = `You are validating a fractional executive's business thesis using current, real sources.
 THESIS: ${thesis}
-${background ? `THEIR BACKGROUND: ${background}` : ''}
+${background ? `THEIR STATED BACKGROUND: ${background}` : ''}
+${linkedin ? `THEIR LINKEDIN PROFILE: ${linkedin} (look up any public information about this person to assess their fit and credibility for this thesis)` : ''}
 Assess concisely, with evidence and inline source numbers:
 1. Demand versus supply for this SPECIFIC niche (not the broad category).
 2. How crowded and competitive this exact niche is.
 3. Real buyer pain and urgency, citing community discussion (Reddit, LinkedIn) where you can find it.
 4. Typical monthly retainer pricing for this kind of work.
+5. This person's fit and credibility for this thesis, based on any public background you can find${linkedin ? ' from their LinkedIn' : ''}.
 End each point with a confidence of high, medium, or low. Be specific.`;
   const body = { model: 'sonar', messages: [{ role: 'user', content: prompt }], max_tokens: 800 };
   const res = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -48,7 +50,7 @@ Return ONLY JSON:
 
 Rules:
 - "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "Your edge". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics.
-- "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from their background. For "Warm reach", you do NOT yet have their network, so band "mixed" and confidence "low" with evidence telling them connecting their network will score it precisely. This is the honesty rule, follow it.
+- "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from the person's assessed background in the research and any stated background; if little public background was found, keep them at medium or low confidence and say plainly that connecting more detail would sharpen it. For "Warm reach", you do NOT yet have their network, so band "mixed" and confidence "low" with evidence telling them connecting their network will score it precisely. This is the honesty rule, follow it.
 - "read": one or two plain sentences, the honest overall call. No jargon, no hype.
 - "from": one plain sentence on where they are now, drawn from their background. "to": one plain sentence on where this thesis takes them, their goal. Both short and concrete.
 - "flags": 3 to 5 short "worth knowing before you commit" notes (income ramp, scope, pricing band, productization, AI risk) only where the research or thesis supports them.
@@ -66,12 +68,13 @@ Deno.serve(async (req) => {
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
     const thesis: string = typeof body?.thesis === 'string' ? body.thesis.slice(0, 1000) : '';
     const background: string = typeof body?.background === 'string' ? body.background.slice(0, 1500) : '';
+    const linkedin: string = typeof body?.linkedin_url === 'string' ? body.linkedin_url.slice(0, 200) : '';
     if (!thesis.trim()) {
       return new Response(JSON.stringify({ error: 'Tell me your thesis: what you want to offer, and to whom.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const research = await perplexity(thesis, background);
+    const research = await perplexity(thesis, background, linkedin);
 
     let parsed: Record<string, unknown>;
     try {
