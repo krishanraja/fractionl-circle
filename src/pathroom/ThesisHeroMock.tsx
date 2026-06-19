@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { C, FONT, MONO } from './tokens';
 
-const PHASES: Array<[string, string]> = [['capture', 'Capture'], ['thinking', 'Watch it think'], ['read', 'The read']];
+const PHASES: Array<[string, string]> = [['capture', 'Capture'], ['thinking', 'Watch it think'], ['read', 'The read'], ['steps', 'The steps']];
 
 // The visible research journey. Each step resolves to a finding; some are honest about low confidence.
 const STEPS = [
@@ -40,6 +40,17 @@ const FLAGS = [
 ];
 const READ = 'Worth it. The idea is strong and yours to win, but the lane is crowded, so your edge, seed-stage plus two exits, has to lead everything you say. Here is the hard middle, broken down.';
 
+// The deconstruction: the hard middle turned into small, ordered, validated moves.
+const FROM = 'Ex-CMO, two exits, no fractional clients yet.';
+const TO = 'Two to three retained seed-stage clients at $6K to $8K a month.';
+const PLAN: Array<{ t: string; why: string; tag?: string; touches?: string; big?: boolean }> = [
+  { t: 'Sharpen your wedge to one sentence.', why: 'In a lane this crowded, the specific wins and the generalist gets skipped. Lead with seed-stage and your two exits, nothing softer.', tag: 'this week' },
+  { t: 'Turn your two exits into two short proof stories.', why: 'Seed founders buy proof fast. Your track record is the quickest trust you have, so make it impossible to miss.' },
+  { t: 'Package one fixed-scope offer, priced.', why: 'A fixed first-90-days scope closes faster than hourly and shields you from scope creep. Sit it around $6K to $8K a month.' },
+  { t: 'Reach the nine founders already in your circle.', why: 'Almost every fractional client comes through a warm relationship, not cold outreach. This is the single move that lands your first client fastest.', touches: '9 people', big: true },
+  { t: 'Ask every warm chat for one introduction.', why: 'Referrals compound. One good intro becomes your second client, and the portfolio starts to build itself.' },
+];
+
 const css = `
 .thx * { box-sizing:border-box; margin:0; padding:0; }
 .thx { background:${C.bg}; color:${C.hi}; font-family:${FONT}; min-height:100vh; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; }
@@ -73,6 +84,18 @@ const css = `
 .thx .nav { display:flex; gap:6px; justify-content:center; margin-bottom:16px; }
 .thx .nb { font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; background:none; border:1px solid ${C.line}; border-radius:5px; padding:6px 10px; cursor:pointer; }
 .thx .nb.on { color:${C.accent}; border-color:${C.accentEdge}; background:${C.accentDim}; }
+.thx .ft { display:flex; gap:10px; margin-top:14px; }
+.thx .ftcol { flex:1; background:${C.panel}; border:1px solid ${C.line}; border-radius:9px; padding:11px 12px; }
+.thx .ftk { font-family:${MONO}; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:${C.lo}; }
+.thx .ftv { font-size:12.5px; color:${C.hi}; margin-top:5px; line-height:1.4; }
+.thx .plan { margin-top:20px; }
+.thx .pstep { display:flex; gap:13px; padding-bottom:18px; }
+.thx .pnum { width:26px; height:26px; border-radius:50%; border:1px solid ${C.line2}; color:${C.mid}; font-family:${MONO}; font-size:12px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; }
+.thx .pstep.big .pnum { border-color:${C.accentEdge}; color:${C.accent}; }
+.thx .ptitle { font-size:14.5px; font-weight:600; line-height:1.32; }
+.thx .pwhy { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:5px; }
+.thx .vchip { display:inline-flex; align-items:center; gap:6px; font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.good}; margin-top:8px; }
+.thx .ptag { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.accent}; border:1px solid ${C.accentEdge}; border-radius:3px; padding:1px 5px; margin-left:8px; }
 `;
 
 function Pips({ band }: { band: Band }) {
@@ -176,8 +199,34 @@ export default function ThesisHeroMock() {
                 </div>
               ))}
             </div>
-            <button className="cta" style={{ marginTop: 20 }} onClick={() => setPhase('capture')}><span>Show me the steps to get there</span><span className="mono">→</span></button>
+            <button className="cta" style={{ marginTop: 20 }} onClick={() => setPhase('steps')}><span>Show me the steps to get there</span><span className="mono">→</span></button>
             <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 10, textAlign: 'center' }}>scores are bands with evidence, not exact numbers</div>
+          </>
+        ) : null}
+
+        {phase === 'steps' ? (
+          <>
+            <div className="ovl">Your path</div>
+            <div className="h" style={{ marginTop: 10 }}>Here is how you get there.</div>
+            <div className="sub">Five moves from where you are to your first retained clients. Small, in order, and each one earns its place.</div>
+            <div className="ft">
+              <div className="ftcol"><div className="ftk">Where you are</div><div className="ftv">{FROM}</div></div>
+              <div className="ftcol"><div className="ftk">Where you are going</div><div className="ftv">{TO}</div></div>
+            </div>
+            <div className="plan">
+              {PLAN.map((s, i) => (
+                <div key={i} className={'pstep' + (s.big ? ' big' : '')}>
+                  <div className="pnum">{i + 1}</div>
+                  <div style={{ flex: 1 }}>
+                    <div className="ptitle">{s.t}{s.tag ? <span className="ptag">{s.tag}</span> : null}{s.big ? <span className="ptag">the big one</span> : null}</div>
+                    <div className="pwhy">{s.why}</div>
+                    <div className="vchip">✓ validated{s.touches ? ' · touches ' + s.touches : ''}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mono" style={{ fontSize: 11, color: C.lo, lineHeight: 1.55, marginTop: 2 }}>Milestone: your first retained client. Then we run the last two moves again, to three. This is the long ramp made concrete, and we adjust as the world responds.</div>
+            <button className="cta" style={{ marginTop: 18 }} onClick={() => setPhase('capture')}><span>Start with move one</span><span className="mono">→</span></button>
           </>
         ) : null}
       </div>
