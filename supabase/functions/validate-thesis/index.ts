@@ -50,11 +50,11 @@ Return ONLY JSON:
 
 Rules:
 - "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "Your edge". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics.
-- "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from the person's assessed background in the research and any stated background; if little public background was found, keep them at medium or low confidence and say plainly that connecting more detail would sharpen it. For "Warm reach", you do NOT yet have their network, so band "mixed" and confidence "low" with evidence telling them connecting their network will score it precisely. This is the honesty rule, follow it.
+- "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from the person's assessed background in the research and any stated background; if little public background was found, keep them at medium or low confidence and say plainly that connecting more detail would sharpen it. For "Warm reach": you are given THEIR CIRCLE. If the circle is empty, band "mixed", confidence "low", evidence telling them to connect their network. If it has people, judge how many plausibly fit the thesis's buyer (founders or leaders at the target kind of company): several clear fits = band "strong", a few = "mixed", and state how many fit. Confidence "high" only with a real circle. Never invent people not in the circle. This is the honesty rule, follow it.
 - "read": one or two plain sentences, the honest overall call. No jargon, no hype.
 - "from": one plain sentence on where they are now, drawn from their background. "to": one plain sentence on where this thesis takes them, their goal. Both short and concrete.
 - "flags": 3 to 5 short "worth knowing before you commit" notes (income ramp, scope, pricing band, productization, AI risk) only where the research or thesis supports them.
-- "steps": 5 small, ordered, doable moves from where they are to their first retained clients. Each "why" is one plain sentence on why it works. Mark the warm-network / referral move with "big": true (it is the strongest first-client lever). Use "tag":"this week" on the first move.
+- "steps": 5 small, ordered, doable moves from where they are to their first retained clients. Each "why" is one plain sentence on why it works. Mark the warm-network / referral move with "big": true (it is the strongest first-client lever). When THEIR CIRCLE contains people who fit the buyer, that big move must NAME one to three of them specifically and set "touches" to the number who fit; if the circle is empty, keep it generic and invent no names. Use "tag":"this week" on the first move.
 - "journey": 5 to 6 short labels describing what the research did (reading background, sizing demand vs supply, scanning buyer pain, checking competition, mapping network, pricing), each with the one-line finding and a plain source label; mark any genuinely uncertain one with "low": true.
 - Plain, humanized language. No em dashes. No exclamation marks. Bands and words, never invented precise numbers.`;
 
@@ -74,13 +74,17 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    const { data: circleRows } = await supabase.from('circle_person').select('display_name, title, company').eq('user_id', userId).limit(60);
+    const circle = (circleRows ?? []).map((p: { display_name: string; title: string | null; company: string | null }) =>
+      `${p.display_name}${p.title ? ', ' + p.title : ''}${p.company ? ' at ' + p.company : ''}`);
+
     const research = await perplexity(thesis, background, linkedin);
 
     let parsed: Record<string, unknown>;
     try {
       const { content } = await chatJSON({
         system: STRUCT_SYSTEM,
-        user: `THESIS: ${thesis}\n\nBACKGROUND: ${background || '(not provided)'}\n\nSOURCED RESEARCH:\n${research.text}`,
+        user: `THESIS: ${thesis}\n\nBACKGROUND: ${background || '(not provided)'}\n\nTHEIR CIRCLE (${circle.length} people):\n${circle.length ? circle.join('\n') : '(none connected yet)'}\n\nSOURCED RESEARCH:\n${research.text}`,
         temperature: 0.2,
       });
       parsed = JSON.parse(content);

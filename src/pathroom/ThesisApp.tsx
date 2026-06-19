@@ -7,8 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { C, MONO } from './tokens';
 import { thesisCss, CaptureView, ThinkingView, ReadView, StepsView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
 import { runValidation, getLatestRun } from './thesisData';
+import ThesisCircle from './ThesisCircle';
 
-type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'steps';
+type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'steps' | 'circle';
 
 export default function ThesisApp() {
   const { user, loading: authLoading } = useAuth();
@@ -60,6 +61,10 @@ export default function ThesisApp() {
     );
   }
 
+  if (phase === 'circle' && userId) {
+    return <div className="thx"><style>{thesisCss}</style><ThesisCircle userId={userId} onBack={() => setPhase(data ? 'read' : 'capture')} /></div>;
+  }
+
   const journeySteps: JourneyT[] = (done && data?.journey?.length) ? data.journey : CANONICAL_JOURNEY;
 
   return (
@@ -71,7 +76,9 @@ export default function ThesisApp() {
         {phase === 'read' && data ? <ReadView data={data} onSteps={() => setPhase('steps')} /> : null}
         {phase === 'steps' && data ? <StepsView data={data} onStart={() => setPhase('read')} /> : null}
         {(phase === 'read' || phase === 'steps') ? (
-          <div style={{ textAlign: 'center', marginTop: 22 }}>
+          <div style={{ textAlign: 'center', marginTop: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button className="mono" style={{ background: 'none', border: 0, color: C.accent, fontSize: 10.5, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+              onClick={() => setPhase('circle')}>build your circle to sharpen warm reach →</button>
             <button className="mono" style={{ background: 'none', border: 0, color: C.lo, fontSize: 10, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}
               onClick={() => { setData(null); setDone(false); setShown(0); setPhase('capture'); }}>＋ validate another thesis</button>
           </div>
