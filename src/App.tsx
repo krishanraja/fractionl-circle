@@ -47,6 +47,10 @@ const IDENTITY_FIRSTRUN_ENABLED = import.meta.env.VITE_IDENTITY_FIRSTRUN_ENABLED
 // When true, /path renders the new adaptive decisioning surface.
 const PATH_ROOM_ENABLED = import.meta.env.VITE_PATH_ROOM_ENABLED === 'true';
 
+// Go-live: when true, an authenticated "/" lands on the thesis-validation product
+// (the new first-run) instead of the legacy app. Reversible via env.
+const THESIS_DEFAULT = import.meta.env.VITE_THESIS_DEFAULT === 'true';
+
 /**
  * Public /auth route. Renders the working AuthPage (Google OAuth + email).
  * On a successful password sign-in, AuthPage calls onAuthenticated; we navigate
@@ -118,6 +122,12 @@ function AuthenticatedShell() {
       return <MarketingLanding />;
     }
     return <AuthPage onAuthenticated={() => {}} />;
+  }
+
+  // Go-live: the thesis-validation product is the default authed experience. Its own
+  // capture screen is the first run, so the legacy onboarding/Index are bypassed.
+  if (THESIS_DEFAULT) {
+    return <ThesisApp />;
   }
 
   if (needsOnboarding) {

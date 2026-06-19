@@ -14,6 +14,11 @@ export async function getLatestRun(userId: string): Promise<Scorecard | null> {
   return ((data as { result?: Scorecard } | null)?.result) ?? null;
 }
 
+export async function getRunCount(userId: string): Promise<number> {
+  const { count } = await supabase.from('thesis_runs').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+  return count ?? 0;
+}
+
 export interface CircleP { id: string; name: string; title: string | null; company: string | null; note?: string | null; source?: string | null }
 
 export async function getCircle(userId: string): Promise<CircleP[]> {
