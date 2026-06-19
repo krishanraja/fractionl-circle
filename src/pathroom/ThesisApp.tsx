@@ -91,10 +91,10 @@ export default function ThesisApp() {
     <div className="thx"><style>{thesisCss}</style>
       <div className="wrap">
         {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
-        {phase === 'capture' ? <CaptureView onSubmit={onSubmit} /> : null}
+        {phase === 'capture' ? <CaptureView onSubmit={onSubmit} onAddPeople={() => setPhase('circle')} /> : null}
         {phase === 'thinking' ? <ThinkingView steps={journeySteps} shown={shown} done={done} onSeeRead={() => setPhase('read')} /> : null}
         {phase === 'read' && data ? <ReadView data={data} onSteps={() => setPhase('steps')} /> : null}
-        {phase === 'steps' && data ? <StepsView data={data} onStart={() => setPhase('read')} /> : null}
+        {phase === 'steps' && data ? <StepsView data={data} onStart={() => setPhase('circle')} /> : null}
         {(phase === 'read' || phase === 'steps') ? (
           <div style={{ textAlign: 'center', marginTop: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <button className="mono" style={{ background: 'none', border: 0, color: C.accent, fontSize: 10.5, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}

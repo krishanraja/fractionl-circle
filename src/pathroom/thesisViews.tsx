@@ -93,7 +93,7 @@ function ScoreRow({ r }: { r: ScoreRowT }) {
   );
 }
 
-export function CaptureView({ onSubmit, busy }: { onSubmit: (thesis: string, linkedin: string, background: string) => void; busy?: boolean }) {
+export function CaptureView({ onSubmit, busy, onAddPeople }: { onSubmit: (thesis: string, linkedin: string, background: string) => void; busy?: boolean; onAddPeople?: () => void }) {
   const [thesis, setThesis] = useState('');
   const [linkedin, setLinkedin] = useState('');
   const [background, setBackground] = useState('');
@@ -105,10 +105,12 @@ export function CaptureView({ onSubmit, busy }: { onSubmit: (thesis: string, lin
       <textarea style={{ marginTop: 16 }} value={thesis} onChange={(e) => setThesis(e.target.value)} placeholder="Fractional CMO for seed-stage B2B SaaS founders who hired too senior too early and need strategy, not a full-time hire." />
       <input style={{ marginTop: 10 }} value={background} onChange={(e) => setBackground(e.target.value)} placeholder="One line on your background, so we can judge your fit (e.g. 12 years B2B SaaS marketing, two exits)" />
       <input style={{ marginTop: 10 }} value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="linkedin.com/in/your-profile (optional)" />
-      <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-        <span className="chip">＋ Snap a business card</span>
-        <span className="chip">＋ Screenshot someone you admire</span>
-      </div>
+      {onAddPeople ? (
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+          <button className="chip" onClick={onAddPeople}>＋ Snap a business card</button>
+          <button className="chip" onClick={onAddPeople}>＋ Screenshot someone you admire</button>
+        </div>
+      ) : null}
       <div className="mono" style={{ fontSize: 10.5, color: C.lo, margin: '14px 0' }}>We will be upfront about anything we are not sure of.</div>
       <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim(), background.trim())}>
         <span>{busy ? 'starting...' : 'Validate my thesis'}</span><span className="mono">→</span>
@@ -196,7 +198,7 @@ export function StepsView({ data, onStart }: { data: Scorecard; onStart: () => v
         ))}
       </div>
       <div className="mono" style={{ fontSize: 11, color: C.lo, lineHeight: 1.55, marginTop: 2 }}>Milestone: your first retained client. Then we run the warm moves again, to three. This is the long ramp made concrete, and we adjust as the world responds.</div>
-      <button className="cta" style={{ marginTop: 18 }} onClick={onStart}><span>Start with move one</span><span className="mono">→</span></button>
+      <button className="cta" style={{ marginTop: 18 }} onClick={onStart}><span>Build your circle to begin</span><span className="mono">→</span></button>
     </>
   );
 }
