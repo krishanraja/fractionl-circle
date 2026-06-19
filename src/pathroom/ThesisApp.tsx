@@ -4,30 +4,41 @@
 // user lands on their read. Presentational layer is shared with the fixture mock.
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import { getPriceId } from '@/lib/tiers';
 import { C, MONO } from './tokens';
 import { thesisCss, CaptureView, ThinkingView, ReadView, StepsView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
-import { runValidation, getLatestRun } from './thesisData';
+import { runValidation, getLatestRun, getRunCount } from './thesisData';
 import ThesisCircle from './ThesisCircle';
 
-type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'steps' | 'circle';
+type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'steps' | 'circle' | 'gate';
 
 export default function ThesisApp() {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id;
+  const { isProOrAbove, openCheckout } = useSubscription();
   const [phase, setPhase] = useState<Phase>('loading');
   const [data, setData] = useState<Scorecard | null>(null);
   const [shown, setShown] = useState(0);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [runCount, setRunCount] = useState(0);
   const timers = useRef<number[]>([]);
 
   useEffect(() => {
     if (authLoading) return;
     if (!userId) { setPhase('signin'); return; }
+    getRunCount(userId).then(setRunCount).catch(() => {});
     getLatestRun(userId)
       .then((r) => { if (r) { setData(r); setPhase('read'); } else setPhase('capture'); })
       .catch(() => setPhase('capture'));
   }, [userId, authLoading]);
+
+  // Free includes one full validation; re-validation is Pro.
+  function startAnother() {
+    if (!isProOrAbove && runCount >= 1) { setPhase('gate'); return; }
+    setData(null); setDone(false); setShown(0); setPhase('capture');
+  }
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -38,7 +49,7 @@ export default function ThesisApp() {
     try {
       const r = await runValidation(thesis, linkedin, background);
       timers.current.forEach(clearTimeout);
-      setData(r); setShown(r.journey?.length || CANONICAL_JOURNEY.length); setDone(true);
+      setData(r); setShown(r.journey?.length || CANONICAL_JOURNEY.length); setDone(true); setRunCount((c) => c + 1);
     } catch {
       timers.current.forEach(clearTimeout);
       setErr('Something went wrong reaching the research. Give it another try in a moment.');
@@ -64,6 +75,15 @@ export default function ThesisApp() {
   if (phase === 'circle' && userId) {
     return <div className="thx"><style>{thesisCss}</style><ThesisCircle userId={userId} onBack={() => setPhase(data ? 'read' : 'capture')} /></div>;
   }
+  if (phase === 'gate') {
+    return <div className="thx"><style>{thesisCss}</style><div className="wrap">
+      <div className="ovl">Pro</div>
+      <div className="h" style={{ marginTop: 10 }}>You have used your free validation.</div>
+      <div className="sub">Pro gives you unlimited validations as your thesis evolves, your network warm reach, and ongoing market monitoring. $39 a month.</div>
+      <button className="cta" style={{ marginTop: 18 }} onClick={async () => { const pid = getPriceId('pro'); if (pid) await openCheckout(pid); }}><span>Upgrade to Pro</span><span className="mono">→</span></button>
+      <button className="mono" style={{ background: 'none', border: 0, color: C.lo, fontSize: 10, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 14, display: 'block' }} onClick={() => setPhase(data ? 'read' : 'capture')}>back</button>
+    </div></div>;
+  }
 
   const journeySteps: JourneyT[] = (done && data?.journey?.length) ? data.journey : CANONICAL_JOURNEY;
 
@@ -80,7 +100,7 @@ export default function ThesisApp() {
             <button className="mono" style={{ background: 'none', border: 0, color: C.accent, fontSize: 10.5, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}
               onClick={() => setPhase('circle')}>build your circle to sharpen warm reach →</button>
             <button className="mono" style={{ background: 'none', border: 0, color: C.lo, fontSize: 10, cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase' }}
-              onClick={() => { setData(null); setDone(false); setShown(0); setPhase('capture'); }}>＋ validate another thesis</button>
+              onClick={startAnother}>＋ validate another thesis</button>
           </div>
         ) : null}
       </div>
