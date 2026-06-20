@@ -77,7 +77,14 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 - Plain language. No jargon, no em dashes in product copy.
 - Mobile is a fixed no-scroll frame (`useAppFrame`): one focused thing per screen, the
   primary action pinned and always visible, and every screen lands at the top. The page
-  itself never scrolls; only a screen's body may scroll internally when truly needed.
+  itself never scrolls. Content is sized to fit: the read is glanceable (label + band +
+  confidence, evidence on tap; headline clamps to 3 lines, tap to expand) and the thinking
+  findings clamp to one line, so capture / thinking / read / sharpen / journey all fit a
+  phone viewport. (Only sub-iPhone-SE heights, under ~667px, keep a small internal read
+  scroll, with the action still pinned.)
+- Living and breathing, restrained for the quiet-instrument register: each screen's content
+  rises in on change, the brand ember gently breathes, the primary action and cards give
+  press feedback, and evidence fades in on tap. All motion honors `prefers-reduced-motion`.
 
 ## Architecture
 
