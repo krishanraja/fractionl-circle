@@ -106,7 +106,8 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
       <EmberNav fuel={fuel} fuels={fuels} hint="tap the mark" />
       <div className="thxbody" ref={bodyRef}>
-      <div className="wrap">
+      <div className="wrap" key={step}>
+
         <div className="ovl">Start here</div>
 
         {recent.length ? (
