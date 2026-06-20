@@ -142,7 +142,7 @@ export function ThinkingView({ steps, shown, done, onSeeRead }: { steps: Journey
   );
 }
 
-export function ReadView({ data, onSteps }: { data: Scorecard; onSteps: () => void }) {
+export function ReadView({ data }: { data: Scorecard }) {
   return (
     <>
       <div className="ovl">Your read</div>
@@ -167,8 +167,7 @@ export function ReadView({ data, onSteps }: { data: Scorecard; onSteps: () => vo
           ))}
         </div>
       ) : null}
-      <button className="cta" style={{ marginTop: 20 }} onClick={onSteps}><span>Show me the steps to get there</span><span className="mono">→</span></button>
-      <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 10, textAlign: 'center' }}>scores are bands with evidence, not exact numbers</div>
+      <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 16, textAlign: 'center' }}>scores are bands with evidence, not exact numbers</div>
     </>
   );
 }
