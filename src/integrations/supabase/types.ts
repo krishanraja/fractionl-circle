@@ -220,9 +220,11 @@ export type Database = {
           last_interaction_at: string | null
           linkedin_url: string | null
           location: string | null
+          note: string | null
           primary_email: string | null
           primary_phone: string | null
           response_rate: number | null
+          source: string | null
           tags: string[] | null
           title: string | null
           updated_at: string
@@ -240,9 +242,11 @@ export type Database = {
           last_interaction_at?: string | null
           linkedin_url?: string | null
           location?: string | null
+          note?: string | null
           primary_email?: string | null
           primary_phone?: string | null
           response_rate?: number | null
+          source?: string | null
           tags?: string[] | null
           title?: string | null
           updated_at?: string
@@ -260,9 +264,11 @@ export type Database = {
           last_interaction_at?: string | null
           linkedin_url?: string | null
           location?: string | null
+          note?: string | null
           primary_email?: string | null
           primary_phone?: string | null
           response_rate?: number | null
+          source?: string | null
           tags?: string[] | null
           title?: string | null
           updated_at?: string
@@ -2191,6 +2197,8 @@ export type Database = {
           current_position: string | null
           function: string | null
           hold_position: boolean
+          inner_circle: Json | null
+          inner_circle_fork: string | null
           lit_fork_domain: string | null
           manual_override: boolean
           motivation_type: string | null
@@ -2209,6 +2217,8 @@ export type Database = {
           current_position?: string | null
           function?: string | null
           hold_position?: boolean
+          inner_circle?: Json | null
+          inner_circle_fork?: string | null
           lit_fork_domain?: string | null
           manual_override?: boolean
           motivation_type?: string | null
@@ -2227,6 +2237,8 @@ export type Database = {
           current_position?: string | null
           function?: string | null
           hold_position?: boolean
+          inner_circle?: Json | null
+          inner_circle_fork?: string | null
           lit_fork_domain?: string | null
           manual_override?: boolean
           motivation_type?: string | null
@@ -2238,6 +2250,69 @@ export type Database = {
           stage?: string | null
           tenure_band?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      thesis_inspiration: {
+        Row: {
+          created_at: string
+          field: string | null
+          id: string
+          kind: string | null
+          name: string | null
+          positioning: string | null
+          user_id: string
+          why: string | null
+        }
+        Insert: {
+          created_at?: string
+          field?: string | null
+          id?: string
+          kind?: string | null
+          name?: string | null
+          positioning?: string | null
+          user_id: string
+          why?: string | null
+        }
+        Update: {
+          created_at?: string
+          field?: string | null
+          id?: string
+          kind?: string | null
+          name?: string | null
+          positioning?: string | null
+          user_id?: string
+          why?: string | null
+        }
+        Relationships: []
+      }
+      thesis_runs: {
+        Row: {
+          background: string | null
+          created_at: string
+          id: string
+          result: Json
+          step_progress: Json
+          thesis: string
+          user_id: string
+        }
+        Insert: {
+          background?: string | null
+          created_at?: string
+          id?: string
+          result: Json
+          step_progress?: Json
+          thesis: string
+          user_id: string
+        }
+        Update: {
+          background?: string | null
+          created_at?: string
+          id?: string
+          result?: Json
+          step_progress?: Json
+          thesis?: string
           user_id?: string
         }
         Relationships: []

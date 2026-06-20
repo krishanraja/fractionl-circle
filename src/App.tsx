@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SetNewPasswordScreen } from "@/components/SetNewPasswordScreen";
 import { PreferencesApplier } from "@/components/PreferencesApplier";
@@ -19,6 +19,11 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ConsentBanner } from "./components/compliance/ConsentBanner";
 import { SessionManager } from "./components/compliance/SessionManager";
 import { useConsent } from "./hooks/useConsent";
+
+// Unlinked design fixtures (lazy so they stay out of the main prod bundle). Not in nav.
+const StartHereMock = lazy(() => import("./preview/StartHereMock"));
+const SharpenMock = lazy(() => import("./preview/SharpenMock"));
+const JourneyMock = lazy(() => import("./preview/JourneyMock"));
 
 const queryClient = new QueryClient();
 
@@ -123,6 +128,9 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/auth" element={<AuthRoute />} />
+        <Route path="/preview/start" element={<Suspense fallback={null}><StartHereMock /></Suspense>} />
+        <Route path="/preview/sharpen" element={<Suspense fallback={null}><SharpenMock /></Suspense>} />
+        <Route path="/preview/journey" element={<Suspense fallback={null}><JourneyMock /></Suspense>} />
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

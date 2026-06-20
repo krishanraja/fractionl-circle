@@ -2,16 +2,76 @@
 // and persists the run server-side (RLS, user-owned); we read the latest run back.
 import { supabase } from '@/integrations/supabase/client';
 import type { Scorecard } from './thesisViews';
+import { judgeLocal, type Verdict, type JudgeKind } from './thesisJudge';
 
-export async function getLatestRun(userId: string): Promise<Scorecard | null> {
+export interface RunFull { id: string; result: Scorecard; stepProgress: number[]; thesis: string; background: string }
+
+// The latest saved run, with its id, the thesis/background that produced it, and step
+// progress (the journey loop and re-runs read this back).
+export async function getLatestRunFull(userId: string): Promise<RunFull | null> {
   const { data } = await supabase
     .from('thesis_runs')
-    .select('result')
+    .select('id, result, step_progress, thesis, background')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-  return ((data as { result?: Scorecard } | null)?.result) ?? null;
+  const r = data as { id: string; result: Scorecard; step_progress: unknown; thesis: string | null; background: string | null } | null;
+  if (!r?.result) return null;
+  return { id: r.id, result: r.result, stepProgress: Array.isArray(r.step_progress) ? (r.step_progress as number[]) : [], thesis: r.thesis || '', background: r.background || '' };
+}
+
+// Mark which journey steps are done, on the latest run.
+export async function saveStepProgress(runId: string, indices: number[]): Promise<void> {
+  const { error } = await supabase.from('thesis_runs').update({ step_progress: indices }).eq('id', runId);
+  if (error) throw error;
+}
+
+// The cheap sufficiency gate (judge-thesis edge fn), with a deterministic local fallback
+// so the dialogue always gets a verdict even if the model call fails.
+export async function judgeThesis(thesis: string, round = 0): Promise<Verdict> {
+  try {
+    const { data, error } = await supabase.functions.invoke('judge-thesis', { body: { thesis, round } });
+    if (error) throw error;
+    const d = data as Partial<Verdict> | null;
+    if (!d?.kind) throw new Error('no verdict');
+    return { kind: d.kind as JudgeKind, followup: d.followup || '', distilled: d.distilled || '', options: Array.isArray(d.options) ? d.options : [] };
+  } catch {
+    return judgeLocal(thesis, round);
+  }
+}
+
+export interface AdmireResult { ok: boolean; name?: string; positioning?: string | null; kind?: 'business' | 'person' | 'competitor'; field?: string | null; reject?: string }
+
+// Screenshot of a business the user admires -> Gemini reads its positioning to sharpen the
+// thesis. Writes nothing to the circle. Honest reject when unreadable.
+export async function extractAdmire(dataUrl: string, thesis: string): Promise<AdmireResult> {
+  const { data, error } = await supabase.functions.invoke('extract-admire', { body: { image: dataUrl, thesis } });
+  if (error) {
+    const ctx = (error as { context?: { body?: string } })?.context?.body;
+    let msg = 'I could not read a profile or business in that clearly. Try a sharper screenshot, or tell me in one line what they do.';
+    try { if (ctx) msg = JSON.parse(ctx).error || msg; } catch { /* keep default */ }
+    return { ok: false, reject: msg };
+  }
+  return data as AdmireResult;
+}
+
+// Save an admired business + why, which validate-thesis reads to sharpen "Your edge".
+export async function saveInspiration(userId: string, insp: { name: string; positioning?: string | null; kind?: string; field?: string | null; why: string }): Promise<void> {
+  const { error } = await supabase.from('thesis_inspiration').insert({
+    user_id: userId, name: insp.name, positioning: insp.positioning ?? null, kind: insp.kind ?? 'business', field: insp.field ?? null, why: insp.why,
+  });
+  if (error) throw error;
+}
+
+export async function getInspirationCount(userId: string): Promise<number> {
+  const { count } = await supabase.from('thesis_inspiration').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+  return count ?? 0;
+}
+
+export async function getLatestRun(userId: string): Promise<Scorecard | null> {
+  const full = await getLatestRunFull(userId);
+  return full?.result ?? null;
 }
 
 export async function getRunCount(userId: string): Promise<number> {
