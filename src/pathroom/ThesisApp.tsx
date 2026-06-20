@@ -157,7 +157,7 @@ export default function ThesisApp() {
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
       <EmberNav fuel={fuel} fuels={fuels} hint={hint} />
       <div className="thxbody" ref={bodyRef}>
-        <div className="wrap">
+        <div className="wrap" key={phase}>
           {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
           {body}
         </div>

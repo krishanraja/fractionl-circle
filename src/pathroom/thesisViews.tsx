@@ -38,18 +38,18 @@ export const thesisCss = `
 .thx .cta { display:flex; align-items:center; justify-content:space-between; background:${C.accent}; color:#1A1206; border-radius:7px; padding:14px 16px; font-weight:600; font-size:15px; cursor:pointer; border:0; width:100%; }
 .thx .cta:disabled { opacity:0.5; cursor:default; }
 .thx .chip { display:inline-flex; gap:6px; align-items:center; border:1px solid ${C.line2}; border-radius:7px; padding:9px 12px; font-size:12.5px; color:${C.mid}; cursor:pointer; background:${C.panel}; }
-.thx .step { display:flex; gap:12px; padding:13px 0; border-top:1px solid ${C.line}; opacity:0; transform:translateY(4px); transition:opacity .4s ease, transform .4s ease; }
+.thx .step { display:flex; gap:12px; padding:8px 0; border-top:1px solid ${C.line}; opacity:0; transform:translateY(4px); transition:opacity .4s ease, transform .4s ease; }
 .thx .step.on { opacity:1; transform:none; }
 .thx .dot { width:16px; height:16px; border-radius:50%; flex:0 0 auto; margin-top:2px; border:1.5px solid ${C.line2}; display:flex; align-items:center; justify-content:center; font-size:10px; color:${C.bg}; }
 .thx .dot.done { background:${C.accent}; border-color:${C.accent}; }
 .thx .dot.spin { border-top-color:${C.accent}; animation:thxspin 0.8s linear infinite; }
 @keyframes thxspin { to { transform:rotate(360deg); } }
 .thx .slabel { font-size:13.5px; color:${C.hi}; font-weight:500; }
-.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:3px; }
+.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
 .thx .ssrc { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; margin-top:5px; }
 .thx .panel { background:${C.panel2}; border:1px solid ${C.line}; border-radius:11px; padding:16px; }
 .thx .grp { font-family:${MONO}; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:${C.accent}; }
-.thx .row { padding:11px 0; border-top:1px solid ${C.line}; }
+.thx .row { padding:9px 0; border-top:1px solid ${C.line}; }
 .thx .row:first-of-type { border-top:0; }
 .thx .rtop { display:flex; align-items:center; gap:10px; }
 .thx .rlabel { font-size:14px; font-weight:600; flex:1; }
@@ -127,8 +127,8 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
   return (
     <>
       <div className="ovl">Working on it</div>
-      <div className="h" style={{ marginTop: 10 }}>Pulling the world together on your idea.</div>
-      <div className="sub">Reading your background, sizing the market, listening to your buyers, weighing your edge.</div>
+      <div className="h" style={{ marginTop: 8, fontSize: 19, lineHeight: 1.3 }}>Pulling the world together on your idea.</div>
+      <div className="sub" style={{ marginTop: 6 }}>Reading the market, your buyers, and your edge.</div>
       <div style={{ marginTop: 16 }}>
         {steps.map((s, i) => (
           <div key={i} className={'step' + (i < shown ? ' on' : '')}>
@@ -147,10 +147,12 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
 
 export function ReadView({ data }: { data: Scorecard }) {
   const [flagsOpen, setFlagsOpen] = useState(false);
+  const [readOpen, setReadOpen] = useState(false);
+  const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
   return (
     <>
       <div className="ovl">Your read</div>
-      <div className="h" style={{ marginTop: 8 }}>{data.read}</div>
+      <div className="h" onClick={() => setReadOpen((o) => !o)} style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32, cursor: 'pointer', ...clamp }}>{data.read}</div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
         <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
           <div className="grp">Is it a real opportunity?</div>

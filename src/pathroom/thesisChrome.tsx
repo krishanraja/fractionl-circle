@@ -112,4 +112,17 @@ export const chromeCss = `
 .thx .litprompt { display:flex; align-items:center; gap:8px; margin-top:10px; padding:9px 11px; border:1px dashed ${C.line2}; border-radius:8px; background:${C.panel}; }
 .thx .litdot { width:8px; height:8px; border-radius:50%; background:${C.line2}; flex:0 0 auto; }
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
+/* living + breathing motion, restrained for the quiet-instrument register */
+@keyframes thxrise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
+@keyframes thxfade { from { opacity:0; } to { opacity:1; } }
+@keyframes emberbreath { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+.thx .thxbody > .wrap { animation: thxrise .34s cubic-bezier(.2,.7,.2,1) both; }
+.thx .ember { animation: emberbreath 4.5s ease-in-out infinite; will-change:transform; }
+.thx .cta { transition: transform .12s ease, filter .12s ease; }
+.thx .cta:active { transform: translateY(1px); filter: brightness(.95); }
+.thx .rev { animation: thxfade .2s ease both; }
+.thx .extracted { animation: thxrise .3s ease both; }
+.thx .fuelcard, .thx .pickchip, .thx .whychip { transition: border-color .2s ease, transform .12s ease; }
+.thx .fuelcard:active, .thx .pickchip:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) { .thx *, .thx *::before, .thx *::after { animation:none !important; } }
 `;
