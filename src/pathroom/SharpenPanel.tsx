@@ -15,7 +15,7 @@ function readDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(file); });
 }
 
-export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCard, onLinkedin, cardCount, linkedinDone, edges, busyRerun, onRerun, onSeePath }: {
+export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCard, onLinkedin, cardCount, linkedinDone, edges }: {
   thesis: string;
   onAdmire: (dataUrl: string) => Promise<AdmireResult>;
   onSaveInspiration: (insp: { name: string; positioning?: string | null; kind?: string; field?: string | null; why: string }) => Promise<void>;
@@ -24,9 +24,6 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
   cardCount: number;
   linkedinDone: boolean;
   edges: { name: string; why: string }[];
-  busyRerun: boolean;
-  onRerun: () => void;
-  onSeePath: () => void;
 }) {
   const [admire, setAdmire] = useState<AdmireStep>('idle');
   const [res, setRes] = useState<AdmireResult | null>(null);
@@ -110,11 +107,6 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
           )}
 
           {err ? <div className="mono" style={{ fontSize: 11, color: C.risk, marginTop: 10 }}>{err}</div> : null}
-
-          <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-            <button className="cta" onClick={onSeePath}><span>See your path</span><span className="mono">→</span></button>
-            <button className="chip" style={{ justifyContent: 'center', flex: '0 0 auto', opacity: busyRerun ? 0.6 : 1 }} disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 'Re-run the read'}</button>
-          </div>
         </>
       ) : null}
 
@@ -157,11 +149,8 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
       {admire === 'done' ? (
         <div className="extracted">
           <div className="navhint" style={{ color: C.good }}>✓ Folded into your edge</div>
-          <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.5 }}>Got it. The mark just brightened. Add more, or re-run the read to fold it into your scorecard.</div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-            <button className="cta" onClick={reset}><span>Add more fuel</span><span className="mono">→</span></button>
-            <button className="chip" style={{ justifyContent: 'center' }} disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 'Re-run the read'}</button>
-          </div>
+          <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.5 }}>Got it. The mark just brightened. Add more fuel, or re-run the read from below to fold it into your scorecard.</div>
+          <button className="cta" style={{ marginTop: 14 }} onClick={reset}><span>Add more fuel</span><span className="mono">→</span></button>
         </div>
       ) : null}
     </div>
