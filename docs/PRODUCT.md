@@ -36,7 +36,8 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
    - **Can you win it, fast?** Fit to you, Warm reach, Credibility.
    Plus honest "worth knowing before you commit" flags (income ramp, scope, pricing band,
    productization).
-5. **Add fuel to sharpen (after the read).** Three distinct intents, kept visually distinct:
+5. **Add fuel to sharpen (its own separate screen, after the read).** The additive things
+   live on their own focused screen, not crammed onto the read. Three distinct intents:
    - **A business you admire** feeds your **thesis**. Screenshot a LinkedIn, an Instagram, or
      a site you would love to build something like; `extract-admire` (Gemini vision) reads how
      they position, then asks *why* you admire them. The answer (saved to `thesis_inspiration`)
@@ -74,6 +75,9 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 - Honesty in the renderer: low confidence is shown, unreadable inputs are refused, scores
   are bands with evidence, never invented precision.
 - Plain language. No jargon, no em dashes in product copy.
+- Mobile is a fixed no-scroll frame (`useAppFrame`): one focused thing per screen, the
+  primary action pinned and always visible, and every screen lands at the top. The page
+  itself never scrolls; only a screen's body may scroll internally when truly needed.
 
 ## Architecture
 

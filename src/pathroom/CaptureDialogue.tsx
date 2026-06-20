@@ -3,9 +3,10 @@
 // anyway honestly), routes questions into discovery, lists into pick-one, verbose into a
 // play-back. Then one line of background. The brand mark brightens as fuel goes in. On
 // completion it hands the locked thesis + background up to ThesisApp to validate.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { C } from './tokens';
-import { EmberNav } from './thesisChrome';
+import { thesisCss } from './thesisViews';
+import { EmberNav, chromeCss } from './thesisChrome';
 import type { Verdict } from './thesisJudge';
 
 type Step = 'offer' | 'discover' | 'confirm' | 'background' | 'ready';
@@ -29,6 +30,8 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
   const [thin, setThin] = useState(false);
   const [busy, setBusy] = useState(false);
   const [bgFinal, setBgFinal] = useState('');
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = 0; }, [step, log.length]);
 
   const fuel = BASE + (thesis ? F_THESIS : 0) + (step === 'ready' && log.some((t) => t.kicker === 'your background') ? F_BG : 0);
   const fuels = [
@@ -96,15 +99,19 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     setBgFinal(t); // complete is triggered by the CTA on the ready step
   }
 
+  // Show only the last exchange as context, so the dialogue never grows past one viewport.
+  const recent = log.slice(-2);
+
   return (
-    <div className="thx" style={{ position: 'relative' }}>
+    <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
       <EmberNav fuel={fuel} fuels={fuels} hint="tap the mark" />
+      <div className="thxbody" ref={bodyRef}>
       <div className="wrap">
         <div className="ovl">Start here</div>
 
-        {log.length ? (
+        {recent.length ? (
           <div style={{ margin: '14px 0 18px' }}>
-            {log.map((t, i) => (
+            {recent.map((t, i) => (
               <div key={i} className="tt">
                 {t.role === 'you'
                   ? <div className="tyou"><span className="tyk">{t.kicker || 'you'}</span>{t.text}</div>
@@ -166,6 +173,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             </button>
           </>
         ) : null}
+      </div>
       </div>
     </div>
   );

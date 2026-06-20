@@ -46,6 +46,16 @@ export function EmberNav({ fuel, fuels, hint }: { fuel: number; fuels: FuelRow[]
 }
 
 export const chromeCss = `
+/* Zero-scroll mobile frame: header + one focused body + a pinned action, locked to the
+   visible viewport (--app-height from useAppFrame). The page itself never scrolls; only
+   .thxbody may scroll internally, and it resets to the top on every screen change. */
+.thx.thxframe { min-height:0; height:100vh; height:100dvh; height:var(--app-height,100dvh); display:flex; flex-direction:column; overflow:hidden; }
+.thx .thxbody { flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; scrollbar-width:none; }
+.thx .thxbody::-webkit-scrollbar { display:none; }
+.thx .thxbody > .wrap { padding:16px 18px 16px; }
+.thx .thxfoot { flex:0 0 auto; padding:10px 18px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid ${C.line}; background:${C.bg}; }
+.thx .thxfoot .cta { margin:0; }
+.thx .foothint { font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; background:none; border:0; cursor:pointer; display:block; width:100%; text-align:center; padding:8px 0 2px; }
 .thx .topnav { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:11px; padding:11px 18px; background:rgba(10,10,11,0.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid ${C.line}; }
 .thx .emberbtn { background:none; border:0; padding:0; cursor:pointer; display:flex; align-items:center; line-height:0; }
 .thx .ember { width:26px; height:26px; transition:filter .8s ease, opacity .8s ease; }

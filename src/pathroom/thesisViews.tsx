@@ -80,15 +80,19 @@ function Pips({ band }: { band: Band }) {
   return <div className="pips">{[0, 1, 2].map((i) => <div key={i} className="pip" style={{ background: i < n ? color : C.line2 }} />)}</div>;
 }
 
+// Glanceable by default (label + band + confidence on one line); tap to reveal the
+// evidence. Keeps the read short enough to fit a phone without scrolling, with the depth
+// one tap away (exhaustive under the hood, simple on the surface).
 function ScoreRow({ r }: { r: ScoreRowT }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="row">
+    <div className="row" onClick={() => setOpen((o) => !o)} style={{ cursor: 'pointer' }}>
       <div className="rtop">
         <span className="rlabel">{r.label}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
         <Pips band={r.band} />
         <span className="conf">{r.confidence}</span>
       </div>
-      <div className="rev" style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.45, marginTop: 5 }}>{r.evidence}</div>
+      {open ? <div className="rev" style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.45, marginTop: 6 }}>{r.evidence}</div> : null}
     </div>
   );
 }
@@ -119,7 +123,7 @@ export function CaptureView({ onSubmit, busy, onAddPeople }: { onSubmit: (thesis
   );
 }
 
-export function ThinkingView({ steps, shown, done, onSeeRead }: { steps: JourneyT[]; shown: number; done: boolean; onSeeRead: () => void }) {
+export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown: number; done: boolean }) {
   return (
     <>
       <div className="ovl">Working on it</div>
@@ -137,37 +141,40 @@ export function ThinkingView({ steps, shown, done, onSeeRead }: { steps: Journey
           </div>
         ))}
       </div>
-      {done ? <button className="cta" style={{ marginTop: 18 }} onClick={onSeeRead}><span>See your read</span><span className="mono">→</span></button> : null}
     </>
   );
 }
 
 export function ReadView({ data }: { data: Scorecard }) {
+  const [flagsOpen, setFlagsOpen] = useState(false);
   return (
     <>
       <div className="ovl">Your read</div>
-      <div className="h" style={{ marginTop: 10 }}>{data.read}</div>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 18 }}>
-        <div className="panel" style={{ flex: '1 1 230px' }}>
+      <div className="h" style={{ marginTop: 8 }}>{data.read}</div>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
+        <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
           <div className="grp">Is it a real opportunity?</div>
-          <div style={{ marginTop: 10 }}>{data.opportunity.map((r) => <ScoreRow key={r.label} r={r} />)}</div>
+          <div style={{ marginTop: 6 }}>{data.opportunity.map((r) => <ScoreRow key={r.label} r={r} />)}</div>
         </div>
-        <div className="panel" style={{ flex: '1 1 230px' }}>
+        <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
           <div className="grp">Can you win it, fast?</div>
-          <div style={{ marginTop: 10 }}>{data.ability.map((r) => <ScoreRow key={r.label} r={r} />)}</div>
+          <div style={{ marginTop: 6 }}>{data.ability.map((r) => <ScoreRow key={r.label} r={r} />)}</div>
         </div>
       </div>
+      <div className="mono" style={{ fontSize: 9.5, color: C.lo, marginTop: 9, textAlign: 'center' }}>tap any line for the evidence. bands, not exact numbers.</div>
       {data.flags?.length ? (
-        <div style={{ marginTop: 16 }}>
-          <div className="ovl">Worth knowing before you commit</div>
-          {data.flags.map((f, i) => (
-            <div key={i} style={{ display: 'flex', gap: 9, marginTop: 9 }}>
+        <div style={{ marginTop: 12 }}>
+          <button className="row" style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, borderTop: `1px solid ${C.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '11px 0' }} onClick={() => setFlagsOpen((o) => !o)}>
+            <span className="ovl" style={{ flex: 1 }}>Worth knowing before you commit</span>
+            <span className="mono" style={{ color: C.lo, fontSize: 11 }}>{flagsOpen ? '–' : `+${data.flags.length}`}</span>
+          </button>
+          {flagsOpen ? data.flags.map((f, i) => (
+            <div key={i} style={{ display: 'flex', gap: 9, marginTop: 8 }}>
               <span style={{ color: C.lo, marginTop: 1 }}>·</span><span style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.45 }}>{f}</span>
             </div>
-          ))}
+          )) : null}
         </div>
       ) : null}
-      <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 16, textAlign: 'center' }}>scores are bands with evidence, not exact numbers</div>
     </>
   );
 }
