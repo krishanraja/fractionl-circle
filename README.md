@@ -11,13 +11,17 @@ Full product, architecture, and run/deploy: **[docs/PRODUCT.md](docs/PRODUCT.md)
 
 ## What it does (60 seconds)
 
-1. Describe your fractional thesis in a sentence, with a line of background.
+1. A **guided dialogue** draws out your thesis, pushing back on thin inputs until it has
+   enough (a who, a what, a why-you), with one line of background. The brand mark brightens
+   as it learns more about you.
 2. It runs live research in the open (~20s) and returns an honest scorecard: **is it a
    real opportunity**, and **can you win it, fast** (bands with evidence and confidence,
    never fake numbers).
-3. It deconstructs the hard middle into small, ordered, validated moves.
-4. Your **circle** (added by screenshot or LinkedIn CSV) powers real warm reach and named
-   next moves.
+3. After the read, **add fuel to sharpen it**: a business you admire feeds your edge, a
+   business card feeds your circle, LinkedIn feeds your fit.
+4. A **living journey map** breaks the hard middle into small, ordered, validated moves to
+   your first retained client, with your **circle** woven in (the warm move shows real faces
+   and lights up as you add people).
 
 Free gives one full validation with no paywall on first value. Pro ($39/mo) is unlimited,
 plus your network's warm reach and ongoing monitoring.
