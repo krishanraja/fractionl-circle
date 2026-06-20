@@ -1,6 +1,6 @@
 # Fractionl: the thesis-validation engine
 
-*Canonical product doc. Last updated 2026-06-19. This is the source of truth for what
+*Canonical product doc. Last updated 2026-06-20. This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -16,26 +16,48 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 
 ## The flow
 
-1. **Capture.** One sentence of thesis, one line of background, optional LinkedIn. Plain
-   language, no jargon, no blur.
-2. **Watch it think.** Live web research runs in the open (~20s) via Perplexity: reading
+1. **The guided dialogue (Start Here).** Not a one-shot form: one question at a time. A
+   sufficiency judge (the `judge-thesis` edge fn, with a deterministic client fallback)
+   reads the thesis and pushes back on thin inputs ("marketing services" is not enough),
+   naming exactly what is missing. It is a soft block: up to two rounds of nudging, then it
+   runs anyway and is honest that the read will be a sketch. A question ("what should I
+   offer?") routes into a short discovery flow; several offers in one route into a pick-one;
+   a verbose input is played back as one line to confirm. Then one line of background.
+2. **The ember.** The brand mark in the top nav is a gauge: dim when we know little, brighter
+   and warmer as real fuel goes in (thesis, background, LinkedIn, businesses you admire, your
+   circle). A dim mark honestly means a thin read.
+3. **Watch it think.** Live web research runs in the open (~20s) via Perplexity: reading
    your background, sizing demand against supply, scanning where buyers complain, checking
    competition, mapping your network, weighing pricing. Low-confidence findings are
    flagged, not faked.
-3. **The read.** A corpus-grounded scorecard, as bands with evidence and a confidence
+4. **The read.** A corpus-grounded scorecard, as bands with evidence and a confidence
    mark, never fake numbers:
    - **Is it a real opportunity?** Demand, Burning need, Crowding (scored as risk), Your edge.
    - **Can you win it, fast?** Fit to you, Warm reach, Credibility.
    Plus honest "worth knowing before you commit" flags (income ramp, scope, pricing band,
    productization).
-4. **The steps.** The hard middle deconstructed into small, ordered, validated moves from
-   where you are to your first retained clients. The warm-network move is the biggest lever
-   and names real people once your circle is connected.
-5. **The circle.** Add people instantly by **screenshot** (a LinkedIn or Instagram profile
+5. **Add fuel to sharpen (after the read).** Three distinct intents, kept visually distinct:
+   - **A business you admire** feeds your **thesis**. Screenshot a LinkedIn, an Instagram, or
+     a site you would love to build something like; `extract-admire` (Gemini vision) reads how
+     they position, then asks *why* you admire them. The answer (saved to `thesis_inspiration`)
+     sharpens "Your edge" on the next read. Honest about the messy cases: a blurry shot, a
+     person with no business, a direct competitor (held as a benchmark to beat, not a template),
+     a different field (keep only the transferable part).
+   - **A business card** feeds your **circle** (warm reach), via `extract-contact`.
+   - **LinkedIn** feeds **fit + credibility**.
+   Re-running the read is an explicit choice, since it spends a live research call.
+6. **The living journey map.** The path to first retained client as a timeline, with the
+   circle woven in: the warm-network move (the biggest lever) shows the real faces it touches
+   and lights up as you add people; one primary action per state; step tracking persists
+   (`thesis_runs.step_progress`); a weak read does not pretend, it pivots to sharpening the
+   thesis. This replaced the old static name-card list and the duplicate "build your circle"
+   CTAs.
+7. **The circle.** Add people instantly by **screenshot** (a LinkedIn or Instagram profile
    or a business card, read by Gemini vision), and connect your **full network** via the
-   LinkedIn Connections CSV export (the export is buried and takes 24 to 48 hours, so the
-   app links it directly and you upload the file when it lands). The circle powers the real
-   warm-reach score and the named steps.
+   LinkedIn Connections CSV export (buried, 24 to 48 hours, so the app links it directly and
+   you upload the file when it lands). The circle powers the real warm-reach score and the
+   named steps, and is reached in-context from the journey map ("add people to light up your
+   warm reach"), not as a dead-end.
 
 ## Pricing
 
@@ -56,24 +78,40 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 ## Architecture
 
 **Frontend** (`src/pathroom/`):
-- `ThesisApp.tsx` - the live product (capture, thinking, read, steps, circle, gate).
-- `thesisViews.tsx` - shared presentational layer + the `thesisCss` register + types.
-- `thesisData.ts` - the data layer (validate, persist read, circle add/import, run count).
-- `ThesisCircle.tsx` - the circle screen (screenshot add + CSV import).
+- `ThesisApp.tsx` - the live product orchestrator (capture, thinking, read+sharpen, journey,
+  add-people, gate).
+- `CaptureDialogue.tsx` - the guided, gated Start Here dialogue.
+- `thesisJudge.ts` - the deterministic client fallback for the sufficiency judge (+ types).
+- `SharpenPanel.tsx` - the after-read "add fuel" panel (admire / card / LinkedIn + re-run).
+- `JourneyMap.tsx` - the living journey map (steps + circle faces + step tracking + weak pivot).
+- `thesisChrome.tsx` - the `EmberNav` brand-mark gauge + the shared `chromeCss`.
+- `thesisViews.tsx` - shared presentational layer (read, thinking views) + the `thesisCss`
+  register + types.
+- `thesisData.ts` - the data layer (judge, validate, persist read, admire, inspiration,
+  circle add/import, step progress, run count).
+- `ThesisCircle.tsx` - the add-people surface (screenshot add + CSV import), reached from the
+  journey map.
 - `tokens.ts` - the quiet-instrument design tokens.
-- `App.tsx` - routes: `/` (auth gate -> the product), `/auth`, `/privacy`, `/terms`.
+- `App.tsx` - routes: `/` (auth gate -> the product), `/auth`, `/privacy`, `/terms`, and the
+  unlinked lazy design fixtures `/preview/start|sharpen|journey`.
 
 **Edge functions** (`supabase/functions/`):
 - `validate-thesis` - live Perplexity research, then provider-fallback LLM structuring into
-  the scorecard + steps; reads the circle for warm reach; persists each run.
+  the scorecard + steps; reads the circle for warm reach AND `thesis_inspiration` to sharpen
+  "Your edge"; persists each run.
+- `judge-thesis` - the cheap sufficiency gate (Gemini via the provider fallback) before a
+  research call: strong / thin / question / multiple / essay, with a follow-up.
+- `extract-admire` - Gemini vision reads how an admired business positions (writes nothing to
+  the circle); honest about reject / person / competitor / different field.
 - `extract-contact` - Gemini vision reads a profile/card screenshot into the circle.
 - `_shared/llm.ts` - provider fallback (OpenAI -> Lovable/Gemini gateway -> Anthropic).
 
-**Data** (Supabase project `ksyuwacuigshvcyptlhe`): `thesis_runs` (user-owned, RLS),
-`circle_person` (user-owned, with `source`/`note`).
+**Data** (Supabase project `ksyuwacuigshvcyptlhe`): `thesis_runs` (user-owned, RLS, with
+`step_progress` jsonb for the journey loop), `thesis_inspiration` (user-owned, the admired
+businesses that sharpen the edge), `circle_person` (user-owned, with `source`/`note`).
 
-**Secrets:** `PERPLEXITY_API_KEY`, `GOOGLE_API_KEY` (Supabase function secrets);
-`STRIPE_SECRET_KEY` + the price-id Vercel envs for checkout.
+**Secrets:** `PERPLEXITY_API_KEY`, `GOOGLE_API_KEY`, `LOVABLE_API_KEY` (Supabase function
+secrets); `STRIPE_SECRET_KEY` + the price-id Vercel envs for checkout.
 
 ## Run and deploy
 
