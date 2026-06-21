@@ -52,7 +52,7 @@ export function ConsentBanner() {
   };
 
   return (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+68px)] md:bottom-0 left-0 right-0 z-40 p-4 bg-background/95 backdrop-blur-sm border-t shadow-lg">
+    <div className="dark fixed inset-x-0 bottom-0 z-50 p-4 bg-background/95 backdrop-blur-sm border-t shadow-lg" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
       <div className="max-w-2xl mx-auto">
         <div className="flex items-start gap-3 mb-3">
           <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
