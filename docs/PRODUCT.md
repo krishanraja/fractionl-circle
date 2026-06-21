@@ -91,6 +91,10 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 - Living and breathing, restrained for the quiet-instrument register: each screen's content
   rises in on change, the brand ember gently breathes, the primary action and cards give
   press feedback, and evidence fades in on tap. All motion honors `prefers-reduced-motion`.
+- Desktop is first-class, not a stretched phone: at >=900px every surface centers into a
+  console (the read's two panels sit side by side, content is vertically balanced, the
+  action stays pinned). The command-center Home goes further on desktop (a two-region
+  layout: a large ember-orb hero beside the instruments). See the mock at /preview/cockpit.
 
 ## Architecture
 
