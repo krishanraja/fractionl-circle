@@ -136,4 +136,12 @@ export const chromeCss = `
 .thx .fuelcard, .thx .pickchip, .thx .whychip { transition: border-color .2s ease, transform .12s ease; }
 .thx .fuelcard:active, .thx .pickchip:active { transform: translateY(1px); }
 @media (prefers-reduced-motion: reduce) { .thx *, .thx *::before, .thx *::after { animation:none !important; } }
+/* desktop baseline: every surface centers into a console instead of a narrow left column */
+@media (min-width:900px) {
+  .thx .topnav { padding-left:max(18px, calc((100% - 760px) / 2)); padding-right:max(18px, calc((100% - 760px) / 2)); }
+  .thx .thxbody { display:flex; flex-direction:column; justify-content:center; }
+  .thx .thxbody > .wrap { max-width:680px; width:100%; margin:0 auto; padding-top:24px; padding-bottom:24px; }
+  .thx .thxfoot { padding-left:0; padding-right:0; }
+  .thx .thxfoot .cta, .thx .thxfoot .foothint { max-width:680px; margin-left:auto; margin-right:auto; }
+}
 `;
