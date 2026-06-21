@@ -1,8 +1,18 @@
-# Circle by Fractionl — Source of Truth
+# SUPERSEDED — Circle CRM (archived reference)
+
+> **This document describes the retired Circle relationship-to-revenue CRM product (Ideas / Matches / Moves / Streams / Sunday Letter ontology). That product was replaced by the thesis-validation engine in PR #85 (June 2026).**
+>
+> **For the current product, architecture, and go-to-market language, read `docs/PRODUCT.md`. For the agent fleet briefing, read `AGENT_BRIEFING.md`.**
+>
+> This file is kept for historical reference only. Do not use it to brief sales/marketing agents, train on it, or cite it as a source of truth. Everything below is stale.
+
+---
+
+# Circle by Fractionl — Source of Truth (ARCHIVED)
 
 > Circle is the relationship-to-revenue engine for fractional executives, advisors, and operators with portfolio careers. Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know overnight, and drops a hand-drafted Move on the right person while you sleep.
 
-This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
+This document described the canonical source for product, architecture, pricing, and go-to-market language for the retired Circle CRM product.
 
 **Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
 

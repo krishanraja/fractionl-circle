@@ -1,3 +1,7 @@
+# Microsoft Graph OAuth setup (Phase 5b) — NOT ACTIVE IN CURRENT PRODUCT
+
+> **Note (2026-06-21):** The Microsoft Contacts and Calendar sync feature described below is not currently accessible through the thesis-validation product UI. The edge functions (`oauth-microsoft-start`, `oauth-microsoft-callback`, `sync-microsoft`, `cron-sync-microsoft`) exist in the codebase as inactive code from the retired Circle CRM product. This setup guide is preserved in case the feature is re-activated. Do not follow these steps unless the Microsoft sync UI is re-added to the product.
+
 # Microsoft Graph OAuth setup (Phase 5b)
 
 One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the

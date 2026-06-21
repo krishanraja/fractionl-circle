@@ -1,6 +1,6 @@
 # Fractionl: the thesis-validation engine
 
-*Canonical product doc. Last updated 2026-06-20. This is the source of truth for what
+*Canonical product doc. Last updated 2026-06-21. This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -138,3 +138,7 @@ secrets); `STRIPE_SECRET_KEY` + the price-id Vercel envs for checkout.
 - Ongoing market monitoring (the Pro "re-validate over time") is a future build.
 - Some residual old-app components remain unimported on disk after the kill-sweep; a
   deeper dead-code pass can remove them.
+- `src/lib/tiers.ts`: the `executive` ("Chief of Staff") tier at $79/mo still lists old
+  Circle CRM features ("Unlimited Streams, unlimited Matches", "Sunday Letter as 90-second
+  audio", etc.) that do not exist in the thesis product. Update or remove that tier's
+  feature bullets before surfacing it to users.

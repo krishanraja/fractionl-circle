@@ -1,3 +1,7 @@
+# Google OAuth setup (Phase 5) — NOT ACTIVE IN CURRENT PRODUCT
+
+> **Note (2026-06-21):** The Google Contacts and Calendar sync feature described below is not currently accessible through the thesis-validation product UI. The edge functions (`oauth-google-start`, `oauth-google-callback`, `sync-google`, `cron-sync-google`) exist in the codebase as inactive code from the retired Circle CRM product. This setup guide is preserved in case the feature is re-activated. Do not follow these steps unless the Google sync UI is re-added to the product.
+
 # Google OAuth setup (Phase 5)
 
 One-time Google Cloud Console setup for the `Connect Google` source.

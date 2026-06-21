@@ -1,5 +1,7 @@
 # Supabase custom auth domain — branding the Google sign-in screen
 
+*Last updated: 2026-06-21.*
+
 ## Why
 
 When a user taps **Sign in with Google**, Google's consent screen reads:
@@ -51,7 +53,7 @@ Authentication → Providers → Google):
   (keep the old `https://ksyuwacuigshvcyptlhe.supabase.co/auth/v1/callback`
   until the domain is fully cut over, then remove it).
 - **OAuth consent screen**:
-  - App name **`Fractionl`**, upload the logo, set support email + developer
+  - App name **`Fractionl`** (or `circle.fractionl.ai`), upload the logo, set support email + developer
     contact, and the Privacy Policy / Terms URLs
     (`https://circle.fractionl.ai/privacy`, `/terms`).
   - **Authorized domains**: `fractionl.ai` (remove `supabase.co` once cut over).

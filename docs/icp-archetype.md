@@ -1,8 +1,10 @@
 # The Fractional Executive — ICP & Archetype (deep reference)
 
-> A grounded profile of the recently independent senior leader who has decided to test fractional executive work. This is the canonical "who is the buyer, deeply" reference behind the concise operational ICP in [DOCS.md § 3](../DOCS.md#3-icp--who-circle-is-for) and the fleet pitch brief in [AGENT_BRIEFING.md § 2](../AGENT_BRIEFING.md). Those two are the quick-reference; this is the depth — motivations, psychology, the buying-trigger window, and the market data underneath.
+> A grounded profile of the recently independent senior leader who has decided to test fractional executive work. This is the canonical "who is the buyer, deeply" reference behind the product pitch in [docs/PRODUCT.md](./PRODUCT.md) and the fleet brief in [AGENT_BRIEFING.md § 2](../AGENT_BRIEFING.md). Those two are the quick-reference; this is the depth — motivations, psychology, the buying-trigger window, and the market data underneath.
 
-Built for Circle/Pulse positioning, outbound targeting, and product-wedge decisions. Compiled from 2025–2026 published research (see [Sources](#sources--further-reading)).
+Built for Fractionl positioning, outbound targeting, and product-wedge decisions. Compiled from 2025–2026 published research (see [Sources](#sources--further-reading)).
+
+*Last updated: 2026-06-21.*
 
 ---
 
@@ -184,20 +186,19 @@ An ICP for a fractional is not a company profile. It is the intersection of: the
 
 ---
 
-## What this means for Circle
+## What this means for Fractionl
 
-This is the exact wound Circle sits in. The fractional is a product with deep capability and no distribution; Circle is the operating system for the business-of-one they did not know they had to build.
+This is the exact wound Fractionl sits in. The fractional is a product with deep capability and no distribution; before they can build distribution they need to know what they are distributing — a validated thesis for what they offer, to whom, and why they can win it.
 
-- **Circle (relationship moves)** answers *"your network is your only channel and you are not working it systematically."*
-- **Pulse (attribution)** answers *"you have no idea which of your scattered efforts produced the last client, so you cannot repeat it."*
+**Fractionl (thesis validation)** answers *"I have the capability but I do not know if there is a real market for what I want to offer, or whether I can win it fast enough to survive the ramp."*
 
-We are not selling a CRM. We are selling the operating system for the business-of-one.
+The thesis engine is not a CRM and not a prospecting tool. It is the first move a new fractional needs to make before any sales motion makes sense: lock the offer, validate it against real demand, map it to the network they already have.
 
-**The wedge.** Don't build for "fractional executives" as a monolith. The highest-LTV, fastest-converting slice is **The Pulled, in month 2 to 6**: conviction (won't churn to a job offer), some runway (can pay), acute pain (empty pipeline). A sharper alternative narrows further to **one function — probably fractional CMOs or CROs**: commercially literate, they feel the "I sell for everyone but can't sell myself" irony most sharply, and already accept that personal brand beats résumé. A wedge of "fractional marketing/revenue leaders, 2 to 6 months in" will outconvert a generalist pitch by a wide margin. Expand later.
+**The wedge.** The highest-converting slice is **The Pulled, in month 2 to 6**: conviction (won't churn to a job offer), some runway (can pay), acute pain (empty pipeline and an offer that may or may not be real). A sharper alternative narrows further to **one function — probably fractional CMOs or CROs**: commercially literate, they feel the "I sell for everyone but can't sell myself" irony most sharply, and already accept that personal brand beats résumé. A wedge of "fractional marketing/revenue leaders, 2 to 6 months in" will outconvert a generalist pitch by a wide margin. Expand later.
 
 **Two counterpoints to hold honestly:**
 1. The Pushed segment, despite higher churn, holds the **volume and urgency**, and urgency closes deals. If the priority is early revenue and logos over LTV, targeting the desperate-but-paying may be the right cold-start move. Don't let "best LTV" override "fastest first 50 customers."
-2. There's a real risk of solving the *articulate* version of the problem rather than the *felt* one. Research says the problem is pipeline; what they say they want is "more clients"; what they will actually pay for might be reassurance and identity ("I am a real business now"), not analytics. Pulse's attribution story may be too rational for an emotionally driven buyer. Pressure-test in interviews before assuming it lands.
+2. There's a real risk of solving the *articulate* version of the problem rather than the *felt* one. Research says the problem is pipeline; what they say they want is "more clients"; what they will actually pay for might be reassurance and identity ("I am a real business now"), not analysis. Pressure-test in interviews before assuming the thesis-validation framing lands.
 
 **Durable validation move.** Run live 20-minute interviews with leads who are 0–18 months independent and clearly functional leaders (CMO/CRO/CFO), built around one core question: **"Walk me through exactly how you got your last client."** If the answer is "a referral I could not have predicted or repeated," the wound is confirmed — and you can quote them verbatim in positioning.
 
