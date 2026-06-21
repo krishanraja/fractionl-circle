@@ -25,6 +25,7 @@ const StartHereMock = lazy(() => import("./preview/StartHereMock"));
 const SharpenMock = lazy(() => import("./preview/SharpenMock"));
 const JourneyMock = lazy(() => import("./preview/JourneyMock"));
 const CockpitMock = lazy(() => import("./preview/CockpitMock"));
+const LoaderMock = lazy(() => import("./preview/LoaderMock"));
 
 const queryClient = new QueryClient();
 
@@ -133,6 +134,7 @@ function AppRoutes() {
         <Route path="/preview/sharpen" element={<Suspense fallback={null}><SharpenMock /></Suspense>} />
         <Route path="/preview/journey" element={<Suspense fallback={null}><JourneyMock /></Suspense>} />
         <Route path="/preview/cockpit" element={<Suspense fallback={null}><CockpitMock /></Suspense>} />
+        <Route path="/preview/loader" element={<Suspense fallback={null}><LoaderMock /></Suspense>} />
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

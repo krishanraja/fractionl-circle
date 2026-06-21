@@ -47,7 +47,37 @@ export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: F
   );
 }
 
+// The brand's signature loading moment: a charging ember (glow pulse + a sweeping accent
+// arc + the breathing mark). Replaces bare "loading..." everywhere. Renders inside .thx.
+export function Loader({ label = 'charging your read' }: { label?: string }) {
+  return (
+    <div className="ldr">
+      <div className="ldrorb">
+        <div className="ldrglow" />
+        <svg className="ldrring" viewBox="0 0 72 72" fill="none">
+          <circle cx="36" cy="36" r="33" stroke={C.line2} strokeWidth="2.5" />
+          <circle cx="36" cy="36" r="33" stroke={C.accent} strokeWidth="2.5" strokeLinecap="round" strokeDasharray="52 156" style={{ filter: 'drop-shadow(0 0 4px rgba(224,162,60,0.85))' }} />
+        </svg>
+        <img src="/brand/fractionl-icon.png" alt="" className="ldricon" />
+      </div>
+      <div className="ldrlabel">{label}</div>
+    </div>
+  );
+}
+
 export const chromeCss = `
+/* the charging-ember loader */
+.thx .ldr { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; height:100%; min-height:200px; }
+.thx .ldrorb { position:relative; width:72px; height:72px; display:flex; align-items:center; justify-content:center; }
+.thx .ldrglow { position:absolute; inset:-28%; border-radius:50%; background:radial-gradient(circle, rgba(224,162,60,0.3), transparent 65%); animation:ldrpulse 2.4s ease-in-out infinite; }
+.thx .ldrring { position:absolute; inset:0; animation:ldrspin 1.5s cubic-bezier(.6,.1,.3,.9) infinite; }
+.thx .ldricon { width:30px; height:30px; animation:ldrbreath 2.4s ease-in-out infinite; filter:drop-shadow(0 0 8px rgba(224,162,60,0.6)); }
+.thx .ldrlabel { font-family:${MONO}; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:${C.lo}; animation:ldrfade 2.4s ease-in-out infinite; }
+@keyframes ldrspin { to { transform:rotate(360deg); } }
+@keyframes ldrpulse { 0%,100%{opacity:0.5; transform:scale(0.94)} 50%{opacity:1; transform:scale(1.06)} }
+@keyframes ldrbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+@keyframes ldrfade { 0%,100%{opacity:0.45} 50%{opacity:0.85} }
+
 /* Zero-scroll mobile frame: header + one focused body + a pinned action, locked to the
    visible viewport (--app-height from useAppFrame). The page itself never scrolls; only
    .thxbody may scroll internally, and it resets to the top on every screen change. */

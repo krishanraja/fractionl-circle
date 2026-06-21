@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-    <title>Circle by Fractionl | Turn your circle into revenue</title>
-    <meta name="description" content="Circle is the relationship-to-revenue engine for fractional executives. Talk for 90 seconds and it turns what you said into sellable Ideas, matches them against everyone you know, and drafts the Move to the right person." />
+    <title>Fractionl | Validate your fractional thesis</title>
+    <meta name="description" content="Fractionl validates a fractional executive's thesis against the real market, in the open, then deconstructs the path to your first retained clients into doable, validated moves." />
     <meta name="author" content="Fractionl" />
     <link rel="canonical" href="https://circle.fractionl.ai/" />
 
@@ -27,8 +27,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://circle.fractionl.ai/" />
-    <meta property="og:title" content="Circle by Fractionl | Turn your circle into revenue" />
-    <meta property="og:description" content="The relationship-to-revenue engine for fractional executives. Talk for 90 seconds, get sellable Ideas, and a hand-drafted Move on the right person." />
+    <meta property="og:title" content="Fractionl | Validate your fractional thesis" />
+    <meta property="og:description" content="Validate your fractional thesis against the real market, in the open, then get the deconstructed path to your first retained clients." />
     <meta property="og:image" content="https://circle.fractionl.ai/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -36,8 +36,8 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://circle.fractionl.ai/" />
-    <meta name="twitter:title" content="Circle by Fractionl | Turn your circle into revenue" />
-    <meta name="twitter:description" content="The relationship-to-revenue engine for fractional executives. Talk once, wake to a drafted Move on the right person." />
+    <meta name="twitter:title" content="Fractionl | Validate your fractional thesis" />
+    <meta name="twitter:description" content="Validate your fractional thesis against the real market, then get the path to your first retained clients." />
     <meta name="twitter:image" content="https://circle.fractionl.ai/og-image.png" />
 
     <!-- Structured data (schema.org) -->
@@ -47,16 +47,15 @@
       "@graph": [
         {
           "@type": "SoftwareApplication",
-          "name": "Circle by Fractionl",
+          "name": "Fractionl",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
           "url": "https://circle.fractionl.ai",
-          "description": "The relationship-to-revenue engine for fractional executives, advisors, and portfolio operators. Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know, and drafts a hand-drafted Move on the right person.",
+          "description": "Fractionl validates a fractional executive's thesis against the real market, in the open, then deconstructs the path to their first retained clients into doable, validated moves.",
           "publisher": { "@type": "Organization", "name": "Fractionl" },
           "offers": [
-            { "@type": "Offer", "name": "Freemium", "description": "Try the magic.", "price": "0", "priceCurrency": "USD", "url": "https://circle.fractionl.ai/pricing" },
-            { "@type": "Offer", "name": "Operator", "description": "Help me run.", "price": "30", "priceCurrency": "USD", "url": "https://circle.fractionl.ai/pricing" },
-            { "@type": "Offer", "name": "Chief of Staff", "description": "Help me scale.", "price": "79", "priceCurrency": "USD", "url": "https://circle.fractionl.ai/pricing" }
+            { "@type": "Offer", "name": "Free", "description": "One full thesis validation, the read and the path.", "price": "0", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Pro", "description": "Unlimited re-validation, warm reach, and market monitoring.", "price": "39", "priceCurrency": "USD" }
           ]
         },
         {
@@ -69,8 +68,21 @@
     }
     </script>
   </head>
-  <body>
-    <div id="root"></div>
+  <body style="background-color:#0A0A0B;">
+    <div id="root">
+      <!-- Instant branded splash, replaced the moment React mounts (no blank flash). -->
+      <div id="boot-splash">
+        <div class="boot-orb"></div>
+      </div>
+    </div>
+    <style>
+      #boot-splash { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#0A0A0B; }
+      #boot-splash .boot-orb { width:60px; height:60px; border-radius:50%;
+        background:radial-gradient(circle, rgba(224,162,60,0.95), rgba(224,162,60,0.22) 48%, transparent 70%);
+        animation:bootpulse 1.7s ease-in-out infinite; }
+      @keyframes bootpulse { 0%,100%{opacity:.45; transform:scale(.9)} 50%{opacity:1; transform:scale(1.12)} }
+      @media (prefers-reduced-motion: reduce) { #boot-splash .boot-orb { animation:none; } }
+    </style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

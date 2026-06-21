@@ -11,7 +11,7 @@ import { useAppFrame } from '@/hooks/useAppFrame';
 import { getPriceId } from '@/lib/tiers';
 import { C } from './tokens';
 import { thesisCss, ThinkingView, ReadView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
-import { chromeCss, EmberNav, type FuelRow } from './thesisChrome';
+import { chromeCss, EmberNav, Loader, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
 import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
@@ -134,7 +134,7 @@ export default function ThesisApp() {
     </div>
   );
 
-  if (phase === 'loading') return centered(<span className="mono" style={{ color: C.lo, fontSize: 12 }}>loading...</span>);
+  if (phase === 'loading') return centered(<Loader />);
   if (phase === 'signin') return centered(
     <div style={{ textAlign: 'center', maxWidth: 320 }}>
       <div className="h">Validate your fractional thesis.</div>
@@ -247,5 +247,5 @@ export default function ThesisApp() {
     return frame(<JourneyMap data={data} circle={circle} progress={stepProgress} />, footer, 'your path, charged');
   }
 
-  return centered(<span className="mono" style={{ color: C.lo, fontSize: 12 }}>loading...</span>);
+  return centered(<Loader />);
 }
