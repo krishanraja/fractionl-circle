@@ -59,6 +59,12 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
    you upload the file when it lands). The circle powers the real warm-reach score and the
    named steps, and is reached in-context from the journey map ("add people to light up your
    warm reach"), not as a dead-end.
+8. **Home (the dashboard).** A returning user lands here, not back in the linear flow: their
+   thesis, their read at a glance (e.g. "1 of 4 opportunity signals strong, crowding
+   flagged"), path progress ("2 of 5 moves done"), and circle count, each a tile that opens
+   the full surface. "Continue your path" is the pinned action; "start a new validation" is
+   one tap. Reachable from anywhere by tapping the wordmark (or the "home" control) in the
+   top bar, so starting over or stepping back to your hub is never fiddly.
 
 ## Pricing
 
@@ -89,8 +95,9 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 ## Architecture
 
 **Frontend** (`src/pathroom/`):
-- `ThesisApp.tsx` - the live product orchestrator (capture, thinking, read+sharpen, journey,
-  add-people, gate).
+- `ThesisApp.tsx` - the live product orchestrator (home, capture, thinking, read, sharpen,
+  journey, add-people, gate); owns the no-scroll frame and pins each phase's primary action.
+- `Home.tsx` - the home hub / dashboard (returning-user landing; tiles into read/path/circle).
 - `CaptureDialogue.tsx` - the guided, gated Start Here dialogue.
 - `thesisJudge.ts` - the deterministic client fallback for the sufficiency judge (+ types).
 - `SharpenPanel.tsx` - the after-read "add fuel" panel (admire / card / LinkedIn + re-run).

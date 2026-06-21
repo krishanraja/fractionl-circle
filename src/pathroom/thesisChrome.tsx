@@ -15,7 +15,7 @@ export function emberStyle(fuel: number): React.CSSProperties {
   };
 }
 
-export function EmberNav({ fuel, fuels, hint }: { fuel: number; fuels: FuelRow[]; hint?: string }) {
+export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: FuelRow[]; hint?: string; onHome?: () => void }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
@@ -23,9 +23,11 @@ export function EmberNav({ fuel, fuels, hint }: { fuel: number; fuels: FuelRow[]
         <button className="emberbtn" onClick={() => setOpen((o) => !o)} aria-label="What's charging your read">
           <img src="/brand/fractionl-icon.png" alt="" className="ember" style={emberStyle(fuel)} />
         </button>
-        <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" />
+        {onHome
+          ? <button className="wmbtn" onClick={onHome} aria-label="Home"><img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" /></button>
+          : <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" />}
         <span style={{ flex: 1 }} />
-        {hint ? <span className="navhint">{hint}</span> : null}
+        {onHome ? <button className="navhome" onClick={onHome}>home</button> : (hint ? <span className="navhint">{hint}</span> : null)}
       </div>
       {open ? (
         <div className="fuelpop">
@@ -59,7 +61,16 @@ export const chromeCss = `
 .thx .topnav { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:11px; padding:11px 18px; background:rgba(10,10,11,0.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid ${C.line}; }
 .thx .emberbtn { background:none; border:0; padding:0; cursor:pointer; display:flex; align-items:center; line-height:0; }
 .thx .ember { width:26px; height:26px; transition:filter .8s ease, opacity .8s ease; }
-.thx .wm { height:15px; opacity:0.9; }
+.thx .wm { height:15px; opacity:0.9; display:block; }
+.thx .wmbtn { background:none; border:0; padding:0; cursor:pointer; line-height:0; }
+.thx .navhome { background:none; border:1px solid ${C.line2}; border-radius:6px; padding:5px 10px; font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.mid}; cursor:pointer; }
+.thx .navhome:hover { color:${C.accent}; border-color:${C.accentEdge}; }
+.thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:14px; cursor:pointer; margin-top:10px; transition:border-color .2s ease, transform .12s ease; }
+.thx .hometile:hover { border-color:${C.accentEdge}; }
+.thx .hometile:active { transform:translateY(1px); }
+.thx .htk { font-size:14.5px; font-weight:600; color:${C.hi}; }
+.thx .htv { font-size:12.5px; color:${C.mid}; margin-top:3px; line-height:1.4; }
+.thx .htarrow { color:${C.lo}; font-family:${MONO}; flex:0 0 auto; }
 .thx .navhint { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; }
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }

@@ -15,6 +15,7 @@ import { chromeCss, EmberNav, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
 import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
+import Home from './Home';
 import {
   runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
   judgeThesis, extractAdmire, saveInspiration, addContactFromImage, saveStepProgress,
@@ -22,7 +23,7 @@ import {
 } from './thesisData';
 import ThesisCircle from './ThesisCircle';
 
-type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'sharpen' | 'journey' | 'addpeople' | 'gate';
+type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'sharpen' | 'journey' | 'addpeople' | 'home' | 'gate';
 
 export default function ThesisApp() {
   const { user, loading: authLoading } = useAuth();
@@ -46,6 +47,7 @@ export default function ThesisApp() {
   const [busyRerun, setBusyRerun] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [runCount, setRunCount] = useState(0);
+  const [circleFrom, setCircleFrom] = useState<'home' | 'journey'>('journey');
   const timers = useRef<number[]>([]);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +62,7 @@ export default function ThesisApp() {
     getInspirationCount(userId).then(setInspCount).catch(() => {});
     getLatestRunFull(userId)
       .then((r) => {
-        if (r) { setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background); setPhase('read'); }
+        if (r) { setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background); setPhase('home'); }
         else setPhase('capture');
       })
       .catch(() => setPhase('capture'));
@@ -153,9 +155,10 @@ export default function ThesisApp() {
   if (phase === 'capture') return <CaptureDialogue onJudge={judgeThesis} onComplete={onComplete} />;
 
   // The framed phases: header + scrolling body + pinned footer action.
+  const canHome = !!data && phase !== 'home' && phase !== 'thinking';
   const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string) => (
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
-      <EmberNav fuel={fuel} fuels={fuels} hint={hint} />
+      <EmberNav fuel={fuel} fuels={fuels} hint={hint} onHome={canHome ? () => setPhase('home') : undefined} />
       <div className="thxbody" ref={bodyRef}>
         <div className="wrap" key={phase}>
           {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
@@ -167,7 +170,28 @@ export default function ThesisApp() {
   );
 
   if (phase === 'addpeople' && userId) {
-    return frame(<ThesisCircle userId={userId} onBack={() => { getCircle(userId).then(setCircle).catch(() => {}); setPhase('journey'); }} />, null);
+    return frame(<ThesisCircle userId={userId} onBack={() => { getCircle(userId).then(setCircle).catch(() => {}); setPhase(circleFrom); }} />, null);
+  }
+
+  if (phase === 'home' && data) {
+    const js = journeyState(data, circle, stepProgress);
+    const footer = js.allDone
+      ? <button className="cta" onClick={startAnother}><span>Start a new validation</span><span className="mono">→</span></button>
+      : (
+        <>
+          <button className="cta" onClick={() => setPhase('journey')}><span>Continue your path</span><span className="mono">→</span></button>
+          <button className="foothint" onClick={startAnother}>+ start a new validation</button>
+        </>
+      );
+    return frame(
+      <Home
+        data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle}
+        onOpenRead={() => setPhase('read')}
+        onOpenPath={() => setPhase('journey')}
+        onOpenCircle={() => { setCircleFrom('home'); setPhase('addpeople'); }}
+      />,
+      footer,
+    );
   }
 
   if (phase === 'thinking') {
@@ -218,7 +242,7 @@ export default function ThesisApp() {
       footer = <button className="foothint" onClick={startAnother}>+ validate another thesis</button>;
     } else {
       const primary = js.warmBlocked
-        ? { label: 'Add people to light up your warm reach', onClick: () => setPhase('addpeople') }
+        ? { label: 'Add people to light up your warm reach', onClick: () => { setCircleFrom('journey'); setPhase('addpeople'); } }
         : { label: stepProgress.length === 0 ? 'Start with move one' : 'Mark this move done', onClick: () => onMarkDone(js.current) };
       footer = (
         <>
