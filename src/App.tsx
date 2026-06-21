@@ -24,6 +24,7 @@ import { useConsent } from "./hooks/useConsent";
 const StartHereMock = lazy(() => import("./preview/StartHereMock"));
 const SharpenMock = lazy(() => import("./preview/SharpenMock"));
 const JourneyMock = lazy(() => import("./preview/JourneyMock"));
+const CockpitMock = lazy(() => import("./preview/CockpitMock"));
 
 const queryClient = new QueryClient();
 
@@ -131,6 +132,7 @@ function AppRoutes() {
         <Route path="/preview/start" element={<Suspense fallback={null}><StartHereMock /></Suspense>} />
         <Route path="/preview/sharpen" element={<Suspense fallback={null}><SharpenMock /></Suspense>} />
         <Route path="/preview/journey" element={<Suspense fallback={null}><JourneyMock /></Suspense>} />
+        <Route path="/preview/cockpit" element={<Suspense fallback={null}><CockpitMock /></Suspense>} />
         <Route path="/" element={<AuthenticatedShell />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
