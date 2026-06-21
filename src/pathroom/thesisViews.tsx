@@ -124,11 +124,23 @@ export function CaptureView({ onSubmit, busy, onAddPeople }: { onSubmit: (thesis
 }
 
 export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown: number; done: boolean }) {
+  const charge = done ? 1 : Math.max(0.1, shown / (steps.length || 6));
+  const rr = 28, rc = 2 * Math.PI * rr;
   return (
     <>
-      <div className="ovl">Working on it</div>
-      <div className="h" style={{ marginTop: 8, fontSize: 19, lineHeight: 1.3 }}>Pulling the world together on your idea.</div>
-      <div className="sub" style={{ marginTop: 6 }}>Reading the market, your buyers, and your edge.</div>
+      <div className="ovl" style={{ textAlign: 'center' }}>Working on it</div>
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '12px 0 4px' }}>
+        <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="64" height="64" viewBox="0 0 64 64" style={{ position: 'absolute', inset: 0 }}>
+            <circle cx="32" cy="32" r={rr} fill="none" stroke={C.line2} strokeWidth="3" />
+            <circle cx="32" cy="32" r={rr} fill="none" stroke={C.accent} strokeWidth="3" strokeLinecap="round"
+              strokeDasharray={rc} strokeDashoffset={rc * (1 - charge)} transform="rotate(-90 32 32)"
+              style={{ transition: 'stroke-dashoffset .7s ease', filter: 'drop-shadow(0 0 5px rgba(224,162,60,0.8))' }} />
+          </svg>
+          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 26, height: 26, filter: 'drop-shadow(0 0 8px rgba(224,162,60,0.55))', animation: done ? 'none' : 'ldrbreath 2.4s ease-in-out infinite' }} />
+        </div>
+      </div>
+      <div className="sub" style={{ marginTop: 4, textAlign: 'center' }}>Reading the market, your buyers, and your edge.</div>
       <div style={{ marginTop: 16 }}>
         {steps.map((s, i) => (
           <div key={i} className={'step' + (i < shown ? ' on' : '')}>

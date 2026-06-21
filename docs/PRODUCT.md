@@ -91,6 +91,10 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 - Living and breathing, restrained for the quiet-instrument register: each screen's content
   rises in on change, the brand ember gently breathes, the primary action and cards give
   press feedback, and evidence fades in on tap. All motion honors `prefers-reduced-motion`.
+- Every wait is branded. First paint is an instant CSS ember splash (in index.html, no blank
+  flash); the in-app `Loader` is a charging ember (a glow + a sweeping arc + the breathing
+  mark); and the research step is "watch it think" with a charge ring that fills as the read
+  comes together. No bare spinners or "loading..." text.
 - Desktop is first-class, not a stretched phone: at >=900px every surface centers into a
   console (the read's two panels sit side by side, content is vertically balanced, the
   action stays pinned). The command-center Home goes further on desktop (a two-region
