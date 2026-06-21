@@ -174,23 +174,16 @@ export default function ThesisApp() {
   }
 
   if (phase === 'home' && data) {
-    const js = journeyState(data, circle, stepProgress);
-    const footer = js.allDone
-      ? <button className="cta" onClick={startAnother}><span>Start a new validation</span><span className="mono">→</span></button>
-      : (
-        <>
-          <button className="cta" onClick={() => setPhase('journey')}><span>Continue your path</span><span className="mono">→</span></button>
-          <button className="foothint" onClick={startAnother}>+ start a new validation</button>
-        </>
-      );
+    // One evolving thesis: the daily action is to deepen it, not start a new validation.
     return frame(
       <Home
         data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => setPhase('journey')}
         onOpenCircle={() => { setCircleFrom('home'); setPhase('addpeople'); }}
+        onDeepen={() => setPhase('sharpen')}
       />,
-      footer,
+      <button className="cta" onClick={() => setPhase('journey')}><span>Continue your path</span><span className="mono">→</span></button>,
     );
   }
 
