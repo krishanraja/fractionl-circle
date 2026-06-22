@@ -19,7 +19,7 @@ import Home from './Home';
 import {
   runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
   judgeThesis, extractAdmire, saveInspiration, addContactFromImage, saveStepProgress,
-  type CircleP,
+  getMarketPulse, type CircleP, type MarketPulse,
 } from './thesisData';
 import ThesisCircle from './ThesisCircle';
 
@@ -48,6 +48,7 @@ export default function ThesisApp() {
   const [err, setErr] = useState<string | null>(null);
   const [runCount, setRunCount] = useState(0);
   const [circleFrom, setCircleFrom] = useState<'home' | 'journey'>('journey');
+  const [market, setMarket] = useState<MarketPulse | null>(null);
   const timers = useRef<number[]>([]);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +63,7 @@ export default function ThesisApp() {
     getInspirationCount(userId).then(setInspCount).catch(() => {});
     getLatestRunFull(userId)
       .then((r) => {
-        if (r) { setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background); setPhase('home'); }
+        if (r) { setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background); setPhase('home'); getMarketPulse(r.thesis).then(setMarket).catch(() => {}); }
         else setPhase('capture');
       })
       .catch(() => setPhase('capture'));
@@ -79,6 +80,7 @@ export default function ThesisApp() {
       timers.current.forEach(clearTimeout);
       setData(r); setShown(r.journey?.length || CANONICAL_JOURNEY.length); setDone(true);
       setRunCount((c) => c + 1);
+      getMarketPulse(thesis).then(setMarket).catch(() => {});
       if (userId) { const full = await getLatestRunFull(userId); if (full) { setRunId(full.id); setStepProgress(full.stepProgress); } }
     } catch {
       timers.current.forEach(clearTimeout);
@@ -156,11 +158,11 @@ export default function ThesisApp() {
 
   // The framed phases: header + scrolling body + pinned footer action.
   const canHome = !!data && phase !== 'home' && phase !== 'thinking';
-  const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string) => (
+  const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string, wide?: boolean) => (
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
       <EmberNav fuel={fuel} fuels={fuels} hint={hint} onHome={canHome ? () => setPhase('home') : undefined} />
       <div className="thxbody" ref={bodyRef}>
-        <div className="wrap" key={phase}>
+        <div className={'wrap' + (wide ? ' wrapwide' : '')} key={phase}>
           {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
           {body}
         </div>
@@ -177,13 +179,16 @@ export default function ThesisApp() {
     // One evolving thesis: the daily action is to deepen it, not start a new validation.
     return frame(
       <Home
-        data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle}
+        data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle} fuel={fuel} market={market}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => setPhase('journey')}
         onOpenCircle={() => { setCircleFrom('home'); setPhase('addpeople'); }}
-        onDeepen={() => setPhase('sharpen')}
       />,
-      <button className="cta" onClick={() => setPhase('journey')}><span>Continue your path</span><span className="mono">→</span></button>,
+      <>
+        <button className="cta" onClick={() => setPhase('journey')}><span>Continue your path</span><span className="mono">→</span></button>
+        <button className="foothint" onClick={() => setPhase('sharpen')}>+ deepen your thesis · add a signal</button>
+      </>,
+      undefined, true,
     );
   }
 
