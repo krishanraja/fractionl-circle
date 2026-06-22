@@ -103,6 +103,26 @@ export const chromeCss = `
 .thx .htarrow { color:${C.lo}; font-family:${MONO}; flex:0 0 auto; }
 .thx .hticon { width:38px; height:38px; border-radius:10px; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; display:flex; align-items:center; justify-content:center; color:${C.accent}; flex:0 0 auto; }
 .thx .hometile.deepen { background:linear-gradient(180deg, rgba(224,162,60,0.1), ${C.panel}); border-color:${C.accentEdge}; }
+/* the venture ember orb (charge) on the real command-center Home */
+.thx .vorb { position:relative; width:118px; height:118px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+.thx .vorbglow { position:absolute; inset:-26%; border-radius:50%; background:radial-gradient(circle, rgba(224,162,60,0.3), transparent 65%); filter:blur(6px); animation:vorbpulse 4.5s ease-in-out infinite; }
+.thx .vorbsvg { position:absolute; inset:0; animation:vorbbreath 4.5s ease-in-out infinite; }
+.thx .vorbcore { position:absolute; top:50%; left:50%; width:36px; height:36px; transform:translate(-50%,-50%); filter:drop-shadow(0 0 9px rgba(224,162,60,0.6)); }
+.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:11px; }
+@keyframes vorbbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+@keyframes vorbpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+/* the live market-movement instrument (fed by Pulse) */
+.thx .vmkt { background:linear-gradient(180deg, rgba(143,184,201,0.06), ${C.panel}); border:1px solid ${C.line2}; border-radius:12px; padding:12px 13px; }
+.thx .vmkthead { display:flex; align-items:center; justify-content:space-between; }
+.thx .vmkttitle { font-family:${MONO}; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#8FB8C9; }
+.thx .vmktrow { display:flex; align-items:center; gap:10px; margin-top:9px; }
+.thx .vmktname { flex:1; font-size:13px; color:${C.hi}; }
+.thx .vmktval { font-family:${MONO}; font-size:11.5px; color:${C.mid}; font-variant-numeric:tabular-nums; }
+.thx .vdelta { font-family:${MONO}; font-size:10.5px; padding:2px 7px; border-radius:999px; font-variant-numeric:tabular-nums; flex:0 0 auto; }
+.thx .vup { color:${C.good}; background:rgba(127,185,150,0.12); }
+.thx .vdn { color:${C.risk}; background:rgba(204,119,119,0.12); }
+.thx .vflat { color:${C.mid}; background:rgba(255,255,255,0.05); }
+.thx .vmktchip { display:inline-block; margin-top:11px; font-size:11.5px; color:${C.hi}; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; border-radius:999px; padding:5px 10px; }
 .thx .navhint { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; }
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }
@@ -173,7 +193,13 @@ export const chromeCss = `
   .thx .topnav { padding-left:max(18px, calc((100% - 760px) / 2)); padding-right:max(18px, calc((100% - 760px) / 2)); }
   .thx .thxbody { display:flex; flex-direction:column; justify-content:center; }
   .thx .thxbody > .wrap { max-width:680px; width:100%; margin:0 auto; padding-top:24px; padding-bottom:24px; }
+  .thx .thxbody > .wrap.wrapwide { max-width:920px; }
   .thx .thxfoot { padding-left:0; padding-right:0; }
   .thx .thxfoot .cta, .thx .thxfoot .foothint { max-width:680px; margin-left:auto; margin-right:auto; }
+  /* command-center Home: two regions, orb hero beside the instruments */
+  .thx .vhome { display:grid; grid-template-columns:0.85fr 1.15fr; gap:52px; align-items:center; }
+  .thx .vhome .vorb { width:190px; height:190px; }
+  .thx .vhome .vorbcore { width:56px; height:56px; }
+  .thx .vhome .vorbcap { font-size:11px; margin-top:16px; }
 }
 `;

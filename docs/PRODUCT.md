@@ -59,12 +59,16 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
    you upload the file when it lands). The circle powers the real warm-reach score and the
    named steps, and is reached in-context from the journey map ("add people to light up your
    warm reach"), not as a dead-end.
-8. **Home (the dashboard).** A returning user lands here, not back in the linear flow: their
-   thesis, their read at a glance (e.g. "1 of 4 opportunity signals strong, crowding
-   flagged"), path progress ("2 of 5 moves done"), and circle count, each a tile that opens
-   the full surface. "Continue your path" is the pinned action; "start a new validation" is
-   one tap. Reachable from anywhere by tapping the wordmark (or the "home" control) in the
-   top bar, so starting over or stepping back to your hub is never fiddly.
+8. **Home (the command center).** A returning user lands here, not back in the linear flow.
+   It is the living state of your one venture: a **charging ember orb** (how much real data
+   and validation is in), a **live market-movement instrument fed by fractionl-pulse** (your
+   role's demand and the overall Fractional Working Index, with this-week deltas, plus a
+   rising topic, so it genuinely changes overnight), and the permanent icon'd sections you
+   navigate: **Where you are** (the read), **Your next customer** (the path), **Your network**
+   (the circle). "Continue your path" is the pinned action and "Deepen your thesis" (add a
+   signal) is the daily habit. One evolving thesis, deepened daily, not many validations.
+   Two regions on desktop (orb hero beside the instruments), stacked on mobile. Reachable
+   from anywhere via the wordmark / "home" control.
 
 ## Pricing
 
@@ -130,6 +134,12 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 - `extract-admire` - Gemini vision reads how an admired business positions (writes nothing to
   the circle); honest about reject / person / competitor / different field.
 - `extract-contact` - Gemini vision reads a profile/card screenshot into the circle.
+- `market-pulse` - the live market-movement instrument for Home. Derives the user's role
+  from their thesis, then calls the sister product fractionl-pulse's public APIs
+  (`/fwi-api/current`, `/fwi-roles`, `/content-api/radar`) and returns a compact, role-level
+  market object (overall index + role demand + this-week deltas + a rising topic). Pulse is
+  role-grained, not niche-grained; the niche depth stays in the Perplexity read. Robust:
+  any Pulse call can fail and Home degrades gracefully.
 - `_shared/llm.ts` - provider fallback (OpenAI -> Lovable/Gemini gateway -> Anthropic).
 
 **Data** (Supabase project `ksyuwacuigshvcyptlhe`): `thesis_runs` (user-owned, RLS, with

@@ -64,6 +64,23 @@ export async function saveInspiration(userId: string, insp: { name: string; posi
   if (error) throw error;
 }
 
+export interface MarketPulse {
+  market: { score: number; label: string; delta: number | null } | null;
+  role: { key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null } | null;
+  rising: string | null;
+  asOf: string | null;
+}
+
+// Live market movement (role-level) from the sister product fractionl-pulse, via the
+// market-pulse edge fn. Returns null on any failure so the Home degrades gracefully.
+export async function getMarketPulse(thesis: string): Promise<MarketPulse | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('market-pulse', { body: { thesis } });
+    if (error) throw error;
+    return data as MarketPulse;
+  } catch { return null; }
+}
+
 export async function getInspirationCount(userId: string): Promise<number> {
   const { count } = await supabase.from('thesis_inspiration').select('id', { count: 'exact', head: true }).eq('user_id', userId);
   return count ?? 0;
