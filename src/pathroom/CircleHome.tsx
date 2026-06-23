@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
+import WorkingOnInput from './WorkingOnInput';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 
@@ -57,6 +58,10 @@ export default function CircleHome() {
           Drop a contact
         </button>
       </header>
+
+      <div className="shrink-0 px-5 pb-3">
+        <WorkingOnInput />
+      </div>
 
       <div className="flex min-h-0 flex-1 flex-col px-5 pb-3">
         <CirclePeopleList
