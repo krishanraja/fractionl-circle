@@ -114,7 +114,7 @@ export const chromeCss = `
 /* the live market-movement instrument (fed by Pulse) */
 .thx .vmkt { background:linear-gradient(180deg, rgba(143,184,201,0.06), ${C.panel}); border:1px solid ${C.line2}; border-radius:12px; padding:12px 13px; }
 .thx .vmkthead { display:flex; align-items:center; justify-content:space-between; }
-.thx .vmkttitle { font-family:${MONO}; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#8FB8C9; }
+.thx .vmkttitle { font-family:${MONO}; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:${C.cool}; }
 .thx .vmktrow { display:flex; align-items:center; gap:10px; margin-top:9px; }
 .thx .vmktname { flex:1; font-size:13px; color:${C.hi}; }
 .thx .vmktval { font-family:${MONO}; font-size:11.5px; color:${C.mid}; font-variant-numeric:tabular-nums; }
@@ -146,8 +146,8 @@ export const chromeCss = `
 .thx .fuelfor { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; }
 .thx .fueltag { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; margin-top:7px; display:inline-block; }
 .thx .fueltag.thesis { color:${C.accent}; }
-.thx .fueltag.circle { color:#C9A24B; }
-.thx .fueltag.ability { color:#8FB8C9; }
+.thx .fueltag.circle { color:${C.gold}; }
+.thx .fueltag.ability { color:${C.cool}; }
 .thx .donechk { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.good}; margin-top:7px; display:inline-flex; gap:5px; }
 .thx .extracted { background:${C.panel2}; border:1px solid ${C.line2}; border-radius:11px; padding:15px; margin-top:14px; }
 .thx .whychip { display:inline-block; border:1px solid ${C.line2}; border-radius:999px; padding:8px 13px; font-size:13px; color:${C.hi}; cursor:pointer; background:${C.panel}; }
