@@ -139,8 +139,8 @@ export default function ThesisApp() {
   if (phase === 'loading') return centered(<Loader />);
   if (phase === 'signin') return centered(
     <div style={{ textAlign: 'center', maxWidth: 320 }}>
-      <div className="h">Validate your fractional thesis.</div>
-      <div className="sub" style={{ marginTop: 10 }}>Sign in to check your idea against the real market and get your first moves.</div>
+      <div className="h">Your strategy deep dive.</div>
+      <div className="sub" style={{ marginTop: 10 }}>Sign in to pressure-test your direction against the real market and get your next moves.</div>
       <a href="/auth" className="cta" style={{ marginTop: 18, textDecoration: 'none', justifyContent: 'center', gap: 8 }}><span>Sign in</span><span className="mono">→</span></a>
     </div>
   );

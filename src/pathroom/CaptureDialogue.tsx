@@ -170,7 +170,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
               <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.4 }}>{thesis}</div>
             </div>
             <button className="cta" style={{ marginTop: 18 }} onClick={() => onComplete(thesis, bgFinal)}>
-              <span>{thin ? 'Run it anyway' : 'Validate my thesis'}</span><span className="mono">→</span>
+              <span>{thin ? 'Run it anyway' : 'Run the deep dive'}</span><span className="mono">→</span>
             </button>
           </>
         ) : null}
