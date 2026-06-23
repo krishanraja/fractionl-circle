@@ -1,6 +1,5 @@
-// The free hero: "drop a contact" + your circle. The daily habit lives here —
-// capture anyone in seconds (screenshot / paste / voice / type) and they land in
-// the list below. Fills the parent's bounded height; only the list scrolls.
+// The free hero, in the ember (.thx) system: brand bar + "drop a contact" +
+// "what are you working on" + your circle. One scrolling body (.thxbody).
 import { useCallback, useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,8 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import WorkingOnInput from './WorkingOnInput';
-import { cn } from '@/lib/utils';
-import { haptics } from '@/utils/haptics';
+import { BrandBar } from './circleChrome';
 
 export default function CircleHome() {
   const { user } = useAuth();
@@ -19,8 +17,6 @@ export default function CircleHome() {
   const [countLoading, setCountLoading] = useState(true);
   const [reloadSignal, setReloadSignal] = useState(0);
 
-  // Cheap head-count for the unfiltered circle size — drives the empty state and
-  // the server-vs-client search switch in CirclePeopleList.
   const loadCount = useCallback(async () => {
     if (!userId) { setTotal(0); setCountLoading(false); return; }
     setCountLoading(true);
@@ -40,40 +36,32 @@ export default function CircleHome() {
   }, [loadCount]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="shrink-0 px-5 pt-2 pb-3 frame-safe-top">
-        <div className="flex items-center h-10">
-          <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="h-[17px] w-auto select-none" draggable={false} />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <BrandBar />
+      <div className="thxbody">
+        <div className="wrap">
+          <div className="ovl">Your circle</div>
+          <div className="h" style={{ marginTop: 8 }}>Warm up your circle</div>
+          <div className="sub">Drop in anyone you meet. We'll remember who they are and surface them when they matter.</div>
+
+          <button className="cta" style={{ marginTop: 16 }} onClick={() => setAddOpen(true)}>
+            <span className="ctaicon"><UserPlus size={18} strokeWidth={2.2} /> Drop a contact</span>
+            <span className="mono">→</span>
+          </button>
+
+          <div style={{ marginTop: 16 }}>
+            <WorkingOnInput />
+          </div>
+
+          <div style={{ marginTop: 18 }}>
+            <CirclePeopleList
+              totalPeople={total}
+              circleLoading={countLoading}
+              onQuickAdd={() => setAddOpen(true)}
+              reloadSignal={reloadSignal}
+            />
+          </div>
         </div>
-        <h1 className="mt-2 text-[26px] leading-tight font-bold tracking-[-0.02em] text-foreground">Your circle</h1>
-        <p className="mt-1.5 text-[14px] text-foreground-secondary leading-relaxed">
-          Drop in anyone you meet. We'll remember who they are and surface them when they matter.
-        </p>
-        <button
-          onClick={() => { haptics.tap(); setAddOpen(true); }}
-          className={cn(
-            'mt-4 w-full inline-flex items-center justify-center gap-2 h-12 rounded-full',
-            'bg-primary text-primary-foreground text-[15px] font-semibold tracking-[-0.01em]',
-            'shadow-[0_6px_20px_-6px_hsl(var(--primary)/0.5)] active:scale-[0.985] transition-transform duration-100'
-          )}
-        >
-          <UserPlus className="w-[18px] h-[18px]" strokeWidth={2.4} />
-          Drop a contact
-        </button>
-      </header>
-
-      <div className="shrink-0 px-5 pb-3">
-        <WorkingOnInput />
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col px-5 pb-3">
-        <CirclePeopleList
-          totalPeople={total}
-          circleLoading={countLoading}
-          onQuickAdd={() => setAddOpen(true)}
-          reloadSignal={reloadSignal}
-          framed
-        />
       </div>
 
       <AddToCircleSheet open={addOpen} onOpenChange={setAddOpen} onAdded={handleAdded} />

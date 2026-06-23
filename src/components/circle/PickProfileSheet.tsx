@@ -7,7 +7,6 @@ import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { enrichLinkedin, type ProfileCandidate, type EnrichResponse } from '@/lib/enrich';
-import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
 
 interface PickProfileSheetProps {
@@ -34,65 +33,51 @@ export const PickProfileSheet = ({ open, onOpenChange, personId, personName, can
   };
 
   const body = (
-    <div className="px-5 pt-2 pb-6 space-y-4">
+    <div className="sheetwrap" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
-        <h2 className="text-title-2 text-foreground">Which one is {personName}?</h2>
-        <p className="mt-1 text-sm text-foreground-secondary">Pick the right profile so we pull the correct details.</p>
+        <div className="ovl">Disambiguate</div>
+        <div className="h" style={{ marginTop: 6 }}>Which one is {personName}?</div>
+        <div className="sub">Pick the right profile so we pull the correct details.</div>
       </div>
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {candidates.map((c) => {
           const busy = pickingUrl === c.url;
           return (
-            <button
-              key={c.url}
-              onClick={() => pick(c)}
-              disabled={!!pickingUrl}
-              className={cn(
-                'w-full flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 p-3 text-left',
-                'hover:border-primary/40 transition-colors disabled:opacity-60'
-              )}
-            >
-              {c.photo_url ? (
-                <img src={c.photo_url} alt="" className="w-11 h-11 rounded-full object-cover shrink-0" />
-              ) : (
-                <div className="w-11 h-11 rounded-full bg-primary/12 text-primary text-sm font-semibold flex items-center justify-center shrink-0">
-                  {c.name.split(/\s+/).map((p) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+            <button key={c.url} className="crow" onClick={() => pick(c)} disabled={!!pickingUrl}
+              style={{ marginTop: 0, opacity: pickingUrl && !busy ? 0.6 : 1, cursor: pickingUrl ? 'default' : 'pointer' }}>
+              <div className="crowbtn" style={{ cursor: 'inherit' }}>
+                {c.photo_url ? (
+                  <img src={c.photo_url} alt="" className="cav" style={{ objectFit: 'cover' }} />
+                ) : (
+                  <div className="cav">{c.name.split(/\s+/).map((p) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}</div>
+                )}
+                <div className="cmeta">
+                  <div className="cname">{c.name}</div>
+                  {c.headline && <div className="csub">{c.headline}</div>}
+                  {c.city && <div className="ssrc" style={{ marginTop: 4 }}>{c.city}</div>}
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-[15px] font-semibold text-foreground truncate">{c.name}</p>
-                {c.headline && <p className="text-[13px] text-foreground-secondary truncate mt-0.5">{c.headline}</p>}
-                {c.city && <p className="text-[11px] text-foreground-muted truncate mt-0.5">{c.city}</p>}
+                {busy
+                  ? <Loader2 size={18} style={{ color: 'var(--thx-accent)', animation: 'thxspin 0.8s linear infinite', flex: '0 0 auto' }} />
+                  : <Check size={18} style={{ color: 'var(--thx-lo)', flex: '0 0 auto' }} />}
               </div>
-              {busy ? (
-                <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
-              ) : (
-                <Check className="w-5 h-5 text-foreground-muted shrink-0" />
-              )}
             </button>
           );
         })}
       </div>
-      <button
-        onClick={() => onOpenChange(false)}
-        disabled={!!pickingUrl}
-        className="w-full h-11 rounded-full text-sm font-medium text-foreground-secondary hover:text-foreground transition-colors disabled:opacity-40"
-      >
-        None of these
-      </button>
+      <button className="foothint" onClick={() => onOpenChange(false)} disabled={!!pickingUrl}>None of these</button>
     </div>
   );
 
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[92vh]"><div className="overflow-y-auto pb-safe-bottom">{body}</div></DrawerContent>
+        <DrawerContent className="max-h-[92vh]"><div className="thx overflow-y-auto pb-safe-bottom" style={{ background: 'var(--thx-bg)' }}>{body}</div></DrawerContent>
       </Drawer>
     );
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden"><div className="max-h-[80vh] overflow-y-auto">{body}</div></DialogContent>
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden"><div className="thx max-h-[80vh] overflow-y-auto" style={{ background: 'var(--thx-bg)' }}>{body}</div></DialogContent>
     </Dialog>
   );
 };

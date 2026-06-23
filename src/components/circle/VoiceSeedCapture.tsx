@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Loader2, Check, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
@@ -179,15 +178,14 @@ export const VoiceSeedCapture = ({ onDone, onClose }: VoiceSeedCaptureProps) => 
             {summary && (
               <p className="text-xs text-foreground-secondary mb-3">{summary}</p>
             )}
-            <div className="space-y-2">
+            <div>
               {people.map((p, idx) => (
-                <div key={idx} className="rounded-xl border border-border/60 bg-card/50 backdrop-blur p-3">
-                  <p className="text-sm font-semibold text-foreground">{p.name}</p>
-                  {p.hint && <p className="text-xs text-foreground-secondary mt-0.5">{p.hint}</p>}
-                  <div className="mt-1 flex gap-2 text-[11px] text-foreground-muted">
-                    {p.company && <span>{p.company}</span>}
-                    {p.title && <span>· {p.title}</span>}
-                  </div>
+                <div key={idx} className="crow" style={{ marginTop: idx ? 8 : 0, padding: '12px 14px' }}>
+                  <p className="cname">{p.name}</p>
+                  {p.hint && <p className="csub">{p.hint}</p>}
+                  {(p.company || p.title) && (
+                    <p className="ssrc" style={{ marginTop: 5 }}>{[p.company, p.title].filter(Boolean).join(' · ')}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -218,9 +216,10 @@ export const VoiceSeedCapture = ({ onDone, onClose }: VoiceSeedCaptureProps) => 
             onPointerUp={handleHoldEnd}
             onPointerLeave={handleHoldEnd}
             whileTap={{ scale: 0.94 }}
-            className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/30 flex items-center justify-center"
+            className="w-20 h-20 rounded-full flex items-center justify-center"
+            style={{ background: 'var(--thx-accent)', boxShadow: '0 8px 30px -6px rgba(224,162,60,0.5)' }}
           >
-            <Mic className="w-8 h-8 text-white" strokeWidth={2} />
+            <Mic className="w-8 h-8" style={{ color: '#1A1206' }} strokeWidth={2} />
           </motion.button>
           <p className="mt-3 text-xs text-foreground-muted">Hold to talk · up to 60s</p>
         </>
@@ -231,40 +230,28 @@ export const VoiceSeedCapture = ({ onDone, onClose }: VoiceSeedCaptureProps) => 
           onPointerUp={handleHoldEnd}
           onPointerLeave={handleHoldEnd}
           whileTap={{ scale: 0.94 }}
-          className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/40 flex items-center justify-center animate-pulse"
+          className="w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
+          style={{ background: 'var(--thx-accent)', boxShadow: '0 8px 30px -6px rgba(224,162,60,0.6)' }}
         >
-          <Mic className="w-8 h-8 text-white" strokeWidth={2} />
+          <Mic className="w-8 h-8" style={{ color: '#1A1206' }} strokeWidth={2} />
         </motion.button>
       )}
 
       {step === 'review' && (
-        <button
-          onClick={handleSave}
-          className={cn(
-            'w-full h-11 rounded-full bg-primary text-primary-foreground text-sm font-medium',
-            'flex items-center justify-center gap-2 shadow-lg shadow-primary/30'
-          )}
-        >
-          <Check className="w-4 h-4" />
-          Add {people.length} to my Circle
+        <button className="cta" style={{ width: '100%' }} onClick={handleSave}>
+          <span className="ctaicon"><Check size={16} /> Add {people.length} to my Circle</span>
+          <span className="mono">→</span>
         </button>
       )}
 
       {step === 'saving' && (
-        <button
-          disabled
-          className="w-full h-11 rounded-full bg-primary/70 text-primary-foreground text-sm font-medium flex items-center justify-center gap-2"
-        >
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Saving…
+        <button className="cta" style={{ width: '100%' }} disabled>
+          <span className="ctaicon"><Loader2 size={16} style={{ animation: 'thxspin 0.8s linear infinite' }} /> Saving…</span>
         </button>
       )}
 
       {(step === 'done' || step === 'error') && (
-        <button
-          onClick={handleRetry}
-          className="w-full h-11 rounded-full border border-border/60 bg-card/50 backdrop-blur text-sm font-medium text-foreground"
-        >
+        <button className="ghostbtn" style={{ width: '100%', justifyContent: 'center' }} onClick={handleRetry}>
           {step === 'done' ? 'Name more' : 'Try again'}
         </button>
       )}
