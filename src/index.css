@@ -104,6 +104,25 @@
     --sidebar-accent-foreground: 24 16% 12%;
     --sidebar-border: 34 18% 84%;
     --sidebar-ring: 37 73% 56%;
+
+    /* "Deep dive" chrome tokens — Daylight Desk (light). Mirrors the cream
+       shadcn surfaces above so the thesis tab and the Circle tab read as one
+       app. Lines are walnut-alpha (visible on cream), not white-alpha. */
+    --thx-bg: hsl(38 30% 96%);
+    --thx-panel: hsl(36 30% 98%);
+    --thx-panel2: hsl(36 28% 96%);
+    --thx-panel3: hsl(36 24% 93%);
+    --thx-line: hsl(28 15% 20% / 0.10);
+    --thx-line2: hsl(28 15% 20% / 0.18);
+    --thx-hi: hsl(24 16% 12%);
+    --thx-mid: hsl(28 8% 38%);
+    --thx-lo: hsl(30 6% 54%);
+    --thx-accent: hsl(37 73% 50%);
+    --thx-accent-dim: hsl(37 73% 50% / 0.14);
+    --thx-accent-edge: hsl(37 60% 46% / 0.5);
+    --thx-risk: hsl(2 50% 45%);
+    --thx-good: hsl(142 40% 36%);
+    --thx-nav: hsl(38 30% 96% / 0.82);
   }
 
   /* Dark mode override - Walnut desk, cream paper as the bright surface */
@@ -158,6 +177,24 @@
     --sidebar-accent: 28 14% 16%;
     --sidebar-accent-foreground: 38 28% 92%;
     --sidebar-border: 28 12% 22%;
+
+    /* "Deep dive" chrome tokens — Walnut Desk (dark). Byte-identical to the
+       original tokens.ts palette, so dark mode is visually unchanged. */
+    --thx-bg: #0A0A0B;
+    --thx-panel: #121214;
+    --thx-panel2: #17171A;
+    --thx-panel3: #1C1C20;
+    --thx-line: rgba(255,255,255,0.07);
+    --thx-line2: rgba(255,255,255,0.12);
+    --thx-hi: #ECEBE7;
+    --thx-mid: #8E8E88;
+    --thx-lo: #56564F;
+    --thx-accent: #E0A23C;
+    --thx-accent-dim: rgba(224,162,60,0.13);
+    --thx-accent-edge: rgba(224,162,60,0.55);
+    --thx-risk: #C77;
+    --thx-good: #7FB996;
+    --thx-nav: rgba(10,10,11,0.82);
   }
 }
 

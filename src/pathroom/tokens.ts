@@ -1,10 +1,14 @@
 // The locked Quiet Instrument register, shared by the real Path Room surfaces.
+// Each token is a CSS variable so the whole "Deep dive" chrome follows the app
+// theme (light/dark) without touching call sites — the values live in index.css
+// under :root (Daylight Desk / cream) and .dark (Walnut Desk). Dark values are
+// byte-identical to the original palette, so dark mode is unchanged.
 export const C = {
-  bg: '#0A0A0B', panel: '#121214', panel2: '#17171A', panel3: '#1C1C20',
-  line: 'rgba(255,255,255,0.07)', line2: 'rgba(255,255,255,0.12)',
-  hi: '#ECEBE7', mid: '#8E8E88', lo: '#56564F',
-  accent: '#E0A23C', accentDim: 'rgba(224,162,60,0.13)', accentEdge: 'rgba(224,162,60,0.55)',
-  risk: '#C77', good: '#7FB996',
+  bg: 'var(--thx-bg)', panel: 'var(--thx-panel)', panel2: 'var(--thx-panel2)', panel3: 'var(--thx-panel3)',
+  line: 'var(--thx-line)', line2: 'var(--thx-line2)',
+  hi: 'var(--thx-hi)', mid: 'var(--thx-mid)', lo: 'var(--thx-lo)',
+  accent: 'var(--thx-accent)', accentDim: 'var(--thx-accent-dim)', accentEdge: 'var(--thx-accent-edge)',
+  risk: 'var(--thx-risk)', good: 'var(--thx-good)',
 };
 export const FONT = "'Satoshi', system-ui, -apple-system, sans-serif";
 export const MONO = "'SF Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";

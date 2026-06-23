@@ -41,20 +41,23 @@ export default function CircleHome() {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="shrink-0 px-5 pt-5 pb-3 frame-safe-top">
-        <h1 className="text-title-1 text-foreground">Your circle</h1>
-        <p className="mt-1 text-sm text-foreground-secondary leading-relaxed">
+      <header className="shrink-0 px-5 pt-2 pb-3 frame-safe-top">
+        <div className="flex items-center h-10">
+          <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="h-[17px] w-auto select-none" draggable={false} />
+        </div>
+        <h1 className="mt-2 text-[26px] leading-tight font-bold tracking-[-0.02em] text-foreground">Your circle</h1>
+        <p className="mt-1.5 text-[14px] text-foreground-secondary leading-relaxed">
           Drop in anyone you meet. We'll remember who they are and surface them when they matter.
         </p>
         <button
           onClick={() => { haptics.tap(); setAddOpen(true); }}
           className={cn(
             'mt-4 w-full inline-flex items-center justify-center gap-2 h-12 rounded-full',
-            'bg-primary text-primary-foreground text-[15px] font-semibold',
-            'shadow-md shadow-primary/25 active:scale-[0.98] transition-all duration-100'
+            'bg-primary text-primary-foreground text-[15px] font-semibold tracking-[-0.01em]',
+            'shadow-[0_6px_20px_-6px_hsl(var(--primary)/0.5)] active:scale-[0.985] transition-transform duration-100'
           )}
         >
-          <UserPlus className="w-5 h-5" strokeWidth={2.4} />
+          <UserPlus className="w-[18px] h-[18px]" strokeWidth={2.4} />
           Drop a contact
         </button>
       </header>
