@@ -14,9 +14,12 @@ interface CirclePeopleListProps {
   /** Framed mode: fill the parent's bounded height with a pinned search bar and
    *  a single internally-scrolling list, so the page itself never scrolls. */
   framed?: boolean;
+  /** Bump this to force a re-fetch of the list (e.g. after a new contact is
+   *  added elsewhere on the screen). */
+  reloadSignal?: number;
 }
 
-export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, framed = false }: CirclePeopleListProps) => {
+export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, framed = false, reloadSignal }: CirclePeopleListProps) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
@@ -25,7 +28,14 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, frame
   const useServerSearch = totalPeople > SERVER_SEARCH_THRESHOLD;
   const serverQuery = useServerSearch ? debouncedQuery : '';
 
-  const { people, rawsByPerson, loading, error, truncated } = useCirclePeople(serverQuery);
+  const { people, rawsByPerson, loading, error, truncated, refresh } = useCirclePeople(serverQuery);
+
+  // Parent signalled new data landed (a contact was just added) — re-pull.
+  useEffect(() => {
+    if (reloadSignal === undefined) return;
+    void refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadSignal]);
 
   useEffect(() => {
     const id = window.setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS);

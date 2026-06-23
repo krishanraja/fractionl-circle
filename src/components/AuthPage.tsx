@@ -128,9 +128,9 @@ const WelcomeContent = ({
         alt="Fractionl"
         className="h-12 mx-auto mb-6"
       />
-      <h1 className="text-title-1 text-foreground mb-2">Validate your fractional thesis</h1>
+      <h1 className="text-title-1 text-foreground mb-2">Your circle, warmed up</h1>
       <p className="text-body text-foreground-secondary">
-        Check your idea against the real market, then get your first moves
+        Drop in anyone you meet — we'll remember who they are and surface the right people when you need them
       </p>
     </div>
 

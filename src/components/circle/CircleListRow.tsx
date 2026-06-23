@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ContactButton } from '@/components/circle/ContactButton';
+import { PickProfileSheet } from '@/components/circle/PickProfileSheet';
+import { prettifyTag, tagBucket } from '@/lib/contactTags';
+import { enrichLinkedin, dossierSummary, type ProfileCandidate } from '@/lib/enrich';
+import { haptics } from '@/utils/haptics';
 import type { ContactableRaw } from '@/lib/primaryContact';
 import type { CirclePerson } from '@/hooks/useCirclePeople';
 
@@ -29,6 +34,36 @@ const subtitle = (p: CirclePerson): string => {
 export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
   const [expanded, setExpanded] = useState(false);
   const detail = subtitle(person);
+
+  // User-initiated deep enrichment (one person at a time).
+  const [enriching, setEnriching] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [candidates, setCandidates] = useState<ProfileCandidate[] | null>(null);
+
+  const runEnrich = async (linkedinUrl?: string) => {
+    if (enriching) return;
+    haptics.tap();
+    setEnriching(true);
+    try {
+      const res = await enrichLinkedin(person.id, linkedinUrl);
+      if (res.status === 'done') {
+        setSummary(dossierSummary(res.dossier) ?? res.note ?? 'Profile enriched.');
+        toast.success('Profile enriched');
+      } else if (res.status === 'needs_disambiguation') {
+        setCandidates(res.candidates);
+      } else if (res.status === 'no_keys') {
+        toast('Enrichment isn’t configured yet', { description: 'Add an enrichment source to pull full profiles.' });
+      } else if (res.status === 'limit') {
+        toast('You’ve used your free deep dives this month', {
+          description: `Upgrade to Pro for unlimited profile enrichment (${res.limit}/month on Free).`,
+        });
+      } else {
+        toast.error('Could not enrich that profile');
+      }
+    } finally {
+      setEnriching(false);
+    }
+  };
 
   return (
     <motion.div
@@ -70,27 +105,52 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
             className="overflow-hidden"
           >
             <div className="px-3 pb-3 pt-0 space-y-2">
-              <ContactButton
-                person={{
-                  id: person.id,
-                  display_name: person.display_name,
-                  primary_email: person.primary_email,
-                  primary_phone: person.primary_phone,
-                  linkedin_url: person.linkedin_url,
-                  handles: person.handles,
-                }}
-                raws={raws}
-                size="sm"
-              />
+              <div className="flex items-center gap-2 flex-wrap">
+                <ContactButton
+                  person={{
+                    id: person.id,
+                    display_name: person.display_name,
+                    primary_email: person.primary_email,
+                    primary_phone: person.primary_phone,
+                    linkedin_url: person.linkedin_url,
+                    handles: person.handles,
+                  }}
+                  raws={raws}
+                  size="sm"
+                />
+                <button
+                  onClick={() => runEnrich()}
+                  disabled={enriching}
+                  className={cn(
+                    'h-8 px-3 rounded-full border border-border/60 bg-card/60 hover:bg-card',
+                    'text-xs font-medium text-foreground-secondary inline-flex items-center gap-1.5',
+                    'transition-colors disabled:opacity-60'
+                  )}
+                >
+                  {enriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
+                  {enriching ? 'Enriching…' : 'Find full profile'}
+                </button>
+              </div>
+
+              {summary && (
+                <p className="text-[12.5px] text-foreground-secondary leading-relaxed">{summary}</p>
+              )}
 
               {person.tags && person.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {person.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-medium"
+                      className={cn(
+                        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                        tagBucket(tag) === 'brings'
+                          ? 'bg-success/10 text-success'
+                          : tagBucket(tag) === 'work'
+                            ? 'bg-accent/15 text-accent-foreground'
+                            : 'bg-primary/10 text-primary'
+                      )}
                     >
-                      {tag}
+                      {prettifyTag(tag)}
                     </span>
                   ))}
                 </div>
@@ -106,6 +166,25 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {candidates && (
+        <PickProfileSheet
+          open={candidates !== null}
+          onOpenChange={(o) => { if (!o) setCandidates(null); }}
+          personId={person.id}
+          personName={person.display_name}
+          candidates={candidates}
+          onResolved={(res) => {
+            if (res.status === 'done') {
+              setSummary(dossierSummary(res.dossier) ?? res.note ?? 'Profile enriched.');
+              toast.success('Profile enriched');
+            } else if (res.status === 'failed') {
+              toast.error('Could not enrich that profile');
+            }
+            setCandidates(null);
+          }}
+        />
+      )}
     </motion.div>
   );
 };

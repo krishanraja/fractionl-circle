@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
-import ThesisApp from "./pathroom/ThesisApp";
+import CircleApp from "./pathroom/CircleApp";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
@@ -53,7 +53,7 @@ function PrivacyRoute() {
   );
 }
 
-/** Auth gate. Logged out -> AuthPage. Logged in -> the thesis-validation product. */
+/** Auth gate. Logged out -> AuthPage. Logged in -> the circle-first app shell. */
 function AuthenticatedShell() {
   const { user, loading: authLoading } = useAuth();
   const { syncLocalConsents } = useConsent();
@@ -92,7 +92,7 @@ function AuthenticatedShell() {
     <>
       <PreferencesApplier />
       <SessionManager />
-      <ThesisApp />
+      <CircleApp />
       <ConsentBanner />
     </>
   );

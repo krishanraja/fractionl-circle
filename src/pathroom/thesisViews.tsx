@@ -117,7 +117,7 @@ export function CaptureView({ onSubmit, busy, onAddPeople }: { onSubmit: (thesis
       ) : null}
       <div className="mono" style={{ fontSize: 10.5, color: C.lo, margin: '14px 0' }}>We will be upfront about anything we are not sure of.</div>
       <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim(), background.trim())}>
-        <span>{busy ? 'starting...' : 'Validate my thesis'}</span><span className="mono">→</span>
+        <span>{busy ? 'starting...' : 'Run the deep dive'}</span><span className="mono">→</span>
       </button>
     </>
   );
