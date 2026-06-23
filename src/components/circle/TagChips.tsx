@@ -79,13 +79,13 @@ export const TagChips = ({ tags, onChange, context }: TagChipsProps) => {
   }, [context.name, context.title, context.company, context.notes]);
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {TAG_BUCKETS.map((b) => {
         const options = [...b.presets.map((p) => p.slug), ...extras[b.key]];
         return (
           <div key={b.key}>
-            <p className="text-xs font-medium text-foreground-muted mb-1.5">{b.label}</p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="clabel">{b.label}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {options.map((slug) => {
                 const tag = buildTag(b.key, slug);
                 const isSel = selected.has(tag);
@@ -96,16 +96,9 @@ export const TagChips = ({ tags, onChange, context }: TagChipsProps) => {
                     type="button"
                     onClick={() => toggle(b.key, slug)}
                     aria-pressed={isSel}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-full px-2.5 h-7 text-xs font-medium transition-colors',
-                      isSel
-                        ? 'bg-primary text-primary-foreground'
-                        : isSug
-                          ? 'bg-primary/10 text-primary ring-1 ring-primary/40'
-                          : 'bg-surface-muted/70 text-foreground-secondary hover:bg-surface-muted'
-                    )}
+                    className={cn('pchip', isSel && 'sel', !isSel && isSug && 'sug')}
                   >
-                    {isSug && !isSel && <Sparkles className="w-3 h-3" />}
+                    {isSug && !isSel && <Sparkles size={11} />}
                     {prettifyTag(tag)}
                   </button>
                 );

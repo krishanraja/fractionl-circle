@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Loader2, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult } from '@/lib/circleIngest';
 import { haptics } from '@/utils/haptics';
@@ -52,72 +51,33 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
 
   if (step === 'done') {
     return (
-      <div className="flex flex-col items-center gap-2 py-4">
-        <Check className="w-6 h-6 text-success" />
-        <p className="text-sm text-foreground">Added to your Circle.</p>
-        <p className="text-xs text-foreground-secondary">
-          You can fill in details later from their card.
-        </p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '16px 0' }}>
+        <Check size={22} style={{ color: 'var(--thx-good)' }} />
+        <p className="slabel">Added to your Circle.</p>
+        <p className="sub" style={{ marginTop: 0 }}>You can fill in details later from their card.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Name"
-        autoFocus
-        className={cn(
-          'w-full h-12 px-3 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'text-base text-foreground placeholder:text-foreground-muted outline-none',
-          'focus:border-primary/60'
-        )}
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" autoFocus />
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Anything else you remember (optional) — role, where you met, why they matter…"
         rows={3}
-        className={cn(
-          'w-full px-3 py-2 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'text-base text-foreground placeholder:text-foreground-muted outline-none resize-none',
-          'focus:border-primary/60'
-        )}
       />
-      <TagChips
-        tags={tags}
-        onChange={setTags}
-        context={{ name, notes }}
-      />
-      {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
-      <button
-        onClick={handleSave}
-        disabled={!name.trim() || step === 'saving'}
-        className={cn(
-          'w-full h-12 rounded-full bg-primary text-primary-foreground text-[15px] font-semibold',
-          'flex items-center justify-center gap-2 shadow-md shadow-primary/25',
-          'active:scale-[0.98] transition-transform duration-100',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100'
-        )}
-      >
-        {step === 'saving' ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Saving…
-          </>
-        ) : (
-          <>
-            <Check className="w-4 h-4" strokeWidth={2.5} />
-            Add to Circle
-          </>
-        )}
+      <TagChips tags={tags} onChange={setTags} context={{ name, notes }} />
+      {errorMsg && <p className="cerr">{errorMsg}</p>}
+      <button className="cta" onClick={handleSave} disabled={!name.trim() || step === 'saving'}>
+        <span className="ctaicon">
+          {step === 'saving' ? <Loader2 size={16} style={{ animation: 'thxspin 0.8s linear infinite' }} /> : <Check size={16} strokeWidth={2.5} />}
+          {step === 'saving' ? 'Saving…' : 'Add to Circle'}
+        </span>
+        <span className="mono">→</span>
       </button>
-      <p className="text-[11px] text-foreground-muted text-center">
-        Just a name is enough. We'll enrich them as more sources show up.
-      </p>
+      <p className="ssrc" style={{ textAlign: 'center' }}>Just a name is enough. We'll enrich them as more sources show up.</p>
     </div>
   );
 };
