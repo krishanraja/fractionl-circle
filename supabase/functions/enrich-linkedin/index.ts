@@ -48,6 +48,48 @@ interface PersonRow {
 const json = (data: Record<string, unknown>, cors: Record<string, string>, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
+// Free tier gets a monthly allowance of deep dives (the costly, Pro-flavoured
+// action); Pro/Executive are unlimited. Tune freely — this is just config.
+const FREE_DEEP_ENRICH_PER_MONTH = 5;
+const ENRICH_FEATURE = 'deep_enrich';
+
+const monthStart = () => { const d = new Date(); d.setUTCDate(1); d.setUTCHours(0, 0, 0, 0); return d; };
+
+// deno-lint-ignore no-explicit-any
+async function effectiveTier(supabase: any, userId: string): Promise<'free' | 'pro' | 'executive'> {
+  try {
+    const { data } = await supabase.from('subscriptions').select('tier, status, trial_ends_at').eq('user_id', userId).maybeSingle();
+    if (!data) return 'free';
+    const trialing = data.status === 'trialing' && data.trial_ends_at && new Date(data.trial_ends_at) > new Date();
+    return (trialing ? 'pro' : (data.tier ?? 'free')) as 'free' | 'pro' | 'executive';
+  } catch {
+    return 'free'; // fail open on a billing hiccup — never trap the user
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+async function deepEnrichUsed(supabase: any, userId: string): Promise<number> {
+  try {
+    const { data } = await supabase.from('usage_tracking').select('count')
+      .eq('user_id', userId).eq('feature', ENRICH_FEATURE).gte('period_start', monthStart().toISOString()).maybeSingle();
+    return typeof data?.count === 'number' ? data.count : 0;
+  } catch {
+    return 0;
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+async function bumpDeepEnrich(supabase: any, userId: string): Promise<void> {
+  const start = monthStart();
+  const end = new Date(start); end.setUTCMonth(end.getUTCMonth() + 1);
+  try {
+    await supabase.rpc('increment_usage', {
+      p_user_id: userId, p_feature: ENRICH_FEATURE,
+      p_period_start: start.toISOString(), p_period_end: end.toISOString(),
+    });
+  } catch { /* usage tracking is best-effort */ }
+}
+
 Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -70,6 +112,15 @@ Deno.serve(async (req) => {
     if (personErr) throw personErr;
     const person = personData as PersonRow | null;
     if (!person) return json({ error: 'not found' }, cors, 404);
+
+    // Monetization gate: free tier gets a monthly deep-dive allowance.
+    const tier = await effectiveTier(supabase, userId);
+    if (tier === 'free') {
+      const used = await deepEnrichUsed(supabase, userId);
+      if (used >= FREE_DEEP_ENRICH_PER_MONTH) {
+        return json({ status: 'limit', limit: FREE_DEEP_ENRICH_PER_MONTH }, cors);
+      }
+    }
 
     linkedinUrl = linkedinUrl || person.linkedin_url;
 
@@ -181,6 +232,7 @@ Deno.serve(async (req) => {
     if (note && !person.note) update.note = note;
 
     await supabase.from('circle_person').update(update).eq('id', personId);
+    if (tier === 'free') await bumpDeepEnrich(supabase, userId);
     return json({ status: 'done', dossier, note }, cors);
   } catch (error) {
     return safeErrorResponse(error, cors);

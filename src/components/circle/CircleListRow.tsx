@@ -53,6 +53,10 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
         setCandidates(res.candidates);
       } else if (res.status === 'no_keys') {
         toast('Enrichment isn’t configured yet', { description: 'Add an enrichment source to pull full profiles.' });
+      } else if (res.status === 'limit') {
+        toast('You’ve used your free deep dives this month', {
+          description: `Upgrade to Pro for unlimited profile enrichment (${res.limit}/month on Free).`,
+        });
       } else {
         toast.error('Could not enrich that profile');
       }

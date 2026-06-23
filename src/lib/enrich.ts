@@ -15,6 +15,7 @@ export type EnrichResponse =
   | { status: 'done'; dossier: Record<string, unknown>; note: string | null }
   | { status: 'needs_disambiguation'; candidates: ProfileCandidate[] }
   | { status: 'no_keys' }
+  | { status: 'limit'; limit: number }
   | { status: 'failed'; reason?: string };
 
 // Enrich a person. Pass linkedinUrl to skip resolution (e.g. after the user
