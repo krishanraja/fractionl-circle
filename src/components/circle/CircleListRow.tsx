@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ContactButton } from '@/components/circle/ContactButton';
+import { prettifyTag, tagBucket } from '@/lib/contactTags';
 import type { ContactableRaw } from '@/lib/primaryContact';
 import type { CirclePerson } from '@/hooks/useCirclePeople';
 
@@ -88,9 +89,16 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
                   {person.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-medium"
+                      className={cn(
+                        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                        tagBucket(tag) === 'brings'
+                          ? 'bg-success/10 text-success'
+                          : tagBucket(tag) === 'work'
+                            ? 'bg-accent/15 text-accent-foreground'
+                            : 'bg-primary/10 text-primary'
+                      )}
                     >
-                      {tag}
+                      {prettifyTag(tag)}
                     </span>
                   ))}
                 </div>

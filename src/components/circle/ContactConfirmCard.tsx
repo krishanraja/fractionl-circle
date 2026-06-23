@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { QuickAddInput } from '@/lib/circleIngest';
+import { TagChips } from './TagChips';
 
 interface ContactConfirmCardProps {
   value: QuickAddInput;
@@ -90,6 +91,12 @@ export const ContactConfirmCard = ({
           );
         })}
       </div>
+
+      <TagChips
+        tags={value.tags ?? []}
+        onChange={(tags) => onChange({ ...value, tags })}
+        context={{ name: value.name, title: value.title, company: value.company, notes: value.notes }}
+      />
 
       {errorMsg && (
         <div className="flex items-start gap-2 text-xs text-destructive">

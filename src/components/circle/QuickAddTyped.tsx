@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult } from '@/lib/circleIngest';
 import { haptics } from '@/utils/haptics';
+import { TagChips } from './TagChips';
 
 type Step = 'idle' | 'saving' | 'done' | 'error';
 
@@ -16,6 +17,7 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [step, setStep] = useState<Step>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -35,7 +37,7 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
     try {
       const { result } = await ingestQuickAdd(
         user.id,
-        { name: trimmed, notes: notes.trim() || null },
+        { name: trimmed, notes: notes.trim() || null, tags: tags.length ? tags : null },
         { kind: 'manual_add', label: 'Quick adds' },
       );
       haptics.success();
@@ -84,6 +86,11 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
           'text-base text-foreground placeholder:text-foreground-muted outline-none resize-none',
           'focus:border-primary/60'
         )}
+      />
+      <TagChips
+        tags={tags}
+        onChange={setTags}
+        context={{ name, notes }}
       />
       {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
       <button
