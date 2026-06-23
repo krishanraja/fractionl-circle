@@ -7,7 +7,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
-import { useAppFrame } from '@/hooks/useAppFrame';
 import { getPriceId } from '@/lib/tiers';
 import { C } from './tokens';
 import { thesisCss, ThinkingView, ReadView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
@@ -29,7 +28,8 @@ export default function ThesisApp() {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id;
   const { isProOrAbove, openCheckout } = useSubscription();
-  useAppFrame(); // lock the page: no page scroll, no rubber-band; publishes --app-height
+  // The page lock (useAppFrame) is owned by CircleApp, the shell that hosts this
+  // flow under the Deep-dive tab — so we don't lock the viewport a second time here.
   const [phase, setPhase] = useState<Phase>('loading');
   const [data, setData] = useState<Scorecard | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
