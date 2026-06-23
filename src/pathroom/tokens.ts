@@ -9,6 +9,7 @@ export const C = {
   hi: 'var(--thx-hi)', mid: 'var(--thx-mid)', lo: 'var(--thx-lo)',
   accent: 'var(--thx-accent)', accentDim: 'var(--thx-accent-dim)', accentEdge: 'var(--thx-accent-edge)',
   risk: 'var(--thx-risk)', good: 'var(--thx-good)',
+  gold: 'var(--thx-gold)', cool: 'var(--thx-cool)',
 };
 export const FONT = "'Satoshi', system-ui, -apple-system, sans-serif";
 export const MONO = "'SF Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";

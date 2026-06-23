@@ -76,7 +76,7 @@ export const thesisCss = `
 
 function Pips({ band }: { band: Band }) {
   const n = BANDVAL[band];
-  const color = band === 'risk' ? C.risk : band === 'strong' ? C.accent : band === 'mixed' ? '#C9A24B' : C.mid;
+  const color = band === 'risk' ? C.risk : band === 'strong' ? C.accent : band === 'mixed' ? C.gold : C.mid;
   return <div className="pips">{[0, 1, 2].map((i) => <div key={i} className="pip" style={{ background: i < n ? color : C.line2 }} />)}</div>;
 }
 

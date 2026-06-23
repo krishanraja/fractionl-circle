@@ -122,6 +122,8 @@
     --thx-accent-edge: hsl(37 60% 46% / 0.5);
     --thx-risk: hsl(2 50% 45%);
     --thx-good: hsl(142 40% 36%);
+    --thx-gold: hsl(40 55% 42%);
+    --thx-cool: hsl(199 34% 42%);
     --thx-nav: hsl(38 30% 96% / 0.82);
   }
 
@@ -194,6 +196,8 @@
     --thx-accent-edge: rgba(224,162,60,0.55);
     --thx-risk: #C77;
     --thx-good: #7FB996;
+    --thx-gold: #C9A24B;
+    --thx-cool: #8FB8C9;
     --thx-nav: rgba(10,10,11,0.82);
   }
 }
