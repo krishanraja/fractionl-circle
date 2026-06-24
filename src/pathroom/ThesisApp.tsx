@@ -5,6 +5,7 @@
 // optional separate "sharpen" screen (admire a business -> your edge; card -> circle;
 // LinkedIn -> fit) -> the living journey map. One thing per screen.
 import { useEffect, useRef, useState } from 'react';
+import { Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getPriceId } from '@/lib/tiers';
@@ -27,7 +28,9 @@ type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'sharpen' 
 export default function ThesisApp() {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id;
-  const { isProOrAbove, openCheckout } = useSubscription();
+  const { isProOrAbove, openCheckout, loading: subLoading } = useSubscription();
+  // Free users get one full pass and the read; the deepening tools are Pro.
+  const locked = !isProOrAbove;
   // The page lock (useAppFrame) is owned by CircleApp, the shell that hosts this
   // flow under the Deep-dive tab — so we don't lock the viewport a second time here.
   const [phase, setPhase] = useState<Phase>('loading');
@@ -56,18 +59,22 @@ export default function ThesisApp() {
   useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = 0; }, [phase]);
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || subLoading) return;
     if (!userId) { setPhase('signin'); return; }
     getRunCount(userId).then(setRunCount).catch(() => {});
     getCircle(userId).then(setCircle).catch(() => {});
     getInspirationCount(userId).then(setInspCount).catch(() => {});
     getLatestRunFull(userId)
       .then((r) => {
-        if (r) { setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background); setPhase('home'); getMarketPulse(r.thesis).then(setMarket).catch(() => {}); }
-        else setPhase('capture');
+        if (r) {
+          setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background);
+          // Pro lands on the deepening dashboard; free re-views the read they earned (Home is Pro-only).
+          setPhase(isProOrAbove ? 'home' : 'read');
+          getMarketPulse(r.thesis).then(setMarket).catch(() => {});
+        } else setPhase('capture');
       })
       .catch(() => setPhase('capture'));
-  }, [userId, authLoading]);
+  }, [userId, authLoading, subLoading, isProOrAbove]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -108,6 +115,10 @@ export default function ThesisApp() {
     setData(null); setRunId(null); setStepProgress([]); setDone(false); setShown(0); setPhase('capture');
   }
 
+  // Deepening phases are Pro. For locked users, any attempt to open one opens the gate instead.
+  const DEEP_PHASES: Phase[] = ['sharpen', 'journey', 'home', 'addpeople'];
+  const go = (p: Phase) => { if (locked && DEEP_PHASES.includes(p)) { setPhase('gate'); return; } setPhase(p); };
+
   async function onCard(dataUrl: string) {
     const person = await addContactFromImage(dataUrl);
     setCircle((l) => [person, ...l]); setCardCount((c) => c + 1);
@@ -147,8 +158,8 @@ export default function ThesisApp() {
   if (phase === 'gate') return centered(
     <div style={{ maxWidth: 360 }}>
       <div className="ovl">Pro</div>
-      <div className="h" style={{ marginTop: 10 }}>You have used your free validation.</div>
-      <div className="sub">Pro gives you unlimited validations as your thesis evolves, your network warm reach, and ongoing market monitoring. $39 a month.</div>
+      <div className="h" style={{ marginTop: 10 }}>Your read is free — going deeper is Pro.</div>
+      <div className="sub">You've seen your read. Pro opens the rest: sharpen and re-run as your thesis evolves, your living journey map, your network's warm reach, and ongoing market monitoring. $39 a month.</div>
       <button className="cta" style={{ marginTop: 18 }} onClick={async () => { const pid = getPriceId('pro'); if (pid) await openCheckout(pid); }}><span>Upgrade to Pro</span><span className="mono">→</span></button>
       <button className="foothint" style={{ marginTop: 14 }} onClick={() => setPhase(data ? 'read' : 'capture')}>back</button>
     </div>
@@ -160,7 +171,7 @@ export default function ThesisApp() {
   const canHome = !!data && phase !== 'home' && phase !== 'thinking';
   const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string, wide?: boolean) => (
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
-      <EmberNav fuel={fuel} fuels={fuels} hint={hint} onHome={canHome ? () => setPhase('home') : undefined} />
+      <EmberNav fuel={fuel} fuels={fuels} hint={hint} onHome={canHome ? () => go('home') : undefined} />
       <div className="thxbody" ref={bodyRef}>
         <div className={'wrap' + (wide ? ' wrapwide' : '')} key={phase}>
           {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
@@ -181,12 +192,12 @@ export default function ThesisApp() {
       <Home
         data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle} fuel={fuel} market={market}
         onOpenRead={() => setPhase('read')}
-        onOpenPath={() => setPhase('journey')}
-        onOpenCircle={() => { setCircleFrom('home'); setPhase('addpeople'); }}
+        onOpenPath={() => go('journey')}
+        onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}
       />,
       <>
-        <button className="cta" onClick={() => setPhase('journey')}><span>Continue your path</span><span className="mono">→</span></button>
-        <button className="foothint" onClick={() => setPhase('sharpen')}>+ deepen your thesis · add a signal</button>
+        <button className="cta" onClick={() => go('journey')}><span>Continue your path</span><span className="mono">→</span></button>
+        <button className="foothint" onClick={() => go('sharpen')}>+ deepen your thesis · add a signal</button>
       </>,
       undefined, true,
     );
@@ -201,13 +212,23 @@ export default function ThesisApp() {
   }
 
   if (phase === 'read' && data) {
-    return frame(
-      <ReadView data={data} />,
+    const readFooter = locked ? (
+      <>
+        <button className="cta" onClick={() => setPhase('gate')}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Lock size={14} strokeWidth={2.5} /> See your path</span>
+          <span className="mono">→</span>
+        </button>
+        <button className="foothint" onClick={() => setPhase('gate')}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lock size={11} strokeWidth={2.5} /> sharpen &amp; go deeper with Pro</span>
+        </button>
+      </>
+    ) : (
       <>
         <button className="cta" onClick={() => setPhase('journey')}><span>See your path</span><span className="mono">→</span></button>
         <button className="foothint" onClick={() => setPhase('sharpen')}>add fuel to sharpen this read first</button>
-      </>,
+      </>
     );
+    return frame(<ReadView data={data} />, readFooter);
   }
 
   if (phase === 'sharpen' && data) {
@@ -223,7 +244,7 @@ export default function ThesisApp() {
         edges={edges}
       />,
       <>
-        <button className="cta" onClick={() => setPhase('journey')}><span>See your path</span><span className="mono">→</span></button>
+        <button className="cta" onClick={() => go('journey')}><span>See your path</span><span className="mono">→</span></button>
         <button className="foothint" disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 're-run the read with your new fuel'}</button>
       </>,
       'tap the mark',
@@ -240,7 +261,7 @@ export default function ThesisApp() {
       footer = <button className="foothint" onClick={startAnother}>+ validate another thesis</button>;
     } else {
       const primary = js.warmBlocked
-        ? { label: 'Add people to light up your warm reach', onClick: () => { setCircleFrom('journey'); setPhase('addpeople'); } }
+        ? { label: 'Add people to light up your warm reach', onClick: () => { setCircleFrom('journey'); go('addpeople'); } }
         : { label: stepProgress.length === 0 ? 'Start with move one' : 'Mark this move done', onClick: () => onMarkDone(js.current) };
       footer = (
         <>

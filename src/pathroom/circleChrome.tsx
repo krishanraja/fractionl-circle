@@ -51,7 +51,7 @@ export function BrandBar() {
 
 export const circleCss = `
 /* bottom tab bar */
-.thx .tabbar { flex:0 0 auto; display:flex; align-items:stretch; border-top:1px solid ${C.line}; background:${C.bg}; padding-bottom:env(safe-area-inset-bottom); }
+.thx .tabbar { flex:0 0 auto; display:flex; align-items:stretch; border-top:1px solid ${C.line}; background:${C.bg}; padding-bottom:max(env(safe-area-inset-bottom), 8px); }
 .thx .tabbtn { position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:9px 0 7px; background:none; border:0; cursor:pointer; color:${C.lo}; transition:color .2s ease; }
 .thx .tabbtn .tablabel { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; }
 .thx .tabbtn.on { color:${C.accent}; }
