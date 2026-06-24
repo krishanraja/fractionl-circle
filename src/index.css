@@ -234,9 +234,16 @@
     overflow: hidden;
     overscroll-behavior: none;
   }
+  /* Anchor the locked body to the visual viewport (top offset + measured
+     height) rather than inset:0, which resolves against the larger layout
+     viewport. On Android Chrome that mismatch pushed the pinned bottom tab bar
+     below the visible fold whenever the address bar was shown. */
   html.app-locked body {
     position: fixed;
-    inset: 0;
+    top: var(--app-top, 0px);
+    left: 0;
+    right: 0;
+    height: var(--app-height, 100%);
     width: 100%;
     touch-action: pan-x pan-y;
   }
