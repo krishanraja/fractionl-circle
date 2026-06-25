@@ -19,6 +19,21 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ConsentBanner } from "./components/compliance/ConsentBanner";
 import { SessionManager } from "./components/compliance/SessionManager";
 import { useConsent } from "./hooks/useConsent";
+import { hideBootSplash } from "@/lib/bootSplash";
+
+/**
+ * Reveal the app (fade the boot splash) for logged-out / public screens, where the
+ * theme is already correct from the pre-paint script. Logged-in screens reveal
+ * themselves once their saved theme is applied — see PreferencesApplier — so the
+ * dark→light settle is never visible. A safety timeout in index.html is the backstop.
+ */
+function BootSplashGate() {
+  const { user, loading } = useAuth();
+  useEffect(() => {
+    if (!loading && !user) hideBootSplash();
+  }, [loading, user]);
+  return null;
+}
 
 // Unlinked design fixtures (lazy so they stay out of the main prod bundle). Not in nav.
 const StartHereMock = lazy(() => import("./preview/StartHereMock"));
@@ -126,6 +141,7 @@ function AppRoutes() {
   return (
     <>
       <AuthHashErrorNotice />
+      <BootSplashGate />
       <Routes>
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />

@@ -80,22 +80,35 @@
     </script>
   </head>
   <body>
-    <div id="root">
-      <!-- Instant branded splash, replaced the moment React mounts (no blank flash). -->
-      <div id="boot-splash">
-        <div class="boot-orb"></div>
-      </div>
+    <div id="root"></div>
+    <!-- Branded splash kept OUTSIDE #root so React mounting doesn't drop it. It
+         stays up until the app has applied the resolved theme (or a safety
+         timeout), then fades — so the dark→light theme settle is never seen. -->
+    <div id="boot-splash">
+      <div class="boot-orb"></div>
     </div>
     <style>
       /* Theme-aware splash background (set by the pre-paint script's html.dark). */
-      #boot-splash { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#F8F6F2; }
+      #boot-splash { position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:#F8F6F2; transition:opacity .3s ease; }
       html.dark #boot-splash { background:#0A0A0B; }
+      #boot-splash.hide { opacity:0; pointer-events:none; }
       #boot-splash .boot-orb { width:60px; height:60px; border-radius:50%;
         background:radial-gradient(circle, rgba(224,162,60,0.95), rgba(224,162,60,0.22) 48%, transparent 70%);
         animation:bootpulse 1.7s ease-in-out infinite; }
       @keyframes bootpulse { 0%,100%{opacity:.45; transform:scale(.9)} 50%{opacity:1; transform:scale(1.12)} }
       @media (prefers-reduced-motion: reduce) { #boot-splash .boot-orb { animation:none; } }
     </style>
+    <script>
+      // Fade + remove the splash once the app signals the theme is applied — or
+      // after a safety timeout, so it can never get stuck if the app stalls.
+      window.__hideBootSplash = function () {
+        var el = document.getElementById('boot-splash');
+        if (!el || el.classList.contains('hide')) return;
+        el.classList.add('hide');
+        setTimeout(function () { if (el && el.parentNode) el.parentNode.removeChild(el); }, 320);
+      };
+      setTimeout(function () { if (window.__hideBootSplash) window.__hideBootSplash(); }, 4000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
