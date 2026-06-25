@@ -81,7 +81,7 @@ export const chromeCss = `
 /* Zero-scroll mobile frame: header + one focused body + a pinned action, locked to the
    visible viewport (--app-height from useAppFrame). The page itself never scrolls; only
    .thxbody may scroll internally, and it resets to the top on every screen change. */
-.thx.thxframe { min-height:0; height:100vh; height:100dvh; height:var(--app-height,100dvh); display:flex; flex-direction:column; overflow:hidden; }
+.thx.thxframe { min-height:0; height:100vh; height:var(--app-height,100vh); height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
 .thx .thxbody { flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; scrollbar-width:none; }
 .thx .thxbody::-webkit-scrollbar { display:none; }
 .thx .thxbody > .wrap { padding:16px 18px 16px; }

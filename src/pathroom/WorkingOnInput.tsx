@@ -1,10 +1,11 @@
 // Zone B of the Circle hero, ember system: "what are you working on right now?"
 // -> the few people in your circle who matter most, each with a role + why and
 // one-tap warm reach.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { ContactButton } from '@/components/circle/ContactButton';
 import { setReadFromText, rankInnerCircle, getReadOffer, type RankedPerson } from '@/lib/theRead';
 import type { ContactablePerson } from '@/lib/primaryContact';
@@ -23,16 +24,24 @@ const subtitle = (p: RankedPerson) => [p.title, p.company].filter(Boolean).join(
 export default function WorkingOnInput() {
   const { user } = useAuth();
   const userId = user?.id;
+  const { profile, updateProfile } = useUserProfile();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ranked, setRanked] = useState<RankedPerson[] | null>(null);
   const [contacts, setContacts] = useState<Map<string, ContactablePerson>>(new Map());
+  const seeded = useRef(false);
 
+  // One "what I do" statement, shared with the profile. Seed the box from the
+  // profile's positioning (what they set in Settings); fall back to the last
+  // thing they typed here (legacy reads without a positioning). Seed once so we
+  // never stomp what they're actively typing.
   useEffect(() => {
-    if (!userId) return;
-    getReadOffer(userId).then((o) => { if (o) setText(o); }).catch(() => {});
-  }, [userId]);
+    if (seeded.current || !userId) return;
+    const pos = profile?.positioning?.trim();
+    if (pos) { setText(pos); seeded.current = true; return; }
+    getReadOffer(userId).then((o) => { if (o && !seeded.current) { setText(o); seeded.current = true; } }).catch(() => {});
+  }, [userId, profile?.positioning]);
 
   const run = useCallback(async () => {
     const t = text.trim();
@@ -41,6 +50,10 @@ export default function WorkingOnInput() {
     setBusy(true); setErr(null);
     try {
       await setReadFromText(t);
+      // Keep the profile in sync: this same statement is "how they position
+      // themselves" in Settings, and it now feeds the ranking via profile
+      // context. Fire-and-forget so surfacing isn't blocked on the write.
+      updateProfile({ positioning: t }).catch(() => {});
       const people = await rankInnerCircle();
       setRanked(people);
       if (people.length) {
@@ -57,7 +70,7 @@ export default function WorkingOnInput() {
     } finally {
       setBusy(false);
     }
-  }, [text, busy]);
+  }, [text, busy, updateProfile]);
 
   return (
     <div>

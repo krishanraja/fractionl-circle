@@ -492,9 +492,9 @@
    correct even on old iOS Safari where vh is wrong and dvh is unsupported).
    The last valid declaration wins, so JS-set px overrides everything. */
 .app-frame {
-  height: 100vh;
-  height: 100dvh;
-  height: var(--app-height, 100dvh);
+  height: 100vh;                    /* ancient fallback */
+  height: var(--app-height, 100vh); /* old iOS Safari (no dvh): JS-measured visible height */
+  height: 100dvh;                   /* modern: dynamic viewport tracks the toolbar; wins where supported, dropped where not */
   width: 100%;
   overflow: hidden;
 }

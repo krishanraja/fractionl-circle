@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { chatJSON } from '../_shared/llm.ts';
 import { recencyDays } from '../_shared/grounding.ts';
+import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
 
 // rank-inner-circle: given the user's current direction (the_read) and their real
 // network, return the few people who matter most for THIS fork, each with a role +
@@ -38,6 +39,11 @@ Deno.serve(async (req) => {
     const { data: read } = await supabase.from('the_read').select('*').eq('user_id', userId).maybeSingle();
     if (!read) return new Response(JSON.stringify({ people: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
+    // Anchor the ranking to the user's declared practice (role, positioning,
+    // stages, verticals) — the same profile envelope the match engine and idea
+    // extraction use — so the network filter and the profile share one brain.
+    const profile = await loadProfileContext(supabase, userId);
+
     // Re-read the network fresh (stateless). Prefilter by warmth/recency to a small set.
     const { data: people } = await supabase
       .from('circle_person')
@@ -58,7 +64,7 @@ Deno.serve(async (req) => {
 
     let ranked: Array<{ candidate_id: string; role: string; why: string }> = [];
     try {
-      const { content } = await chatJSON({ system: SYSTEM, user, temperature: 0.3 });
+      const { content } = await chatJSON({ system: SYSTEM + profilePromptBlock(profile), user, temperature: 0.3 });
       const parsed = JSON.parse(content);
       ranked = Array.isArray(parsed?.people) ? parsed.people : [];
     } catch (e) {
