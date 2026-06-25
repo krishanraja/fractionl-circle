@@ -50,6 +50,12 @@ export function BrandBar() {
 }
 
 export const circleCss = `
+/* The authed shell root is .thx.app-frame. The .thx base sets min-height:100vh
+   (the toolbar-HIDDEN large viewport); min-height beats height, so it forces the
+   locked frame taller than the visible viewport when the address bar is shown,
+   pushing the bottom tab bar below the fold. Neutralise it here — the same guard
+   .thx.thxframe already carries. THIS is what made the tab bar disappear. */
+.thx.app-frame { min-height:0; }
 /* bottom tab bar */
 .thx .tabbar { flex:0 0 auto; display:flex; align-items:stretch; border-top:1px solid ${C.line}; background:${C.bg}; padding-bottom:max(env(safe-area-inset-bottom), 8px); }
 .thx .tabbtn { position:relative; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:9px 0 7px; background:none; border:0; cursor:pointer; color:${C.lo}; transition:color .2s ease; }
