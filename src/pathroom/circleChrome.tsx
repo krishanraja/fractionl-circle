@@ -1,7 +1,7 @@
 // Ember-system chrome for the Circle surface, so it reads as the same app as the
 // Deep dive tab. Provides `circleCss` (the .thx classes the circle components use)
 // and BrandBar (the icon + wordmark lockup + theme toggle + settings entry).
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Sun, Moon, Settings } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { applyTheme } from '@/lib/applyUserPreferences';
@@ -13,17 +13,25 @@ import { C, MONO } from './tokens';
 // wordmark) and adds a one-tap theme toggle + a settings entry (the new shell
 // otherwise has no way to reach preferences).
 export function BrandBar() {
-  const { updatePreferences } = useUserProfile();
+  const { preferences, updatePreferences } = useUserProfile();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isDark, setIsDark] = useState(
     () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   );
 
+  // The theme is applied asynchronously after the prefs load, so the initial DOM
+  // read above can be stale. Re-sync the icon once preferences resolve.
+  useEffect(() => {
+    if (preferences?.theme) setIsDark(preferences.theme !== 'light');
+  }, [preferences?.theme]);
+
   const toggleTheme = () => {
-    const next = isDark ? 'light' : 'dark';
+    // Read the ACTUAL current theme from the DOM rather than local state — state
+    // could lag the async theme application, which made the first tap a no-op.
+    const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     haptics.tap();
     applyTheme(next);          // instant flip
-    setIsDark(!isDark);
+    setIsDark(next === 'dark');
     void updatePreferences({ theme: next }); // persist
   };
 
