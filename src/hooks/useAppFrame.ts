@@ -28,11 +28,6 @@ export function useAppFrame(active: boolean = true): void {
     const setHeight = () => {
       const h = vv?.height ?? window.innerHeight;
       root.style.setProperty('--app-height', `${Math.round(h)}px`);
-      // Visual-viewport top offset: how far the visible area is pushed down by
-      // dynamic browser chrome (e.g. Android Chrome's address bar). The locked
-      // body anchors to this so the pinned bottom tab bar can't be shoved below
-      // the visible fold.
-      root.style.setProperty('--app-top', `${Math.round(vv?.offsetTop ?? 0)}px`);
     };
 
     setHeight();
@@ -50,7 +45,6 @@ export function useAppFrame(active: boolean = true): void {
       vv?.removeEventListener('scroll', setHeight);
       root.classList.remove('app-locked');
       root.style.removeProperty('--app-height');
-      root.style.removeProperty('--app-top');
     };
   }, [active]);
 }
