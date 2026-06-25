@@ -2,11 +2,10 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <script>
-      // Pre-paint theme: apply the saved theme before first render so there's no
-      // dark→light flash. Dark-first — anything but an explicit 'light' is dark.
-      (function(){try{var t=localStorage.getItem('circle-theme');if(t==='light'){document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');}}catch(e){}})();
-    </script>
+    <!-- Pre-paint theme, as an EXTERNAL same-origin script: the CSP is
+         `script-src 'self'`, so inline scripts are blocked and would silently no-op.
+         Render-blocking (no defer) so it sets the theme class before first paint. -->
+    <script src="/theme-init.js"></script>
     <style>
       /* Instant, theme-aware page background so the boot splash never flashes the
          wrong mode (the bundled CSS that sets --background loads slightly later). */
@@ -98,17 +97,8 @@
       @keyframes bootpulse { 0%,100%{opacity:.45; transform:scale(.9)} 50%{opacity:1; transform:scale(1.12)} }
       @media (prefers-reduced-motion: reduce) { #boot-splash .boot-orb { animation:none; } }
     </style>
-    <script>
-      // Fade + remove the splash once the app signals the theme is applied — or
-      // after a safety timeout, so it can never get stuck if the app stalls.
-      window.__hideBootSplash = function () {
-        var el = document.getElementById('boot-splash');
-        if (!el || el.classList.contains('hide')) return;
-        el.classList.add('hide');
-        setTimeout(function () { if (el && el.parentNode) el.parentNode.removeChild(el); }, 320);
-      };
-      setTimeout(function () { if (window.__hideBootSplash) window.__hideBootSplash(); }, 4000);
-    </script>
+    <!-- The splash is hidden from the bundle (hideBootSplash) — see main.tsx /
+         PreferencesApplier / BootSplashGate. No inline script: the CSP blocks it. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

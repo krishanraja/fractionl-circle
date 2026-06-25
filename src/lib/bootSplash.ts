@@ -1,7 +1,11 @@
 // Fades out the index.html boot splash once the app has applied the resolved
-// theme, so the dark→light theme settle is never visible. Idempotent — a no-op
-// if the splash is already gone. The implementation lives in index.html so it's
-// available before the bundle loads; this is just the typed entry point.
+// theme, so the dark→light settle is never visible. Done entirely from the
+// bundle (CSP `script-src 'self'` forbids inline scripts), so it manipulates the
+// DOM directly rather than calling an inline helper. Idempotent.
 export function hideBootSplash(): void {
-  (window as unknown as { __hideBootSplash?: () => void }).__hideBootSplash?.();
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById('boot-splash');
+  if (!el || el.classList.contains('hide')) return;
+  el.classList.add('hide');
+  window.setTimeout(() => el.remove(), 320);
 }
