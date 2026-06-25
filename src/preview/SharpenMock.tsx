@@ -117,7 +117,7 @@ export default function SharpenMock() {
   ];
 
   return (
-    <div className="thx" style={{ position: 'relative' }} data-admire={admire} data-scenario={scenario} data-fuel={f.toFixed(2)}>
+    <div className="thx thx-page" style={{ position: 'relative' }} data-admire={admire} data-scenario={scenario} data-fuel={f.toFixed(2)}>
       <style>{thesisCss + sharpenCss}</style>
 
       <div className="topnav">

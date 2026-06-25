@@ -100,7 +100,7 @@ export default function JourneyMock() {
     : progress === 0 ? 'Start move one' : done ? '' : 'Mark this move done';
 
   return (
-    <div className="thx" style={{ position: 'relative' }} data-scenario={scenario} data-circle={circleN} data-progress={progress}>
+    <div className="thx thx-page" style={{ position: 'relative' }} data-scenario={scenario} data-circle={circleN} data-progress={progress}>
       <style>{thesisCss + journeyCss}</style>
 
       <div className="topnav">

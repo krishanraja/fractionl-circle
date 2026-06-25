@@ -204,7 +204,7 @@ export default function StartHereMock() {
   ];
 
   return (
-    <div className="thx" style={{ position: 'relative' }} data-judge={lastKind} data-step={step}>
+    <div className="thx thx-page" style={{ position: 'relative' }} data-judge={lastKind} data-step={step}>
       <style>{thesisCss + startCss}</style>
 
       <div className="topnav">
