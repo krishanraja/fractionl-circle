@@ -5,16 +5,39 @@
 
 // deno-lint-ignore-file no-explicit-any
 
-export const GOOGLE_SCOPES = [
+// Base scopes (current production behavior). gmail.readonly + gmail.send are
+// restricted; the OAuth app stays in Testing mode (test users only) to use them
+// without the CASA audit.
+const GOOGLE_BASE_SCOPES = [
   'openid',
   'email',
   'profile',
   'https://www.googleapis.com/auth/contacts.readonly',
   'https://www.googleapis.com/auth/contacts.other.readonly',
-  'https://www.googleapis.com/auth/calendar.events.readonly',
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/gmail.send',
-].join(' ');
+];
+
+// Calendar scope is requested as read-only by default. Once the calendar.events
+// (write) sensitive scope clears Google verification, flip
+// GOOGLE_CALENDAR_WRITE_ENABLED=true and the warm-reach digest can write holds
+// straight onto the user's calendar (the write scope is a superset of read, so
+// the existing calendar sync keeps working). Off by default => no behavior change
+// and no premature consent-screen warnings before verification.
+const CALENDAR_READ = 'https://www.googleapis.com/auth/calendar.events.readonly';
+const CALENDAR_WRITE = 'https://www.googleapis.com/auth/calendar.events';
+
+export function calendarWriteEnabled(): boolean {
+  return (Deno.env.get('GOOGLE_CALENDAR_WRITE_ENABLED') ?? '').toLowerCase() === 'true';
+}
+
+// The space-delimited scope string requested at authorize time.
+export function googleScopes(): string {
+  return [...GOOGLE_BASE_SCOPES, calendarWriteEnabled() ? CALENDAR_WRITE : CALENDAR_READ].join(' ');
+}
+
+// Back-compat: the current default scope set as a constant.
+export const GOOGLE_SCOPES = googleScopes();
 
 export const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 export const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -50,7 +73,7 @@ export function buildAuthorizeUrl(state: string, clientId: string): string {
     client_id: clientId,
     redirect_uri: getRedirectUri(),
     response_type: 'code',
-    scope: GOOGLE_SCOPES,
+    scope: googleScopes(),
     access_type: 'offline',
     prompt: 'consent',
     include_granted_scopes: 'true',

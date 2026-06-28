@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { buildWarmDigestForUser, type DigestPerson } from '../_shared/warmDigestCore.ts';
+import { writeWarmReachHold } from '../_shared/googleCalendar.ts';
 
 // Weekly "keep your circle warm" digest. Service-role auth via CRON_SECRET.
 // For each eligible user it builds the cohort (warmDigestCore) and delivers the
@@ -19,6 +20,10 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const FROM_EMAIL = Deno.env.get('WARM_DIGEST_FROM_EMAIL') ?? Deno.env.get('CONCIERGE_FROM_EMAIL') ?? 'circle@fractionl.ai';
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://circle.fractionl.ai';
+// Track B (flagged off): when on, write the warm-reach hold straight onto the
+// user's Google Calendar (needs the calendar.events write scope + verification)
+// instead of attaching an .ics. Off => current .ics behavior, no change.
+const NATIVE_CALENDAR = (Deno.env.get('WARM_DIGEST_NATIVE_CALENDAR') ?? '').toLowerCase() === 'true';
 
 const MAX_USERS_PER_RUN = 500;
 
@@ -116,7 +121,7 @@ const buildEmailHtml = (people: DigestPerson[]): string => `
   <p style="font-size:12px;color:#999;margin-top:20px">The attached calendar hold puts a recurring 20-minute warm-reach block on your calendar. <a href="${esc(APP_URL)}" style="color:#9a6a16">Open your circle</a> · manage this email in settings.</p>
 </div>`;
 
-async function sendDigestEmail(to: string, people: DigestPerson[], ics: string): Promise<boolean> {
+async function sendDigestEmail(to: string, people: DigestPerson[], ics: string | null): Promise<boolean> {
   if (!RESEND_API_KEY) return false;
   const subject = people.length === 1
     ? `1 person in your circle is going cold`
@@ -129,7 +134,8 @@ async function sendDigestEmail(to: string, people: DigestPerson[], ics: string):
       to: [to],
       subject,
       html: buildEmailHtml(people),
-      attachments: [{ filename: 'warm-reach.ics', content: toBase64(ics) }],
+      // Skip the .ics when the hold was written natively to the calendar.
+      ...(ics ? { attachments: [{ filename: 'warm-reach.ics', content: toBase64(ics) }] } : {}),
     }),
   });
   if (!resp.ok) {
@@ -189,6 +195,7 @@ Deno.serve(async (req) => {
   let skippedEmpty = 0;
   let optedOut = 0;
   let emailSuppressed = 0;
+  let calendarWritten = 0;
   const errors: Array<{ user_id: string; message: string }> = [];
 
   for (const userId of targetUsers) {
@@ -206,6 +213,16 @@ Deno.serve(async (req) => {
       const digest = await buildWarmDigestForUser(userId, admin, now.getTime());
       if (!digest.people.length) { skippedEmpty++; continue; }
 
+      // Native calendar hold (flagged). On success the email drops the .ics so
+      // the user does not get a duplicate. Any failure falls back to the .ics.
+      let nativeCal = false;
+      if (NATIVE_CALENDAR) {
+        try {
+          nativeCal = await writeWarmReachHold(admin, userId, digest.people, now, APP_URL);
+          if (nativeCal) calendarWritten++;
+        } catch { /* fall back to the .ics attachment */ }
+      }
+
       // Push reaches app users who have no inbox set; naturally gated by having a
       // subscription, plus the browser_notifications preference.
       if (!prefs || prefs.browser_notifications !== false) {
@@ -218,7 +235,7 @@ Deno.serve(async (req) => {
         const { data: userLookup } = await admin.auth.admin.getUserById(userId);
         const email = userLookup?.user?.email ?? null;
         if (email) {
-          const ics = buildIcs(digest.people, now, `${userId}`);
+          const ics = nativeCal ? null : buildIcs(digest.people, now, `${userId}`);
           if (await sendDigestEmail(email, digest.people, ics)) emailed++;
         }
       } else {
@@ -236,6 +253,8 @@ Deno.serve(async (req) => {
     skipped_empty: skippedEmpty,
     opted_out: optedOut,
     email_suppressed: emailSuppressed,
+    calendar_written: calendarWritten,
+    native_calendar: NATIVE_CALENDAR,
     email_configured: !!RESEND_API_KEY,
     errors,
     at: now.toISOString(),
