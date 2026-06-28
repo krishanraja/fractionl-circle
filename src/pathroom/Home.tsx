@@ -6,6 +6,7 @@ import { Compass, Target, Users } from 'lucide-react';
 import { C } from './tokens';
 import type { Scorecard } from './thesisViews';
 import type { CircleP, MarketPulse } from './thesisData';
+import { holdingBack, type Sharpness } from './sharpness';
 
 function Delta({ v, suffix = '' }: { v: number | null; suffix?: string }) {
   if (v == null) return null;
@@ -13,13 +14,15 @@ function Delta({ v, suffix = '' }: { v: number | null; suffix?: string }) {
   return <span className={'vdelta ' + (flat ? 'vflat' : up ? 'vup' : 'vdn')}>{flat ? '•' : up ? '▲' : '▼'} {Math.abs(v)}{suffix}</span>;
 }
 
-export default function Home({ data, thesis, stepProgress, circle, fuel, market, onOpenRead, onOpenPath, onOpenCircle }: {
+export default function Home({ data, thesis, stepProgress, circle, fuel, market, sharp, coach, onOpenRead, onOpenPath, onOpenCircle }: {
   data: Scorecard;
   thesis: string;
   stepProgress: number[];
   circle: CircleP[];
   fuel: number;
   market: MarketPulse | null;
+  sharp: Sharpness;
+  coach?: React.ReactNode;
   onOpenRead: () => void;
   onOpenPath: () => void;
   onOpenCircle: () => void;
@@ -31,7 +34,6 @@ export default function Home({ data, thesis, stepProgress, circle, fuel, market,
   const done = stepProgress.length;
   const n = circle.length;
   const nextStep = steps.find((_, i) => !stepProgress.includes(i));
-  const pct = Math.round(Math.max(0, Math.min(1, fuel)) * 100);
   const r = 44, circ = 2 * Math.PI * r;
 
   const section = (icon: React.ReactNode, k: string, v: string, onClick: () => void) => (
@@ -56,10 +58,18 @@ export default function Home({ data, thesis, stepProgress, circle, fuel, market,
           </svg>
           <img src="/brand/fractionl-icon.png" alt="" className="vorbcore" />
         </div>
-        <div className="vorbcap">{pct}% charged · brightening</div>
+        <div className="vorbcap">
+          <div className="scorewrap" style={{ justifyContent: 'center' }}>
+            <span className="scorenum">{sharp.score}</span>
+            <span className="scoremax">/100 strength</span>
+            {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
+          </div>
+          <div className="scorehold">{holdingBack(sharp)}</div>
+        </div>
       </div>
 
       <div className="vpanels">
+        {coach ? <div style={{ marginBottom: 12 }}>{coach}</div> : null}
         {market && (market.market || market.role) ? (
           <div className="vmkt">
             <div className="vmkthead">

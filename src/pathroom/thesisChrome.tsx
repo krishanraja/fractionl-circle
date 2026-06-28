@@ -194,6 +194,32 @@ export const chromeCss = `
 .thx .rbtn { font-size:12.5px; font-weight:600; border-radius:7px; padding:9px 13px; cursor:pointer; border:1px solid ${C.line2}; background:${C.panel}; color:${C.hi}; }
 .thx .rbtn.primary { background:${C.accent}; border-color:${C.accent}; color:#1A1206; }
 .thx .rbtn.ghost { color:${C.mid}; }
+/* proactive sharpen coach */
+.thx .spk { border:1px solid ${C.accentEdge}; border-radius:12px; padding:14px; background:${C.panel2}; }
+.thx .spk-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.thx .spk-tag { font-family:${MONO}; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; }
+.thx .spk-ctrls { display:flex; gap:4px; }
+.thx .spk-icon { width:24px; height:24px; border-radius:6px; border:1px solid ${C.line2}; background:${C.panel}; color:${C.mid}; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; }
+.thx .spk-icon:disabled { opacity:0.4; cursor:default; }
+.thx .spk-q { font-size:15.5px; font-weight:600; color:${C.hi}; line-height:1.35; margin-top:10px; }
+.thx .spk-why { font-size:12px; color:${C.mid}; line-height:1.45; margin-top:5px; }
+.thx .spk-opts { display:flex; flex-direction:column; gap:7px; margin-top:12px; }
+.thx .spk-opt { text-align:left; font-size:13.5px; color:${C.hi}; background:${C.panel}; border:1px solid ${C.line2}; border-radius:8px; padding:11px 12px; cursor:pointer; line-height:1.35; }
+.thx .spk-opt:hover:not(:disabled) { border-color:${C.accent}; }
+.thx .spk-opt:disabled { opacity:0.5; cursor:default; }
+.thx .spk-skip { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; padding:10px 0 2px; }
+.thx .spk-typed { display:flex; gap:8px; margin-top:12px; }
+.thx .spk-input { flex:1; }
+.thx .spk-send { flex:0 0 auto; width:44px; border-radius:8px; border:0; background:${C.accent}; color:#1A1206; font-weight:700; cursor:pointer; }
+.thx .spk-send:disabled { opacity:0.5; cursor:default; }
+.thx .spk-done { display:flex; align-items:center; gap:9px; border:1px solid ${C.line}; border-radius:12px; padding:13px 14px; background:${C.panel}; font-size:13px; color:${C.mid}; line-height:1.45; }
+.thx .spk-doneicon { color:${C.good}; font-weight:700; }
+/* strength score readout */
+.thx .scorewrap { display:flex; align-items:baseline; gap:8px; }
+.thx .scorenum { font-family:${MONO}; font-size:30px; font-weight:600; color:${C.hi}; font-variant-numeric:tabular-nums; line-height:1; }
+.thx .scoremax { font-family:${MONO}; font-size:13px; color:${C.lo}; }
+.thx .scorepend { font-family:${MONO}; font-size:11px; color:${C.accent}; }
+.thx .scorehold { font-size:12px; color:${C.mid}; margin-top:4px; }
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
 /* living + breathing motion, restrained for the quiet-instrument register */
 @keyframes thxrise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }

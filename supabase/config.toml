@@ -60,6 +60,10 @@ verify_jwt = true
 [functions.warm-digest]
 verify_jwt = true
 
+# Proactive Socratic sharpen question (user JWT).
+[functions.next-question]
+verify_jwt = true
+
 # Nightly warmth recompute (service-role, x-cron-secret).
 [functions.compute-warmth]
 verify_jwt = false
