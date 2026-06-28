@@ -188,31 +188,41 @@ Deno.serve(async (req) => {
   let pushed = 0;
   let skippedEmpty = 0;
   let optedOut = 0;
+  let emailSuppressed = 0;
   const errors: Array<{ user_id: string; message: string }> = [];
 
   for (const userId of targetUsers) {
     try {
-      // Opt-out: respect the digest flag and the global email switch.
+      // warm_digest is the feature's master switch. The per-channel switches
+      // (email_notifications, browser_notifications) gate delivery surfaces
+      // independently, so turning off email never silences push and vice versa.
       const { data: prefs } = await admin
         .from('user_preferences')
-        .select('warm_digest, email_notifications')
+        .select('warm_digest, email_notifications, browser_notifications')
         .eq('user_id', userId)
         .maybeSingle();
-      const optOut = prefs && (prefs.warm_digest === false || prefs.email_notifications === false);
-      if (optOut) { optedOut++; continue; }
+      if (prefs && prefs.warm_digest === false) { optedOut++; continue; }
 
       const digest = await buildWarmDigestForUser(userId, admin, now.getTime());
       if (!digest.people.length) { skippedEmpty++; continue; }
 
-      // Push is independent of email and reaches app users who have no inbox set.
-      await firePush(userId, digest.people.length);
-      pushed++;
+      // Push reaches app users who have no inbox set; naturally gated by having a
+      // subscription, plus the browser_notifications preference.
+      if (!prefs || prefs.browser_notifications !== false) {
+        await firePush(userId, digest.people.length);
+        pushed++;
+      }
 
-      const { data: userLookup } = await admin.auth.admin.getUserById(userId);
-      const email = userLookup?.user?.email ?? null;
-      if (email) {
-        const ics = buildIcs(digest.people, now, `${userId}`);
-        if (await sendDigestEmail(email, digest.people, ics)) emailed++;
+      // Email goes out unless the user has turned off email globally.
+      if (!prefs || prefs.email_notifications !== false) {
+        const { data: userLookup } = await admin.auth.admin.getUserById(userId);
+        const email = userLookup?.user?.email ?? null;
+        if (email) {
+          const ics = buildIcs(digest.people, now, `${userId}`);
+          if (await sendDigestEmail(email, digest.people, ics)) emailed++;
+        }
+      } else {
+        emailSuppressed++;
       }
     } catch (e) {
       errors.push({ user_id: userId, message: e instanceof Error ? e.message : String(e) });
@@ -225,6 +235,7 @@ Deno.serve(async (req) => {
     pushed,
     skipped_empty: skippedEmpty,
     opted_out: optedOut,
+    email_suppressed: emailSuppressed,
     email_configured: !!RESEND_API_KEY,
     errors,
     at: now.toISOString(),
