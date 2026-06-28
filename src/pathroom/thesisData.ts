@@ -133,6 +133,49 @@ export async function getWarmDigest(): Promise<ReachPerson[]> {
   return Array.isArray(d?.people) ? d!.people! : [];
 }
 
+// The proactive sharpen question: the single highest-leverage thing to decide
+// next, from the next-question edge fn (weakest read dimension, decision-shaped).
+export interface NextQuestion {
+  run_id: string | null;
+  dimension: string;
+  topic: string;
+  question: string;
+  why: string;
+  options: string[];
+  source?: string;
+}
+
+export async function getNextQuestion(): Promise<NextQuestion | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('next-question', { body: {} });
+    if (error) throw error;
+    const d = data as NextQuestion | null;
+    return d?.question ? d : null;
+  } catch {
+    return null;
+  }
+}
+
+// Persist a decision the user made. validate-thesis folds unapplied answers into
+// the next read, raising the strength score.
+export async function saveThesisAnswer(a: { run_id: string | null; dimension: string; topic: string; question: string; answer: string }): Promise<void> {
+  const { error } = await supabase.from('thesis_answers').insert({
+    run_id: a.run_id, dimension: a.dimension, topic: a.topic, question: a.question, answer: a.answer,
+  });
+  if (error) throw error;
+}
+
+// How many answers are banked but not yet folded into a read — the provisional
+// score lift the user has earned but not locked in.
+export async function getUnrunAnswerCount(userId: string): Promise<number> {
+  const { count } = await supabase
+    .from('thesis_answers')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .is('applied_at', null);
+  return count ?? 0;
+}
+
 // Record that the user reached out: stamp last_interaction_at = now so warmth
 // recovers and the person stops surfacing as cold. RLS scopes to the owner.
 export async function markReachedOut(personId: string): Promise<void> {

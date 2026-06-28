@@ -16,11 +16,13 @@ import CaptureDialogue from './CaptureDialogue';
 import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
 import ReachOut from './ReachOut';
+import SharpenPrompt from './SharpenPrompt';
 import Home from './Home';
+import { computeSharpness } from './sharpness';
 import {
   runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
   judgeThesis, extractAdmire, saveInspiration, addContactFromImage, saveStepProgress,
-  getMarketPulse, type CircleP, type MarketPulse,
+  getMarketPulse, getUnrunAnswerCount, type CircleP, type MarketPulse,
 } from './thesisData';
 import ThesisCircle from './ThesisCircle';
 
@@ -53,11 +55,16 @@ export default function ThesisApp() {
   const [runCount, setRunCount] = useState(0);
   const [circleFrom, setCircleFrom] = useState<'home' | 'journey'>('journey');
   const [market, setMarket] = useState<MarketPulse | null>(null);
+  const [unrunAnswers, setUnrunAnswers] = useState(0);
   const timers = useRef<number[]>([]);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // Land at the top of every new screen (kills "I end up half way down a new page").
   useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = 0; }, [phase]);
+
+  // Banked-but-not-yet-run sharpen answers drive the provisional score lift.
+  const refreshAnswers = () => { if (userId) getUnrunAnswerCount(userId).then(setUnrunAnswers).catch(() => {}); };
+  useEffect(refreshAnswers, [userId, data]);
 
   useEffect(() => {
     if (authLoading || subLoading) return;
@@ -135,7 +142,13 @@ export default function ThesisApp() {
     if (runId) await saveStepProgress(runId, next).catch(() => {});
   }
 
-  const fuel = 0.12 + (data ? 0.3 : 0) + (linkedinDone ? 0.15 : 0) + (inspCount > 0 ? 0.18 : 0) + (circle.length > 0 ? 0.12 : 0);
+  // The ember now reflects real thesis STRENGTH (toward 100), not just input
+  // breadth: the read's graded dimensions + grounded inputs + provisional credit
+  // for banked sharpen-decisions. The fuel rows stay as the breakdown chips.
+  const sharp = computeSharpness(data, {
+    hasBackground: !!background, hasLinkedin: linkedinDone, inspirationCount: inspCount, circleCount: circle.length,
+  }, unrunAnswers);
+  const fuel = sharp.pending / 100;
   const fuels: FuelRow[] = [
     { k: 'Thesis', on: !!data }, { k: 'Background', on: !!background }, { k: 'LinkedIn', on: linkedinDone },
     { k: 'Businesses you admire', on: inspCount > 0 }, { k: 'Your circle', on: circle.length > 0 },
@@ -213,6 +226,8 @@ export default function ThesisApp() {
     return frame(
       <Home
         data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle} fuel={fuel} market={market}
+        sharp={sharp}
+        coach={<SharpenPrompt onAnswered={refreshAnswers} />}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => go('journey')}
         onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}
@@ -247,10 +262,18 @@ export default function ThesisApp() {
     ) : (
       <>
         <button className="cta" onClick={() => setPhase('journey')}><span>See your path</span><span className="mono">→</span></button>
-        <button className="foothint" onClick={() => setPhase('sharpen')}>add fuel to sharpen this read first</button>
+        <button className="foothint" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => setPhase('sharpen')}>
+          {busyRerun ? 'reading...' : unrunAnswers > 0 ? `re-run to lock in your gains (+${sharp.provisional})` : 'add fuel to sharpen this read first'}
+        </button>
       </>
     );
-    return frame(<ReadView data={data} />, readFooter);
+    return frame(
+      <>
+        <ReadView data={data} />
+        {!locked ? <div style={{ marginTop: 18 }}><SharpenPrompt onAnswered={refreshAnswers} /></div> : null}
+      </>,
+      readFooter,
+    );
   }
 
   if (phase === 'sharpen' && data) {
@@ -303,7 +326,15 @@ export default function ThesisApp() {
         </>
       );
     }
-    return frame(<JourneyMap data={data} circle={circle} progress={stepProgress} />, footer, 'your path, charged');
+    return frame(
+      <>
+        <JourneyMap data={data} circle={circle} progress={stepProgress} />
+        {/* When the read is too thin to map, asking the right question beats
+            guessing at steps — surface the coach right here. */}
+        {js.weak ? <div style={{ marginTop: 18 }}><SharpenPrompt onAnswered={refreshAnswers} /></div> : null}
+      </>,
+      footer, 'your path, charged',
+    );
   }
 
   return centered(<Loader />);

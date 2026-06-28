@@ -83,13 +83,19 @@ Deno.serve(async (req) => {
     const inspiration = (inspRows ?? []).map((r: { name: string | null; positioning: string | null; kind: string | null; field: string | null; why: string | null }) =>
       `${r.name}${r.kind === 'competitor' ? ' (a direct competitor, treat as the bar to beat, not a template)' : ''}${r.field ? ' (different field: ' + r.field + ', keep only the transferable part)' : ''}: positions as ${r.positioning || 'unknown'}. The user admires their ${r.why || 'approach'}.`);
 
+    // Decisions the user has made via the proactive sharpen questions. These are
+    // first-person clarifications that should directly raise the relevant bands.
+    const { data: answerRows } = await supabase.from('thesis_answers').select('id, dimension, question, answer').eq('user_id', userId).is('applied_at', null).order('created_at', { ascending: false }).limit(20);
+    const clarifications = (answerRows ?? []).map((a: { dimension: string | null; question: string | null; answer: string }) =>
+      `${a.dimension ? '[' + a.dimension + '] ' : ''}${a.question ? a.question + ' -> ' : ''}${a.answer}`);
+
     const research = await perplexity(thesis, background, linkedin);
 
     let parsed: Record<string, unknown>;
     try {
       const { content } = await chatJSON({
         system: STRUCT_SYSTEM,
-        user: `THESIS: ${thesis}\n\nBACKGROUND: ${background || '(not provided)'}\n\nTHEIR CIRCLE (${circle.length} people):\n${circle.length ? circle.join('\n') : '(none connected yet)'}\n\nBUSINESSES THEY ADMIRE (${inspiration.length}):\n${inspiration.length ? inspiration.join('\n') : '(none added yet)'}\n\nSOURCED RESEARCH:\n${research.text}`,
+        user: `THESIS: ${thesis}\n\nBACKGROUND: ${background || '(not provided)'}\n\nWHAT THEY'VE CLARIFIED (their own decisions, weight these into the matching dimensions):\n${clarifications.length ? clarifications.join('\n') : '(none yet)'}\n\nTHEIR CIRCLE (${circle.length} people):\n${circle.length ? circle.join('\n') : '(none connected yet)'}\n\nBUSINESSES THEY ADMIRE (${inspiration.length}):\n${inspiration.length ? inspiration.join('\n') : '(none added yet)'}\n\nSOURCED RESEARCH:\n${research.text}`,
         temperature: 0.2,
       });
       parsed = JSON.parse(content);
@@ -100,6 +106,12 @@ Deno.serve(async (req) => {
 
     const result = { ...parsed, citations: research.citations };
     await supabase.from('thesis_runs').insert({ user_id: userId, thesis, background: background || null, result });
+    // Mark the clarifications this read folded in, so they stop adding provisional
+    // lift and the next question moves on.
+    if (answerRows?.length) {
+      const ids = (answerRows as Array<{ id: string }>).map((a) => a.id);
+      await supabase.from('thesis_answers').update({ applied_at: new Date().toISOString() }).in('id', ids);
+    }
     return new Response(JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
