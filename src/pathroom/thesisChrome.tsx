@@ -165,8 +165,12 @@ export const chromeCss = `
 .thx .jnode.locked { border-style:dashed; color:${C.lo}; }
 .thx .jbody { flex:1; padding-top:3px; }
 .thx .jstep.dim .jbody { opacity:0.5; }
-.thx .jtitle { font-size:15px; font-weight:600; color:${C.hi}; line-height:1.3; }
-.thx .jtag { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; border-radius:3px; padding:1px 5px; margin-left:8px; color:${C.accent}; border:1px solid ${C.accentEdge}; }
+/* title + badges wrap as a flex row so a long title plus two tags never collide
+   or cram the tags onto a cramped second baseline. */
+.thx .jtitle { display:flex; flex-wrap:wrap; align-items:center; gap:6px 7px; }
+.thx .jtitletext { font-size:15px; font-weight:600; color:${C.hi}; line-height:1.3; }
+.thx .jtag { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; line-height:1; white-space:nowrap; border-radius:4px; padding:3px 7px; color:${C.accent}; border:1px solid ${C.accentEdge}; }
+.thx .jtag.big { background:${C.accent}; border-color:${C.accent}; color:#1A1206; }
 .thx .jwhy { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:5px; }
 .thx .jval { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.good}; margin-top:8px; display:inline-flex; gap:5px; }
 .thx .faces { display:flex; align-items:center; margin-top:10px; }
@@ -174,6 +178,22 @@ export const chromeCss = `
 .thx .facemore { font-family:${MONO}; font-size:10px; color:${C.lo}; margin-left:13px; }
 .thx .litprompt { display:flex; align-items:center; gap:8px; margin-top:10px; padding:9px 11px; border:1px dashed ${C.line2}; border-radius:8px; background:${C.panel}; }
 .thx .litdot { width:8px; height:8px; border-radius:50%; background:${C.line2}; flex:0 0 auto; }
+/* reach-out (the warm step's action) */
+.thx .rmuted { font-size:13px; color:${C.mid}; line-height:1.5; }
+.thx .rperson { border:1px solid ${C.line}; border-radius:12px; padding:14px; background:${C.panel2}; transition:opacity .25s ease; }
+.thx .rperson.done { opacity:0.6; }
+.thx .rhead { display:flex; align-items:center; gap:10px; }
+.thx .rface { width:34px; height:34px; border-radius:50%; flex:0 0 auto; background:${C.panel3}; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:${C.accent}; font-family:${MONO}; }
+.thx .rname { font-size:15px; font-weight:600; color:${C.hi}; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.thx .rdone { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.good}; }
+.thx .rsub { font-size:12.5px; color:${C.mid}; margin-top:1px; }
+.thx .rband { font-family:${MONO}; font-size:8.5px; letter-spacing:0.08em; text-transform:uppercase; border:1px solid; border-radius:4px; padding:2px 6px; flex:0 0 auto; line-height:1; }
+.thx .rwhy { font-size:12.5px; color:${C.accent}; line-height:1.45; margin-top:10px; }
+.thx .rdraft { font-size:13px; color:${C.hi}; line-height:1.5; white-space:pre-wrap; background:${C.panel}; border:1px solid ${C.line}; border-radius:8px; padding:11px 12px; margin-top:8px; }
+.thx .ractions { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
+.thx .rbtn { font-size:12.5px; font-weight:600; border-radius:7px; padding:9px 13px; cursor:pointer; border:1px solid ${C.line2}; background:${C.panel}; color:${C.hi}; }
+.thx .rbtn.primary { background:${C.accent}; border-color:${C.accent}; color:#1A1206; }
+.thx .rbtn.ghost { color:${C.mid}; }
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
 /* living + breathing motion, restrained for the quiet-instrument register */
 @keyframes thxrise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }

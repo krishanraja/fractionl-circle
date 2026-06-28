@@ -15,6 +15,7 @@ import { chromeCss, EmberNav, Loader, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
 import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
+import ReachOut from './ReachOut';
 import Home from './Home';
 import {
   runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
@@ -23,7 +24,7 @@ import {
 } from './thesisData';
 import ThesisCircle from './ThesisCircle';
 
-type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'sharpen' | 'journey' | 'addpeople' | 'home' | 'gate';
+type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'sharpen' | 'journey' | 'addpeople' | 'reachout' | 'home' | 'gate';
 
 export default function ThesisApp() {
   const { user, loading: authLoading } = useAuth();
@@ -116,7 +117,7 @@ export default function ThesisApp() {
   }
 
   // Deepening phases are Pro. For locked users, any attempt to open one opens the gate instead.
-  const DEEP_PHASES: Phase[] = ['sharpen', 'journey', 'home', 'addpeople'];
+  const DEEP_PHASES: Phase[] = ['sharpen', 'journey', 'home', 'addpeople', 'reachout'];
   const go = (p: Phase) => { if (locked && DEEP_PHASES.includes(p)) { setPhase('gate'); return; } setPhase(p); };
 
   async function onCard(dataUrl: string) {
@@ -184,6 +185,27 @@ export default function ThesisApp() {
 
   if (phase === 'addpeople' && userId) {
     return frame(<ThesisCircle userId={userId} onBack={() => { getCircle(userId).then(setCircle).catch(() => {}); setPhase(circleFrom); }} />, null);
+  }
+
+  if (phase === 'reachout' && data) {
+    // The warm-reach step's action. On return, mark that step done and refresh
+    // the circle so warmth/faces reflect anyone the user just reached.
+    const warmIdx = (data.steps || []).findIndex((s) => s.big);
+    const js = journeyState(data, circle, stepProgress);
+    const markIdx = warmIdx >= 0 ? warmIdx : js.current;
+    const back = (markDone: boolean) => {
+      if (markDone) onMarkDone(markIdx);
+      if (userId) getCircle(userId).then(setCircle).catch(() => {});
+      setPhase('journey');
+    };
+    return frame(
+      <ReachOut />,
+      <>
+        <button className="cta" onClick={() => back(true)}><span>Done — back to path</span><span className="mono">→</span></button>
+        <button className="foothint" onClick={() => back(false)}>back without marking done</button>
+      </>,
+      'reach, then it warms',
+    );
   }
 
   if (phase === 'home' && data) {
@@ -260,13 +282,24 @@ export default function ThesisApp() {
     } else if (js.allDone) {
       footer = <button className="foothint" onClick={startAnother}>+ validate another thesis</button>;
     } else {
-      const primary = js.warmBlocked
-        ? { label: 'Add people to light up your warm reach', onClick: () => { setCircleFrom('journey'); go('addpeople'); } }
-        : { label: stepProgress.length === 0 ? 'Start with move one' : 'Mark this move done', onClick: () => onMarkDone(js.current) };
+      // Action-first: the primary button DOES the current move, it does not just
+      // mark it complete. Marking done is the secondary affordance.
+      const cur = steps[js.current];
+      const t = (cur?.title || '').toLowerCase();
+      let primary: { label: string; onClick: () => void };
+      if (js.warmBlocked) {
+        primary = { label: 'Add people to light up your warm reach', onClick: () => { setCircleFrom('journey'); go('addpeople'); } };
+      } else if (cur?.big || /network|warm|reach|intro|referr|consult|client|prospect|outreach/.test(t)) {
+        primary = { label: 'Reach out now', onClick: () => go('reachout') };
+      } else if (/value|position|offer|edge|differen|prop|pric|message|brand|narrativ|credib/.test(t)) {
+        primary = { label: 'Sharpen this move', onClick: () => go('sharpen') };
+      } else {
+        primary = { label: 'Work on this move', onClick: () => go('sharpen') };
+      }
       footer = (
         <>
           <button className="cta" onClick={primary.onClick}><span>{primary.label}</span><span className="mono">→</span></button>
-          <button className="foothint" onClick={startAnother}>+ validate another thesis</button>
+          {!js.warmBlocked ? <button className="foothint" onClick={() => onMarkDone(js.current)}>mark this move done</button> : null}
         </>
       );
     }

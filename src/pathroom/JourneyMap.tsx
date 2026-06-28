@@ -67,7 +67,11 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
               <div className="jrail" />
               <div className={'jnode ' + (state === 'done' ? 'done' : locked ? 'locked' : state === 'current' ? 'current' : '')}>{state === 'done' ? '✓' : i + 1}</div>
               <div className="jbody">
-                <div className="jtitle">{s.title}{s.tag && state === 'current' ? <span className="jtag">{s.tag}</span> : null}{s.big ? <span className="jtag">the big one</span> : null}</div>
+                <div className="jtitle">
+                  <span className="jtitletext">{s.title}</span>
+                  {s.tag && state === 'current' ? <span className="jtag">{s.tag}</span> : null}
+                  {s.big ? <span className="jtag big">the big one</span> : null}
+                </div>
                 {/* keep the map short: only the current and big steps show the why + faces */}
                 {focused || s.big ? <div className="jwhy">{s.why}</div> : null}
                 {s.big ? (

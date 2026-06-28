@@ -109,6 +109,40 @@ export async function getCircle(userId: string): Promise<CircleP[]> {
     .map((p) => ({ id: p.id, name: p.display_name, title: p.title, company: p.company, note: p.note, source: p.source }));
 }
 
+// One person to reach this week: the cooling cohort with a grounded "why now" and
+// a ready-to-send draft, from the warm-digest edge fn (the same brain the Monday
+// email uses). Powers the warm-reach step's actual action.
+export interface ReachPerson {
+  id: string;
+  name: string;
+  title: string | null;
+  company: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  band: string;
+  recency_days: number | null;
+  why_now: string;
+  subject: string;
+  message: string;
+}
+
+export async function getWarmDigest(): Promise<ReachPerson[]> {
+  const { data, error } = await supabase.functions.invoke('warm-digest', { body: {} });
+  if (error) throw error;
+  const d = data as { people?: ReachPerson[] } | null;
+  return Array.isArray(d?.people) ? d!.people! : [];
+}
+
+// Record that the user reached out: stamp last_interaction_at = now so warmth
+// recovers and the person stops surfacing as cold. RLS scopes to the owner.
+export async function markReachedOut(personId: string): Promise<void> {
+  const { error } = await supabase
+    .from('circle_person')
+    .update({ last_interaction_at: new Date().toISOString() })
+    .eq('id', personId);
+  if (error) throw error;
+}
+
 // Screenshot -> Gemini vision -> a person added to the circle. Throws the honest error message.
 export async function addContactFromImage(dataUrl: string): Promise<CircleP> {
   const { data, error } = await supabase.functions.invoke('extract-contact', { body: { image: dataUrl } });
