@@ -177,3 +177,12 @@ secrets); `STRIPE_SECRET_KEY` + the price-id Vercel envs for checkout.
 - Ongoing market monitoring (the Pro "re-validate over time") is a future build.
 - Some residual old-app components remain unimported on disk after the kill-sweep; a
   deeper dead-code pass can remove them.
+- Network warmth (shipped, Track A): `compute-warmth` + `cron-warm-digest` are
+  deployed and scheduled (warmth recompute nightly 07:30 UTC; digest Mondays
+  13:00 UTC). No new secrets were needed — it reuses `RESEND_API_KEY`,
+  `VAPID_*`, `CRON_SECRET`, `OPENAI/LOVABLE`, `APP_URL`. Track B (after the
+  Google CASA audit / Microsoft `Mail.Send` consent): graduate the digest action
+  from a prefilled `mailto:` + `.ics` hold to native Gmail/Outlook drafts and
+  real calendar holds; add event-triggered (job-change/fundraise) nudges and a
+  Slack surface. A small in-app settings toggle for `user_preferences.warm_digest`
+  is the natural next UI step (the flag is respected server-side today; default on).
