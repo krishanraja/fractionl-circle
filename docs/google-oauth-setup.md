@@ -1,5 +1,7 @@
 # Google OAuth setup (Phase 5)
 
+> **Current status:** The edge functions (`oauth-google-start`, `oauth-google-callback`, `sync-google`) are deployed and the DB schema supports Google contacts/calendar, but the **UI entry point ("Connect Google") is not currently exposed** in the live app. `CircleHome` uses `AddToCircleSheet` (screenshot / paste / voice / typed), and the Deep dive tab uses screenshot + LinkedIn CSV. This setup guide is correct for when the UI ships — do not document the Google sync as a live user-facing feature until that UI is wired.
+
 One-time Google Cloud Console setup for the `Connect Google` source.
 
 ## 1. Create or pick a project

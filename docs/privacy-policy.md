@@ -5,11 +5,11 @@
 **Effective date:** [DATE] · **Controller:** fractionl ([legal entity, address]) · **Contact:** privacy@fractionl.ai
 
 ## 1. Who we are
-Circle ("we") is the relationship-to-revenue tool for fractional executives at circle.fractionl.ai.
+Circle ("we") is the thesis-validation engine for fractional executives at circle.fractionl.ai.
 
 ## 2. What we collect
-- **You give us:** your name, email, voice recordings/transcripts, the Ideas and offers you describe, and details of people in your professional network (names, emails, phones, LinkedIn, company, title).
-- **You connect (optional):** Google/Microsoft mail & calendar, via OAuth, to sync contacts.
+- **You give us:** your name, email, your thesis descriptions (what you want to offer and to whom), background text, and details of people in your professional network (names, emails, phones, LinkedIn, company, title).
+- **You connect (optional):** Google/Microsoft mail & calendar, via OAuth, to sync contacts. This UI is not currently exposed in the live app.
 - **Automatically:** usage/behaviour analytics, session data, IP address, and marketing attribution (UTM).
 - **Billing:** handled by Stripe; we do not store full card details.
 
@@ -20,10 +20,10 @@ Contract (running the service), consent (connected accounts, certain analytics),
 Circle stores information about third parties in your professional network so you can manage those relationships. We do not market to your contacts. You can export or delete this data at any time.
 
 ## 5. Sharing — subprocessors
-We use the processors listed in `SUBPROCESSORS.md` (Supabase, Vercel, OpenAI, Stripe, Resend, and Google/Microsoft if you connect them). **We do not sell your personal data** or share it for cross-context behavioural advertising.
+We use the processors listed in `SUBPROCESSORS.md` (Supabase, Vercel, Perplexity, OpenAI, Anthropic, Stripe, Resend, and Google/Microsoft if you connect them). **We do not sell your personal data** or share it for cross-context behavioural advertising.
 
 ## 6. AI processing
-Voice transcripts and Idea/contact text are sent to OpenAI's API to extract Ideas and draft messages. This data is not used to train their models. [Confirm zero-retention configuration.]
+Thesis text and background are sent to Perplexity's API for live web research. Contact screenshots and thesis text are sent to Anthropic (preferred) or OpenAI (fallback) APIs for vision and language processing. This data is not used to train their models. [Confirm zero-retention configuration with each provider.]
 
 ## 7. International transfers
 Data is stored in the United States (AWS us-east-1). For users in the EU/UK, transfers rely on Standard Contractual Clauses. [Confirm.]

@@ -1,6 +1,6 @@
 # Fractionl: the thesis-validation engine
 
-*Canonical product doc. Last updated 2026-06-20. This is the source of truth for what
+*Canonical product doc. Last updated 2026-06-28. This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -122,8 +122,9 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
 - `ThesisCircle.tsx` - the add-people surface (screenshot add + CSV import), reached from the
   journey map.
 - `tokens.ts` - the quiet-instrument design tokens.
-- `App.tsx` - routes: `/` (auth gate -> the product), `/auth`, `/privacy`, `/terms`, and the
-  unlinked lazy design fixtures `/preview/start|sharpen|journey`.
+- `../App.tsx` (`src/App.tsx`, not inside `pathroom/`) - routes: `/` (auth gate → CircleApp),
+  `/auth`, `/privacy`, `/terms`, and the unlinked lazy design fixtures
+  `/preview/start|sharpen|journey|cockpit|loader`.
 
 **Edge functions** (`supabase/functions/`):
 - `validate-thesis` - live Perplexity research, then provider-fallback LLM structuring into

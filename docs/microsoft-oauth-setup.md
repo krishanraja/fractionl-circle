@@ -1,5 +1,7 @@
 # Microsoft Graph OAuth setup (Phase 5b)
 
+> **Current status:** The edge functions (`oauth-microsoft-start`, `oauth-microsoft-callback`, `sync-microsoft`, `cron-sync-microsoft`) are deployed and the DB schema supports Microsoft contacts/calendar, but the **UI entry point ("Connect Microsoft") is not currently exposed** in the live app. `CircleHome` uses `AddToCircleSheet` (screenshot / paste / voice / typed), and the Deep dive tab uses screenshot + LinkedIn CSV. This setup guide is correct for when the UI ships — do not document the Microsoft sync as a live user-facing feature until that UI is wired.
+
 One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the
 Google setup; same token storage, same callback shape, same user UX.
 

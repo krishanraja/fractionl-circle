@@ -1,6 +1,6 @@
 # Records of Processing Activities (RoPA) — GDPR Art. 30
 
-**Last reviewed:** 2026-06-02. **Status: DRAFT — for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
+**Last reviewed:** 2026-06-28. **Status: DRAFT — for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
 
 **Controller:** fractionl (Circle). **Contact:** privacy@fractionl.ai
 
@@ -9,9 +9,8 @@
 | Activity | Personal data | Data subjects | Lawful basis | Retention | Where |
 |---|---|---|---|---|---|
 | Account & auth | email, name, avatar, auth identifiers | Users | Contract | Life of account | `user_profiles`, Supabase Auth |
-| Idea capture & matching | voice transcripts, idea text | Users | Contract | Life of account | `ideas`, `activity_logs`, `matches`, `moves` |
-| Network / Circle | **third-party** names, emails, phones, LinkedIn, company, title | Users' contacts | Legitimate interest | Life of account / until erased | `circle_person`, `person_raw`, `talent_*` |
-| Revenue & streams | client names, amounts | Users | Contract | Life of account | `clients`, `revenue_entries`, `streams`, `ledger_entries` |
+| Thesis validation | thesis text, background, admired businesses, scorecard results, journey step progress | Users | Contract | Life of account | `thesis_runs`, `thesis_inspiration` |
+| Network / Circle | **third-party** names, emails, phones, LinkedIn, company, title | Users' contacts | Legitimate interest | Life of account / until erased | `circle_person`, `person_raw` |
 | Connected mail/calendar | OAuth tokens, contacts, message metadata | Users who connect | Consent | Until disconnect / erasure | `oauth_tokens`, `sources` |
 | Consent records | consent choices, IP, timestamp | Users | Legal obligation | 7 years | `user_consents` |
 | Security audit | actions, IP, timestamp | Users | Legal obligation / legitimate interest | 7 years | `security_audit_log` |

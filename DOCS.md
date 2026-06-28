@@ -1,36 +1,30 @@
 # Circle by Fractionl — Source of Truth
 
-> Circle is the relationship-to-revenue engine for fractional executives, advisors, and operators with portfolio careers. Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know overnight, and drops a hand-drafted Move on the right person while you sleep.
+> Circle is the thesis-validation engine for fractional executives. Bring your idea for how you want to fractionalize — what to offer and to whom — and it validates that idea against the real market in the open, then breaks the path to your first clients into doable, validated steps. It also keeps the warm network that powers that validation: every person you know, reachable from the moment their name matters.
 
 This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
 
-**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-06-28 (post-kill-sweep reconciliation; the prior Circle CRM — Today/Streams/Circle/Ask — was retired in the kill-sweep, commit #85. This document reflects the thesis-validation engine that replaced it.)
 
 ---
 
-## Rebuild status (2026-05-30)
-
-Where Circle is in the rebuild, so the fleet never overclaims.
-
-- **Phase 0 (audit / recon): done.** Full app audit landed in PR #46 (2026-04-26); the verified recon of the current surface is the baseline for everything below.
-- **Phase 1 (5X vision): locked.** The unbounded product vision plus the fleet-commerce contract is locked in `_upgrade/fractionl-circle/PHASE-1.md` (dated 2026-05-30). Scope was selected at the gate: SHIP EVERYTHING (Bundles 1 + 2 + 3, the Spine plus Flywheel/Commerce plus Deep Anticipation) across Phases 2 to 4, all four high-sensitivity capabilities approved with their guardrails. This is roadmap, not shipped code.
-- **Phase 2 (security hardening): shipped on branch `upgrade/circle/phase-2`.** Server-side tier gates on dedupe and the OAuth-connect path (no longer client-trust only), Stripe webhook idempotency (`processed_stripe_events`), and the H7 fix (parse-screenshot logs the status code only, no upstream error body). Production promotion (Supabase function deploys, Vercel prod) still waits for explicit approval per the hard rules.
+## Current product state (2026-06-28)
 
 ### LIVE vs ROADMAP (the line the fleet must hold)
 
-- **LIVE NOW.** Voice onboarding that extracts Ideas; a Match Engine that scores Idea x Person and drafts a Move (surfaced via a manual "Surface Matches" action, NOT automatic overnight); the Sunday Letter (text for Operator+, 90-second audio for Chief of Staff); Circle capture via LinkedIn CSV, Google / Microsoft contacts, browser extension, screenshot-to-contact (vision), and voice; LLM dedupe (Operator+); three Stripe tiers + checkout (account `fractionl_ai`).
-- **ROADMAP (NOT yet shipped; do NOT claim as live).** The literal automatic "overnight / while you sleep" match plus push notifications (today it is a manual button; the PWA has no push); seeding people from the onboarding voice note; the trigger layer (job-change / funding signals); the voice fingerprint; real one-tap sending; the public "Signal" share posts; the anonymous live-mic demo on the landing page; the SSG marketing surface and the `/app` move (the authed app moves to `/app`, marketing lives at the root of `circle.fractionl.ai`).
-- **Honesty gate.** Marketing copy MAY use "talk once, wake to a drafted Move" as the product PROMISE / vision, but must NOT state that automatic-overnight-while-you-sleep delivery is live until the per-user cron plus Web Push ship. Canonical domain is `circle.fractionl.ai` (the company site is a separate surface, not this product).
+- **LIVE NOW.** The thesis-validation engine (guided dialogue → live Perplexity research → scored read → sharpen → journey map); the lightweight Circle tab (add contacts by screenshot, paste, voice, or typing; LinkedIn CSV import from the Deep dive tab); Stripe checkout for Free / Pro / Chief of Staff; market-pulse live instrument (fractionl-pulse API); LinkedIn CSV contact import; screenshot-to-contact vision capture; basic circle enrichment via LinkedIn lookup.
+- **RETIRED (dead in live UI, code still on disk).** The four-tab Circle CRM (Today / Streams / Circle / Ask), the Match Engine and its cron, the Sunday Letter and its cron, the browser extension pairing UI, the voice onboarding to 3 Ideas (FirstVoice → extract-ideas flow), the Concierge booking sheet. Their edge functions (`run-match-engine`, `cron-match-engine`, `generate-sunday-letter`, `cron-sunday-letter`, `extension-ingest`, `extract-ideas`, `transcribe`) still exist in source but are not wired to any live UI path. Do not claim these as live features.
+- **HONESTY GATE.** Do not pitch the Circle CRM's relationship-to-revenue features (Match Engine, Sunday Letter, "talk once, wake to a drafted Move") as the current product. The current product is the thesis-validation engine. The circle is the supporting context for that validation.
 
 ### Fleet attribution wiring
 
 How Circle's revenue is attributed across the Mindmaker OS fleet. Agent-facing summary lives in `AGENT_BRIEFING.md`; this is the contract.
 
-- **Emit-only.** Circle ONLY emits attribution events; it never holds the central-warehouse service-role key. The warehouse is the Mindmaker OS Supabase project `gojpffsrxybbpbdzzrvs`.
+- **Emit-only.** Circle only emits attribution events; it never holds the central-warehouse service-role key. The warehouse is the Mindmaker OS Supabase project `gojpffsrxybbpbdzzrvs`.
 - **Events.** `landed | signed_up | activated | purchased | refunded | churned`, POSTed to the OS function `ingest-attribution` with header `x-attribution-secret`. `landed` / `signed_up` / `activated` fire server-side (never the browser); `purchased` / `refunded` / `churned` fire from the signature-verified Stripe webhook off the subscription metadata. Each event carries a deterministic `dedupe_key`; the OS does INSERT ON CONFLICT DO NOTHING.
 - **Canonical fields.** `id`, `occurred_at`, `app=circle`, `event`, `anonymous_id`, `user_id`, `email`, `utm_source` / `utm_medium` / `utm_campaign` / `utm_content` / `utm_term`, `campaign_id`, `agent`, `referrer`, `landing_path`, `stripe_account=fractionl_ai`, `stripe_customer_id`, `stripe_subscription_id`, `amount_cents`, `currency`, `metadata`, `dedupe_key`.
 - **Stripe stamp.** Checkout stamps `metadata[supabase_user_id]` plus the `utm_*` / `campaign_id` / `agent` fields on both the Stripe customer and subscription, so the webhook can attribute the purchase back to first touch.
-- **Runtime product-truth URLs the fleet reads.** `https://circle.fractionl.ai/llms.txt` and `https://circle.fractionl.ai/agent.json` (both ROADMAP, emitted by the SSG build from `src/lib/tiers.ts` + a DOCS.md slice; the fleet queries these, it never pitches from memory).
+- **Runtime product-truth URLs the fleet reads.** `https://circle.fractionl.ai/llms.txt` and `https://circle.fractionl.ai/agent.json` (both ROADMAP, not yet emitted by the SSG build; do not fetch these as live truth yet).
 
 ---
 
@@ -45,21 +39,21 @@ How Circle's revenue is attributed across the Mindmaker OS fleet. Agent-facing s
 6. [Pricing & gating](#6-pricing--gating)
 
 **How the product works**
-7. [The Phase-1 ontology](#7-the-phase-1-ontology)
+7. [The data model](#7-the-data-model)
 8. [Surfaces — what each tab does](#8-surfaces--what-each-tab-does)
 9. [Onboarding](#9-onboarding)
 10. [Sources & ingestion](#10-sources--ingestion)
-11. [The Match Engine](#11-the-match-engine)
-12. [The Sunday Letter](#12-the-sunday-letter)
-13. [The browser extension](#13-the-browser-extension)
-14. [Screenshot → Contact](#14-screenshot--contact)
-15. [Concierge (Chief of Staff)](#15-concierge-chief-of-staff)
+11. [Retired: Match Engine](#11-retired-match-engine)
+12. [Retired: Sunday Letter](#12-retired-sunday-letter)
+13. [Retired: browser extension](#13-retired-browser-extension)
+14. [Screenshot capture](#14-screenshot-capture)
+15. [Retired: Concierge](#15-retired-concierge)
 
 **Architecture**
 16. [Tech stack](#16-tech-stack)
 17. [Frontend layout](#17-frontend-layout)
 18. [Database schema](#18-database-schema)
-19. [Edge functions (34 in source, 41 deployed)](#19-edge-functions-34-in-source-41-deployed)
+19. [Edge functions (53 in source)](#19-edge-functions-53-in-source)
 20. [AI / LLM call sites](#20-ai--llm-call-sites)
 21. [Auth, RLS & security posture](#21-auth-rls--security-posture)
 22. [Reliability & rate limiting](#22-reliability--rate-limiting)
@@ -84,41 +78,34 @@ How Circle's revenue is attributed across the Mindmaker OS fleet. Agent-facing s
 
 ## 1. Why Circle exists
 
-The fastest-growing segment of the senior professional workforce isn't employees and isn't freelancers. It's **portfolio operators**: fractional CMOs, CFOs, CTOs, COOs, CHROs, advisors, and consultants who build six- and seven-figure businesses by serving 2–7 clients in parallel and a network of hundreds in the background.
+The fastest-growing segment of the senior professional workforce isn't employees and isn't freelancers. It's **portfolio operators**: fractional CMOs, CFOs, CTOs, COOs, CHROs, advisors, and consultants who build six- and seven-figure businesses by serving 2–7 clients in parallel.
 
-These people are exceptional at their craft. Their **operational infrastructure** is broken:
+The first thing every new fractional has to solve is the same: **is my offer real?** Not "is it a nice idea" but "is there a burning need, is the market sized, can I win against the incumbents, and do I have the warm network to close the first client fast enough that I don't run out of runway?"
 
-- **Their relationships live in their heads.** They meet brilliant people at conferences, on LinkedIn, through clients — and forget to follow up because there's no system that survives the next client call.
-- **Revenue is invisible until it arrives.** With 3–7 concurrent engagements across advisory, workshops, project work, and speaking, the pipeline is "I think I have a few things in motion."
-- **Pipeline management is a spreadsheet they haven't updated in three weeks.** Opportunities die between client meetings.
-- **Their circle is their moat — and it's unmanaged.** They know someone for every project. They can't remember who, or when they last spoke.
+Most fractionals answer that question by talking to a few people, reading a blog post, and guessing. They pick wrong, spend six months chasing a niche that doesn't pay, and either pivot too late or limp back to full-time employment.
 
-### The insight
+**Circle is the tool that answers the question before they waste the six months.** Bring your thesis — what you want to offer, and to whom. It validates it against the real market in the open (~20s live Perplexity research), returns an honest scorecard (demand, burning need, competition, your edge, warm reach, credibility — bands with evidence and confidence, never fake numbers), and breaks the hard middle into specific validated steps. The circle powers the warm-reach read: the real faces who could be your first client.
 
-Portfolio operators don't need another CRM. They don't need another note-taking app. They don't need LinkedIn Sales Navigator (built for SDRs, not principals).
+### The secondary insight
 
-They need a **relationship-to-revenue engine** that:
-- **Captures** the people they meet without them having to file anything.
-- **Connects** the work they want to sell to the people most likely to buy it.
-- **Drafts** the actual Move — the DM, the email — so all they have to do is hit send.
-- **Holds them accountable** to the BD habits that drive growth, with a weekly narrative that survives a busy week.
-
-**Circle is that engine.**
+Once the thesis is validated, the fractional still needs to manage the network that closes it. Circle keeps that network: every person they know, capturable in seconds by screenshot, voice, paste, or typing. The thesis tool reads the circle for warm reach; the circle tab keeps the circle warm.
 
 ---
 
 ## 2. The 60-second pitch
 
-A fractional CMO juggles 4 retainers, 200 LinkedIn warm leads, three product ideas she's not sure are real, and zero time. Her "CRM" is a stale Google Sheet and a Notes file called `ideas??.md`. She closes business the same way every fractional does: someone she met two years ago at a dinner remembers her, sends a DM, the deal happens.
+A fractional CMO is 90 days out of her last full-time role. She thinks she wants to offer "marketing for B2B SaaS companies." She has no idea if that's too broad, whether the market is saturated, what price she can charge, or which of her 400 LinkedIn connections could be her first client.
 
-Circle automates that exact pattern.
+She types her thesis into Circle. A sufficiency check pushes back on the thin input — "who specifically, at what stage, for what outcome?" — until the idea has a real shape. Then live research runs in the open: Perplexity reads the demand landscape, competitor density, buyer complaints, pricing benchmarks, and her LinkedIn network's overlap. Twenty seconds later she has a scorecard:
 
-1. **Talk for 90 seconds at onboarding.** Circle extracts 3 sellable Ideas from what she said — title, ICP, price band, one-liner.
-2. **Drop in a LinkedIn CSV (or connect Google / Microsoft / browser extension).** Her Circle dedupes itself across sources. Every person she's ever met, in one place.
-3. **Overnight, the Match Engine runs.** It scores every (Idea × Person) pair on fit, recency, and warmth. It surfaces the top Matches with a hand-drafted Move (LinkedIn DM or email) she can send in two taps.
-4. **Sunday morning, the Sunday Letter lands.** A 200-word narrative — or a 90-second audio briefing on Chief of Staff tier — telling her what shipped this week, what's worth chasing, what to fix.
+- **Is it a real opportunity?** Demand: strong. Burning need: yes — a clear buyer complaint around pipeline-to-revenue attribution. Crowding: high (flagged as risk, not hidden). Her edge: ten years inside a specific vertical her competitors lack.
+- **Can she win it fast?** Fit: high. Warm reach: 12 named people in her circle who match the ICP. Credibility: strong.
 
-She sells more by sending fewer, better messages to the right people. The AI is the operator. She is the relationship.
+The scorecard gives her confidence bands and evidence, not fake precision. She adds a business she admires to sharpen her edge, adds a few contacts by screenshot, and exports the living journey map: specific named steps to her first retained client, with the real faces from her circle woven in.
+
+She knows what to do Monday morning. Circle got her there in under an hour.
+
+Free gives one full validation with no paywall on first value. Pro ($39/mo) is unlimited re-validation as the thesis evolves, real warm reach from the full LinkedIn import, named next moves, and market monitoring.
 
 ---
 
@@ -135,18 +122,18 @@ She sells more by sending fewer, better messages to the right people. The AI is 
 | **Revenue** | $150K – $1.5M annually across 2–7 concurrent engagements |
 | **Working pattern** | Mobile during the day (between client meetings), desktop on Sunday for planning |
 | **Current stack** | LinkedIn, Apple Notes, a stale Google Sheet, maybe HubSpot they hate, calendar reminders that don't fire |
-| **Core pain** | "I know I should follow up. I don't have a system that works on the move." |
-| **Buying trigger** | A missed referral. A warm lead that went cold. A slow quarter that surfaced an empty pipeline. |
+| **Core pain** | "I don't know if my offer is right, and I'm already 90 days in." |
+| **Buying trigger** | A slow first quarter. A niche that isn't converting. A competitor who seems to be winning clients they should be winning. |
 | **Where they live online** | LinkedIn (daily), Substack (read more than write), specific Slack/Discord communities for their function (CMO Coffee Talk, fCFO Collective, etc.) |
-| **What they pay for** | Tools that make them feel organized and in control. They spend $50–$200/mo on personal SaaS without thinking about it. |
+| **What they pay for** | Tools that give them clarity and confidence. They spend $50–$200/mo on personal SaaS without thinking about it. |
 
 ### Secondary ICPs
 
-**The independent strategy advisor / boutique consultant.** Retainers, project work, speaking gigs. Needs unified pipeline visibility across service types.
+**The independent strategy advisor / boutique consultant.** Retainers, project work, speaking gigs. Needs to validate which of her three service ideas is the real opportunity before committing.
 
-**The thought leader operator.** Author / keynote / workshop facilitator monetizing IP through multiple channels. Needs to connect audience engagement to revenue outcomes.
+**The thought leader operator.** Author / keynote / workshop facilitator monetizing IP through multiple channels. Needs to know which offer to lead with.
 
-**The emerging fractional (year 1).** Senior professional in their first year of independence. Needs structure and confidence — the kind of system the senior fractionals "all seem to have."
+**The emerging fractional (year 1).** Senior professional in their first year of independence. Needs the validation and the steps that the senior fractionals "all seem to have figured out."
 
 ### Anti-ICP (do not sell to)
 
@@ -157,11 +144,11 @@ She sells more by sending fewer, better messages to the right people. The AI is 
 
 ### What every Circle ICP shares
 
-- **Their circle is their business.**
-- They are **time-starved** and need tools that work in 30-second bursts.
-- They value **relationships over transactions.**
+- **They are unsure their offer is right** — and afraid to admit it.
+- They are **time-starved** and need answers fast.
+- They value **evidence over advice** — they've heard enough opinions.
 - They need **accountability** more than automation.
-- They will pay for a tool that makes them **feel organized and in control.**
+- They will pay for a tool that makes them **feel organized and confident**.
 
 ---
 
@@ -171,28 +158,18 @@ She sells more by sending fewer, better messages to the right people. The AI is 
 
 | Outcome | Mechanism |
 |---|---|
-| **Stop losing warm leads** | Every person you meet flows into your Circle automatically. The Match Engine surfaces them when one of your Ideas fits. |
-| **Sell more by sending less** | One drafted Move per Match — not a sequence, not a blast. The right thing to say to one person, on one day. |
-| **Get your Sunday morning back** | The Sunday Letter writes itself. You read for two minutes instead of staring at a spreadsheet for an hour. |
-| **Trust your pipeline again** | Streams = Ideas that earned revenue. Closed-loop view of what's working before you lean further into it. |
-| **Activate dormant network** | Recency × warmth scoring brings forward the people you'd otherwise forget. |
-| **Look organized when it matters** | Mobile capture in 10 seconds means no apologetic "remind me how we met" follow-ups. |
+| **Know if your offer is real before you waste six months** | Live Perplexity research validates demand, competition, pricing, and edge in ~20s. Confidence bands and evidence, not opinions. |
+| **Know which people in your network can close it** | The scorecard's warm-reach score reads your real circle and names the specific contacts. |
+| **Get specific steps, not generic advice** | The living journey map breaks the hard middle into ordered, validated moves with your real circle woven in. |
+| **Sharpen as you learn** | Add a business you admire (feeds your edge), add contacts (feeds warm reach), re-run as the thesis evolves. |
+| **Stay current on your market** | The Home screen's market-pulse instrument (live fractionl-pulse API) shows role demand, the Fractional Working Index, and weekly deltas. |
 
 ### Benefits (per surface)
 
-- **Today** — One screen. Everything that needs you. No tab-switching.
-- **Circle** — One dedupe-clean list of every person you know across every source.
-- **Streams** — Proof of what's actually paying. Close the loop on which Ideas to invest in.
-- **Ask** — Voice-first changes to anything (Phase 2 surface).
-- **Browser extension** — Look at a LinkedIn profile, it's in your Circle. Zero filing.
-- **Sunday Letter** — A weekly narrative that respects your time.
-- **Concierge** (Chief of Staff) — A real human onboards your real network alongside you.
-
-### What changes in week 1, week 4, week 12
-
-- **Week 1.** First voice → 3 Ideas. First CSV in. First overnight Match. First Move sent.
-- **Week 4.** Match Engine has tuned to your edit patterns (every edit you make to a draft Move is logged via Levenshtein distance, feeding the personalization model). Sunday Letter has 4 weeks of pattern recognition.
-- **Week 12.** A Stream emerges — the Idea that's earned revenue at least three times. You retire the Ideas that didn't convert. The system has paid for itself.
+- **Deep dive (thesis tab)** — Guided dialogue, live research, honest scorecard, sharpen panel, journey map with circle faces. One thing per screen, always fit in a phone viewport.
+- **Circle tab** — Drop a person in seconds: screenshot a LinkedIn or business card, paste a URL or handle, speak a name, or type. LinkedIn CSV import via the Deep dive's add-people screen.
+- **Market pulse (on Home)** — Live Fractional Working Index for your role, this-week deltas, a rising topic. Genuinely changes overnight.
+- **Ember gauge (in nav)** — Dim when we know little, brighter and warmer as real data goes in. Honest signal about read quality.
 
 ---
 
@@ -203,249 +180,190 @@ She sells more by sending fewer, better messages to the right people. The AI is 
 | | HubSpot / Salesforce / Pipedrive | Circle |
 |---|---|---|
 | Built for | Sales team of 5–500 | Single portfolio operator |
-| Data model | Companies → Deals → Contacts | Ideas × People → Matches → Moves → Streams |
-| Filing burden | Heavy. Expects discipline. | Zero. Voice-first capture. |
-| Outbound model | Sequences, automation, scale | One handcrafted Move per Match |
-| Pipeline view | 20 stages, 14 fields, 0 use | Idea is winning or it's retired |
+| Data model | Companies → Deals → Contacts | Thesis → Scorecard → Circle → Journey |
+| Filing burden | Heavy. Expects discipline. | Zero. Screenshot, voice, paste. |
+| Primary job | Manage existing pipeline | Validate whether the offer is right |
 | Mobile | Afterthought | Primary surface |
-| Pricing for one seat | $50–$150/mo locked behind seats | $30 |
-
-### Why Circle is not Notion / Apple Notes
-
-Notion is a doc tool. Notes is a memory tool. Neither runs anything overnight. Neither drafts a Move. Neither connects what you want to sell to who might buy it.
-
-### Why Circle is not LinkedIn / Sales Navigator
-
-LinkedIn is the **graph**. Circle is the **operator** on top of the graph. Sales Nav is built for SDRs running prospecting motions; it has zero context on your Ideas, your edits, your past Moves, your revenue. Circle has all of that.
+| Pricing for one seat | $50–$150/mo locked behind seats | $39 |
 
 ### Why Circle is not a generic AI assistant (ChatGPT / Claude)
 
-Generic LLMs don't have your Circle, your Ideas, or your edit history. They draft generic Moves to generic people. Circle is fine-tuned on **your taste** (every edit you make is logged) and on **your network** (every Match scores against your specific people).
+Generic LLMs give opinions from training data. Circle does live research (Perplexity reads the actual market right now), scores against your specific circle (real people who actually know you), and returns evidence with confidence bands — not generated confidence with no source.
+
+### Why Circle is not LinkedIn / Sales Navigator
+
+LinkedIn is the graph. Circle is the thesis tool that reads your slice of that graph for warm reach. Sales Nav is built for SDRs running prospecting motions; it has no concept of your thesis, your edge, your journey.
 
 ### What is genuinely defensible
 
-1. **The Phase-1 ontology.** Sources → Person → Idea × Person → Match → Move → Stream is a model of the actual fractional business. No CRM ships this. Every ingest path normalizes into the same shape.
-2. **Edit-distance taste model.** Every Move the user edits before sending is captured (Levenshtein distance between draft and sent). Over time the AI converges on how *this user* talks. CRMs cannot do this — they don't draft outbound.
-3. **The Sunday Letter** as a habit forcing function. Once you've read three of them, you don't stop. It's the product's retention loop.
-4. **Cross-source dedupe with LLM tiebreaker** (Operator+ tier). Most contact lists are 30% duplicates. Circle's scoring + LLM dedupe makes one Circle from five.
+1. **Live research, not synthetic.** The read is grounded in Perplexity results — real web sources, not LLM training data. Low-confidence findings are flagged.
+2. **Real circle, not sample data.** The warm-reach score names your actual contacts — people who know you and whose fit the model can evaluate. Fake people produce fake scores.
+3. **Honest renderer.** Scores are confidence bands with evidence, unreadable inputs are refused, low-confidence reads are flagged not hidden.
 
 ---
 
 ## 6. Pricing & gating
 
-Tier names, prices, and feature bullets are sourced from `src/lib/tiers.ts` and gating is enforced in `src/hooks/useSubscription.ts`. Stripe price IDs are configured via `VITE_STRIPE_PRICE_OPERATOR` and `VITE_STRIPE_PRICE_CHIEF_OF_STAFF` env vars.
+Tier names, prices, and feature bullets are sourced from `src/lib/tiers.ts`. Stripe price IDs are configured via `VITE_STRIPE_PRO_MONTHLY_PRICE_ID` and `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID` env vars. Gating in `src/hooks/useSubscription.ts`.
 
-| | **Freemium** | **Operator** | **Chief of Staff** |
+| | **Freemium** | **Pro** | **Chief of Staff** |
 |---|---|---|---|
-| **Price** | $0 | $30 / mo | $79 / mo |
-| **Tagline** | Try the magic. | Help me run. | Help me scale. |
-| **Voice onboarding + 3 Ideas** | ✅ | ✅ | ✅ |
-| **LinkedIn CSV / CRM CSV import** | ✅ | ✅ | ✅ |
-| **Browser extension capture** | ✅ | ✅ | ✅ |
-| **Active Streams** | 1 | 3 | Unlimited |
-| **Matches surfaced** | 1 / week | 3 / day (21/wk) | Unlimited |
-| **Circle sources** | 1 | Unlimited | Unlimited |
-| **Ask messages** | 5 / week | Unlimited (with memory) | Unlimited |
-| **Inbox + Calendar (Google/Microsoft)** | — | ✅ | ✅ |
-| **LLM-powered Circle dedupe** | — | ✅ | ✅ |
-| **Sunday Letter (text)** | — | ✅ | ✅ |
-| **Sunday Letter (90-second audio)** | — | — | ✅ |
-| **External signal feeds** (RFPs, news, job changes, trends) | — | — | ✅ |
-| **Cross-user market intelligence** | — | — | ✅ |
-| **Per-category auto-send consent** | — | — | ✅ |
-| **White-glove concierge onboarding** | — | — | ✅ |
+| **Price** | $0 | $39 / mo | $79 / mo |
+| **Tagline** | Try the magic. | Build the whole portfolio. | Help me scale. |
+| **One full thesis validation + complete read + steps** | ✅ | ✅ | ✅ |
+| **Build your circle by screenshot or CSV** | ✅ | ✅ | ✅ |
+| **Unlimited thesis validations as you evolve** | — | ✅ | ✅ |
+| **Real warm reach from your full network** | — | ✅ | ✅ |
+| **Specific, named next moves** | — | ✅ | ✅ |
+| **Ongoing market monitoring** | — | ✅ | ✅ |
+| **Unlimited Streams + Matches (roadmap)** | — | — | ✅ |
+| **Sunday Letter audio (roadmap)** | — | — | ✅ |
+| **External signal feeds (roadmap)** | — | — | ✅ |
+| **Cross-user market intelligence (roadmap)** | — | — | ✅ |
+| **Per-category auto-send consent (roadmap)** | — | — | ✅ |
+| **White-glove concierge onboarding (roadmap)** | — | — | ✅ |
 | **Priority compute** | — | — | ✅ |
 
+**Chief of Staff note:** the features marked (roadmap) in that tier refer to capabilities from the prior Circle CRM architecture (Match Engine, Sunday Letter, Concierge) that are not surfaced in the current live UI. The tier is in Stripe and purchasable; today it grants priority compute only beyond what Pro gives. Those features are tracked as future builds.
+
 **Gating implementation reference:**
-- Daily / weekly Match caps: `LIMITS` in `src/hooks/useSubscription.ts:28`.
-- Feature gates (sunday_letter_audio, external_signals, autosend, market_intelligence, concierge, ask_memory, etc.): `TIER_FEATURES` in `src/hooks/useSubscription.ts:55`.
+- Feature gates (`sunday_letter_audio`, `external_signals`, `autosend`, `market_intelligence`, `concierge`, `ask_memory`, etc.): `TIER_FEATURES` in `src/hooks/useSubscription.ts:55`.
 - Server-side enforcement: `_shared/compliance.ts` rate-limit + tier checks; `usage_tracking` table; `subscriptions.tier` column.
-- Trial: `subscription.status = 'trialing'` upgrades effective tier to Operator until `trial_ends_at`.
+- Trial: `subscription.status = 'trialing'` upgrades effective tier to Pro until `trial_ends_at`.
 
 ---
 
 # How the product works
 
-## 7. The Phase-1 ontology
+## 7. The data model
 
-Shipped in migration `20260418000001_redesign_phase_1_ontology.sql`. This is the data model that makes Circle Circle:
+The active thesis-validation product uses three primary tables:
 
 ```
-SOURCES                       (every place a Person came from)
-   │
-   ▼
-PERSON_RAW                    (per-source raw rows)
-   │   (fingerprint dedupe)
-   ▼
-CIRCLE_PERSON                 (canonical, deduplicated)
-   │
-   ├─◄── SIGNALS              (job change, fundraise, RFP, calendar meeting, etc.)
-   │
-   └─►── MATCHES ──◄── IDEAS  (Idea × Person scored for fit)
-          │
-          ▼
-        MOVES                 (drafted outbound: DM / email)
-          │   (edit-distance logged on send)
-          ▼
-        (sent)
-          │
-          └─► STREAMS         (Ideas that earned revenue — closed-loop)
+THESIS_INSPIRATION          (businesses the user admires → sharpens "Your edge")
+         │
+         ▼
+THESIS_RUNS                 (each validated thesis: scorecard, step progress, thesis text, background)
+         │
+         ▼
+(informs)
+         │
+CIRCLE_PERSON               (canonical, deduplicated contact list powering the warm-reach score)
+    │
+    └─◄── SOURCES           (provenance of each contact: share_sheet, ios_shortcut, business_card_photo,
+                              linkedin_csv, voice_seed, etc.)
 ```
 
-Legacy CRM tables (`clients`, `opportunities`, `activity_logs`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`) were pruned from the active surface in PR #45 (commit `da6a235`, 2026-04-22). They linger only in older migration files and a couple of audit-logger references; no live UI reads from them.
+**Dead tables (exist in migrations, no live UI writes to them):** `ideas`, `matches`, `moves`, `streams`, `sunday_letters`, `concierge_requests`, `move_edits` — all from the prior Circle CRM ontology. Do not write new code against them.
+
+Migration count: 50+ files in `supabase/migrations/` (last: `20260623120000_circle_enrichment.sql`).
+
+**Migration drift note.** As of prior deploys, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. Newer migrations from `20260418000001` onward are clean.
 
 ---
 
 ## 8. Surfaces — what each tab does
 
-The mobile-first PWA is four tabs (`src/components/screens/`).
+The authed app shell is `src/pathroom/CircleApp.tsx` — a two-tab layout in the ember (.thx) design system.
 
-### Today (`TodayScreen.tsx`)
-The home screen. What's waiting for you, ranked.
-- **Concierge banner** — visible only on Chief of Staff tier, shows current concierge request state.
-- **Sunday Letter card** — this week's letter (text or audio depending on tier), or a "ready to generate" state.
-- **Match cards** — surfaced overnight by the Match Engine. Each card shows Person + Idea + drafted Move. Two-tap approve → mark sent flow.
-- **Your Ideas** — the active Ideas the engine is matching against.
-- **Surface Matches button** — manual trigger of the engine (used after a fresh import).
+### Circle tab (`src/pathroom/CircleHome.tsx`)
 
-### Streams (`StreamsScreen.tsx`)
-Ideas that have earned revenue. Currently a placeholder; the loop closes when `log-move-sent` rolls forward into `streams.state = 'live'`.
+The contact-first home. Free hero, accessible to all users.
 
-### Circle (`CircleScreen.tsx`)
-Every person you know.
-- Source cards (active + failed states with retry).
-- Total person count.
-- **Add a source** sheet — LinkedIn CSV, generic CRM CSV (HubSpot/Attio/Folk auto-detect), voice seed, Google, Microsoft, browser extension pairing.
-- **Find duplicates** — LLM-assisted dedupe sheet (Operator tier feature gate).
+- **Brand bar** — wordmark and ember gauge.
+- **"Drop a contact" CTA** — opens `AddToCircleSheet` with four capture modes: screenshot or photo (vision LLM), paste anything (URL, handle, bio, signature), just say their name (voice), or type a name plus what you remember.
+- **"What are you working on?"** — `WorkingOnInput`, a quick context note.
+- **Circle people list** — `CirclePeopleList`, shows all contacts with tag chips. Total count. Quick-add from empty state.
 
-### Ask (`AskScreen.tsx`)
-The voice-first command surface. Currently a placeholder UI; voice capture lands in Phase 2 alongside first-run.
+### Deep dive tab (`src/pathroom/ThesisApp.tsx`)
+
+The thesis-validation tool. Free users get one full pass; Pro gates the Home and the deepening tools.
+
+Flow phases (each one screen, no-scroll frame):
+
+1. **Home** — Pro-only command center. Charging ember orb, live market-pulse instrument (Fractional Working Index + role demand + delta + rising topic), navigation to read / path / circle.
+2. **Capture** — `CaptureDialogue.tsx`. Guided, gated dialogue: one question at a time, sufficiency judge (`judge-thesis` edge fn + local fallback) pushes back on thin input, runs after two rounds regardless.
+3. **Thinking** — live research runs in the open (~20s, Perplexity). Progress rings, findings clamp to one line.
+4. **Read** — `ReadView`. Scorecard: Is it a real opportunity? (Demand, Burning need, Crowding, Your edge). Can you win it fast? (Fit, Warm reach, Credibility). Bands with evidence and confidence, no fake numbers. Headline clamps to 3 lines, tap to expand.
+5. **Sharpen** — `SharpenPanel.tsx`. Three intents: a business you admire (feeds edge via `extract-admire`), a business card / screenshot (feeds circle via `extract-contact`), LinkedIn URL (feeds fit + credibility). Re-run is an explicit choice.
+6. **Journey** — `JourneyMap.tsx`. Living journey map: path to first retained client, real circle faces woven in, step tracking persists in `thesis_runs.step_progress`.
+7. **Add people** — `ThesisCircle.tsx`. Screenshot a profile or business card (vision LLM), or upload LinkedIn Connections CSV.
+8. **Gate** — upgrade prompt for free users who have used their one pass.
 
 ### Cross-cutting
 
-- **Profile / Settings drawer** — `src/components/profile/ProfileSettingsSheet.tsx`. Theme, account, billing portal link, sign-out, install prompts (Android PWA install + iOS Apple Shortcut for screenshot capture).
 - **Auth** — `src/components/AuthPage.tsx`. Email + password, Google OAuth.
-- **Privacy** — `src/pages/Privacy.tsx`. Static privacy page.
-- **Share Contact** — `src/pages/ShareContact.tsx`. The destination of the Android share target / iOS Shortcut.
+- **Share Contact** — `src/pages/ShareContact.tsx`. Android PWA share target / iOS Shortcut destination for screenshot-to-contact.
+- **Privacy / Terms** — `src/pages/Privacy.tsx`, `src/pages/Terms.tsx`.
+- **Preview fixtures** — `/preview/cockpit`, `/preview/start`, `/preview/sharpen`, `/preview/journey`, `/preview/loader` (unlinked, lazy, excluded from prod bundle critical path).
+- **Compliance** — `ConsentBanner`, `SessionManager` (`src/components/compliance/`).
 
 ---
 
 ## 9. Onboarding
 
-`src/components/onboarding/FirstVoice.tsx`.
+New users land on the **Capture screen** (`CaptureDialogue.tsx`). The guided dialogue:
 
-A single-screen voice onboarding:
+1. **One question at a time.** Not a form: it draws out who, what, and why-you with soft follow-ups.
+2. **Sufficiency judge.** `judge-thesis` edge fn (Gemini via the provider fallback) + a deterministic local fallback reads the thesis. Thin inputs ("marketing services") get a push-back naming exactly what's missing. After two rounds it runs anyway and flags the read as a sketch.
+3. **Question / multiple / essay routing.** A question ("what should I offer?") routes to a short discovery flow; multiple offers in one route to a pick-one; a verbose input is played back as one line to confirm. Then one line of background.
+4. **Research runs** — live Perplexity (~20s), visible as it works.
+5. **Read** — the scorecard. Free users stop here for their one pass. Pro users can sharpen, re-run, and access Home.
 
-1. **Intro** — "Tell me what you've done." Hold-to-talk button, up to 90 seconds.
-2. **Recording** — live waveform.
-3. **Processing** — Whisper transcription (`transcribe` edge function) → `extract-ideas` (gpt-4o-mini) parses 3 Idea drafts (title, one-liner, offer, price_band, ICP, is_adjacent flag).
-4. **Review** — the 3 Ideas are shown. "Good. Start with these."
-5. **Save** — Ideas are inserted with `status = 'voiced'`. `user_profiles.onboarding_step` advances to 4 (complete).
-
-**Why this is the onboarding:** the moment a user articulates 3 Ideas, the Match Engine has its target. Without Ideas, it has nothing to do. Without a voice-first capture, users would procrastinate and never start.
-
-The first Match Engine run happens overnight via `cron-match-engine`. The first Sunday Letter lands at the end of week 1.
+The ember brightens as more fuel goes in (thesis, background, LinkedIn, circle people, admired businesses). A dim ember honestly signals a thin read.
 
 ---
 
 ## 10. Sources & ingestion
 
-Sources funnel into `person_raw`, which deduplicates into `circle_person` via fingerprint matching (email, phone, normalized name + company, social handles).
+Circle contacts feed the warm-reach score in the thesis read. Sources flow into `circle_person` via fingerprint matching (email, phone, normalized name + company, social handles).
 
 | Source | UI | Edge function | Notes |
 |---|---|---|---|
-| **LinkedIn CSV** | `LinkedInCsvDrop.tsx` | (client-side parse → direct insert) | Richest single source. Parses the standard LinkedIn `Connections.csv` export. |
-| **CRM CSV** (HubSpot / Attio / Folk / generic) | `CrmCsvDrop.tsx` | (client-side parse via `src/lib/crmCsv.ts`) | Auto-detects format from header row. |
-| **Voice seed** | `VoiceSeedCapture.tsx` | `parse-voice-seed` (gpt-4o-mini) | Talk through your top 30 people, AI parses names + companies. |
-| **Google** (Contacts + Calendar) | `GoogleConnect.tsx` | `oauth-google-start` → `oauth-google-callback` → `sync-google` (+ `cron-sync-google`) | People API + Calendar API. Reads last 90 days of meetings as `signal_kind = 'calendar_meeting'`. No email body scanning. |
-| **Microsoft** (Contacts + Calendar) | `MicrosoftConnect.tsx` | `oauth-microsoft-start` → `oauth-microsoft-callback` → `sync-microsoft` (+ `cron-sync-microsoft`) | Microsoft Graph. Same shape as Google. |
-| **Browser extension** | `ExtensionPair.tsx` (pair) + the extension itself | `extension-ingest` | Captures profiles as the user actually browses LinkedIn. Zero scraping. See [extension/README.md](./extension/README.md). |
-| **Screenshot** (Android share / iOS Shortcut) | `src/pages/ShareContact.tsx` | `parse-screenshot` (claude-haiku-4-5-20251001 preferred → gpt-4o-mini fallback) | Vision LLM extracts profile from a shared screenshot. See [docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md). |
-| **Manual** (resolve / merge / enrich) | various | `resolve-contact`, `merge-persons`, `contact-enrich`, `linkedin-search`, `dedupe-circle` | Server-side dedupe + Clearbit/Apollo enrichment + Google CSE-backed LinkedIn lookup. |
+| **Screenshot or photo** | `AddToCircleSheet` → `QuickAddImage` | `extract-contact` (Gemini vision) | LinkedIn profile, Instagram, business card, name tag. Primary quick-add mode. |
+| **Paste** | `AddToCircleSheet` → `QuickAddPaste` | `resolve-contact` (server-side dedupe) | URL, @-handle, email, or signature block. |
+| **Voice** | `AddToCircleSheet` → `VoiceSeedCapture` | `parse-voice-contact` (gpt-4o-mini) | Say the name and company; AI parses and dedupes. |
+| **Typed** | `AddToCircleSheet` → `QuickAddTyped` | `resolve-contact` | Name plus any details you remember. |
+| **LinkedIn CSV** | `ThesisCircle.tsx` (Deep dive → add-people screen) | (client-side parse → `importConnectionsCsv`) | Upload your LinkedIn Connections export. The Deep dive links directly to the LinkedIn export page (24–48hr wait) so users know where to get it. |
+| **Screenshot (iOS Shortcut / Android share)** | `src/pages/ShareContact.tsx` | `parse-screenshot` (claude-haiku-4-5-20251001 preferred → gpt-4o-mini fallback) | One-gesture capture from outside the app. See [docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md). |
+| **Enrichment** | (server-side, not user-initiated) | `contact-enrich`, `linkedin-search`, `resolve-contact`, `merge-persons` | Clearbit / Apollo enrichment + Google CSE-backed LinkedIn lookup + explicit merge. |
 
-All sources end up in the same canonical `circle_person` table with `person_raw` rows linking back to provenance. The Match Engine doesn't care where someone came from — only that they're in the Circle.
-
----
-
-## 11. The Match Engine
-
-Lives in `supabase/functions/_shared/matchEngineCore.ts` and is triggered by:
-- **Manual** — `run-match-engine` (TodayScreen "Surface Matches" button).
-- **Nightly** — `cron-match-engine`.
-
-For each user, the engine:
-
-1. **Loads context** — active Ideas, all `circle_person` rows with their `person_raw` provenance and any `signals` from the last 30 days, recent `match` history (to avoid re-surfacing).
-2. **Pre-filters** — recency × warmth × source quality. Drops people with zero useful fields.
-3. **LLM scoring** — gpt-4o-mini call (`matchEngineCore.ts:209`) ranks (Idea × Person) pairs and writes a one-sentence `match.rationale` for the top results.
-4. **Drafts a Move** — for each surfaced Match, `move.draft_body` is generated in the same call (LinkedIn DM by default, email if the person has an email and not a LinkedIn handle).
-5. **Writes** — `matches` rows + `moves` rows in `state = 'new'` / `'draft'`.
-6. **Quota check** — respects `LIMITS.matches_per_week` for free, `matches_per_day` for Operator. Returns `quota_blocked: true` to nudge the upgrade.
-
-**Edit-distance taste model.** When the user hits "Mark sent" on a Match, `log-move-sent` computes the Levenshtein distance between the AI draft and what the user actually sent and stores it in `move_edits`. This is the data substrate for the personalization model that prompts future drafts.
-
-**Timeouts.** Every LLM call site has an `AbortSignal.timeout` since PR #46 (audit C3). 20s default, 60s for heavier structured calls.
+**Not currently wired to any live UI path (code present, UI not exposed):** Google Contacts / Calendar OAuth sync (`oauth-google-*`, `sync-google`, `cron-sync-google`), Microsoft Contacts / Calendar OAuth sync (`oauth-microsoft-*`, `sync-microsoft`, `cron-sync-microsoft`), browser extension (`extension-ingest`), CRM CSV import (`CrmCsvDrop.tsx`). Do not claim these as live without confirming the UI path is restored.
 
 ---
 
-## 12. The Sunday Letter
+## 11. Retired: Match Engine
 
-Lives in `supabase/functions/_shared/sundayLetterCore.ts`. Triggered by:
-- **Manual** — `generate-sunday-letter` (TodayScreen Sunday Letter card).
-- **Weekly** — `cron-sunday-letter` (Sunday morning).
-
-Output:
-- **Text body** — gpt-4o-mini narrative (~200 words). Stored in `sunday_letters.text_body`.
-- **Audio** (Chief of Staff only): OpenAI gpt-4o-mini-tts, ~90 seconds, served from `sunday_letters.audio_url`.
-- **Stats sidebar** — `matches_surfaced`, `matches_approved`, `moves_sent`, `new_circle_people` for the week.
-
-**Generation source tracking.** Migration `20260424000002_sunday_letter_generation_source` adds a `generation_source` column (`llm`, `rule_based`, etc.) so we can monitor what fraction of letters are LLM vs. fallback over time. Closes audit M10.
-
-**Zod-validated and length-capped** since PR #46 (audit C2). Empty / placeholder output is rejected. Records are tagged with the model version that generated them.
+The Match Engine (scoring Idea × Person, drafting Move DMs, the nightly cron) was the core of the prior Circle CRM. It was retired in the kill-sweep (commit #85). The edge functions `run-match-engine` and `cron-match-engine`, the hook `useMatches.ts`, and the `matches` / `moves` / `move_edits` tables remain in the codebase as dead code. No live UI path reaches them. Do not claim Match Engine as a live feature.
 
 ---
 
-## 13. The browser extension
+## 12. Retired: Sunday Letter
 
-`extension/` — Manifest V3, Chrome / Arc compatible.
-
-- Reads name / title / company / headline / location from the LinkedIn profile DOM (plus any JSON-LD embeds).
-- Background service worker forwards to the `extension-ingest` edge function with the user's Supabase JWT.
-- Same fingerprint dedupe as the other sources.
-- On re-visit, `last_interaction_at` is refreshed so the Match Engine ranks recency.
-
-**Hard rules:**
-- Zero scraping of pages the user is not actively viewing.
-- Zero harvesting of anyone else's data — runs only in the user's authenticated session.
-- Zero email / inbox / body scanning.
-- Zero auto-browsing.
-
-Pairing flow: Circle web app → Circle tab → Add a source → Connect browser extension → copy pairing token → paste into the extension popup. Tokens carry an access token (~1 hour life) plus a refresh token; the extension rotates them as needed.
-
-Chrome Web Store submission is a follow-up — see [docs/roadmap.md](./docs/roadmap.md).
+The Sunday Letter (weekly AI narrative + optional audio) was the retention loop of the prior Circle CRM. It was retired in the kill-sweep. Edge functions `generate-sunday-letter` and `cron-sunday-letter`, the hook `useSundayLetter.ts`, and the `sunday_letters` table remain in the codebase as dead code. No live UI path reaches them. Do not claim Sunday Letter as a live feature.
 
 ---
 
-## 14. Screenshot → Contact
+## 13. Retired: browser extension
+
+`extension/` — Manifest V3 extension code is still on disk. The browser extension pairing UI (`ExtensionPair.tsx`) and the `extension-ingest` edge function exist in source but are not exposed in any live UI path. Chrome Web Store submission was a future item that has not shipped. Do not claim the browser extension as a live feature.
+
+---
+
+## 14. Screenshot capture
 
 One-gesture contact capture. Works on Android (Web Share Target) and iOS (Apple Shortcut). See [docs/screenshot-to-contact.md](./docs/screenshot-to-contact.md) for the full flow.
 
-- **Android.** PWA installed → take screenshot → Share → Circle → land on `/share-contact` with parsed fields. Wired via `public/site.webmanifest` `share_target` + `public/sw.js` interception.
-- **iOS.** User installs an Apple Shortcut once. Shortcut POSTs the screenshot to `parse-screenshot` and opens `/share-contact?prefill=<urlencoded-JSON>`. The `parse-screenshot` function uses claude-haiku-4-5-20251001 vision (preferred) with gpt-4o-mini vision fallback.
+- **Android.** PWA installed → take screenshot → Share → Circle → land on `/share-contact`. Wired via `public/site.webmanifest` `share_target` + `public/sw.js`.
+- **iOS.** Apple Shortcut installed once. POSTs the screenshot to `parse-screenshot`, opens `/share-contact?prefill=<urlencoded-JSON>`.
+- **In-app.** `AddToCircleSheet` → "Screenshot or photo" mode uses `extract-contact` (vision LLM) directly.
 - **Privacy.** Screenshots only leave the device when the user explicitly shares. The function does not persist the raw image. EXIF is not read.
 
 ---
 
-## 15. Concierge (Chief of Staff)
+## 15. Retired: Concierge
 
-Chief of Staff tier ships with a real human concierge — the relationship manager who walks new users through their first import, runs the first Match Engine pass with them, and writes the first Move alongside them.
-
-- **`concierge_requests` table** (migration `20260422000001_concierge.sql`).
-- **`concierge_requests.booking_url`** column for Cal.com / Calendly link drop (migration `20260423000001_concierge_booking_url.sql`).
-- **`ConciergeCard.tsx`** banner on Today (executive tier only) shows current state: requested → scheduled → in_progress → delivered.
-- **`ConciergeBookingSheet.tsx`** for taking the request.
-- **`notify-concierge-event`** edge function fires Slack + Resend email to the ops channel on every state transition.
-- **`scripts/concierge-inbox.mjs`** is the ops CLI for managing the queue: `list`, `show`, `schedule`, `book-url`, `start`, `deliver`, `cancel`. Service-role-keyed; runs locally.
+The white-glove Concierge onboarding (Chief of Staff feature, `ConciergeBookingSheet.tsx`, `concierge_requests` table, `notify-concierge-event` edge function, `scripts/concierge-inbox.mjs`) was retired in the kill-sweep. The code remains in source. Do not claim Concierge as a live feature.
 
 ---
 
@@ -456,21 +374,19 @@ Chief of Staff tier ships with a real human concierge — the relationship manag
 | Layer | Tech | Notes |
 |---|---|---|
 | **Frontend** | React 18 + TypeScript (strict: true) + Vite | Mobile-first PWA. SPA with React Router. |
-| **UI** | Tailwind + shadcn/ui + Radix primitives | Custom design tokens. |
-| **Animation** | Framer Motion | 153 `motion.*` instances; all have `initial` + `animate` to avoid first-render flash. |
-| **Forms** | (currently raw `useState`) | `react-hook-form` + Zod scaffolding present (`src/components/ui/form.tsx`) but not yet adopted on most call sites — see audit H3 in [docs/roadmap.md](./docs/roadmap.md). |
-| **Data fetching** | TanStack React Query (provider mounted, partial adoption) | Direct `supabase.functions.invoke` is still common; full migration is a deferred audit item. |
-| **Charts** | Recharts | Used in admin/analytics surfaces. |
+| **UI** | Tailwind + shadcn/ui + Radix primitives | Custom ember (.thx) design system in `src/pathroom/`. |
+| **Animation** | Framer Motion | `motion.*` instances in shared components; all have `initial` + `animate`. |
+| **Data fetching** | TanStack React Query (provider mounted) + direct `supabase.functions.invoke` | React Query not yet fully adopted across all call sites. |
 | **Backend** | Supabase (Postgres + Auth + Edge Functions / Deno) | Project: `ksyuwacuigshvcyptlhe`. |
-| **Edge runtime** | Deno (Supabase Edge Functions) | 34 functions in source (41 deployed, 7 orphan legacy); see §19. |
-| **AI providers** | OpenAI (Whisper, GPT-4o-mini, gpt-4o-mini-tts) · Anthropic (claude-haiku-4-5-20251001) · Lovable Gateway (google/gemini-3-flash-preview) | 14 LLM call sites, all with explicit `AbortSignal.timeout`. |
-| **Payments** | Stripe (Checkout, Customer Portal, Webhook) | Account `fractionl_ai`. Hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) + `processed_stripe_events` idempotency ledger; tier sync on `customer.subscription.*` events. |
-| **SMS** | Twilio | `send-sms` edge function. Origin-allowlisted CORS (audit C4). |
-| **Email** | Resend | Concierge ops notifications. |
-| **Search** | Google CSE | LinkedIn lookup via `linkedin-search` edge function. |
+| **Edge runtime** | Deno (Supabase Edge Functions) | 53 functions in source. |
+| **AI providers** | Perplexity (live research in `validate-thesis`) · OpenAI (gpt-4o-mini for voice parse, parse-screenshot fallback) · Anthropic (claude-haiku-4-5-20251001 preferred in `parse-screenshot`) · Lovable Gateway (google/gemini-flash for `generate-user-insights`) · Google Gemini (via `GOOGLE_API_KEY` in `extract-admire`, `judge-thesis`) | All wrapped with `AbortSignal.timeout`. |
+| **Payments** | Stripe (Checkout, Customer Portal, Webhook) | Account `fractionl_ai`. Hand-rolled Web Crypto HMAC signature verify + `processed_stripe_events` idempotency ledger. |
+| **SMS** | Twilio | `send-sms` edge function. Origin-allowlisted CORS. |
+| **Email** | Resend | Ops notifications (retired Concierge flow; retained in edge function source). |
+| **Search** | Google CSE | LinkedIn lookup via `linkedin-search`. |
 | **Hosting** | Vercel (frontend) + Supabase (functions + DB) | Auto-deploy on `main` push. |
 
-**TypeScript posture.** `tsconfig.app.json` runs with `strict: true` since PR #46 (audit H1). `tsc --noEmit -p tsconfig.app.json` is clean.
+**TypeScript posture.** `tsconfig.app.json` runs with `strict: true`. `tsc --noEmit -p tsconfig.app.json` must be clean before merge.
 
 ---
 
@@ -478,227 +394,207 @@ Chief of Staff tier ships with a real human concierge — the relationship manag
 
 ```
 src/
-├── App.tsx                    Top-level router + providers (Auth, Query, Tooltip, Toaster, ErrorBoundary)
-├── main.tsx                   Bootstrap + global window error/unhandledrejection sink (audit M5)
+├── App.tsx                    Top-level router + providers (Auth, Query, Tooltip, Toaster, ErrorBoundary, ConsentBanner)
+├── main.tsx                   Bootstrap + global window error/unhandledrejection sink
 ├── pages/
-│   ├── Index.tsx              Tab host (Today / Streams / Circle / Ask)
-│   ├── ShareContact.tsx       /share-contact — Android + iOS screenshot landing
-│   ├── Privacy.tsx            /privacy
-│   └── NotFound.tsx
+│   ├── Privacy.tsx            /privacy (auth-gated)
+│   ├── Terms.tsx              /terms
+│   ├── NotFound.tsx
+│   └── PrivacySignInPrompt.tsx
 ├── components/
 │   ├── AuthPage.tsx           Email/password + Google OAuth
 │   ├── ErrorBoundary.tsx
-│   ├── onboarding/
-│   │   └── FirstVoice.tsx     90-second voice → 3 Ideas
-│   ├── screens/
-│   │   ├── TodayScreen.tsx
-│   │   ├── StreamsScreen.tsx
-│   │   ├── CircleScreen.tsx
-│   │   └── AskScreen.tsx
-│   ├── today/
-│   │   ├── MatchCard.tsx
-│   │   ├── SundayLetterCard.tsx
-│   │   └── ConciergeCard.tsx
-│   ├── circle/
-│   │   ├── AddSourceSheet.tsx
-│   │   ├── LinkedInCsvDrop.tsx
-│   │   ├── CrmCsvDrop.tsx
-│   │   ├── VoiceSeedCapture.tsx
-│   │   ├── GoogleConnect.tsx
-│   │   ├── MicrosoftConnect.tsx
-│   │   ├── ExtensionPair.tsx
-│   │   ├── DedupeReviewSheet.tsx
-│   │   └── ContactButton.tsx
-│   ├── billing/
-│   │   ├── PricingSheet.tsx        (canonical pricing UI — sourced from src/lib/tiers.ts)
-│   │   ├── PricingPage.tsx         (legacy desktop pricing — scheduled for removal/refresh)
-│   │   ├── ConciergeBookingSheet.tsx
-│   │   ├── SubscriptionBadge.tsx
-│   │   └── UpgradePrompt.tsx
+│   ├── SetNewPasswordScreen.tsx
+│   ├── PreferencesApplier.tsx
+│   ├── circle/                Contact add/display components (AddToCircleSheet, CirclePeopleList,
+│   │                           QuickAddImage, QuickAddPaste, QuickAddTyped, VoiceSeedCapture,
+│   │                           TagChips, CircleListRow, etc.)
 │   ├── compliance/
 │   │   ├── ConsentBanner.tsx
 │   │   ├── SessionManager.tsx
 │   │   └── PrivacySettings.tsx
-│   ├── profile/
-│   │   └── ProfileSettingsSheet.tsx
-│   ├── layout/                AppShell, BottomNav, DesktopSidebar, PageHeader
-│   ├── navigation/            MobileBottomNav, MobileHeader, ResponsiveDialog
+│   ├── navigation/            ResponsiveDialog, MobileHeader
 │   ├── feedback/              ErrorBanner, InlineSuccess
 │   └── ui/                    shadcn/Radix primitives
+│   ── [DEAD CODE — not imported by live app routing]
+│   ├── auth/                  Legacy auth subcomponents (referenced only by AuthPage)
+│   ├── layout/                AppShell, BottomNav, DesktopSidebar (old 4-tab shell)
+│   ├── today/                 MatchCard, SundayLetterCard, ConciergeCard, FocusMove, NextMove, GettingStarted
+│   ├── profile/               ProfileSettingsSheet (old CRM settings drawer)
+│   └── billing/               PricingSheet, PricingPage, etc. (partially live via useSubscription)
+├── pathroom/                  THE LIVE PRODUCT — all active screens live here
+│   ├── CircleApp.tsx          Authed app shell: two-tab layout (Circle + Deep dive)
+│   ├── CircleHome.tsx         Circle tab: drop a contact, what are you working on, your circle list
+│   ├── ThesisApp.tsx          Deep dive tab: home→capture→thinking→read→sharpen→journey→addpeople→gate
+│   ├── Home.tsx               Pro-only command center (ember orb, market pulse, navigation)
+│   ├── CaptureDialogue.tsx    Guided gated Start Here dialogue
+│   ├── SharpenPanel.tsx       After-read "add fuel" panel (admire / card / LinkedIn + re-run)
+│   ├── JourneyMap.tsx         Living journey map (steps + circle faces + step tracking + weak pivot)
+│   ├── ThesisCircle.tsx       Add-people surface (screenshot add + LinkedIn CSV import)
+│   ├── WorkingOnInput.tsx     "What are you working on?" quick note
+│   ├── circleChrome.tsx       BrandBar for the Circle tab
+│   ├── thesisChrome.tsx       EmberNav brand-mark gauge + shared chromeCss
+│   ├── thesisViews.tsx        Shared presentational layer (read, thinking views) + thesisCss + types
+│   ├── thesisData.ts          Data layer (judge, validate, persist run, admire, inspiration,
+│   │                           circle add/import, step progress, run count, market pulse)
+│   ├── thesisJudge.ts         Deterministic client fallback for sufficiency judge + types
+│   ├── tokens.ts              Quiet-instrument design tokens
+│   └── CircleApp.tsx          (see above)
+├── preview/                   Unlinked design fixtures (lazy, not in prod bundle critical path)
+│   ├── CockpitMock.tsx        /preview/cockpit
+│   ├── StartHereMock.tsx      /preview/start
+│   ├── SharpenMock.tsx        /preview/sharpen
+│   ├── JourneyMock.tsx        /preview/journey
+│   └── LoaderMock.tsx         /preview/loader
 ├── hooks/
 │   ├── useAuth.tsx            Auth context
-│   ├── useUserProfile.ts      Profile + preferences + onboarding state
 │   ├── useSubscription.ts     Tier, limits, usage, openCheckout, openPortal
-│   ├── useCircle.ts           Sources + people count
-│   ├── useCircleDedupe.ts     Dedupe scan + accept/reject
-│   ├── useIdeas.ts            Active Ideas
-│   ├── useMatches.ts          Match list + state transitions + run trigger
-│   ├── useSundayLetter.ts     Letter loading + generation
-│   ├── useConcierge.ts        Concierge request lifecycle
-│   ├── useUserInsights.ts     Generated insights
+│   ├── useAppFrame.ts         Locks the page to the visible viewport (no-scroll frame)
 │   ├── useConsent.ts          GDPR consent state
 │   ├── useDataPrivacy.ts      Data export / deletion
-│   ├── useVoiceRecording.ts   MediaRecorder wrapper for the onboarding mic
-│   ├── useSkills.ts
-│   ├── useBehaviorTracking.ts
-│   ├── useInstallPrompt.ts    PWA install prompt
-│   ├── useKeyboardVisible.ts  Mobile keyboard detection
 │   ├── use-mobile.tsx
-│   └── use-toast.ts
+│   ├── use-toast.ts
+│   ── [DEAD CODE hooks — not called by live app routes]
+│   ├── useMatches.ts          Old Match Engine hook (imports run-match-engine)
+│   ├── useSundayLetter.ts     Old Sunday Letter hook
+│   ├── useConcierge.ts        Old Concierge hook
+│   ├── useCircle.ts           Old 4-tab circle hook
+│   ├── useIdeas.ts            Old Ideas hook
+│   └── (others from the 4-tab CRM)
 ├── lib/
-│   ├── tiers.ts               Tier catalogue (Freemium / Operator / Chief of Staff)
-│   ├── circleIngest.ts        Shared ingest pipeline
-│   ├── crmCsv.ts              HubSpot/Attio/Folk/generic CSV detection
-│   ├── linkedinCsv.ts         LinkedIn CSV parsing
+│   ├── tiers.ts               Tier catalogue (Freemium / Pro / Chief of Staff)
+│   ├── circleIngest.ts        Shared ingest pipeline (used by ShareContact.tsx)
 │   ├── handles.ts             Social handle normalization
-│   ├── primaryContact.ts      Pick best email/phone/LinkedIn for outreach
 │   ├── fingerprint.ts         Dedupe key generation
-│   ├── telemetry.ts           Central error/event sink (audit M5)
-│   ├── tiers.ts
+│   ├── attribution.ts         UTM / attribution capture
+│   ├── bootSplash.ts          Boot splash reveal logic
 │   └── utils.ts               cn() + helpers
-├── utils/
-│   ├── auditLogger.ts         User-action audit trail
-│   ├── contactActions.ts
-│   ├── greeting.ts
-│   ├── haptics.ts
-│   ├── retry.ts
-│   └── registerServiceWorker.ts
 ├── integrations/
 │   └── supabase/
 │       ├── client.ts
 │       └── types.ts           Generated from supabase gen types
-├── constants/animation.ts     Stagger / spring / fade variants
-├── App.css
-└── index.css                  Design tokens, typography, theme
+└── index.css                  Design tokens, typography, theme (.thx ember system)
 ```
-
-121 TS/TSX files in `src/` as of 2026-04-26.
 
 ---
 
 ## 18. Database schema
 
-**Phase-1 ontology (the active surface):**
+**Active tables (thesis product + circle tab):**
 
 | Table | Purpose |
 |---|---|
+| `thesis_runs` | Each thesis-validation run: scorecard jsonb, step_progress jsonb, thesis text, background, created_at. User-owned, RLS. |
+| `thesis_inspiration` | Businesses the user admires: name, positioning, kind (business/person/competitor), field, why. User-owned, RLS. Feeds "Your edge" in the next read. |
+| `circle_person` | Canonical, deduplicated contact. `handles` jsonb for social handles. User-owned, RLS. |
 | `sources` | Every ingestion source per user. `kind` enum: google · microsoft · linkedin_csv · linkedin_extension · instagram_export · facebook_export · x_export · legacy_crm_csv · sheet_upload · ios_contacts · ios_shortcut · share_sheet · voice_seed · external_enrichment · business_card_photo · inbox_signature_scan · calendar_backscan |
 | `person_raw` | Per-source raw rows, links to canonical `circle_person` |
-| `circle_person` | Canonical, deduplicated person. `handles` jsonb column for social handles (Phase B promotion, 2026-04-22) |
-| `ideas` | Active sellable Ideas. `status`: proposed · voiced · active · retired |
-| `signals` | Inbound signals on people or market. `kind`: job_change · promotion · fundraise · hiring · public_post · mention · rfp · trend · calendar_meeting · email_interaction · other |
-| `matches` | (Idea × Person) surfaced by the engine. `state`: new · approved · edited · sent · won · cold · declined |
-| `moves` | Drafted outbound. `channel`: email · linkedin_dm · sms · call · calendar_invite · post · other. `state`: draft · approved · sent · responded · declined |
-| `move_edits` | Edit-distance log between AI draft and user-sent body |
-| `streams` | Ideas that earned revenue. `state`: prototyping · live · paused · retired |
-| `sunday_letters` | Weekly narrative + audio_url + generation_source |
-| `concierge_requests` | Chief of Staff onboarding queue |
 
-**OAuth & subscriptions:**
+**Auth, subscriptions, compliance:**
 
 | Table | Purpose |
 |---|---|
-| `oauth_states` | Single-use, TTL'd OAuth state nonces. RLS: deny-all (service role only) |
-| `oauth_tokens` | Encrypted tokens with SHA-256 integrity hash. RLS: deny-all |
 | `subscriptions` | Stripe-synced tier + status |
-| `processed_stripe_events` | Webhook idempotency ledger keyed on Stripe `event.id`; dedupes replays and at-least-once redelivery |
-| `usage_tracking` | Per-feature, per-period counts (Match cap enforcement) |
-| `ledger_entries` | Inferred revenue from inbox + calendar (Operator+) |
-| `rate_limits` | Durable per-user / per-bucket rate limiter (audit H4) |
-| `reminders` | Nudge scheduling (legacy; not currently used by active surface) |
-
-**User & analytics:**
-
-| Table | Purpose |
-|---|---|
+| `processed_stripe_events` | Webhook idempotency ledger keyed on Stripe `event.id` |
+| `usage_tracking` | Per-feature, per-period counts |
+| `rate_limits` | Durable per-user / per-bucket rate limiter |
+| `oauth_states` | Single-use, TTL'd OAuth state nonces. RLS: deny-all |
+| `oauth_tokens` | Encrypted tokens with SHA-256 integrity hash. RLS: deny-all |
 | `user_profiles` | Account, business context, onboarding state |
 | `user_preferences` | Theme, notifications, AI personality |
-| `user_business_context` | Business profile for AI personalization |
-| `user_insights` | AI-generated insights with confidence + priority |
-| `user_behavior_logs` | Behavioral analytics |
-| `feature_usage` | Feature adoption tracking |
-| `user_sessions` | Session analytics |
-| `ai_conversations` · `conversation_sessions` · `chat_messages` | Ask history (Phase 2) |
+| `user_consents` | GDPR consent choices (7-yr legal hold) |
+| `security_audit_log` | User-action audit trail (7-yr legal hold) |
+| `data_subject_requests` | DSAR log (7-yr legal hold) |
+| `user_behavior_logs` | Behavioural analytics (90-day auto-purge) |
+| `user_sessions` | Session analytics (90-day auto-purge) |
+| `user_attribution` | UTM + anonymous_id, persisted at sign-up |
+| `data_retention_policies` | Drives the retention cron |
 
-**Legacy (pruned from the active surface in PR #45 but tables linger in older migrations):**
-`clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `skills`. Do not write new code against these.
-
-**Migration count:** 43 files in `supabase/migrations/` (2026-05-30).
-
-**Migration drift note.** As of the PR #46 deploy, `supabase migration list --linked` shows known drift on older entries (some local files not tracked remote, some remote with no local file). Do not run `supabase db push` blindly — apply targeted migrations via the Management API instead. See the audit-deploy memory for context.
+**Dead tables (prior Circle CRM, live in migrations only):** `ideas`, `matches`, `moves`, `move_edits`, `streams`, `sunday_letters`, `concierge_requests`, `clients`, `opportunities`, `activity_logs`, `revenue_entries`, `monthly_goals`, `daily_progress`, `weekly_summaries`, `ledger_entries`, `reminders`, `talent_contacts`, `talent_skills`, `talent_referrals`, `talent_opportunities`, `signals`, `ai_conversations`, `conversation_sessions`, `chat_messages`. Do not write new code against these.
 
 ---
 
-## 19. Edge functions (34 in source, 41 deployed)
+## 19. Edge functions (53 in source)
 
-All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
+All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore — the last two are dead but remain in shared/).
 
-**Count note (2026-05-30):** the repo source tree holds 34 functions. The live Supabase project has 41 deployed, the extra 7 being orphan legacy functions that no longer exist in source and no live UI calls (`ai-strategic-analysis`, `swift-action`, `google-sheets-integration`, `get-market-sentiment`, `chat-with-krish`, `daily-briefing`, `voice-command`). These are slated for removal in the Phase 2 orphan-function cleanup; do not write new code against them.
+**Active — thesis product:**
+- `validate-thesis` — live Perplexity research + LLM structuring into scorecard + steps; reads circle for warm reach + thesis_inspiration; persists each run
+- `judge-thesis` — cheap sufficiency gate (Gemini) before a research call
+- `extract-admire` — Gemini vision reads how an admired business positions
+- `extract-contact` — Gemini vision reads a profile/card screenshot into circle_person
+- `market-pulse` — live Fractional Working Index from fractionl-pulse public APIs
 
-**Voice & vision parsing (LLM-backed):**
-- `transcribe` — Whisper audio→text
-- `parse-voice-log` — voice → structured activity log
-- `parse-voice-contact` — voice → contact
-- `parse-voice-seed` — voice → batch contact seed (onboarding)
-- `parse-onboarding` — voice → client / revenue setup (legacy onboarding path)
-- `parse-screenshot`: vision LLM (claude-haiku-4-5-20251001 preferred, gpt-4o-mini fallback) for shared screenshots
-- `parse-contact-image` — vision LLM for business cards / profile shots
-- `extract-ideas` — onboarding voice transcript → 3 Idea drafts
-
-**Match engine & weekly digest:**
-- `run-match-engine` — manual trigger
-- `cron-match-engine` — nightly trigger
-- `generate-sunday-letter` — manual trigger
-- `cron-sunday-letter` — Sunday morning trigger
-- `generate-user-insights` — personalized business insights (gated by auth + body validation per audit C1)
-- `dedupe-circle` — LLM-assisted person dedupe (Operator+ feature)
-
-**OAuth + sync:**
-- `oauth-google-start` · `oauth-google-callback` · `sync-google` · `cron-sync-google`
-- `oauth-microsoft-start` · `oauth-microsoft-callback` · `sync-microsoft` · `cron-sync-microsoft`
-
-**Contact ingest & resolution:**
-- `extension-ingest` — browser extension entry point
+**Active — circle ingestion:**
+- `parse-screenshot` — vision LLM (claude-haiku-4-5-20251001 → gpt-4o-mini fallback) for shared screenshots
+- `parse-contact-image` — vision LLM for business cards
+- `parse-voice-contact` — voice → contact parse
+- `parse-voice-seed` — voice → batch contact seed
 - `resolve-contact` — server-side dedupe by email/phone/handle
 - `merge-persons` — explicit merge of two `circle_person` records
-- `contact-enrich` — Clearbit / Apollo / Twilio enrichment
+- `contact-enrich` — Clearbit / Apollo enrichment
+- `enrich-linkedin` — LinkedIn enrichment
 - `linkedin-search` — Google CSE-backed LinkedIn lookup
+- `suggest-tags` — tag suggestions for circle contacts
+- `rank-inner-circle` — inner circle ranking for warm-reach scoring
+- `generate-signals` — signal generation for circle people
+- `decision-engine` — decision support for thesis flow
+- `extract-read`, `extract-identity` — supporting extraction functions
 
-**Billing & comms:**
+**Active — billing & auth:**
 - `stripe-checkout` — create Checkout session
 - `stripe-portal` — open Customer Portal
-- `stripe-webhook`: hand-rolled Web Crypto HMAC signature verify (not `constructEvent`) plus `processed_stripe_events` idempotency ledger, then tier sync
-- `send-sms` — Twilio (origin-allowlisted CORS per audit C4)
-- `notify-concierge-event` — Slack + Resend ops notifications
-- `log-move-sent` — edit-distance logging on Move send
-- `test-google-secret` — debug helper (verify_jwt = false; trim before next prod cut)
+- `stripe-webhook` — HMAC signature verify + processed_stripe_events idempotency + tier sync
+- `oauth-google-start` · `oauth-google-callback` · `oauth-microsoft-start` · `oauth-microsoft-callback` — OAuth state + callback (code present; UI not currently exposed in live app)
+- `sync-google` · `cron-sync-google` · `sync-microsoft` · `cron-sync-microsoft` — contact/calendar sync (code present; UI not currently exposed)
+- `delete-account` — erasure + auth identity removal
+
+**Active — comms & analytics:**
+- `send-sms` — Twilio (origin-allowlisted CORS)
+- `send-push` — push notification delivery
+- `audit-log` — user-action audit events
+- `emit-lifecycle` — attribution lifecycle events
+- `log-win` — win logging for streams
+- `sunday-letter-feed` — public feed endpoint (ROADMAP; code present)
+
+**Retired (dead UI, code remains):**
+- `run-match-engine`, `cron-match-engine` — old Match Engine cron
+- `generate-sunday-letter`, `cron-sunday-letter` — old Sunday Letter cron
+- `extension-ingest` — old browser extension entry point
+- `extract-ideas` — old onboarding voice → 3 Ideas
+- `transcribe` — old Whisper transcription for onboarding
+- `parse-voice-log`, `parse-onboarding` — old voice activity + onboarding parse
+- `generate-user-insights` — personalized insights (verify_jwt=false; auth enforced at function layer)
+- `dedupe-circle` — LLM-assisted person dedupe (gated feature; UI path unclear)
+- `notify-concierge-event` — old Concierge ops notifications
+- `log-move-sent` — old Match Engine send logging
+- `demo-extract` — demo extraction helper
+- `test-google-secret` — debug helper (`verify_jwt = false`; trim before next prod cut)
 
 ---
 
 ## 20. AI / LLM call sites
 
-14 outbound LLM fetches across the codebase. All wrapped with explicit `AbortSignal.timeout` (20s default; 60s on `generate-sunday-letter` and `generate-user-insights`) since PR #46.
+**Active call sites (thesis product):**
 
-| # | File:Line | Provider | Model | Purpose |
+| # | File | Provider | Model | Purpose |
 |---|---|---|---|---|
-| 1 | `_shared/matchEngineCore.ts:209` | OpenAI | gpt-4o-mini | Match scoring + Move drafting |
-| 2 | `_shared/sundayLetterCore.ts:177` | OpenAI | gpt-4o-mini | Sunday Letter narrative |
-| 3 | `extract-ideas/index.ts:61` | OpenAI | gpt-4o-mini | Onboarding voice → 3 Ideas |
-| 4 | `dedupe-circle/index.ts:132` | OpenAI | gpt-4o-mini | Person dedupe tiebreaker |
-| 5 | `parse-voice-log/index.ts:65` | OpenAI | gpt-4o-mini | Voice activity log parse |
-| 6 | `parse-voice-contact/index.ts:55` | OpenAI | gpt-4o-mini | Voice contact parse |
-| 7 | `parse-voice-seed/index.ts:41` | OpenAI | gpt-4o-mini | Voice contact-seed parse (onboarding) |
-| 8 | `parse-onboarding/index.ts:49` | OpenAI | gpt-4o-mini | Voice onboarding parse (legacy) |
-| 9 | `transcribe/index.ts:64` | OpenAI | whisper-1 | Audio transcription |
-| 10 | `parse-screenshot/index.ts:109` | Anthropic | claude-haiku-4-5-20251001 | Screenshot vision (preferred) |
-| 11 | `parse-screenshot/index.ts:142` | OpenAI | gpt-4o-mini | Screenshot vision (fallback) |
-| 12 | `parse-contact-image/index.ts:56` | OpenAI | gpt-4o | Contact image vision |
-| 13 | `generate-user-insights/index.ts:391` | Lovable Gateway | google/gemini-3-flash-preview | Personalized insights |
-| 14 | `generate-sunday-letter` (audio path) | OpenAI | gpt-4o-mini-tts | 90-second audio narration (Chief of Staff) |
+| 1 | `validate-thesis/index.ts` | Perplexity | sonar / sonar-pro | Live market research |
+| 2 | `validate-thesis/index.ts` | OpenAI / fallback | gpt-4o-mini | Scorecard structuring |
+| 3 | `judge-thesis/index.ts` | Google (via `GOOGLE_API_KEY`) | gemini-flash | Sufficiency gate |
+| 4 | `extract-admire/index.ts` | Google (via `GOOGLE_API_KEY`) | gemini-flash vision | Admired business positioning |
+| 5 | `extract-contact/index.ts` | Google (via `GOOGLE_API_KEY`) | gemini-flash vision | Contact from screenshot |
+| 6 | `market-pulse/index.ts` | (fractionl-pulse API, no LLM) | n/a | Role demand data |
+| 7 | `parse-screenshot/index.ts:109` | Anthropic | claude-haiku-4-5-20251001 | Screenshot vision (preferred) |
+| 8 | `parse-screenshot/index.ts:142` | OpenAI | gpt-4o-mini | Screenshot vision (fallback) |
+| 9 | `parse-contact-image/index.ts` | OpenAI | gpt-4o | Contact image vision |
+| 10 | `parse-voice-contact/index.ts` | OpenAI | gpt-4o-mini | Voice contact parse |
+| 11 | `parse-voice-seed/index.ts` | OpenAI | gpt-4o-mini | Voice seed parse |
+| 12 | `generate-user-insights/index.ts` | Lovable Gateway | google/gemini-flash | Personalized insights |
 
-**Output validation.** `generate-sunday-letter` runs Zod-validated, length-capped output and rejects empty/placeholder strings (audit C2). `sunday_letters.generation_source` records `llm` vs `rule_based` so we can monitor drift (audit M10).
+All call sites wrap their LLM fetch with `AbortSignal.timeout` (20s default; longer for heavier calls).
 
-**Prompt-injection posture.** All LLM input is treated as untrusted. Persisted output is validated. Upstream provider error bodies are no longer echoed into edge logs: `parse-screenshot` now logs the status code only (audit H7, fixed 2026-05-30 in Phase 2).
+**Output validation.** All persisted LLM output goes through schema validation before write. Upstream provider error bodies are not echoed into edge logs (status code only).
 
 ---
 
@@ -706,47 +602,37 @@ All functions live under `supabase/functions/`. Shared helpers in `_shared/` (co
 
 ### Google sign-in dashboard configuration
 
-The "Continue with Google" button on `AuthPage` uses Supabase's hosted Google provider via `supabase.auth.signInWithOAuth({ provider: 'google' })`. The client code is correct; the provider must be configured in the **Supabase Dashboard** (and the Google Cloud Console) — `supabase/config.toml` does not control deployed-project auth settings. If users see *"Google authentication is not configured"*, check this checklist:
+The "Continue with Google" button on `AuthPage` uses Supabase's hosted Google provider via `supabase.auth.signInWithOAuth({ provider: 'google' })`. If users see *"Google authentication is not configured"*, check this checklist:
 
-> **Branding the consent screen.** Because this flow runs through Supabase's
-> hosted domain, Google's consent screen shows the raw `<ref>.supabase.co` host
-> ("continue to ksyuwacuigshvcyptlhe.supabase.co"). To replace it with
-> `auth.circle.fractionl.ai`, set up the Supabase custom auth domain — full
-> procedure in `docs/supabase-custom-domain.md`. The redirect URIs below assume
-> that custom domain is live; until cut over, the `<ref>.supabase.co` variants
-> also work.
+> **Branding the consent screen.** Because this flow runs through Supabase's hosted domain, Google's consent screen shows the raw `<ref>.supabase.co` host. To replace it with `auth.circle.fractionl.ai`, set up the Supabase custom auth domain — full procedure in `docs/supabase-custom-domain.md`.
 
 1. **Google Cloud Console** → APIs & Services → Credentials → OAuth 2.0 Web client:
    - **Authorized JavaScript origins:** `https://circle.fractionl.ai`
-   - **Authorized redirect URIs:** `https://auth.circle.fractionl.ai/auth/v1/callback` (the Supabase callback, **not** the app URL — common mistake)
+   - **Authorized redirect URIs:** `https://auth.circle.fractionl.ai/auth/v1/callback`
 2. **Supabase Dashboard** → project `ksyuwacuigshvcyptlhe`:
-   - Authentication → Providers → **Google: enable**, paste Client ID + Client Secret from step 1.
+   - Authentication → Providers → **Google: enable**, paste Client ID + Client Secret.
    - Authentication → URL Configuration → **Site URL:** `https://circle.fractionl.ai`; **Redirect URLs:** add `https://circle.fractionl.ai/**`.
-3. Verify: load `https://circle.fractionl.ai`, tap "Continue with Google" → should bounce to `accounts.google.com` and back to `https://circle.fractionl.ai/#access_token=...`.
 
-This is separate from the Google **contacts/calendar** ingestion flow (`oauth-google-start` + `oauth-google-callback` Edge Functions, which use their own `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` Edge secrets).
+This is separate from the Google **contacts/calendar** ingestion flow (`oauth-google-start` + `oauth-google-callback`, which use their own `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` Edge secrets).
 
-- **Auth.** Supabase Auth with email/password and Google OAuth. JWT lifetime 1h, refresh-token rotation enabled, `refresh_token_reuse_interval = 10s` (`supabase/config.toml`).
-- **RLS.** Enforced on every user-scoped table. ~95+ `CREATE POLICY` statements across migrations. `oauth_states` and `oauth_tokens` are `RLS deny-all` — service-role only.
-- **Edge function gating.** All functions use `requireAuth` (JWT) by default. Exceptions (per `supabase/config.toml`):
-  - `transcribe` — `verify_jwt = false` (called from the onboarding voice flow with anon key for low friction; rate-limited).
-  - `parse-voice-log`, `parse-onboarding` — same.
-  - `generate-user-insights` — `verify_jwt = false` but enforces auth-or-`CRON_SECRET` at the function layer (audit C1 fix).
+- **Auth.** Supabase Auth with email/password and Google OAuth. JWT lifetime 1h, refresh-token rotation enabled, `refresh_token_reuse_interval = 10s`.
+- **RLS.** Enforced on every user-scoped table. `oauth_states` and `oauth_tokens` are RLS deny-all — service-role only.
+- **Edge function gating.** All functions use `requireAuth` (JWT) by default. Exceptions:
+  - `generate-user-insights` — `verify_jwt = false` but enforces auth-or-`CRON_SECRET` at the function layer.
   - `test-google-secret` — debug helper; remove from prod config.
   - `stripe-webhook` — verified by Stripe signature instead of JWT.
-- **Stripe webhook.** Signature is verified by a hand-rolled Web Crypto HMAC verifier (constant-time compare of the `Stripe-Signature` header against `STRIPE_WEBHOOK_SECRET`), not `stripe.webhooks.constructEvent()` (the Stripe SDK's sync crypto path is unavailable on Deno edge). An idempotency ledger (`processed_stripe_events` table, keyed on Stripe `event.id`) makes replays and at-least-once redelivery a no-op. Tier sync happens on `customer.subscription.created` / `.updated` / `.deleted` and `invoice.payment_*`. Stripe account: `fractionl_ai`.
-- **OAuth.** State tokens are double-`crypto.randomUUID()`, single-use, TTL'd. Tokens are encrypted with SHA-256 integrity hash. PKCE is a deferred audit item (H6).
-- **CORS.** Origin allowlist via `_shared/compliance.ts::getCorsHeaders(req)`. `send-sms` was the last wildcard holdout — fixed in PR #46 (audit C4).
-- **Service-role key** never appears in the client bundle. `.env` is gitignored (verified clean against history).
-- **Audit log.** `src/utils/auditLogger.ts` writes user-action events server-side.
+- **Stripe webhook.** Signature verified by hand-rolled Web Crypto HMAC verifier (constant-time compare). Idempotency ledger (`processed_stripe_events`, keyed on Stripe `event.id`). Tier sync on `customer.subscription.created` / `.updated` / `.deleted` and `invoice.payment_*`. Stripe account: `fractionl_ai`.
+- **CORS.** Origin allowlist via `_shared/compliance.ts::getCorsHeaders(req)`. No wildcard holdouts.
+- **Service-role key** never appears in the client bundle.
+- **Audit log.** `audit-log` edge function writes user-action events server-side.
 
 ---
 
 ## 22. Reliability & rate limiting
 
-- **Durable rate limits.** `rate_limits` table (PK `(bucket_key, window_start)`) with atomic upsert; replaces the per-instance `Map<string, ...>` that was invisible across edge workers (audit H4). Affected functions: `extract-ideas`, `parse-voice-*`, `parse-screenshot`, `transcribe`, `parse-contact-image`, `parse-onboarding`, `dedupe-circle`, `generate-sunday-letter`.
-- **LLM timeouts.** Every fetch has `AbortSignal.timeout` (audit C3).
-- **Error telemetry.** `src/lib/telemetry.ts` is the central client-side sink. `src/main.tsx` wires `window.addEventListener('error', ...)` and `'unhandledrejection'` (audit M5). Sentry / Vercel log drain integration is the next step.
+- **Durable rate limits.** `rate_limits` table (PK `(bucket_key, window_start)`) with atomic upsert; replaces per-instance Maps that were invisible across edge workers. Affected functions: `extract-contact`, `parse-screenshot`, `validate-thesis`, `judge-thesis`, and others.
+- **LLM timeouts.** Every fetch has `AbortSignal.timeout`.
+- **Error telemetry.** `src/lib/telemetry.ts` is the central client-side sink. `src/main.tsx` wires `window.addEventListener('error', ...)` and `'unhandledrejection'`. Sentry / Vercel log drain integration is the next step.
 - **Retry helper.** `src/utils/retry.ts` exposes a typed exponential-backoff helper for fragile fetches.
 
 ---
@@ -754,9 +640,10 @@ This is separate from the Google **contacts/calendar** ingestion flow (`oauth-go
 ## 23. Compliance
 
 - **GDPR.** ConsentBanner + PrivacySettings + SessionManager surfaces under `src/components/compliance/`. `useConsent()` syncs local consent flags to the server on auth.
-- **Data export / deletion.** `useDataPrivacy()` covers user-initiated export and account deletion paths.
-- **No email body scanning.** Google + Microsoft sync reads contacts + calendar *headers* only. Documented user-facing.
+- **Data export / deletion.** `export_user_data(uuid)` + `erase_user_data(uuid)` + `delete-account` edge function.
+- **No email body scanning.** Google + Microsoft sync (when wired) reads contacts + calendar headers only.
 - **Privacy page.** `/privacy` (`src/pages/Privacy.tsx`).
+- **Full compliance posture:** see `COMPLIANCE.md` and `SUBPROCESSORS.md`.
 
 ---
 
@@ -768,41 +655,41 @@ This section is for sales and marketing AI agents. It is the language to use, th
 
 ### The category we're inventing
 
-Not "another CRM." Not "an AI assistant." We are **the relationship-to-revenue engine for portfolio operators.** A new category: the AI is the operator on top of the user's existing graph (LinkedIn, calendar, contacts).
+Not "another CRM." Not "an AI assistant." We are **the thesis-validation engine for fractional executives** — the tool that answers "is my offer real?" with live market data, then breaks the hard middle into specific steps with your real network woven in.
 
 ### The pain in five sentences (cold-message-ready)
 
-1. "Fractional execs run their pipeline in Apple Notes."
-2. "Your warmest leads go cold because no system survives the next client call."
-3. "Your circle is your business. It's also unmanaged."
-4. "You don't need 30 outbound sequences. You need to send the right thing to one person tonight."
-5. "Sunday morning shouldn't be spent staring at a spreadsheet you haven't updated in three weeks."
+1. "You've been fractional for 90 days. You're not sure your niche is right."
+2. "You've talked to six people. They all said 'sounds interesting.' You still don't know."
+3. "You need a read that's grounded in real market data, not more opinions."
+4. "You need to know which of your 400 LinkedIn connections is actually a warm path to your first client."
+5. "Circle gives you that read in twenty minutes. Then it gives you the steps."
 
 ### The promise in three lines
 
-- Talk for 90 seconds. Get 3 sellable Ideas.
-- Drop in your LinkedIn CSV. Wake up to Matches with Moves drafted.
-- Read the Sunday Letter. Spend the rest of Sunday with your family.
+- Type your thesis. Circle pushes back until it's real, then runs live research.
+- Get a scored read with evidence: demand, competition, your edge, warm reach.
+- Get the journey map: specific steps to your first retained client, with your real network woven in.
 
 ### The hook for paid media
 
-> "Your circle is your business. Circle turns it into Streams."
+> "Is your fractional offer right? Find out in 20 minutes with live market data."
 
 ### The hook for podcasts / interviews
 
-> "The AI doesn't replace the relationship. It replaces the spreadsheet."
+> "The hardest thing about going fractional isn't the work. It's not knowing if your offer is real. We built the tool that answers that question before you waste six months."
 
 ### The hook for LinkedIn organic
 
-> "Fractional execs lose more revenue to forgetting than to losing. We built the system that doesn't let you forget."
+> "Fractional execs lose more revenue to wrong-niche than to bad execution. We built the system that validates the niche before you commit."
 
 ### The numbers anchor (use these in copy)
 
-- **2–7 concurrent engagements** is the modal portfolio operator load.
-- **200+** is the modal active LinkedIn-warm network.
-- **1 Match per week is enough on Free.** 21/week on Operator. Unlimited on Chief of Staff.
-- **90 seconds** to onboarding's first artefact.
-- **$30/mo** to make the spreadsheet die.
+- **20 seconds** for live Perplexity research to run.
+- **7 scored dimensions** in the read: demand, burning need, crowding, your edge, fit, warm reach, credibility.
+- **Free** gives one full validation with no paywall on first value.
+- **$39/mo** for Pro: unlimited re-validation as your thesis evolves.
+- **0** fake precision: every score is a confidence band with evidence.
 
 ---
 
@@ -812,48 +699,38 @@ These are templates. AI sales agents should personalize the bracketed fields aga
 
 ### Cold LinkedIn DM (60–90 words)
 
-> Hey [name] — I noticed you're running [N] fractional engagements right now. I built the thing I wished existed when I was watching fractionals lose warm leads to "I'll follow up after this client call." It's called Circle. You talk to it for 90 seconds, drop in your LinkedIn CSV, and overnight it surfaces the Matches between what you sell and who you know — Move already drafted. $30/mo. Want a 10-minute walkthrough?
+> Hey [name] — I noticed you went fractional [recently / after your time at X]. The hardest part isn't the work, it's knowing your offer is actually right before you're six months in. I built Circle for exactly that. Type your thesis, it runs live market research (~20s), and returns a scored read with evidence: is there real demand, who's competing, what's your edge, which of your contacts is a warm path. Free to try. Worth a look?
 
 ### Cold email (founder-led, 4 short paragraphs)
 
-> Subject: For the part of fractional work that lives in your head
+> Subject: Before you spend another quarter on the wrong niche
 >
 > Hi [name],
 >
-> Most fractional CMOs/CFOs/CTOs I talk to run their pipeline the same way: a stale Google Sheet, a Notes file called `ideas??.md`, and the prayer that someone they met two years ago at a dinner remembers them.
+> Most fractional CMOs/CFOs/CTOs I talk to have been running for 3–6 months on a niche that "seemed right" when they left their last role. They've had a lot of "sounds interesting" conversations and not much else.
 >
-> I built Circle to automate that exact pattern. Talk for 90 seconds at signup; you get 3 sellable Ideas. Drop a LinkedIn CSV; your circle dedupes itself. Overnight, an engine cross-references your Ideas against your people and surfaces tomorrow's two best Matches with the DM already drafted.
+> I built Circle to answer the question they're actually asking: is my offer right? You type your thesis, it runs live market research (~20s), and returns an honest scored read — demand, competition density, your specific edge, which of your contacts is a warm path. Confidence bands with evidence, not generated opinions.
 >
-> $30/mo for the version most fractionals use. Free tier to try it. Worth 10 minutes?
+> Free to try, one full validation. $39/mo for unlimited re-validation as your thesis evolves.
 >
-> [signature]
+> Worth ten minutes?
 
 ### Inbound landing-page hero (40 words)
 
-> Your circle is your business.
-> Circle makes it work.
+> Is your fractional offer right?
+> Find out with live market data, not opinions.
 >
-> Talk for 90 seconds. Drop in your LinkedIn CSV. Wake up to Matches with Moves drafted on the right people for the work you're trying to sell.
+> Type your thesis. Circle runs real research and returns a scored read — demand, competition, your edge, your warm path. Then gives you the steps.
 >
-> [Try it free →] [Book a walkthrough →]
+> [Validate free →]
 
 ### Webinar / event one-liner
 
-> Circle is the relationship-to-revenue engine for portfolio operators. We turn your circle into Streams.
+> Circle is the thesis-validation engine for fractional executives. Live market data, honest scores, specific steps. Free to try.
 
-### Post-onboarding nurture (Day 3 email)
+### Upgrade nudge — Free → Pro
 
-> Subject: Your first Match is waiting
->
-> Hey [name] — overnight the Match Engine ran for the first time. You have [N] Matches waiting on Today, with the LinkedIn DMs already drafted. Want to send the first one? Two taps. We log every edit you make so future drafts sound more like you, not like AI.
-
-### Upgrade nudge — Free → Operator
-
-> You hit your free-tier Match cap this week. Operator gives you 3 Matches a day, full inbox + calendar connect, the Sunday Letter as text, and Circle dedupe. $30/mo. [Upgrade →]
-
-### Upgrade nudge — Operator → Chief of Staff
-
-> You're using Circle like an operator. Want it to scale you? Chief of Staff is $79/mo and adds the 90-second Sunday audio briefing, RFP / job change / market signal feeds, per-category auto-send consent, and a real human concierge to onboard your network alongside you. [Upgrade →]
+> You used your free validation. If your thesis is still evolving — pricing, niche, offer shape — Pro gives you unlimited re-runs as you sharpen, plus real warm reach from your full LinkedIn network. $39/mo. [Upgrade →]
 
 ---
 
@@ -861,47 +738,42 @@ These are templates. AI sales agents should personalize the bracketed fields aga
 
 | Objection | Best response |
 |---|---|
-| **"I already have a CRM."** | "CRMs are built for sales teams of 10+. Circle is built for one operator. The data model is different — Ideas × People → Matches → Moves → Streams, not Companies → Deals → Contacts. The filing burden is zero. You'll keep the CRM if your fractional CMO clients use one; Circle replaces the spreadsheet *you* keep on the side." |
-| **"I don't trust AI to write my outreach."** | "Neither do we. Circle doesn't auto-send anything by default. It drafts; you edit; you send. Every edit is logged via Levenshtein distance, so the AI converges on how *you* talk. After 4 weeks the drafts sound like you. Auto-send is opt-in per category and only available on Chief of Staff." |
-| **"I don't want my contacts in someone else's database."** | "RLS-isolated. Every row is scoped to your `auth.uid()`. Service role never appears in the client. Tokens are encrypted. We don't sell data, we don't train models on your contacts, we have a clean audit log. There's a one-click export and a one-click full deletion in Settings." |
-| **"My LinkedIn graph is mostly noise."** | "That's the whole point. The Match Engine pre-filters on recency × warmth × source quality. Operator-tier Circle dedupe collapses the noise (most lists are 30%+ duplicates). You'll be surprised how much signal there is once it's deduped." |
-| **"$30/mo is fine but I want to try it first."** | "Free tier is built for that. Voice onboarding, 3 Ideas, LinkedIn CSV, 1 Match per week. Most users upgrade in week 2 because 1/week is too few, not because they're unsure of the product." |
-| **"What about iOS / native?"** | "PWA today — installable on iOS and Android. Push notifications work. The browser extension covers LinkedIn capture. Native is on the roadmap if PWA stops being enough." |
-| **"What if I lose the network — privacy / breach risk."** | "We've audited the surface (April 2026, full report in `AUDIT_2026-04-24.md`). RLS is solid, no service-role in the bundle, OAuth state is single-use + TTL'd, Stripe webhook is signature-verified, every LLM call has a timeout, every persisted LLM output is validated. We publish the audit." |
-| **"I already use Sales Navigator."** | "Sales Nav is the *graph*. It's built for SDRs running prospecting motions. Circle sits on top of your existing graph (LinkedIn, calendar, contacts) and runs the operator workflow — Ideas → Matches → Moves → Streams. Different tool, different job." |
-| **"Will it work for my coaching / advisory practice?"** | "Yes — coaches and advisors are the second-largest cohort. Replace the cohort-style 'who should I follow up with' question with the Match Engine. Substitute 'Idea' for 'service offer'." |
-| **"Can my EA see this?"** | "Single-seat today. Team mode and EA add-on are on the roadmap." |
+| **"I've already validated my niche by talking to people."** | "Conversations confirm bias. Circle runs live Perplexity research right now: it reads where buyers complain, sizes demand vs. competition, maps your network's overlap with the ICP. Six conversations won't catch the crowded-market signal it flags in 20 seconds." |
+| **"I don't trust AI to tell me if my offer is real."** | "Neither do we. The read is grounded in Perplexity web results, not LLM training data. Every finding has a source. Low-confidence findings are flagged, not hidden. Fake precision is explicitly refused — scores are confidence bands, not invented numbers." |
+| **"I already have a niche. I'm not a new fractional."** | "Theses evolve. If you've been running the same offer for 12 months and the market shifted — pricing band, ICP, demand signal — Circle catches that. Pro users re-run as the thesis evolves and use market monitoring to stay current." |
+| **"I don't want my contacts in someone else's database."** | "RLS-isolated. Every row is scoped to your `auth.uid()`. Service role never appears in the client. Tokens are encrypted. We do not sell data, we do not train models on your contacts. One-click export and one-click full deletion in Settings." |
+| **"$39/mo is fine but I want to try it first."** | "Free tier is built for that: one full validation, the complete read and steps, build your circle. No paywall on first value. Most people understand the product fully from one free run." |
+| **"What if my read is wrong — what's the fallback?"** | "We show confidence bands and flag low-confidence findings. A thin thesis input gets a pushed-back dialogue before research runs. The app is honest about what it can and can't confirm — you always know the quality of the read." |
+| **"What about iOS / native?"** | "PWA today — installable on iOS and Android. The iOS Shortcut handles screenshot-to-contact capture outside the app. Native is on the roadmap." |
+| **"I already use Sales Navigator."** | "Sales Nav is the graph. Circle is the thesis tool on top of your slice of that graph: is your offer right, which of your contacts is a warm path, what specific steps closes the first client. Different job." |
 
 ---
 
 ## 27. Use cases by ICP segment
 
-### Fractional CMO (4 retainers, $400K ARR target)
+### Fractional CMO (90 days in, unsure of the niche)
 
-- **Onboard:** Voice-records "I do brand + GTM for Series A B2B SaaS, $20K/mo retainer, 90-day brand-to-pipeline workshops at $50K, and one keynote a quarter."
-- **Ideas extracted:** (1) Fractional CMO retainer, ICP = Series A B2B SaaS, $20K/mo; (2) Brand-to-pipeline workshop, $50K, 90 days; (3) Keynote / conference, custom pricing.
-- **First Matches surfaced:** mostly retainer-fit founders + workshop-fit Heads of Marketing + speaker-fit conference organizers.
-- **Wins:** A workshop sale she wouldn't have followed up on lands within 3 weeks.
+- **Problem:** Told people she does "B2B SaaS marketing." Five conversations, no retainer.
+- **What Circle does:** Guided dialogue sharpens to "GTM for Series A B2B SaaS, demand-gen focus." Research flags that the market is crowded but identifies the specific underserved segment (late-stage Series A without an in-house demand-gen function). Warm reach: 12 named contacts who fit. Journey map: steps including the specific warm outreach to contact #3.
+- **Win:** She knows in 20 minutes what six conversations didn't tell her. Pivots positioning. Closes in week 4.
 
-### Fractional CFO (3 retainers, scaling to 5)
+### Fractional CFO (scaling to a second niche)
 
-- **Onboard:** "Fractional CFO for venture-backed startups Series A to C, $15K/mo, plus due diligence projects $25K flat, and quarterly board prep packages."
-- **Wins:** Job-change signals (founder leaves company, becomes CEO somewhere else) trigger a Match for the retainer Idea.
+- **Problem:** Running three retainers in fintech, wondering if he can add healthcare without diluting the brand.
+- **What Circle does:** Runs thesis on the healthcare niche. Competition read: more crowded than expected. Warm reach: only 4 contacts in the ICP. Journey map flags that the credibility score is low for a new vertical without a case study.
+- **Win:** Decides not to expand the niche yet. Focuses the next 90 days on deepening fintech and building one healthcare credential.
 
-### Independent strategy advisor (Big-3 alum)
+### Independent strategy advisor (Big-3 alum, going solo)
 
-- **Onboard:** "Strategy sprints for late-stage founders, $40K for 6 weeks. Board advisory at $5K/mo. Talks at AI conferences."
-- **Wins:** Cross-user market intelligence (Chief of Staff) tells her sprint pricing in her ICP cluster is converting at higher rates this quarter — she runs a price test.
+- **Problem:** "Strategy for late-stage founders" is too broad. Not sure whether to lead with sprints, board advisory, or talks.
+- **What Circle does:** Runs three thesis iterations (one per offer). Board advisory reads as the highest-demand, least-crowded option for her background. Warm reach is highest for that offer. Journey map prioritizes two specific warm conversations.
+- **Win:** Leads with board advisory. First client closes in six weeks.
 
-### Author / keynote speaker / workshop facilitator
+### Emerging fractional (year 1)
 
-- **Onboard:** "Workshops on [topic] at $30K, keynotes at $20K, three-month executive coaching cohort at $15K."
-- **Wins:** Audience-engagement signals (LinkedIn comments on a post, calendar meeting attendance) surface as Matches against the cohort Idea.
-
-### Year-1 emerging fractional
-
-- **Onboard:** "Just left [company] as VP of [function]. Going fractional. Best fit is Series B+ B2B in fintech."
-- **Wins:** The Sunday Letter forces the BD habit that didn't exist in W2 life. The structure replaces the panic.
+- **Problem:** Left a VP role six months ago. Has had conversations but nothing closed. Doesn't know if the offer is right or the positioning is wrong.
+- **What Circle does:** The thesis run gives her a scored read for the first time — not opinions, not gut. Crowding score is high: the market is real but she needs a sharper edge. Add a business she admires to feed that edge. Re-run with the sharper thesis. Read improves.
+- **Win:** Clarity. Stops second-guessing the niche and works the steps.
 
 ---
 
@@ -909,12 +781,12 @@ These are templates. AI sales agents should personalize the bracketed fields aga
 
 For prospects who need to see *how* the AI works before they trust it:
 
-1. **The Match Engine prompt is auditable** — engineering can show the prompt + the rationale string in `match.rationale` for any Match. No black box.
-2. **Edit-distance logging** — `move_edits.distance` (Levenshtein) is the substrate for the personalization model. We don't claim the AI sounds like you on day one; we show the data we use to converge.
-3. **Sunday Letter generation source** — every letter has a `generation_source` column that says `llm` or `rule_based`. We monitor what fraction is which over time.
-4. **Open audit** — full audit report in `AUDIT_2026-04-24.md`. Every finding tracked, most resolved in PR #46.
-5. **No data sale, no model training on user contacts** — stated in the privacy policy and enforced by the backend (no third-party export pipelines).
-6. **Output validation** — every persisted LLM output (Sunday Letter, drafts, parsed contacts) goes through Zod validation + length caps. Hallucinated PII does not become durable content.
+1. **Live research, auditable.** Every finding in the read has a source behind it (Perplexity web results). The confidence marker on each finding says how sure we are.
+2. **Honest about thin inputs.** The sufficiency judge pushes back on vague theses before research runs. "Marketing services" is explicitly refused until it has a who, a what, and a why-you.
+3. **No fake precision.** Scores are confidence bands (strong / moderate / weak), not percentages. Evidence is shown in the read, collapsible to keep the screen clean.
+4. **Open about what it can't confirm.** Low-confidence findings are flagged with a marker, not dressed up as certain.
+5. **Your circle, your read.** The warm-reach score names your actual contacts, not sample data. A user with 5 contacts in their circle gets a different (lower) warm reach score than one with 200.
+6. **Output validation.** Every persisted LLM output (scorecard, parsed contacts) goes through schema validation before write. Hallucinated PII does not become durable content.
 
 ---
 
@@ -925,30 +797,28 @@ For prospects who need to see *how* the AI works before they trust it:
 | **Product name** | Circle |
 | **Parent brand** | Fractionl |
 | **Full name** | Circle by Fractionl |
-| **Primary tagline** | "Your circle is your business. Circle turns it into Streams." |
-| **Alternate tagline** | "The relationship-to-revenue engine for portfolio operators." |
+| **Primary tagline** | "Is your fractional offer right? Find out with live market data." |
+| **Alternate tagline** | "The thesis-validation engine for fractional executives." |
 | **Voice** | Peer-to-peer (not corporate). Action-oriented. Quietly confident. Never patronizing. Never cute. |
-| **Tone in product copy** | Direct sentences. Short paragraphs. The product talks like a thoughtful colleague who respects your time. Examples in `TodayScreen.tsx`: "Overnight I looked for Matches across your Ideas and Circle." / "Nothing waiting for you yet." / "Ready when you are." |
+| **Tone in product copy** | Direct sentences. Short paragraphs. The product talks like a thoughtful colleague who respects your time. Plain language. No jargon. No em dashes in product copy. |
 | **What we do not say** | "Revolutionize." "Game-changing." "Power up your..." "Unleash." Anything ending in "-ify." |
 
 ### Visual language
 
 | Token | Value | Usage |
 |---|---|---|
-| **Primary** | `#994CCC` / HSL 287 45% 55% | Key actions, brand accents |
+| **Ember / gold** | `#FF8C00` / `#FFB347` range | Brand mark, accent, energy gauge |
 | **Background** | Near-white (light) / Deep charcoal (dark) | Page backgrounds |
 | **Cards** | White (light) / Elevated dark (dark) | Containers |
-| **Display typography** | Source Serif 4 | Headlines, narrative copy |
-| **Body typography** | Satoshi | Body, labels, UI |
-| **Animation** | Spring easing, 250–400ms | Page transitions, list staggers |
+| **Body typography** | Satoshi / system sans | Body, labels, UI |
+| **Animation** | Spring easing, 250–400ms; ember breathes gently | Page transitions, brand mark |
 
 ### Interaction patterns
 
-- Bottom-sheet drawers for mobile forms (not modals).
-- Stagger animations for list rendering.
-- Skeleton loaders on async content (where adopted; full coverage is an open audit item).
-- Toast confirmations for action completion.
-- Real-time subscriptions for live updates on subscription tier and concierge state.
+- Mobile is a fixed no-scroll frame (`useAppFrame`): one focused thing per screen, the primary action pinned and always visible.
+- Every wait is branded: boot splash is an instant CSS ember; in-app loader is a charging ember; research step is "watch it think" with a charge ring.
+- Living and breathing, restrained: each screen's content rises in on change, the brand ember gently breathes. All motion honors `prefers-reduced-motion`.
+- Desktop at >=900px: surfaces center into a console; the Home goes to a two-region layout (orb hero + instruments).
 
 ---
 
@@ -960,33 +830,31 @@ For prospects who need to see *how* the AI works before they trust it:
 npm install
 cp .env.example .env
 # fill in VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, and the
-# VITE_STRIPE_PRICE_* IDs you want to test against
-npm run dev      # vite dev server on localhost:8080 (or whatever vite picks)
-npm run build    # production build
+# VITE_STRIPE_PRO_MONTHLY_PRICE_ID / VITE_STRIPE_EXEC_MONTHLY_PRICE_ID you want to test against
+npm run dev      # vite dev server
+npm run build    # production build (the CI gate)
 npm run preview  # preview production build
 npm run lint     # eslint
 npm run test     # vitest
 ```
 
-**Edge function secrets** are set with `supabase secrets set <KEY>=<value>` against the linked project, or via the Supabase dashboard. See `.env.example` for the canonical list of required and optional secrets.
+**Edge function secrets** are set with `supabase secrets set <KEY>=<value>` against the linked project, or via the Supabase dashboard. The required secrets include: `PERPLEXITY_API_KEY`, `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `LOVABLE_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
 
 **Type generation** (after schema changes):
 ```bash
 supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integrations/supabase/types.ts
 ```
 
-**Migrations.** Per the audit-deploy memory: do not run `supabase db push` blindly — there's known drift on older entries. Apply targeted migrations via the Management API and record them in `supabase_migrations.schema_migrations` manually. Newer migrations from `20260418000001` onward are clean.
+**Migrations.** Do not run `supabase db push` blindly — there is known drift on older entries. Apply targeted migrations via the Management API and record them in `supabase_migrations.schema_migrations` manually. Newer migrations from `20260418000001` onward are clean.
 
 ---
 
 ## 31. Deployment
 
-- **Frontend:** Vercel auto-deploys `main`. Preview URLs on every PR.
-- **Edge functions:** `supabase functions deploy --use-api --jobs 4` from a clean local checkout.
-- **Migrations:** Management API for targeted application; record manually if needed.
+- **Frontend:** Vercel auto-deploys `main`. Preview URLs on every PR. Branch → PR → green `audit` CI → squash-merge → sync. Never push to `main` directly.
+- **Edge functions:** `SUPABASE_ACCESS_TOKEN=<sbp> npx supabase functions deploy <name> --project-ref ksyuwacuigshvcyptlhe`.
+- **Migrations:** Management API for targeted application.
 - **Stripe:** `scripts/setup-stripe-products.mjs` provisions products + prices.
-- **Concierge ops:** `scripts/concierge-inbox.mjs` for the queue.
-- **Extension:** `node scripts/build-extension-icons.mjs` regenerates icons; load unpacked into Chrome / Arc until Web Store submission.
 
 ---
 
@@ -997,15 +865,15 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2024 Q1–Q3** | Initial CRM-shaped product: clients, opportunities, activity logs, Google Sheets integration. |
 | **2024 Q4** | Design system overhaul → purple brand identity. |
 | **2025 Q1** | Rebrand to Circle by Fractionl. Mobile-first PWA. Voice logging + AI parsing. Talent black book. Onboarding wizard. |
-| **2026 Q1** | The 90-day plan (Phases 1–11) lands the redesigned product end-to-end: Phase-1 ontology, Match Engine, Sunday Letter, Concierge, multi-source ingest, browser extension, screenshot capture, edit-distance logging, multi-CRM importer. |
+| **2026 Q1** | The 90-day plan lands the redesigned Circle CRM end-to-end: Phase-1 ontology, Match Engine, Sunday Letter, Concierge, multi-source ingest, browser extension, screenshot capture, edit-distance logging, multi-CRM importer. |
 | **2026-04-22 (PR #45)** | Legacy CRM tables pruned from active surface. |
-| **2026-04-22** | Phase B — social handles promoted to first-class `circle_person` column. |
 | **2026-04-24** | Full app audit (`AUDIT_2026-04-24.md`): 4 critical, 7 high, 10 medium, 6 low findings. |
-| **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
-| **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
-
-**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
+| **2026-04-26 (PR #46)** | Audit remediation — 13 of 14 findings shipped. TypeScript strict mode on. Durable rate limits. LLM timeouts on every call site. |
+| **2026-05-30** | Phase 2 security hardening on branch `upgrade/circle/phase-2`. |
+| **2026-06-03 (PR #86)** | Kill-sweep: retire the legacy Circle CRM (Today/Streams/Circle/Ask tabs, Match Engine, Sunday Letter, Concierge, FirstVoice onboarding). Thesis-validation engine is the sole product. |
+| **2026-06-17 to 2026-06-28** | Thesis tool rebuilt: command-center Home, guided gated dialogue, no-scroll mobile frame, ember design system, Circle tab re-introduced as lightweight contact management alongside Deep dive. |
+| **2026-06-28** | Documentation reconciliation: DOCS.md, AGENT_BRIEFING.md, and supporting docs updated to reflect the thesis product. |
 
 ---
 
-*This document is the source of truth. If product behavior diverges from what's described here, fix the document or fix the product. Last verified: 2026-05-30.*
+*This document is the source of truth. If product behavior diverges from what is described here, fix the document or fix the product. Last verified: 2026-06-28.*
