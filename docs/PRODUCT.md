@@ -141,6 +141,20 @@ Live at `circle.fractionl.ai` (signed in lands you straight on it).
   role-grained, not niche-grained; the niche depth stays in the Perplexity read. Robust:
   any Pulse call can fail and Home degrades gracefully.
 - `_shared/llm.ts` - provider fallback (OpenAI -> Lovable/Gemini gateway -> Anthropic).
+- `compute-warmth` - nightly service-role recompute of every `circle_person.warmth`
+  via the set-based SQL fn `recompute_circle_warmth()` (recency decay + response
+  rate + recent-signal boost). Runs after the contact/calendar sync so warmth is
+  current, and "closes the loop" lightly: a fresh interaction logged by sync
+  resets recency and lifts warmth, no "did you reach out?" prompt.
+- `warm-digest` / `cron-warm-digest` - the "keep your circle warm" reminder.
+  `_shared/warmDigestCore.ts` picks the few warm relationships going quiet and
+  drafts a grounded, in-the-user's-voice touch for each (reuses
+  `profileContext` + `aiPersonality` + `llm`). The cron delivers it INTO the
+  tools senior leaders already use: a Resend email with one-tap prefilled
+  `mailto:` drafts, an `.ics` attachment that writes a recurring "warm reach"
+  calendar hold (no calendar-write scope), and a Web Push ping. Opt-out via
+  `user_preferences.warm_digest`. `warm-digest` is the user-JWT preview of the
+  same cohort for in-app surfacing.
 
 **Data** (Supabase project `ksyuwacuigshvcyptlhe`): `thesis_runs` (user-owned, RLS, with
 `step_progress` jsonb for the journey loop), `thesis_inspiration` (user-owned, the admired
