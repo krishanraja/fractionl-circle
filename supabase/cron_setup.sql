@@ -36,6 +36,8 @@ select cron.unschedule('cron-match-engine')     where exists (select 1 from cron
 select cron.unschedule('cron-sunday-letter')    where exists (select 1 from cron.job where jobname = 'cron-sunday-letter');
 select cron.unschedule('cron-sync-google')      where exists (select 1 from cron.job where jobname = 'cron-sync-google');
 select cron.unschedule('cron-sync-microsoft')   where exists (select 1 from cron.job where jobname = 'cron-sync-microsoft');
+select cron.unschedule('compute-warmth')        where exists (select 1 from cron.job where jobname = 'compute-warmth');
+select cron.unschedule('cron-warm-digest')      where exists (select 1 from cron.job where jobname = 'cron-warm-digest');
 
 -- ---------------------------------------------------------------------------
 -- Phase 6: overnight Match Engine. Runs daily at 08:00 UTC (~midnight PT /
@@ -117,9 +119,51 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Sanity check. Expected: four rows.
+-- Warm network: nightly warmth recompute. 07:30 UTC, i.e. AFTER the Google
+-- (06:00) and Microsoft (07:00) syncs refresh last_interaction_at, so the
+-- warmth the digest reads is current.
 -- ---------------------------------------------------------------------------
--- select jobname, schedule, active from cron.job where jobname like 'cron-%';
+select cron.schedule(
+  'compute-warmth',
+  '30 7 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/compute-warmth',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 600000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Warm network: weekly "keep your circle warm" digest. Mondays at 13:00 UTC
+-- (~6am PT / ~9am ET) — a start-of-week nudge that lands in the inbox and on
+-- the calendar where senior leaders actually plan.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-warm-digest',
+  '0 13 * * 1',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-warm-digest',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Sanity check. Expected: six rows.
+-- ---------------------------------------------------------------------------
+-- select jobname, schedule, active from cron.job where jobname like 'cron-%' or jobname = 'compute-warmth';
 
 -- ---------------------------------------------------------------------------
 -- Inspect recent runs (status, return_message).

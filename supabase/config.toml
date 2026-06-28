@@ -55,3 +55,15 @@ verify_jwt = true
 
 [functions.emit-lifecycle]
 verify_jwt = true
+
+# On-demand warm-digest preview (user JWT).
+[functions.warm-digest]
+verify_jwt = true
+
+# Nightly warmth recompute (service-role, x-cron-secret).
+[functions.compute-warmth]
+verify_jwt = false
+
+# Weekly warm-reach digest delivery (service-role, x-cron-secret).
+[functions.cron-warm-digest]
+verify_jwt = false
