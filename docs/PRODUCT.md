@@ -186,3 +186,8 @@ secrets); `STRIPE_SECRET_KEY` + the price-id Vercel envs for checkout.
   real calendar holds; add event-triggered (job-change/fundraise) nudges and a
   Slack surface. A small in-app settings toggle for `user_preferences.warm_digest`
   is the natural next UI step (the flag is respected server-side today; default on).
+  Track B native calendar write is already coded behind two off-by-default flags
+  (`GOOGLE_CALENDAR_WRITE_ENABLED`, `WARM_DIGEST_NATIVE_CALENDAR`) with `.ics`
+  fallback; enabling it needs the `calendar.events` sensitive-scope verification
+  (no CASA). See `docs/google-oauth-verification.md`. Gmail native drafts
+  (`gmail.compose`, restricted/CASA ~$15k) are deliberately deferred.
