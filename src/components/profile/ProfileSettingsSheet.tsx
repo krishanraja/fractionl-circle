@@ -242,7 +242,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     try {
       const ok = await subscribePush();
       if (ok) {
-        toast.success("You're set — we'll ping you when moves are ready.");
+        toast.success("You're set — we'll ping you when something's waiting.");
       } else {
         toast.error('Allow notifications in your browser to enable this.');
       }
@@ -572,8 +572,8 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           {showPushOptIn && (
             <SettingRow
-              label="Notify me when moves are ready"
-              description="Get a push the moment Circle drafts your overnight Moves"
+              label="Notify me when something's waiting"
+              description="Get a push when people go quiet or your plan is worth another look"
             >
               {pushPermission === 'granted' ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground-muted">
@@ -598,7 +598,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Daily digest"
-            description="Saved for morning summary emails (when enabled on our side)"
+            description="A short morning summary email, when available"
           >
             <Switch
               checked={preferences?.daily_digest ?? true}
@@ -608,7 +608,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Weekly summary"
-            description="Controls automated Sunday Letter generation for your account"
+            description="Your weekly recap email, when available"
           >
             <Switch
               checked={preferences?.weekly_summary ?? true}
@@ -618,7 +618,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Goal reminders"
-            description="Saved for goal nudges (when reminder emails are enabled)"
+            description="Surfaces what's waiting for you — in the app and by email"
           >
             <Switch
               checked={preferences?.goal_reminders ?? true}
@@ -651,7 +651,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Proactive suggestions"
-            description="When on, Today nudges you to surface Matches (saved for smarter automation later)"
+            description="When on, we surface your most useful next move"
           >
             <Switch
               checked={preferences?.ai_proactive_suggestions ?? true}

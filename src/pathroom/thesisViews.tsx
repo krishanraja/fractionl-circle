@@ -35,7 +35,7 @@ export const thesisCss = `
 .thx { background:${C.bg}; color:${C.hi}; font-family:${FONT}; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; }
 /* Standalone, normally-scrolling full-page surface (preview fixtures, and any
    future non-framed page): fill the viewport so the themed background covers it.
-   Locked/​framed surfaces do NOT use this — they size via .app-frame/.thxframe. */
+   Locked/framed surfaces do NOT use this — they size via .app-frame/.thxframe. */
 .thx-page { min-height:100dvh; }
 .thx .wrap { max-width:520px; margin:0 auto; padding:22px 18px 80px; }
 .thx .ovl { font-family:${MONO}; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:${C.lo}; }
