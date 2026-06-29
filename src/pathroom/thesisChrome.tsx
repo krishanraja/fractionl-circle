@@ -20,7 +20,7 @@ export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: F
   return (
     <div style={{ position: 'relative' }}>
       <div className="topnav">
-        <button className="emberbtn" onClick={() => setOpen((o) => !o)} aria-label="What's charging your read">
+        <button className="emberbtn" onClick={() => setOpen((o) => !o)} aria-label="What's powering your plan">
           <img src="/brand/fractionl-icon.png" alt="" className="ember" style={emberStyle(fuel)} />
         </button>
         {onHome
@@ -31,7 +31,7 @@ export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: F
       </div>
       {open ? (
         <div className="fuelpop">
-          <div className="navhint">What is charging your read</div>
+          <div className="navhint">What's powering your plan</div>
           <div style={{ marginTop: 8 }}>
             {fuels.map((fl) => (
               <div key={fl.k} className="fuelrow" style={{ color: fl.on ? C.hi : C.lo }}>
@@ -49,7 +49,7 @@ export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: F
 
 // The brand's signature loading moment: a charging ember (glow pulse + a sweeping accent
 // arc + the breathing mark). Replaces bare "loading..." everywhere. Renders inside .thx.
-export function Loader({ label = 'charging your read' }: { label?: string }) {
+export function Loader({ label = 'reading the market' }: { label?: string }) {
   return (
     <div className="ldr">
       <div className="ldrorb">

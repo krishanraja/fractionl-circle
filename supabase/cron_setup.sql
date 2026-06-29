@@ -32,52 +32,10 @@ create extension if not exists pg_net;
 -- ---------------------------------------------------------------------------
 -- Remove any prior versions of these jobs before re-scheduling.
 -- ---------------------------------------------------------------------------
-select cron.unschedule('cron-match-engine')     where exists (select 1 from cron.job where jobname = 'cron-match-engine');
-select cron.unschedule('cron-sunday-letter')    where exists (select 1 from cron.job where jobname = 'cron-sunday-letter');
 select cron.unschedule('cron-sync-google')      where exists (select 1 from cron.job where jobname = 'cron-sync-google');
 select cron.unschedule('cron-sync-microsoft')   where exists (select 1 from cron.job where jobname = 'cron-sync-microsoft');
 select cron.unschedule('compute-warmth')        where exists (select 1 from cron.job where jobname = 'compute-warmth');
 select cron.unschedule('cron-warm-digest')      where exists (select 1 from cron.job where jobname = 'cron-warm-digest');
-
--- ---------------------------------------------------------------------------
--- Phase 6: overnight Match Engine. Runs daily at 08:00 UTC (~midnight PT /
--- ~03:00 ET / 08:00 GMT). Adjust the cron expression to taste.
--- ---------------------------------------------------------------------------
-select cron.schedule(
-  'cron-match-engine',
-  '0 8 * * *',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-match-engine',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 600000
-  );
-  $$
-);
-
--- ---------------------------------------------------------------------------
--- Phase 8b: weekly Sunday Letter. Runs every Sunday at 19:00 UTC. That's the
--- "smart friend who paid attention" artifact.
--- ---------------------------------------------------------------------------
-select cron.schedule(
-  'cron-sunday-letter',
-  '0 19 * * 0',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-sunday-letter',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 900000
-  );
-  $$
-);
 
 -- ---------------------------------------------------------------------------
 -- Phase 5c: nightly Google contacts + calendar re-sync. 06:00 UTC daily.
@@ -161,7 +119,7 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Sanity check. Expected: six rows.
+-- Sanity check. Expected: four rows.
 -- ---------------------------------------------------------------------------
 -- select jobname, schedule, active from cron.job where jobname like 'cron-%' or jobname = 'compute-warmth';
 

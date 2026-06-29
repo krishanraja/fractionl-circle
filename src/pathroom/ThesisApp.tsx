@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getPriceId } from '@/lib/tiers';
 import { C } from './tokens';
+import { COPY } from './copy';
 import { thesisCss, ThinkingView, ReadView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
 import { chromeCss, EmberNav, Loader, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
@@ -164,16 +165,16 @@ export default function ThesisApp() {
   if (phase === 'loading') return centered(<Loader />);
   if (phase === 'signin') return centered(
     <div style={{ textAlign: 'center', maxWidth: 320 }}>
-      <div className="h">Your strategy deep dive.</div>
-      <div className="sub" style={{ marginTop: 10 }}>Sign in to pressure-test your direction against the real market and get your next moves.</div>
+      <div className="h">{COPY.signinTitle}</div>
+      <div className="sub" style={{ marginTop: 10 }}>{COPY.signinSub}</div>
       <a href="/auth" className="cta" style={{ marginTop: 18, textDecoration: 'none', justifyContent: 'center', gap: 8 }}><span>Sign in</span><span className="mono">→</span></a>
     </div>
   );
   if (phase === 'gate') return centered(
     <div style={{ maxWidth: 360 }}>
       <div className="ovl">Pro</div>
-      <div className="h" style={{ marginTop: 10 }}>Your read is free — going deeper is Pro.</div>
-      <div className="sub">You've seen your read. Pro opens the rest: sharpen and re-run as your thesis evolves, your living journey map, your network's warm reach, and ongoing market monitoring. $39 a month.</div>
+      <div className="h" style={{ marginTop: 10 }}>Your plan is free — going deeper is Pro.</div>
+      <div className="sub">You've seen where you stand. Pro opens the rest: make your plan stronger and re-read as it evolves, your living path, your network's warm reach, and ongoing market monitoring. $39 a month.</div>
       <button className="cta" style={{ marginTop: 18 }} onClick={async () => { const pid = getPriceId('pro'); if (pid) await openCheckout(pid); }}><span>Upgrade to Pro</span><span className="mono">→</span></button>
       <button className="foothint" style={{ marginTop: 14 }} onClick={() => setPhase(data ? 'read' : 'capture')}>back</button>
     </div>
@@ -234,7 +235,7 @@ export default function ThesisApp() {
       />,
       <>
         <button className="cta" onClick={() => go('journey')}><span>Continue your path</span><span className="mono">→</span></button>
-        <button className="foothint" onClick={() => go('sharpen')}>+ deepen your thesis · add a signal</button>
+        <button className="foothint" onClick={() => go('sharpen')}>+ make your plan stronger · add a signal</button>
       </>,
       undefined, true,
     );
@@ -244,7 +245,7 @@ export default function ThesisApp() {
     const steps: JourneyT[] = (done && data?.journey?.length) ? data.journey : CANONICAL_JOURNEY;
     return frame(
       <ThinkingView steps={steps} shown={shown} done={done} />,
-      done ? <button className="cta" onClick={() => setPhase('read')}><span>See your read</span><span className="mono">→</span></button> : null,
+      done ? <button className="cta" onClick={() => setPhase('read')}><span>See where you stand</span><span className="mono">→</span></button> : null,
     );
   }
 
@@ -256,14 +257,14 @@ export default function ThesisApp() {
           <span className="mono">→</span>
         </button>
         <button className="foothint" onClick={() => setPhase('gate')}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lock size={11} strokeWidth={2.5} /> sharpen &amp; go deeper with Pro</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Lock size={11} strokeWidth={2.5} /> make it stronger &amp; go deeper with Pro</span>
         </button>
       </>
     ) : (
       <>
         <button className="cta" onClick={() => setPhase('journey')}><span>See your path</span><span className="mono">→</span></button>
         <button className="foothint" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => setPhase('sharpen')}>
-          {busyRerun ? 'reading...' : unrunAnswers > 0 ? `re-run to lock in your gains (+${sharp.provisional})` : 'add fuel to sharpen this read first'}
+          {busyRerun ? 'reading...' : unrunAnswers > 0 ? `see how it lands again to lock in your gains (+${sharp.provisional})` : 'add a bit more to make it stronger first'}
         </button>
       </>
     );
@@ -290,7 +291,7 @@ export default function ThesisApp() {
       />,
       <>
         <button className="cta" onClick={() => go('journey')}><span>See your path</span><span className="mono">→</span></button>
-        <button className="foothint" disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 're-run the read with your new fuel'}</button>
+        <button className="foothint" disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 'see how it lands now'}</button>
       </>,
       'tap the mark',
     );
@@ -301,9 +302,9 @@ export default function ThesisApp() {
     const steps = data.steps || [];
     let footer: React.ReactNode;
     if (js.weak) {
-      footer = <button className="cta" onClick={startAnother}><span>Sharpen your thesis</span><span className="mono">→</span></button>;
+      footer = <button className="cta" onClick={startAnother}><span>Make your plan stronger</span><span className="mono">→</span></button>;
     } else if (js.allDone) {
-      footer = <button className="foothint" onClick={startAnother}>+ validate another thesis</button>;
+      footer = <button className="foothint" onClick={startAnother}>+ start another plan</button>;
     } else {
       // Action-first: the primary button DOES the current move, it does not just
       // mark it complete. Marking done is the secondary affordance.

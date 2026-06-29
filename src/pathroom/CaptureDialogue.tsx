@@ -52,7 +52,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
   async function submitOffer(text: string) {
     const t = text.trim();
     if (!t || busy) return;
-    push([{ role: 'you', text: t, kicker: round > 0 ? 'your answer' : 'your thesis' }]);
+    push([{ role: 'you', text: t, kicker: round > 0 ? 'your answer' : 'your idea' }]);
     setInput(''); setBusy(true);
     let r: Verdict;
     try { r = await onJudge(t, round); } finally { setBusy(false); }
@@ -129,7 +129,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             <textarea style={{ marginTop: 16 }} value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
               placeholder={step === 'discover' ? 'e.g. building and running marketing teams at early-stage B2B software' : 'e.g. Fractional CMO for seed B2B SaaS founders who hired too senior too early'} />
             <button className="cta" style={{ marginTop: 12 }} disabled={busy || !input.trim()} onClick={() => (step === 'offer' ? submitOffer(input) : submitDiscover(input))}>
-              <span>{busy ? 'checking...' : step === 'discover' ? 'That is it' : round > 0 ? 'Try again' : 'Check my thesis'}</span><span className="mono">→</span>
+              <span>{busy ? 'checking...' : step === 'discover' ? 'That is it' : round > 0 ? 'Try again' : 'Check this'}</span><span className="mono">→</span>
             </button>
           </>
         ) : null}
@@ -148,7 +148,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             </div>
             <div className="twobtn">
               <button className="cta" onClick={() => accept(pending, 'Good. That gives us something real to test.')}><span>That is it</span><span className="mono">→</span></button>
-              <button className="chip" style={{ justifyContent: 'center', flex: '0 0 auto' }} onClick={() => { setStep('offer'); setInput(pending); setHead('Edit your thesis.'); setSub('Tweak it until it reads true.'); }}>Let me edit</button>
+              <button className="chip" style={{ justifyContent: 'center', flex: '0 0 auto' }} onClick={() => { setStep('offer'); setInput(pending); setHead('Edit your idea.'); setSub('Tweak it until it reads true.'); }}>Let me edit</button>
             </div>
           </>
         ) : null}
@@ -166,11 +166,11 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             <div className="h" style={{ marginTop: 12 }}>{head}</div>
             <div className="sub">{sub}</div>
             <div className="panel" style={{ marginTop: 16 }}>
-              <div className="grp">Your thesis</div>
+              <div className="grp">Your idea</div>
               <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.4 }}>{thesis}</div>
             </div>
             <button className="cta" style={{ marginTop: 18 }} onClick={() => onComplete(thesis, bgFinal)}>
-              <span>{thin ? 'Run it anyway' : 'Run the deep dive'}</span><span className="mono">→</span>
+              <span>{thin ? 'Run it anyway' : 'See how it lands'}</span><span className="mono">→</span>
             </button>
           </>
         ) : null}

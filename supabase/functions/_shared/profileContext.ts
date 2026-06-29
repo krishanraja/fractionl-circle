@@ -1,5 +1,5 @@
-// Shared "who is this user" envelope. Every AI surface (extract-ideas,
-// run-match-engine, generate-sunday-letter) loads this and injects it into the
+// Shared "who is this user" envelope. AI surfaces (next-question,
+// rank-inner-circle, the warm digest) load this and inject it into the
 // system prompt so output is anchored to the specific fractional operator —
 // never generic. Wave 1 reads only columns that already exist on user_profiles
 // (no migration). Wave 2 will add motivation/journey/offer-maturity behind a

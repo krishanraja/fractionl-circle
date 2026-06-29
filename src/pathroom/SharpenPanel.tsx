@@ -61,20 +61,20 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
         <div className="edgerow">
           <div className="navhint" style={{ color: C.accent }}>Your edge, sharpened</div>
           {edges.map((e, i) => <div key={i} style={{ fontSize: 13, color: C.hi, marginTop: 6, lineHeight: 1.4 }}>You want {e.why.toLowerCase()} like {e.name}, aimed at your buyers.</div>)}
-          <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 9 }}>Re-run the read to fold this into your scorecard.</div>
+          <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 9 }}>See how it lands again to fold this into your plan.</div>
         </div>
       ) : null}
 
       {admire === 'idle' ? (
         <>
-          <div className="ovl" style={{ marginTop: 22 }}>Sharpen your read</div>
+          <div className="ovl" style={{ marginTop: 22 }}>Make it stronger</div>
 
           <button className="fuelcard" onClick={() => admireInput.current?.click()}>
             <span className="fuelicon">◎</span>
             <span style={{ flex: 1 }}>
               <span className="fueltitle2">Screenshot a business you admire</span>
               <div className="fuelfor">A LinkedIn, an Instagram, or a site doing something you would love to build. We read what they do, then ask why, to sharpen what makes you different.</div>
-              <span className="fueltag thesis">feeds your thesis</span>
+              <span className="fueltag thesis">feeds your edge</span>
             </span>
           </button>
           <input ref={admireInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAdmireFile(f); }} />
@@ -95,7 +95,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
               <span style={{ flex: 1 }}>
                 <span className="fueltitle2">Connect your LinkedIn</span>
                 <div className="fuelfor">Your background, verified. Sharpens whether you can win it, not just whether it is winnable.</div>
-                {linkedinDone ? <span className="donechk">✓ linked, re-run to use it</span> : <span className="fueltag ability">feeds fit + credibility</span>}
+                {linkedinDone ? <span className="donechk">✓ linked — see how it lands to use it</span> : <span className="fueltag ability">feeds fit + credibility</span>}
               </span>
             </button>
           ) : (
@@ -118,7 +118,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
         <div className="extracted">
           <div className="navhint warn">Could not use that one</div>
           <div style={{ fontSize: 14, color: C.hi, marginTop: 8, lineHeight: 1.5 }}>{res?.reject}</div>
-          <button className="backlink" onClick={reset}>↺ back to sharpen</button>
+          <button className="backlink" onClick={reset}>↺ back</button>
         </div>
       ) : null}
 
@@ -149,8 +149,8 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
       {admire === 'done' ? (
         <div className="extracted">
           <div className="navhint" style={{ color: C.good }}>✓ Folded into your edge</div>
-          <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.5 }}>Got it. The mark just brightened. Add more fuel, or re-run the read from below to fold it into your scorecard.</div>
-          <button className="cta" style={{ marginTop: 14 }} onClick={reset}><span>Add more fuel</span><span className="mono">→</span></button>
+          <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.5 }}>Got it. The mark just brightened. Add more, or see how it lands again from below to fold it into your plan.</div>
+          <button className="cta" style={{ marginTop: 14 }} onClick={reset}><span>Add more</span><span className="mono">→</span></button>
         </div>
       ) : null}
     </div>

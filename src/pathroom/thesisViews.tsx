@@ -126,7 +126,7 @@ export function CaptureView({ onSubmit, busy, onAddPeople }: { onSubmit: (thesis
       ) : null}
       <div className="mono" style={{ fontSize: 10.5, color: C.lo, margin: '14px 0' }}>We will be upfront about anything we are not sure of.</div>
       <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim(), background.trim())}>
-        <span>{busy ? 'starting...' : 'Run the deep dive'}</span><span className="mono">→</span>
+        <span>{busy ? 'starting...' : 'See how it lands'}</span><span className="mono">→</span>
       </button>
     </>
   );
@@ -172,7 +172,7 @@ export function ReadView({ data }: { data: Scorecard }) {
   const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
   return (
     <>
-      <div className="ovl">Your read</div>
+      <div className="ovl">Where you stand</div>
       <div className="h" onClick={() => setReadOpen((o) => !o)} style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32, cursor: 'pointer', ...clamp }}>{data.read}</div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
         <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
@@ -221,7 +221,7 @@ export function StepsView({ data, onStart }: { data: Scorecard; onStart: () => v
             <div style={{ flex: 1 }}>
               <div className="ptitle">{s.title}{s.tag ? <span className="ptag">{s.tag}</span> : null}{s.big ? <span className="ptag">the big one</span> : null}</div>
               <div className="pwhy">{s.why}</div>
-              <div className="vchip">✓ validated{s.touches ? ' · touches ' + s.touches : ''}</div>
+              <div className="vchip">✓ checked{s.touches ? ' · touches ' + s.touches : ''}</div>
             </div>
           </div>
         ))}

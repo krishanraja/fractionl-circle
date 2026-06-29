@@ -2,8 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import webpush from 'npm:web-push@3.6.7';
 
-// Service-role Web Push fan-out. NOT user-facing: called by cron-match-engine
-// (and any other server job) to notify a single user that fresh work is ready.
+// Service-role Web Push fan-out. NOT user-facing: called by server jobs
+// (e.g. cron-warm-digest, cron-reengage) to notify a single user that fresh
+// work is ready.
 //
 // INERT by design: if the VAPID env vars are not configured this returns
 // { sent: 0, skipped: 'vapid_unconfigured' } with a 200 and never throws, so

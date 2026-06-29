@@ -27,8 +27,8 @@ export const TIERS: TierDisplay[] = [
     priceIdEnv: null,
     highlighted: false,
     features: [
-      'One full thesis validation',
-      'The complete read and next steps',
+      'One full read of where you stand',
+      'Your plan and next moves',
       'Build your circle by screenshot or CSV',
     ],
     ctaLabel: 'Current plan',
@@ -42,7 +42,7 @@ export const TIERS: TierDisplay[] = [
     priceIdEnv: 'VITE_STRIPE_PRO_MONTHLY_PRICE_ID',
     highlighted: true,
     features: [
-      'Unlimited thesis validations as you evolve',
+      'Unlimited reads as your plan evolves',
       'Real warm reach from your full network',
       'Specific, named next moves',
       'Ongoing market monitoring',
@@ -58,11 +58,10 @@ export const TIERS: TierDisplay[] = [
     priceIdEnv: 'VITE_STRIPE_EXEC_MONTHLY_PRICE_ID',
     highlighted: false,
     features: [
-      'Unlimited Streams, unlimited Matches',
-      'Sunday Letter as 90-second audio',
+      'Unlimited reads and warm reach',
+      'A weekly brief on your network and market',
       'External signal feeds (RFPs, job changes, trends)',
       'Cross-user market intelligence',
-      'Per-category auto-send consent',
       'Priority compute, white-glove concierge onboarding',
     ],
     ctaLabel: 'Upgrade to Chief of Staff',

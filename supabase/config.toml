@@ -35,9 +35,6 @@ verify_jwt = false
 [functions.parse-voice-log]
 verify_jwt = false
 
-[functions.parse-onboarding]
-verify_jwt = false
-
 [functions.stripe-checkout]
 verify_jwt = true
 

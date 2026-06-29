@@ -48,7 +48,7 @@ export default function SharpenPrompt({ onAnswered, dimensionHint }: {
     return (
       <div className="spk spk-done">
         <span className="spk-doneicon">✓</span>
-        <span>Sharp for now — {streak} decision{streak === 1 ? '' : 's'} banked. Re-run your read to lock the gains in.</span>
+        <span>Sharp for now — {streak} decision{streak === 1 ? '' : 's'} banked. See how it lands again to lock the gains in.</span>
       </div>
     );
   }
@@ -56,7 +56,7 @@ export default function SharpenPrompt({ onAnswered, dimensionHint }: {
   return (
     <div className="spk">
       <div className="spk-head">
-        <span className="spk-tag">Sharpen · {q.dimension}</span>
+        <span className="spk-tag">Make stronger · {q.dimension}</span>
         <span className="spk-ctrls">
           <button className="spk-icon" title="Another question" disabled={busy} onClick={() => void load()}>↻</button>
           <button className="spk-icon" title="Dismiss" onClick={() => setDismissed(true)}>×</button>

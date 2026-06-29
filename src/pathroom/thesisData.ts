@@ -86,6 +86,30 @@ export async function getInspirationCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+export async function getCircleCount(userId: string): Promise<number> {
+  const { count } = await supabase.from('circle_person').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+  return count ?? 0;
+}
+
+// Persist the first-run "about you" into the existing identity columns. Best-effort:
+// never block onboarding if the write fails (the run itself is what matters).
+export async function saveAboutYou(userId: string, fields: { target_buyer?: string; positioning?: string; first_run_transcript?: string }): Promise<void> {
+  try {
+    await supabase.from('user_profiles').update(fields).eq('id', userId);
+  } catch { /* non-fatal */ }
+}
+
+// Stamp the first-run as done so the app stops showing onboarding and the
+// re-engagement surfaces can reason about "new vs returning".
+export async function markFirstRunComplete(userId: string): Promise<void> {
+  const now = new Date().toISOString();
+  try {
+    await supabase.from('user_profiles')
+      .update({ onboarding_completed: true, onboarding_completed_at: now, first_run_completed_at: now })
+      .eq('id', userId);
+  } catch { /* non-fatal: a saved run already gates first-run */ }
+}
+
 export async function getLatestRun(userId: string): Promise<Scorecard | null> {
   const full = await getLatestRunFull(userId);
   return full?.result ?? null;
