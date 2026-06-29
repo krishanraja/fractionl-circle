@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Upload, ArrowLeft, Globe, Building2, Database, ChevronRight } from 'lucide-react';
-import { Drawer, DrawerContent } from '@/components/ui/drawer';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LinkedInCsvDrop } from './LinkedInCsvDrop';
 import { CrmCsvDrop } from './CrmCsvDrop';
@@ -25,7 +25,7 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
     <div className="text-center sm:text-left mb-2">
       <h2 className="text-title-1 text-foreground">Add a source</h2>
       <p className="mt-1.5 text-sm text-foreground-secondary leading-relaxed">
-        The more sources you connect, the better the Matches. Start with whichever is easiest.
+        The more people you bring in, the warmer your reach and the sharper your plan. Start with whichever is easiest.
       </p>
     </div>
     {/* Featured recommendation — hero card */}
@@ -121,6 +121,7 @@ export const AddSourceSheet = ({ open, onOpenChange, onIngested }: AddSourceShee
     return (
       <Drawer open={open} onOpenChange={handleOpenChange}>
         <DrawerContent className="max-h-[92vh]">
+          <DrawerTitle className="sr-only">Add a source</DrawerTitle>
           <div className="overflow-y-auto pb-safe-bottom">
             {body}
           </div>
@@ -132,6 +133,7 @@ export const AddSourceSheet = ({ open, onOpenChange, onIngested }: AddSourceShee
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+        <DialogTitle className="sr-only">Add a source</DialogTitle>
         <div className="max-h-[80vh] overflow-y-auto">
           {body}
         </div>

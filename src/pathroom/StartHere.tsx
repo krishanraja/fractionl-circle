@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Users, Sparkles, PenLine, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
+import { AddSourceSheet } from '@/components/circle/AddSourceSheet';
 import { C } from './tokens';
 import { PLAN } from './copy';
 import { thesisCss, ThinkingView, CANONICAL_JOURNEY } from './thesisViews';
@@ -37,6 +38,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
   const [circleCount, setCircleCount] = useState(0);
   const [inspCount, setInspCount] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
+  const [srcOpen, setSrcOpen] = useState(false);
 
   const [inspOpen, setInspOpen] = useState(false);
   const [inspName, setInspName] = useState('');
@@ -57,6 +59,19 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
   };
   useEffect(refreshCounts, [userId]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  // Preserve the about-you across a reload or an OAuth contacts-sync redirect
+  // (connecting Google/Microsoft leaves and returns to the app), so a time-poor
+  // user never loses what they typed.
+  const aboutKey = userId ? `fr_about_${userId}` : '';
+  useEffect(() => {
+    if (!aboutKey) return;
+    try { const s = JSON.parse(localStorage.getItem(aboutKey) || '{}'); if (s.sellTo) setSellTo(s.sellTo); if (s.why) setWhy(s.why); if (s.objective) setObjective(s.objective); } catch { /* ignore */ }
+  }, [aboutKey]);
+  useEffect(() => {
+    if (!aboutKey) return;
+    try { localStorage.setItem(aboutKey, JSON.stringify({ sellTo, why, objective })); } catch { /* ignore */ }
+  }, [aboutKey, sellTo, why, objective]);
 
   const aboutDone = !!(objective.trim() && sellTo.trim() && why.trim());
   const peopleDone = circleCount >= MIN_PEOPLE;
@@ -121,6 +136,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
       timers.current.forEach(clearTimeout);
       setShown(CANONICAL_JOURNEY.length); setDone(true);
       await markFirstRunComplete(userId);
+      try { if (aboutKey) localStorage.removeItem(aboutKey); } catch { /* ignore */ }
       // brief beat on the completed checklist, then into the app
       window.setTimeout(onComplete, 900);
     } catch {
@@ -191,7 +207,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
         <GateCard
           icon={Users}
           title="Add your people"
-          sub={`At least ${MIN_PEOPLE} people who could help you sell — clients, peers, anyone warm. A LinkedIn export gets you there in one go.`}
+          sub={`At least ${MIN_PEOPLE} people who could help you sell — clients, peers, anyone warm. Snap a screenshot, paste a list, or import your contacts in one go.`}
           done={peopleDone}
           badge={`${circleCount}/${MIN_PEOPLE}`}
           onClick={() => setAddOpen(true)}
@@ -243,7 +259,13 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
         ) : null}
       </div>
 
-      <AddToCircleSheet open={addOpen} onOpenChange={setAddOpen} onAdded={refreshCounts} />
+      <AddToCircleSheet
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onAdded={refreshCounts}
+        onConnectSourceClick={() => { setAddOpen(false); setSrcOpen(true); }}
+      />
+      <AddSourceSheet open={srcOpen} onOpenChange={setSrcOpen} onIngested={refreshCounts} />
     </div>
   );
 }

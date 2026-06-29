@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Camera, Clipboard, Mic, Type, ChevronRight, Sparkles, X } from 'lucide-react';
-import { Drawer, DrawerContent } from '@/components/ui/drawer';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QuickAddImage } from './QuickAddImage';
 import { QuickAddPaste } from './QuickAddPaste';
@@ -226,6 +226,7 @@ export const AddToCircleSheet = ({
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[92vh]">
+          <DrawerTitle className="sr-only">Add to your circle</DrawerTitle>
           <div className="thx overflow-y-auto pb-safe-bottom" style={{ background: 'var(--thx-bg)' }}>{body}</div>
         </DrawerContent>
       </Drawer>
@@ -235,6 +236,7 @@ export const AddToCircleSheet = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+        <DialogTitle className="sr-only">Add to your circle</DialogTitle>
         <div className="thx max-h-[80vh] overflow-y-auto" style={{ background: 'var(--thx-bg)' }}>{body}</div>
       </DialogContent>
     </Dialog>

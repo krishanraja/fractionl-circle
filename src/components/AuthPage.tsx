@@ -587,7 +587,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
       if (error) {
         setError({ title: 'Sign up failed', message: error.message });
       } else {
-        setSuccessMessage('Check your email to confirm your account. Once you\'re in, talk (or type) for a few seconds and Circle turns it into Ideas you can sell.');
+        setSuccessMessage('Check your email to confirm your account. Once you\'re in, we\'ll turn who you know into a plan for your next clients.');
       }
     } catch (_err) {
       setError({ title: 'Sign up failed', message: 'An unexpected error occurred' });
