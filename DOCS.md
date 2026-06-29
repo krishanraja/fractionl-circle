@@ -1,10 +1,81 @@
-# Circle by Fractionl — Source of Truth
+# Circle by Fractionl — legacy reference
 
-> Circle is the relationship-to-revenue engine for fractional executives, advisors, and operators with portfolio careers. Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know overnight, and drops a hand-drafted Move on the right person while you sleep.
+> ## Changelog — 2026-06-29: what changed and why (READ FIRST)
+>
+> **This document is largely SUPERSEDED.** The product it describes — the "Circle CRM"
+> generation built on **Ideas → Matches → Moves → Streams → the Sunday Letter** ("talk 90
+> seconds, wake to a drafted Move") — **has been removed.** Treat the sections below as
+> historical except where this changelog corrects them.
+>
+> **The source of truth is now [`docs/PRODUCT.md`](docs/PRODUCT.md)** and, for sales/marketing
+> language, [`AGENT_BRIEFING.md`](AGENT_BRIEFING.md). Pricing/tiers come from `src/lib/tiers.ts`.
+>
+> **What the product is now.** Two halves in one mobile-first app (`src/pathroom/CircleApp.tsx`):
+> - **Circle** — your warm network: the people who can help you sell, kept warm over time.
+> - **Plan** — reads the live market against what you want to offer and shows **where you stand**
+>   (a 0–100 strength score with banded, evidence-backed signals) plus your next moves.
+>
+> **Why the change.** The accreted older generation fragmented both product and codebase, and
+> its framing ("thesis", "deep dive", "validate") read as academic and smart-ass to a time-poor
+> business leader. The product was simplified to warm-network + grounded-plan, in plain language.
+>
+> **Vocabulary renames (single source of truth: `src/pathroom/copy.ts`).** User-facing only —
+> code symbols may still say "thesis" internally:
+> - "Deep dive" tab → **Plan**
+> - "thesis" → **your idea / what you want to offer**
+> - "validate / run the deep dive" → **see how it lands**
+> - "the read / scorecard" → **where you stand**
+> - "sharpen" → **make it stronger**
+> - The **Circle** tab keeps its name.
+>
+> **Real first-run (replaces the voice→Ideas onboarding below).** A brand-new user (no saved
+> plan; gated on `getRunCount === 0`) is held in a warm, gated **Start here**
+> (`src/pathroom/StartHere.tsx`) that unlocks **See how it lands** only after they give the
+> inputs uniquely theirs: **≥10 people** who could help them sell, **≥1 business they admire**,
+> and a few plain words about who they want to sell to / why them / their objective. *Why:* a
+> one-box "type an idea → AI report" reads as a generic LLM wrapper; this small amount of
+> uniquely-theirs input is healthy friction that grounds the read in the user's real network,
+> taste, and goal. About-you persists to `localStorage` (survives the OAuth contacts-sync
+> redirect) and into existing `user_profiles` columns (`target_buyer`, `first_run_transcript`,
+> `onboarding_completed`, `first_run_completed_at`) — **no migration**.
+>
+> **Re-engagement (new).** An in-app "what's waiting for you" return surface
+> (`src/pathroom/ReturnSurface.tsx`) on the Circle landing — people going quiet
+> (`circle_person.last_interaction_at` > 30 days) and banked decisions to fold in
+> (`thesis_answers.applied_at is null`), gated by the `user_preferences.goal_reminders` toggle
+> (which previously controlled nothing). Plus a weekly email + web-push sweep
+> (`supabase/functions/cron-reengage`) that stays **dormant until Resend + VAPID are configured**
+> (see `docs/reengagement-and-push.md`).
+>
+> **Removed edge functions (do NOT reference; they no longer exist):** `cron-match-engine`,
+> `run-match-engine`, `cron-sunday-letter`, `generate-sunday-letter`, `sunday-letter-feed`,
+> `decision-engine`, `extract-ideas`, `log-move-sent`, `log-win`, `parse-onboarding`, plus the
+> `_shared` match/sunday-letter cores. The dead frontend (`src/components/today/*`,
+> `src/components/layout/*`, `src/components/navigation/*`) and the
+> `use{Matches,Streams,Ideas,SundayLetter,Concierge}` hooks were deleted too.
+>
+> **Live edge functions (canonical):** `validate-thesis`, `judge-thesis`, `next-question`,
+> `market-pulse`, `extract-admire`, `extract-contact`, `enrich-linkedin`, `suggest-tags`,
+> `generate-signals`, `rank-inner-circle`, `warm-digest`, `compute-warmth`, `cron-reengage`,
+> `send-push`, `emit-lifecycle`, the `sync-*`/`oauth-*`/`stripe-*` sets, `dedupe-circle`,
+> `merge-persons`, `contact-enrich`, `delete-account`, `audit-log`, `transcribe`.
+>
+> **Live cron set (5 jobs):** `cron-sync-google` (06:00 UTC), `cron-sync-microsoft` (07:00),
+> `compute-warmth` (07:30), `cron-warm-digest` (Mon 13:00), `cron-reengage` (Mon 15:00). The old
+> `cron-match-engine` and `cron-sunday-letter` schedules were removed.
+>
+> **Tiers (source: `src/lib/tiers.ts`).** Freemium **$0** (one full read of where you stand +
+> your plan/next moves + build your circle) · Pro **$39/mo** (unlimited reads, real warm reach,
+> named next moves, ongoing monitoring) · Chief of Staff **$79/mo** (everything + weekly brief +
+> external signal feeds + cross-user intelligence + concierge). The "Operator $30 / 1-Match-a-week"
+> tier in the tables below is **stale** — ignore it.
 
-This document is the canonical source for product, architecture, pricing, and go-to-market language. It is structured to be readable both by engineers who are shipping it and by sales/marketing AI agents who are selling it.
+This (historical) document was the canonical source for product, architecture, pricing, and
+go-to-market language for the retired generation. It is kept for engineering history; for current
+truth use `docs/PRODUCT.md` and `AGENT_BRIEFING.md`.
 
-**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass; Phase 1 5X vision locked, see `_upgrade/fractionl-circle/PHASE-1.md`). Prior baseline: 2026-04-26 · `main` @ `e70f035` (post PR #46 audit-fix merge).
+**Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass) — superseded
+2026-06-29 by the changelog above.
 
 ---
 
@@ -332,6 +403,13 @@ The voice-first command surface. Currently a placeholder UI; voice capture lands
 
 ## 9. Onboarding
 
+> **SUPERSEDED (2026-06-29).** The voice→Ideas onboarding below is **gone**. The live first-run
+> is the gated **Start here** (`src/pathroom/StartHere.tsx`): ≥10 people who can help you sell,
+> ≥1 business you admire, and a plain about-you, which unlocks one live market read. *Why:*
+> requiring a small amount of uniquely-yours input grounds the read in your real network, taste,
+> and goal instead of reading as a generic LLM wrapper. See `docs/PRODUCT.md` → "First-run
+> onboarding (the Start here gate)". The rest of this section is historical.
+
 `src/components/onboarding/FirstVoice.tsx`.
 
 A single-screen voice onboarding:
@@ -369,6 +447,12 @@ All sources end up in the same canonical `circle_person` table with `person_raw`
 
 ## 11. The Match Engine
 
+> **REMOVED (2026-06-29).** The Match Engine, its `_shared/matchEngineCore.ts` core, and its
+> triggers (`run-match-engine`, `cron-match-engine`) no longer exist, along with the
+> Ideas/Matches/Moves/Streams model and the edit-distance / `log-move-sent` loop. The live
+> product reads the market against what you want to offer (the **Plan**, `validate-thesis`) and
+> weaves your circle into the warm-reach step instead. This section is historical.
+
 Lives in `supabase/functions/_shared/matchEngineCore.ts` and is triggered by:
 - **Manual** — `run-match-engine` (TodayScreen "Surface Matches" button).
 - **Nightly** — `cron-match-engine`.
@@ -389,6 +473,12 @@ For each user, the engine:
 ---
 
 ## 12. The Sunday Letter
+
+> **REMOVED (2026-06-29).** The Sunday Letter, its `_shared/sundayLetterCore.ts` core, and its
+> triggers (`generate-sunday-letter`, `cron-sunday-letter`, `sunday-letter-feed`) no longer
+> exist. The live re-engagement / retention loop is the weekly "keep your circle warm" digest
+> (`cron-warm-digest`), the in-app return surface (`ReturnSurface.tsx`), and the dormant weekly
+> `cron-reengage` sweep. This section is historical.
 
 Lives in `supabase/functions/_shared/sundayLetterCore.ts`. Triggered by:
 - **Manual** — `generate-sunday-letter` (TodayScreen Sunday Letter card).
@@ -629,7 +719,20 @@ src/
 
 ---
 
-## 19. Edge functions (34 in source, 41 deployed)
+## 19. Edge functions
+
+> **SUPERSEDED (2026-06-29).** The function inventory below is stale. The legacy
+> match/sunday-letter/Ideas functions (`cron-match-engine`, `run-match-engine`,
+> `cron-sunday-letter`, `generate-sunday-letter`, `sunday-letter-feed`, `decision-engine`,
+> `extract-ideas`, `log-move-sent`, `log-win`, `parse-onboarding`) and the `_shared`
+> match/sunday-letter cores were **removed**. The live canonical set is: `validate-thesis`,
+> `judge-thesis`, `next-question`, `market-pulse`, `extract-admire`, `extract-contact`,
+> `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`, `warm-digest`,
+> `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
+> `sync-*`/`oauth-*`/`stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
+> `delete-account`, `audit-log`, `transcribe`. The live cron set is five jobs: `cron-sync-google`,
+> `cron-sync-microsoft`, `compute-warmth`, `cron-warm-digest`, `cron-reengage`. See
+> `docs/PRODUCT.md` for descriptions. The historical inventory follows.
 
 All functions live under `supabase/functions/`. Shared helpers in `_shared/` (compliance, identity, matchEngineCore, sundayLetterCore).
 

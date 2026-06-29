@@ -1,5 +1,8 @@
 # Re-engagement & web push — ops guide
 
+*Verified accurate against `supabase/functions/cron-reengage/index.ts`,
+`supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29.*
+
 How the "come back — here's what's waiting" sweep works, and how to turn on the
 two delivery channels (email + web push) it shares with the warm digest. Both
 channels are **inert by default**: the feature ships and the cron job runs with
