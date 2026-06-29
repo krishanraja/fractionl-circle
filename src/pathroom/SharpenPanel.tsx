@@ -59,7 +59,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
     <div style={{ marginTop: 18 }}>
       {edges.length ? (
         <div className="edgerow">
-          <div className="navhint" style={{ color: C.accent }}>Your edge, sharpened</div>
+          <div className="navhint" style={{ color: C.accent }}>Your edge, sharper</div>
           {edges.map((e, i) => <div key={i} style={{ fontSize: 13, color: C.hi, marginTop: 6, lineHeight: 1.4 }}>You want {e.why.toLowerCase()} like {e.name}, aimed at your buyers.</div>)}
           <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 9 }}>See how it lands again to fold this into your plan.</div>
         </div>
@@ -73,7 +73,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
             <span className="fuelicon">◎</span>
             <span style={{ flex: 1 }}>
               <span className="fueltitle2">Screenshot a business you admire</span>
-              <div className="fuelfor">A LinkedIn, an Instagram, or a site doing something you would love to build. We read what they do, then ask why, to sharpen what makes you different.</div>
+              <div className="fuelfor">A LinkedIn, an Instagram, or a site doing something you would love to build. We read what they do, then ask why, to clarify what makes you different.</div>
               <span className="fueltag thesis">feeds your edge</span>
             </span>
           </button>
@@ -94,7 +94,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
               <span className="fuelicon">in</span>
               <span style={{ flex: 1 }}>
                 <span className="fueltitle2">Connect your LinkedIn</span>
-                <div className="fuelfor">Your background, verified. Sharpens whether you can win it, not just whether it is winnable.</div>
+                <div className="fuelfor">Your background, verified. Shows whether you can win it, not just whether it is winnable.</div>
                 {linkedinDone ? <span className="donechk">✓ linked — see how it lands to use it</span> : <span className="fueltag ability">feeds fit + credibility</span>}
               </span>
             </button>
@@ -138,7 +138,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
         <div className="extracted">
           <div className="navhint">Why them</div>
           <div className="h" style={{ marginTop: 8, fontSize: 18 }}>What do you want to take from {res.name}?</div>
-          <div className="sub">{res.field ? 'Pick the part that transfers to your offer.' : 'This sharpens your edge. It does not copy them.'}</div>
+          <div className="sub">{res.field ? 'Pick the part that transfers to your offer.' : 'This clarifies your edge. It does not copy them.'}</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
             {WHY_CHIPS.map((w) => <button key={w} className="whychip" onClick={() => chooseWhy(w)}>{w}</button>)}
           </div>

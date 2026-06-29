@@ -36,6 +36,7 @@ select cron.unschedule('cron-sync-google')      where exists (select 1 from cron
 select cron.unschedule('cron-sync-microsoft')   where exists (select 1 from cron.job where jobname = 'cron-sync-microsoft');
 select cron.unschedule('compute-warmth')        where exists (select 1 from cron.job where jobname = 'compute-warmth');
 select cron.unschedule('cron-warm-digest')      where exists (select 1 from cron.job where jobname = 'cron-warm-digest');
+select cron.unschedule('cron-reengage')         where exists (select 1 from cron.job where jobname = 'cron-reengage');
 
 -- ---------------------------------------------------------------------------
 -- Phase 5c: nightly Google contacts + calendar re-sync. 06:00 UTC daily.
@@ -119,7 +120,29 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Sanity check. Expected: four rows.
+-- Re-engagement: weekly "come back — here's what's waiting" sweep. Mondays at
+-- 15:00 UTC, i.e. AFTER the warm digest (13:00) so a drifted user gets the
+-- warm-circle nudge first and this only reaches those who still have something
+-- genuinely waiting. Inert until Resend/VAPID keys are set.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-reengage',
+  '0 15 * * 1',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-reengage',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Sanity check. Expected: five rows.
 -- ---------------------------------------------------------------------------
 -- select jobname, schedule, active from cron.job where jobname like 'cron-%' or jobname = 'compute-warmth';
 

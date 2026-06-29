@@ -74,7 +74,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     }
     // thin
     const nr = round + 1; setRound(nr);
-    if (nr >= 3) { accept(t, 'Okay, we will run it. Heads up: it is broad, so the read will be a sketch, not a verdict. You can sharpen it any time.', true); return; }
+    if (nr >= 3) { accept(t, "Okay, we will run it. Heads up: it is broad, so it will be a sketch, not a verdict. You can make it sharper any time.", true); return; }
     push([{ role: 'app', text: r.followup || 'That is the what, but not the who. Who is it for, and what makes you the one they pick?' }]);
     setHead(nr === 1 ? 'Almost. Give me the who.' : 'Closer. Get specific.');
     setSub(nr === 1 ? 'Who is it for, and why you?' : 'Which buyer, at what stage, with what problem?');

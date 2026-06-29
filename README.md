@@ -49,6 +49,7 @@ Stripe, Vercel.
 - [docs/icp-archetype.md](docs/icp-archetype.md) - the ICP.
 - [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the vision capture.
 - `docs/google-oauth-setup.md`, `docs/microsoft-oauth-setup.md`, `docs/supabase-custom-domain.md` - ops setup.
+- [docs/reengagement-and-push.md](docs/reengagement-and-push.md) - the re-engagement sweep + email/web-push setup.
 - `docs/google-oauth-verification.md` - the calendar-write sensitive-scope submission pack (native warm-reach holds).
 - `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance.
 - `docs/_archive/` - superseded strategy (the earlier Circle CRM and the Path Room decision room), kept for history.

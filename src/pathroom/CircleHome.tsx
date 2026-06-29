@@ -8,8 +8,9 @@ import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import WorkingOnInput from './WorkingOnInput';
 import { BrandBar } from './circleChrome';
+import ReturnSurface from './ReturnSurface';
 
-export default function CircleHome() {
+export default function CircleHome({ onOpenPlan }: { onOpenPlan?: () => void }) {
   const { user } = useAuth();
   const userId = user?.id;
   const [addOpen, setAddOpen] = useState(false);
@@ -40,6 +41,7 @@ export default function CircleHome() {
       <BrandBar />
       <div className="thxbody">
         <div className="wrap">
+          {onOpenPlan ? <ReturnSurface onOpenPlan={onOpenPlan} /> : null}
           <div className="ovl">Your circle</div>
           <div className="h" style={{ marginTop: 8 }}>Warm up your circle</div>
           <div className="sub">Drop in anyone you meet. We'll remember who they are and surface them when they matter.</div>

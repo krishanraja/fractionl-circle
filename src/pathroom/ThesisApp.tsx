@@ -316,7 +316,7 @@ export default function ThesisApp() {
       } else if (cur?.big || /network|warm|reach|intro|referr|consult|client|prospect|outreach/.test(t)) {
         primary = { label: 'Reach out now', onClick: () => go('reachout') };
       } else if (/value|position|offer|edge|differen|prop|pric|message|brand|narrativ|credib/.test(t)) {
-        primary = { label: 'Sharpen this move', onClick: () => go('sharpen') };
+        primary = { label: 'Make this move stronger', onClick: () => go('sharpen') };
       } else {
         primary = { label: 'Work on this move', onClick: () => go('sharpen') };
       }

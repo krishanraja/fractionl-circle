@@ -91,6 +91,20 @@ export async function getCircleCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+// People you've actually spoken to, but not in 30+ days — the honest "going quiet"
+// signal (people never contacted, e.g. raw CSV rows, are deliberately excluded so
+// we never nag about strangers). Powers the return surface.
+export async function getGoingQuietCount(userId: string): Promise<number> {
+  const cutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const { count } = await supabase
+    .from('circle_person')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .not('last_interaction_at', 'is', null)
+    .lt('last_interaction_at', cutoff);
+  return count ?? 0;
+}
+
 // Persist the first-run "about you" into the existing identity columns. Best-effort:
 // never block onboarding if the write fails (the run itself is what matters).
 export async function saveAboutYou(userId: string, fields: { target_buyer?: string; positioning?: string; first_run_transcript?: string }): Promise<void> {

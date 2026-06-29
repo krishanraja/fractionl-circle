@@ -68,7 +68,7 @@ export default function CircleApp() {
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {tab === 'circle' ? (
-          <CircleHome />
+          <CircleHome onOpenPlan={() => { haptics.tap(); setTab('thesis'); }} />
         ) : (
           <div className="thesis-tab-host" style={{ height: '100%' }}>
             <ThesisApp />
