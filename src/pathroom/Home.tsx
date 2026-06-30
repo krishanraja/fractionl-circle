@@ -47,14 +47,14 @@ export default function Home({ data, thesis, stepProgress, circle, fuel, market,
   return (
     <div className="vhome">
       <div className="vhero">
-        <div className="ovl" style={{ textAlign: 'center', marginBottom: 12 }}>Your venture</div>
+        <div className="ovl" style={{ textAlign: 'center', marginBottom: 16 }}>Your venture</div>
         <div className="vorb">
           <div className="vorbglow" />
           <svg className="vorbsvg" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r={r} fill="none" stroke={C.line2} strokeWidth="5" />
             <circle cx="50" cy="50" r={r} fill="none" stroke={C.accent} strokeWidth="5" strokeLinecap="round"
               strokeDasharray={circ} strokeDashoffset={circ * (1 - Math.max(0.04, Math.min(1, fuel)))} transform="rotate(-90 50 50)"
-              style={{ transition: 'stroke-dashoffset .8s ease', filter: 'drop-shadow(0 0 5px rgba(224,162,60,0.8))' }} />
+              style={{ transition: 'stroke-dashoffset .8s ease', filter: 'var(--thx-glow-ring)' }} />
           </svg>
           <img src="/brand/fractionl-icon.png" alt="" className="vorbcore" />
         </div>
@@ -69,7 +69,7 @@ export default function Home({ data, thesis, stepProgress, circle, fuel, market,
       </div>
 
       <div className="vpanels">
-        {coach ? <div style={{ marginBottom: 12 }}>{coach}</div> : null}
+        {coach ? <div style={{ marginBottom: 16 }}>{coach}</div> : null}
         {market && (market.market || market.role) ? (
           <div className="vmkt">
             <div className="vmkthead">
@@ -94,7 +94,7 @@ export default function Home({ data, thesis, stepProgress, circle, fuel, market,
           </div>
         ) : null}
 
-        <div style={{ marginTop: market ? 12 : 0 }}>
+        <div style={{ marginTop: market ? 16 : 0 }}>
           {section(<Compass size={18} />, 'Where you are', opp.length ? `${oppStrong} of ${opp.length} signals strong${oppRisk ? ', crowding flagged' : ''}` : 'where you stand', onOpenRead)}
           {section(<Target size={18} />, 'Your next customer', nextStep ? `Next: ${nextStep.title}` : (steps.length ? `${done} of ${steps.length} moves done` : 'the path to your first client'), onOpenPath)}
           {section(<Users size={18} />, 'Your network', n ? `${n} ${n === 1 ? 'person' : 'people'} for warm reach` : 'add people for warm reach', onOpenCircle)}

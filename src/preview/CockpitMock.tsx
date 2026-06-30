@@ -14,9 +14,9 @@ const cockpitCss = `
 .thx .ckhero { display:flex; flex-direction:column; align-items:center; }
 /* the orb: a fixed square so the core + percent center on the RING, not the column */
 .thx .orb { position:relative; width:150px; height:150px; display:flex; align-items:center; justify-content:center; margin:6px 0; }
-.thx .orbglow { position:absolute; top:50%; left:50%; width:180px; height:180px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle, rgba(224,162,60,0.30), rgba(224,162,60,0.06) 55%, transparent 70%); filter:blur(6px); animation:orbpulse 4.5s ease-in-out infinite; }
+.thx .orbglow { position:absolute; top:50%; left:50%; width:180px; height:180px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle, var(--thx-glow-halo), transparent 70%); filter:blur(var(--thx-glow-halo-blur)); animation:orbpulse 4.5s ease-in-out infinite; }
 .thx .orbsvg { position:absolute; top:0; left:0; width:100%; height:100%; animation:orbbreath 4.5s ease-in-out infinite; }
-.thx .orbcore { position:absolute; top:50%; left:50%; width:44px; height:44px; transform:translate(-50%,-50%); filter:drop-shadow(0 0 10px rgba(224,162,60,0.6)); }
+.thx .orbcore { position:absolute; top:50%; left:50%; width:44px; height:44px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
 .thx .orbpct { position:absolute; top:50%; left:50%; transform:translate(-50%, 24px); font-family:${MONO}; font-size:12px; color:${C.hi}; font-variant-numeric:tabular-nums; }
 .thx .orbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; }
 @keyframes orbbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.035)} }
@@ -77,7 +77,7 @@ export default function CockpitMock() {
     <div className="thx thxframe"><style>{thesisCss + chromeCss + cockpitCss}</style>
       <div className="topnav">
         <span style={{ display: 'flex', alignItems: 'center', gap: 11, flex: 1 }}>
-          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 22, height: 22, filter: 'drop-shadow(0 0 8px rgba(224,162,60,0.5))' }} />
+          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 22, height: 22, filter: 'var(--thx-glow-core)' }} />
           <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" />
         </span>
         <span className="since">since yesterday</span>
@@ -92,7 +92,7 @@ export default function CockpitMock() {
                   <circle cx="60" cy="60" r={r} fill="none" stroke={C.line2} strokeWidth="7" />
                   <circle cx="60" cy="60" r={r} fill="none" stroke={C.accent} strokeWidth="7" strokeLinecap="round"
                     strokeDasharray={circ} strokeDashoffset={off} transform="rotate(-90 60 60)"
-                    style={{ filter: 'drop-shadow(0 0 6px rgba(224,162,60,0.8))' }} />
+                    style={{ filter: 'var(--thx-glow-ring)' }} />
                 </svg>
                 <img src="/brand/fractionl-icon.png" alt="" className="orbcore" />
                 <div className="orbpct">62%</div>

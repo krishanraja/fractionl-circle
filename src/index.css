@@ -125,6 +125,14 @@
     --thx-gold: hsl(40 55% 42%);
     --thx-cool: hsl(199 34% 42%);
     --thx-nav: hsl(38 30% 96% / 0.82);
+    /* Ember glow — Daylight Desk. On cream, the dark-mode halo reads as a muddy
+       smudge, so light mode keeps the mark crisp: a barely-there warm halo, a soft
+       neutral lift on the icon (depth, not neon), and no glow on the ring stroke or
+       the nav mark. The ember signature lives in dark mode (below). */
+    --thx-glow-halo: hsl(37 73% 50% / 0.10);
+    --thx-glow-halo-blur: 2px;
+    --thx-glow-core: drop-shadow(0 1px 2px hsl(28 30% 30% / 0.18));
+    --thx-glow-ring: none;
   }
 
   /* Dark mode override - Walnut desk, cream paper as the bright surface */
@@ -199,6 +207,13 @@
     --thx-gold: #C9A24B;
     --thx-cool: #8FB8C9;
     --thx-nav: rgba(10,10,11,0.82);
+    /* Ember glow — Walnut Desk. Reproduces the original hardcoded glow so dark mode
+       is visually unchanged: the charging ember reads as a warm halo against the
+       near-black desk. */
+    --thx-glow-halo: rgba(224,162,60,0.3);
+    --thx-glow-halo-blur: 6px;
+    --thx-glow-core: drop-shadow(0 0 9px rgba(224,162,60,0.6));
+    --thx-glow-ring: drop-shadow(0 0 5px rgba(224,162,60,0.8));
   }
 }
 
