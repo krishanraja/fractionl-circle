@@ -37,11 +37,11 @@ export const thesisCss = `
    future non-framed page): fill the viewport so the themed background covers it.
    Locked/framed surfaces do NOT use this — they size via .app-frame/.thxframe. */
 .thx-page { min-height:100dvh; }
-.thx .wrap { max-width:520px; margin:0 auto; padding:22px 18px 80px; }
+.thx .wrap { max-width:520px; margin:0 auto; padding:24px 20px 80px; }
 .thx .ovl { font-family:${MONO}; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:${C.lo}; }
 .thx .mono { font-family:${MONO}; font-variant-numeric:tabular-nums; }
 .thx .h { font-size:23px; line-height:1.18; letter-spacing:-0.02em; font-weight:600; }
-.thx .sub { font-size:13.5px; color:${C.mid}; line-height:1.5; margin-top:8px; }
+.thx .sub { font-size:13.5px; color:${C.mid}; line-height:1.55; margin-top:10px; }
 .thx textarea, .thx input { width:100%; background:${C.panel}; border:1px solid ${C.line2}; border-radius:9px; padding:13px 14px; color:${C.hi}; font-size:14px; font-family:${FONT}; line-height:1.5; }
 .thx textarea { min-height:92px; resize:none; }
 .thx .cta { display:flex; align-items:center; justify-content:space-between; background:${C.accent}; color:#1A1206; border-radius:7px; padding:14px 16px; font-weight:600; font-size:15px; cursor:pointer; border:0; width:100%; }
@@ -144,9 +144,9 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
             <circle cx="32" cy="32" r={rr} fill="none" stroke={C.line2} strokeWidth="3" />
             <circle cx="32" cy="32" r={rr} fill="none" stroke={C.accent} strokeWidth="3" strokeLinecap="round"
               strokeDasharray={rc} strokeDashoffset={rc * (1 - charge)} transform="rotate(-90 32 32)"
-              style={{ transition: 'stroke-dashoffset .7s ease', filter: 'drop-shadow(0 0 5px rgba(224,162,60,0.8))' }} />
+              style={{ transition: 'stroke-dashoffset .7s ease', filter: 'var(--thx-glow-ring)' }} />
           </svg>
-          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 26, height: 26, filter: 'drop-shadow(0 0 8px rgba(224,162,60,0.55))', animation: done ? 'none' : 'ldrbreath 2.4s ease-in-out infinite' }} />
+          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 26, height: 26, filter: 'var(--thx-glow-core)', animation: done ? 'none' : 'ldrbreath 2.4s ease-in-out infinite' }} />
         </div>
       </div>
       <div className="sub" style={{ marginTop: 4, textAlign: 'center' }}>Reading the market, your buyers, and your edge.</div>

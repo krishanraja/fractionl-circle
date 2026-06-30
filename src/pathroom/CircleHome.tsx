@@ -43,19 +43,19 @@ export default function CircleHome({ onOpenPlan }: { onOpenPlan?: () => void }) 
         <div className="wrap">
           {onOpenPlan ? <ReturnSurface onOpenPlan={onOpenPlan} /> : null}
           <div className="ovl">Your circle</div>
-          <div className="h" style={{ marginTop: 8 }}>Warm up your circle</div>
+          <div className="h" style={{ marginTop: 10 }}>Warm up your circle</div>
           <div className="sub">Drop in anyone you meet. We'll remember who they are and surface them when they matter.</div>
 
-          <button className="cta" style={{ marginTop: 16 }} onClick={() => setAddOpen(true)}>
+          <button className="cta" style={{ marginTop: 20 }} onClick={() => setAddOpen(true)}>
             <span className="ctaicon"><UserPlus size={18} strokeWidth={2.2} /> Drop a contact</span>
             <span className="mono">→</span>
           </button>
 
-          <div style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 24 }}>
             <WorkingOnInput />
           </div>
 
-          <div style={{ marginTop: 18 }}>
+          <div style={{ marginTop: 24 }}>
             <CirclePeopleList
               totalPeople={total}
               circleLoading={countLoading}

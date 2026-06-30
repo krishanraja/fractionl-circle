@@ -9,8 +9,14 @@ export interface FuelRow { k: string; on: boolean; hint?: string }
 // fuel is 0..1; the brand icon's brightness, saturation and glow track it.
 export function emberStyle(fuel: number): React.CSSProperties {
   const f = Math.max(0, Math.min(1, fuel));
+  // The fuel-tracking brightness/saturation/opacity is the ember everywhere; the
+  // orange drop-shadow halo, however, only belongs on the dark Walnut Desk. On the
+  // cream Daylight Desk it smears, so the mark stays crisp (no glow term) and reads
+  // its charge through brightness alone.
+  const dark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const glow = dark ? ` drop-shadow(0 0 ${Math.round(f * 18)}px rgba(224,162,60,${(0.1 + 0.55 * f).toFixed(2)}))` : '';
   return {
-    filter: `brightness(${(0.4 + 0.6 * f).toFixed(2)}) saturate(${(0.15 + 0.95 * f).toFixed(2)}) drop-shadow(0 0 ${Math.round(f * 18)}px rgba(224,162,60,${(0.1 + 0.55 * f).toFixed(2)}))`,
+    filter: `brightness(${(0.4 + 0.6 * f).toFixed(2)}) saturate(${(0.15 + 0.95 * f).toFixed(2)})${glow}`,
     opacity: 0.5 + 0.5 * f,
   };
 }
@@ -56,7 +62,7 @@ export function Loader({ label = 'reading the market' }: { label?: string }) {
         <div className="ldrglow" />
         <svg className="ldrring" viewBox="0 0 72 72" fill="none">
           <circle cx="36" cy="36" r="33" stroke={C.line2} strokeWidth="2.5" />
-          <circle cx="36" cy="36" r="33" stroke={C.accent} strokeWidth="2.5" strokeLinecap="round" strokeDasharray="52 156" style={{ filter: 'drop-shadow(0 0 4px rgba(224,162,60,0.85))' }} />
+          <circle cx="36" cy="36" r="33" stroke={C.accent} strokeWidth="2.5" strokeLinecap="round" strokeDasharray="52 156" style={{ filter: 'var(--thx-glow-ring)' }} />
         </svg>
         <img src="/brand/fractionl-icon.png" alt="" className="ldricon" />
       </div>
@@ -69,9 +75,9 @@ export const chromeCss = `
 /* the charging-ember loader */
 .thx .ldr { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; height:100%; min-height:200px; }
 .thx .ldrorb { position:relative; width:72px; height:72px; display:flex; align-items:center; justify-content:center; }
-.thx .ldrglow { position:absolute; inset:-28%; border-radius:50%; background:radial-gradient(circle, rgba(224,162,60,0.3), transparent 65%); animation:ldrpulse 2.4s ease-in-out infinite; }
+.thx .ldrglow { position:absolute; inset:-28%; border-radius:50%; background:radial-gradient(circle, var(--thx-glow-halo), transparent 65%); animation:ldrpulse 2.4s ease-in-out infinite; }
 .thx .ldrring { position:absolute; inset:0; animation:ldrspin 1.5s cubic-bezier(.6,.1,.3,.9) infinite; }
-.thx .ldricon { width:30px; height:30px; animation:ldrbreath 2.4s ease-in-out infinite; filter:drop-shadow(0 0 8px rgba(224,162,60,0.6)); }
+.thx .ldricon { width:30px; height:30px; animation:ldrbreath 2.4s ease-in-out infinite; filter:var(--thx-glow-core); }
 .thx .ldrlabel { font-family:${MONO}; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:${C.lo}; animation:ldrfade 2.4s ease-in-out infinite; }
 @keyframes ldrspin { to { transform:rotate(360deg); } }
 @keyframes ldrpulse { 0%,100%{opacity:0.5; transform:scale(0.94)} 50%{opacity:1; transform:scale(1.06)} }
@@ -84,18 +90,18 @@ export const chromeCss = `
 .thx.thxframe { min-height:0; height:100vh; height:var(--app-height,100vh); height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
 .thx .thxbody { flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; scrollbar-width:none; }
 .thx .thxbody::-webkit-scrollbar { display:none; }
-.thx .thxbody > .wrap { padding:16px 18px 16px; }
-.thx .thxfoot { flex:0 0 auto; padding:10px 18px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid ${C.line}; background:${C.bg}; }
+.thx .thxbody > .wrap { padding:24px 20px 20px; }
+.thx .thxfoot { flex:0 0 auto; padding:14px 20px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid ${C.line}; background:${C.bg}; }
 .thx .thxfoot .cta { margin:0; }
 .thx .foothint { font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; background:none; border:0; cursor:pointer; display:block; width:100%; text-align:center; padding:8px 0 2px; }
-.thx .topnav { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:11px; padding:11px 18px; background:var(--thx-nav); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid ${C.line}; }
+.thx .topnav { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:11px; padding:12px 20px; background:var(--thx-nav); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid ${C.line}; }
 .thx .emberbtn { background:none; border:0; padding:0; cursor:pointer; display:flex; align-items:center; line-height:0; }
 .thx .ember { width:26px; height:26px; transition:filter .8s ease, opacity .8s ease; }
 .thx .wm { height:15px; opacity:0.9; display:block; }
 .thx .wmbtn { background:none; border:0; padding:0; cursor:pointer; line-height:0; }
 .thx .navhome { background:none; border:1px solid ${C.line2}; border-radius:6px; padding:5px 10px; font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.mid}; cursor:pointer; }
 .thx .navhome:hover { color:${C.accent}; border-color:${C.accentEdge}; }
-.thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:14px; cursor:pointer; margin-top:10px; transition:border-color .2s ease, transform .12s ease; }
+.thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:15px; cursor:pointer; margin-top:12px; transition:border-color .2s ease, transform .12s ease; }
 .thx .hometile:hover { border-color:${C.accentEdge}; }
 .thx .hometile:active { transform:translateY(1px); }
 .thx .htk { font-size:14.5px; font-weight:600; color:${C.hi}; }
@@ -105,10 +111,12 @@ export const chromeCss = `
 .thx .hometile.deepen { background:linear-gradient(180deg, rgba(224,162,60,0.1), ${C.panel}); border-color:${C.accentEdge}; }
 /* the venture ember orb (charge) on the real command-center Home */
 .thx .vorb { position:relative; width:118px; height:118px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
-.thx .vorbglow { position:absolute; inset:-26%; border-radius:50%; background:radial-gradient(circle, rgba(224,162,60,0.3), transparent 65%); filter:blur(6px); animation:vorbpulse 4.5s ease-in-out infinite; }
+.thx .vorbglow { position:absolute; inset:-26%; border-radius:50%; background:radial-gradient(circle, var(--thx-glow-halo), transparent 65%); filter:blur(var(--thx-glow-halo-blur)); animation:vorbpulse 4.5s ease-in-out infinite; }
 .thx .vorbsvg { position:absolute; inset:0; animation:vorbbreath 4.5s ease-in-out infinite; }
-.thx .vorbcore { position:absolute; top:50%; left:50%; width:36px; height:36px; transform:translate(-50%,-50%); filter:drop-shadow(0 0 9px rgba(224,162,60,0.6)); }
-.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:11px; }
+.thx .vorbcore { position:absolute; top:50%; left:50%; width:36px; height:36px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
+.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:14px; }
+/* mobile: let the orb hero breathe before the instruments (reset on the desktop grid) */
+.thx .vpanels { margin-top:20px; }
 @keyframes vorbbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
 @keyframes vorbpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
 /* the live market-movement instrument (fed by Pulse) */
@@ -236,7 +244,7 @@ export const chromeCss = `
 @media (prefers-reduced-motion: reduce) { .thx *, .thx *::before, .thx *::after { animation:none !important; } }
 /* desktop baseline: every surface centers into a console instead of a narrow left column */
 @media (min-width:900px) {
-  .thx .topnav { padding-left:max(18px, calc((100% - 760px) / 2)); padding-right:max(18px, calc((100% - 760px) / 2)); }
+  .thx .topnav { padding-left:max(20px, calc((100% - 760px) / 2)); padding-right:max(20px, calc((100% - 760px) / 2)); }
   .thx .thxbody { display:flex; flex-direction:column; justify-content:center; }
   .thx .thxbody > .wrap { max-width:680px; width:100%; margin:0 auto; padding-top:24px; padding-bottom:24px; }
   .thx .thxbody > .wrap.wrapwide { max-width:920px; }
@@ -244,6 +252,7 @@ export const chromeCss = `
   .thx .thxfoot .cta, .thx .thxfoot .foothint { max-width:680px; margin-left:auto; margin-right:auto; }
   /* command-center Home: two regions, orb hero beside the instruments */
   .thx .vhome { display:grid; grid-template-columns:0.85fr 1.15fr; gap:52px; align-items:center; }
+  .thx .vhome .vpanels { margin-top:0; }
   .thx .vhome .vorb { width:190px; height:190px; }
   .thx .vhome .vorbcore { width:56px; height:56px; }
   .thx .vhome .vorbcap { font-size:11px; margin-top:16px; }
