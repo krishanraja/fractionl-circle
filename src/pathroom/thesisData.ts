@@ -105,6 +105,36 @@ export async function getGoingQuietCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+// The actual people behind getGoingQuietCount — spoken to before, but quiet for
+// 30+ days — with the fields the warm-reach drawer needs to offer one-tap reach.
+// Warmest first, so the most worth-saving relationships surface at the top. Never
+// includes never-contacted rows (last_interaction_at is null), so we never nag
+// strangers. RLS scopes to the owner.
+export interface QuietPerson {
+  id: string;
+  display_name: string;
+  title: string | null;
+  company: string | null;
+  primary_email: string | null;
+  primary_phone: string | null;
+  linkedin_url: string | null;
+  handles: unknown;
+  last_interaction_at: string | null;
+}
+
+export async function getGoingQuietPeople(userId: string, limit = 20): Promise<QuietPerson[]> {
+  const cutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const { data } = await supabase
+    .from('circle_person')
+    .select('id, display_name, title, company, primary_email, primary_phone, linkedin_url, handles, last_interaction_at')
+    .eq('user_id', userId)
+    .not('last_interaction_at', 'is', null)
+    .lt('last_interaction_at', cutoff)
+    .order('warmth', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  return (data as QuietPerson[]) ?? [];
+}
+
 // Persist the first-run "about you" into the existing identity columns. Best-effort:
 // never block onboarding if the write fails (the run itself is what matters).
 export async function saveAboutYou(userId: string, fields: { target_buyer?: string; positioning?: string; first_run_transcript?: string }): Promise<void> {

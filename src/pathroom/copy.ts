@@ -40,6 +40,20 @@ export const PLAN = {
   charge: "What's powering this",
 } as const;
 
+// The one box at the top of Circle. It does double duty: say what you're working
+// on (and we surface your inner circle for it), or name who — or the kind of
+// person — you're looking for (and we search your whole network for a real fit).
+export const BOX = {
+  label: 'What are you working on — or who are you looking for?',
+  placeholder: 'A goal, or the kind of person you need…',
+  voiceHint: 'Tap to talk',
+  /** Heading above results when the box was read as a people-search. */
+  foundLabel: 'Who can help',
+  /** Honest empty state for a people-search that found no grounded fit. */
+  foundEmpty:
+    "No one in your circle fits that yet — add a few more people or connect a source, and I'll keep looking.",
+} as const;
+
 // Warm, shared microcopy used across the onboarding + return surfaces.
 export const COPY = {
   signinTitle: 'Your plan, grounded in your world.',
