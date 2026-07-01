@@ -22,10 +22,9 @@ interface PulseDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   market: MarketPulse | null;
-  onStrengthen: () => void;
 }
 
-export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }: PulseDrawerProps) {
+export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerProps) {
   const hasData = !!(market && (market.market || market.role));
 
   return (
@@ -70,19 +69,6 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
               Market data loads with your read — run or re-read your plan and it'll show up here.
             </div>
           )}
-
-          <div style={{ marginTop: 22 }}>
-            <div className="sub" style={{ marginBottom: 10 }}>
-              The stronger your idea, the more this market moves in your favour.
-            </div>
-            <button
-              className="cta"
-              onClick={() => { onOpenChange(false); onStrengthen(); }}
-            >
-              <span>Strengthen your idea</span>
-              <span className="mono">→</span>
-            </button>
-          </div>
         </div>
       </SheetContent>
     </Sheet>

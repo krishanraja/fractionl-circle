@@ -1,7 +1,7 @@
 // Shared chrome for the thesis journey: the ember top nav (the brand mark IS the gauge,
 // dim when we know little, brighter as real fuel goes in) plus the extra CSS the dialogue,
 // the sharpen panel and the journey map all use. ThesisApp injects `chromeCss` once.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sun, Moon, Settings, Activity } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { applyTheme } from '@/lib/applyUserPreferences';
@@ -52,10 +52,37 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
   // The always-visible pulse indicator shows the fractional-market core metric.
   const core = market?.market ?? null;
 
+  // The ember mark IS the strength gauge, so it's the single door to strength:
+  //   tap  → what's powering your plan (the fuel breakdown)
+  //   hold → make it stronger (the coach question + the fuel cards)
+  // One door, two gestures — no duplicate "strengthen" prompts scattered elsewhere.
+  const holdTimer = useRef<number | null>(null);
+  const held = useRef(false);
+  const startHold = () => {
+    held.current = false;
+    if (!onStrengthen) return;
+    holdTimer.current = window.setTimeout(() => {
+      held.current = true;
+      haptics.medium();
+      setOpen(false);
+      onStrengthen();
+    }, 450);
+  };
+  const endHold = () => { if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; } };
+  const onEmberClick = () => { if (held.current) { held.current = false; return; } setOpen((o) => !o); };
+
   return (
     <div style={{ position: 'relative' }}>
       <div className="topnav">
-        <button className="emberbtn" onClick={() => setOpen((o) => !o)} aria-label="What's powering your plan">
+        <button
+          className="emberbtn"
+          onPointerDown={startHold}
+          onPointerUp={endHold}
+          onPointerLeave={endHold}
+          onPointerCancel={endHold}
+          onClick={onEmberClick}
+          aria-label={onStrengthen ? "Your plan strength — tap for what's powering it, press and hold to make it stronger" : "What's powering your plan"}
+        >
           <img src="/brand/fractionl-icon.png" alt="" className="ember" style={emberStyle(fuel)} />
         </button>
         {onHome
@@ -98,9 +125,17 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
               </div>
             ))}
           </div>
+          {onStrengthen ? (
+            <button
+              className="fuelhold"
+              onClick={() => { setOpen(false); onStrengthen(); }}
+            >
+              Press &amp; hold the mark to make it stronger
+            </button>
+          ) : null}
         </div>
       ) : null}
-      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} onStrengthen={() => onStrengthen?.()} />
+      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} />
       <ProfileSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
@@ -198,6 +233,8 @@ export const chromeCss = `
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }
 .thx .fueldot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
+.thx .fuelhold { display:block; width:100%; text-align:left; margin-top:11px; padding:11px 0 0; border:0; border-top:1px solid ${C.line}; background:none; cursor:pointer; font-family:${MONO}; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; }
+.thx .fuelhold:hover { color:${C.hi}; }
 /* guided dialogue */
 .thx .tt { margin-bottom:13px; }
 .thx .tyou { display:inline-block; font-size:13.5px; color:${C.hi}; background:${C.panel}; border:1px solid ${C.line2}; border-radius:9px 9px 9px 3px; padding:9px 12px; max-width:92%; }
