@@ -233,6 +233,7 @@ export default function ThesisApp() {
       <Home
         data={data} stepProgress={stepProgress} circle={circle} fuel={fuel}
         sharp={sharp}
+        onStrengthen={() => go('sharpen')}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => go('journey')}
         onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}

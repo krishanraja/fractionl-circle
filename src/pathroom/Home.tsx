@@ -10,12 +10,13 @@ import type { Scorecard } from './thesisViews';
 import type { CircleP } from './thesisData';
 import { holdingBack, type Sharpness } from './sharpness';
 
-export default function Home({ data, stepProgress, circle, fuel, sharp, onOpenRead, onOpenPath, onOpenCircle }: {
+export default function Home({ data, stepProgress, circle, fuel, sharp, onStrengthen, onOpenRead, onOpenPath, onOpenCircle }: {
   data: Scorecard;
   stepProgress: number[];
   circle: CircleP[];
   fuel: number;
   sharp: Sharpness;
+  onStrengthen: () => void;
   onOpenRead: () => void;
   onOpenPath: () => void;
   onOpenCircle: () => void;
@@ -58,6 +59,9 @@ export default function Home({ data, stepProgress, circle, fuel, sharp, onOpenRe
             {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
           </div>
           <div className="scorehold">{holdingBack(sharp)}</div>
+          <button className="strengthencta" onClick={onStrengthen}>
+            Make it stronger <span className="mono">→</span>
+          </button>
         </div>
       </div>
 

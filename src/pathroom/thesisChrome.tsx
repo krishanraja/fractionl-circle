@@ -81,6 +81,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
           onPointerLeave={endHold}
           onPointerCancel={endHold}
           onClick={onEmberClick}
+          onContextMenu={(e) => e.preventDefault()}
           aria-label={onStrengthen ? "Your plan strength — tap for what's powering it, press and hold to make it stronger" : "What's powering your plan"}
         >
           <img src="/brand/fractionl-icon.png" alt="" className="ember" style={emberStyle(fuel)} />
@@ -125,14 +126,6 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
               </div>
             ))}
           </div>
-          {onStrengthen ? (
-            <button
-              className="fuelhold"
-              onClick={() => { setOpen(false); onStrengthen(); }}
-            >
-              Press &amp; hold the mark to make it stronger
-            </button>
-          ) : null}
         </div>
       ) : null}
       <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} />
@@ -183,8 +176,8 @@ export const chromeCss = `
 .thx .thxfoot .cta { margin:0; }
 .thx .foothint { font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; background:none; border:0; cursor:pointer; display:block; width:100%; text-align:center; padding:8px 0 2px; }
 .thx .topnav { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:11px; padding:12px 20px; background:var(--thx-nav); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid ${C.line}; }
-.thx .emberbtn { background:none; border:0; padding:0; cursor:pointer; display:flex; align-items:center; line-height:0; }
-.thx .ember { width:26px; height:26px; transition:filter .8s ease, opacity .8s ease; }
+.thx .emberbtn { background:none; border:0; padding:0; cursor:pointer; display:flex; align-items:center; line-height:0; touch-action:manipulation; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+.thx .ember { width:26px; height:26px; transition:filter .8s ease, opacity .8s ease; pointer-events:none; -webkit-user-drag:none; }
 .thx .wm { height:15px; opacity:0.9; display:block; }
 .thx .wmbtn { background:none; border:0; padding:0; cursor:pointer; line-height:0; }
 .thx .navhome { background:none; border:1px solid ${C.line2}; border-radius:6px; padding:5px 10px; font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.mid}; cursor:pointer; }
@@ -233,8 +226,6 @@ export const chromeCss = `
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }
 .thx .fueldot { width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
-.thx .fuelhold { display:block; width:100%; text-align:left; margin-top:11px; padding:11px 0 0; border:0; border-top:1px solid ${C.line}; background:none; cursor:pointer; font-family:${MONO}; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; }
-.thx .fuelhold:hover { color:${C.hi}; }
 /* guided dialogue */
 .thx .tt { margin-bottom:13px; }
 .thx .tyou { display:inline-block; font-size:13.5px; color:${C.hi}; background:${C.panel}; border:1px solid ${C.line2}; border-radius:9px 9px 9px 3px; padding:9px 12px; max-width:92%; }
@@ -328,6 +319,10 @@ export const chromeCss = `
 .thx .scoremax { font-family:${MONO}; font-size:13px; color:${C.lo}; }
 .thx .scorepend { font-family:${MONO}; font-size:11px; color:${C.accent}; }
 .thx .scorehold { font-size:12px; color:${C.mid}; margin-top:4px; }
+/* the single, visible door to strengthening — sits right under the score/weakness */
+.thx .strengthencta { display:inline-flex; align-items:center; gap:6px; margin-top:13px; padding:9px 15px; border-radius:999px; border:1px solid ${C.accent}; background:${C.accent}; color:#1A1206; font-size:12.5px; font-weight:700; cursor:pointer; transition:filter .12s ease, transform .12s ease; }
+.thx .strengthencta:hover { filter:brightness(1.05); }
+.thx .strengthencta:active { transform:translateY(1px); }
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
 /* living + breathing motion, restrained for the quiet-instrument register */
 @keyframes thxrise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
