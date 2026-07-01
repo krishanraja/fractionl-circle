@@ -237,10 +237,7 @@ export default function ThesisApp() {
         onOpenPath={() => go('journey')}
         onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}
       />,
-      <>
-        <button className="cta" onClick={() => go('journey')}><span>Continue your path</span><span className="mono">→</span></button>
-        <button className="foothint" onClick={() => go('sharpen')}>+ make your plan stronger · add a signal</button>
-      </>,
+      <button className="cta" onClick={() => go('journey')}><span>Continue your path</span><span className="mono">→</span></button>,
       undefined, true,
     );
   }
@@ -282,17 +279,23 @@ export default function ThesisApp() {
   }
 
   if (phase === 'sharpen' && data) {
+    // One strengthen surface, both ways in: the decision-shaped question (multiple-
+    // choice pills) up top, then the "make it stronger" fuel cards. Reached from the
+    // single door — press-and-hold the ember mark.
     return frame(
-      <SharpenPanel
-        thesis={thesisText}
-        onAdmire={(d) => extractAdmire(d, thesisText)}
-        onSaveInspiration={onSaveInsp}
-        onCard={onCard}
-        onLinkedin={(url) => { setLinkedin(url); setLinkedinDone(true); }}
-        cardCount={cardCount}
-        linkedinDone={linkedinDone}
-        edges={edges}
-      />,
+      <>
+        <SharpenPrompt onAnswered={refreshAnswers} />
+        <SharpenPanel
+          thesis={thesisText}
+          onAdmire={(d) => extractAdmire(d, thesisText)}
+          onSaveInspiration={onSaveInsp}
+          onCard={onCard}
+          onLinkedin={(url) => { setLinkedin(url); setLinkedinDone(true); }}
+          cardCount={cardCount}
+          linkedinDone={linkedinDone}
+          edges={edges}
+        />
+      </>,
       <>
         <button className="cta" onClick={() => go('journey')}><span>See your path</span><span className="mono">→</span></button>
         <button className="foothint" disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 'see how it lands now'}</button>
