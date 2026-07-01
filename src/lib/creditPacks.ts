@@ -1,0 +1,32 @@
+// Credit-pack catalogue — the one-time top-ups that fund max-effort enrichment, on
+// top of the subscription. Mirrors src/lib/tiers.ts: price labels + Stripe price-ID
+// env vars live here as the single client source of truth.
+//
+// Pricing is deliberately margin-positive at every tier: $/credit ($0.09–$0.125)
+// sits ~30–40x above our marginal cost per credit (~$0.003 = $0.06 / 20 credits),
+// with a gentle volume discount as the pack grows. The SERVER independently maps
+// price_id -> credits (STRIPE_CREDIT_PACKS env), so the granted amount can never be
+// set by the client.
+import { DEEP_ENRICH_CREDITS } from './creditCosts';
+
+export interface CreditPack {
+  slug: string;
+  name: string;
+  credits: number;
+  priceLabel: string;
+  priceIdEnv: string;   // import.meta.env key for the Stripe price ID
+  highlighted: boolean;
+}
+
+export const CREDIT_PACKS: CreditPack[] = [
+  { slug: 'starter', name: 'Starter', credits: 120,  priceLabel: '$15',  priceIdEnv: 'VITE_STRIPE_CREDITS_STARTER_PRICE_ID', highlighted: false },
+  { slug: 'pro',     name: 'Pro',     credits: 650,  priceLabel: '$70',  priceIdEnv: 'VITE_STRIPE_CREDITS_PRO_PRICE_ID',     highlighted: true },
+  { slug: 'scale',   name: 'Scale',   credits: 3000, priceLabel: '$280', priceIdEnv: 'VITE_STRIPE_CREDITS_SCALE_PRICE_ID',   highlighted: false },
+];
+
+// How many deep enrichments a pack buys, for a plain "≈ N deep dives" line.
+export const packEnrichments = (p: CreditPack): number => Math.floor(p.credits / DEEP_ENRICH_CREDITS);
+
+// The Stripe price ID for a pack from Vite env. Returns null when unconfigured.
+export const getCreditPackPriceId = (p: CreditPack): string | null =>
+  (import.meta.env as Record<string, string | undefined>)[p.priceIdEnv] ?? null;

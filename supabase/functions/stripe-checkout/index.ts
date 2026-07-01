@@ -55,12 +55,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { price_id } = await req.json();
+    const { price_id, mode } = await req.json();
     if (!price_id) {
       return new Response(
         JSON.stringify({ error: 'price_id is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Credit packs are one-time purchases, not subscriptions. The server owns the
+    // price -> credits mapping (STRIPE_CREDIT_PACKS = "price_x:120,price_y:650")
+    // so the client can NEVER inflate how many credits a purchase grants.
+    const isCredits = mode === 'credits';
+    let creditAmount = 0;
+    if (isCredits) {
+      const map = new Map<string, number>();
+      for (const pair of (Deno.env.get('STRIPE_CREDIT_PACKS') || '').split(',')) {
+        const [pid, n] = pair.split(':');
+        if (pid && n) map.set(pid.trim(), parseInt(n.trim(), 10));
+      }
+      creditAmount = map.get(price_id) ?? 0;
+      if (!creditAmount) {
+        return new Response(
+          JSON.stringify({ error: 'Unknown credit pack' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Acquisition attribution (5c): read the user's first-touch row and build
@@ -105,18 +125,32 @@ Deno.serve(async (req) => {
         .eq('user_id', user.id);
     }
 
-    // Create Checkout Session
-    const session = await stripeRequest('/checkout/sessions', {
-      'customer': customerId,
-      'mode': 'subscription',
-      'line_items[0][price]': price_id,
-      'line_items[0][quantity]': '1',
-      'success_url': `${APP_URL}?checkout=success`,
-      'cancel_url': `${APP_URL}?checkout=canceled`,
-      'subscription_data[metadata][supabase_user_id]': user.id,
-      'allow_promotion_codes': 'true',
-      ...subMeta,
-    });
+    // Create Checkout Session — a one-time payment for a credit pack, or the
+    // recurring subscription. The webhook reads metadata.credit_pack to grant credits.
+    const session = isCredits
+      ? await stripeRequest('/checkout/sessions', {
+          'customer': customerId,
+          'mode': 'payment',
+          'line_items[0][price]': price_id,
+          'line_items[0][quantity]': '1',
+          'success_url': `${APP_URL}?checkout=credits`,
+          'cancel_url': `${APP_URL}?checkout=canceled`,
+          'payment_intent_data[metadata][supabase_user_id]': user.id,
+          'payment_intent_data[metadata][credit_pack]': String(creditAmount),
+          'metadata[supabase_user_id]': user.id,
+          'metadata[credit_pack]': String(creditAmount),
+        })
+      : await stripeRequest('/checkout/sessions', {
+          'customer': customerId,
+          'mode': 'subscription',
+          'line_items[0][price]': price_id,
+          'line_items[0][quantity]': '1',
+          'success_url': `${APP_URL}?checkout=success`,
+          'cancel_url': `${APP_URL}?checkout=canceled`,
+          'subscription_data[metadata][supabase_user_id]': user.id,
+          'allow_promotion_codes': 'true',
+          ...subMeta,
+        });
 
     return new Response(
       JSON.stringify({ url: session.url, session_id: session.id }),

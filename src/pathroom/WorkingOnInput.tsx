@@ -4,13 +4,17 @@
 // grounded fit). Type it or voice-note it. One-tap warm reach on every result.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Loader2, Sparkles, Mic, Square, Link2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useVoiceRecording } from '@/hooks/useVoiceRecording';
+import { useCredits } from '@/hooks/useCredits';
 import { ContactButton } from '@/components/circle/ContactButton';
 import { runBoxQuery, getReadOffer, type BoxIntent, type InnerRole } from '@/lib/theRead';
 import type { ContactablePerson } from '@/lib/primaryContact';
+import BuyCreditsSheet from './BuyCreditsSheet';
+import { DEEP_ENRICH_CREDITS } from '@/lib/creditCosts';
 import { BOX } from './copy';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
@@ -62,6 +66,9 @@ export default function WorkingOnInput() {
   const [intent, setIntent] = useState<BoxIntent | null>(null);
   const [results, setResults] = useState<DisplayPerson[] | null>(null);
   const [contacts, setContacts] = useState<Map<string, ContactablePerson>>(new Map());
+  const [digging, setDigging] = useState<Set<string>>(new Set());
+  const [buyOpen, setBuyOpen] = useState(false);
+  const { balance, digDeeper } = useCredits();
   const seeded = useRef(false);
 
   const { isRecording, audioBlob, startRecording, stopRecording, resetRecording, error: recError } =
@@ -148,6 +155,23 @@ export default function WorkingOnInput() {
     else { haptics.medium(); setErr(null); void startRecording(); }
   };
 
+  // Spend credits to run the max-effort enrichment on one person, then re-rank with
+  // the richer profile. Honest about every outcome, and never silent about cost.
+  const handleDig = useCallback(async (id: string) => {
+    setDigging((prev) => new Set(prev).add(id));
+    try {
+      const res = await digDeeper(id);
+      if (res.status === 'done') { toast.success('Found more — re-ranking.'); void run(); }
+      else if (res.status === 'insufficient') { toast('Not enough credits to dig deeper.'); setBuyOpen(true); }
+      else if (res.status === 'no_keys') { toast('Deep search isn’t switched on yet.'); }
+      else { toast('Couldn’t find more on them — you weren’t charged.'); }
+    } catch {
+      toast('Something went wrong — you weren’t charged.');
+    } finally {
+      setDigging((prev) => { const n = new Set(prev); n.delete(id); return n; });
+    }
+  }, [digDeeper, run]);
+
   const micBusy = transcribing;
 
   return (
@@ -210,17 +234,37 @@ export default function WorkingOnInput() {
                       )}
                     </div>
                   </div>
-                  {contact && (
-                    <div style={{ padding: '0 14px 12px 64px' }}>
-                      <ContactButton person={contact} raws={[]} />
+                  {(contact || intent === 'find_people') && (
+                    <div style={{ padding: '0 14px 12px 64px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {contact && <ContactButton person={contact} raws={[]} />}
+                      {intent === 'find_people' && (
+                        <button className="ghostbtn" disabled={digging.has(p.id)} onClick={() => void handleDig(p.id)}>
+                          {digging.has(p.id)
+                            ? <><Loader2 size={12} style={{ animation: 'thxspin 0.8s linear infinite' }} /> Digging…</>
+                            : <><Sparkles size={12} /> Dig deeper</>}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
               );
             })}
+            {intent === 'find_people' && (
+              <p className="sub" style={{ marginTop: 10, fontSize: 11.5 }}>
+                Dig deeper runs a full web search on someone — {DEEP_ENRICH_CREDITS} credits each.{' '}
+                <button
+                  onClick={() => setBuyOpen(true)}
+                  style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--thx-accent)', font: 'inherit' }}
+                >
+                  {balance ?? '—'} credits · Buy more
+                </button>
+              </p>
+            )}
           </div>
         )
       )}
+
+      <BuyCreditsSheet open={buyOpen} onOpenChange={setBuyOpen} />
     </div>
   );
 }

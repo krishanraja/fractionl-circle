@@ -59,6 +59,32 @@ export function composeEmbedText(p: PersonRow): string {
 // string lets PostgREST cast it into the vector column without a custom RPC.
 export const vecToStr = (v: number[]): string => '[' + v.join(',') + ']';
 
+// Re-embed specific people immediately (e.g. right after enrich-max rewrites their
+// dossier), so a follow-up search sees the richer profile without waiting for cron.
+// Best-effort: returns the count embedded, 0 when embeddings are unavailable.
+export async function embedPersons(supabase: Db, ids: string[]): Promise<number> {
+  if (!ids.length) return 0;
+  const { data } = await supabase
+    .from('circle_person')
+    .select('id, display_name, title, company, tags, note, dossier')
+    .in('id', ids);
+  const rows = (data ?? []) as PersonRow[];
+  const items = rows.map((r) => ({ id: r.id, text: composeEmbedText(r) })).filter((x) => x.text);
+  if (!items.length) return 0;
+  const vecs = await embed(items.map((x) => x.text));
+  if (!vecs) return 0;
+  const now = new Date().toISOString();
+  let n = 0;
+  await Promise.all(items.map(async (x, i) => {
+    const { error } = await supabase
+      .from('circle_person')
+      .update({ embedding: vecToStr(vecs[i]), embedding_text: x.text, embedded_at: now })
+      .eq('id', x.id);
+    if (!error) n += 1;
+  }));
+  return n;
+}
+
 interface BackfillOpts {
   /** Scope to one user (search / embed-circle). Omit for a cross-user cron sweep. */
   userId?: string;
