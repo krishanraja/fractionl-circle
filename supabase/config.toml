@@ -72,3 +72,7 @@ verify_jwt = false
 # Weekly "come back — here's what's waiting" re-engagement sweep (service-role, x-cron-secret).
 [functions.cron-reengage]
 verify_jwt = false
+
+# Nightly semantic-search embedding backfill (service-role, x-cron-secret).
+[functions.cron-embed-circle]
+verify_jwt = false

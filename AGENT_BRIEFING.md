@@ -86,7 +86,8 @@ Always confirm live prices and the current offer from https://circle.fractionl.a
 | **Chief of Staff** (`executive`) | $79/mo | Help me scale. | Unlimited reads and warm reach; a weekly brief on your network and market; external signal feeds (RFPs, job changes, trends); cross-user market intelligence; priority compute and white-glove concierge onboarding. |
 
 - **Pro is the highlighted / primary CTA tier.** Free gives one full read with no paywall on first value; the deepening tools (re-reads, the path, warm reach, ongoing monitoring) are Pro.
-- **Stripe account:** fractionl_ai (three tiers plus checkout are live).
+- **Stripe account:** fractionl_ai (three subscription tiers plus checkout are live).
+- **Credit packs (one-time, on top of any tier):** Starter 120 credits / $15 · Pro 650 / $70 · Scale 3000 / $280. Credits fund max-effort "10/10" enrichment (live open-web research on a person, 20 credits per deep dive). Source of truth: `src/lib/creditPacks.ts` + `src/lib/creditCosts.ts`; server maps price→credits via the `STRIPE_CREDIT_PACKS` secret so a purchase can never be inflated client-side.
 
 ---
 
@@ -220,6 +221,10 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 | In-app return surface ("what's waiting": people going quiet, decisions to fold in) | LIVE | Claim freely. |
 | Circle capture: LinkedIn CSV, CRM/sheet, Google/Microsoft contacts sync, screenshot-to-contact (vision) | LIVE | Claim freely. |
 | Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
+| One box on the Circle home: say what you're working on (surfaces your inner circle) OR who — or the kind of person — you're looking for (searches your whole network). Type it or voice-note it. | LIVE | Claim freely. |
+| Intelligent people-search over your whole network: semantic (meaning-based) + keyword retrieval returns real people, each with the actual fact that matched and a confidence — plus evidence-backed "warm route" (second-degree) inferences grounded in a person's OWN history (e.g. "was at Accel, a warm way into that fund"), never an invented relationship. | LIVE | Claim freely, including the honesty (nothing invented; every match cites a real fact). |
+| "Drop a contact" pinned in the top nav + a warm-reach bell/drawer (people going quiet, one-tap reach) | LIVE | Claim freely. |
+| Credit packs (one-time top-ups, on top of the subscription) that fund max-effort "10/10" enrichment — live open-web research synthesised into the contact's dossier — spent per deep dive; every match stays honest and cited. | LIVE | Claim freely. Credits are optional top-ups; the core search works on already-connected data without them. |
 | Weekly re-engagement EMAIL + WEB PUSH sweep (`cron-reengage`) | ROADMAP (coded + scheduled, INERT until Resend/VAPID keys are set) | Do NOT claim push or automatic re-engagement email as live. The in-app return surface IS live and is the safe thing to cite. |
 | Native one-tap SEND (Gmail/Outlook draft injected, or LinkedIn composer) | ROADMAP | Do not claim; today it is a pre-filled draft + the user sends. |
 | Native calendar-write holds (vs the `.ics` attachment) | ROADMAP (behind off-by-default flags, pending sensitive-scope verification) | Do not claim; today the digest ships an `.ics` hold. |

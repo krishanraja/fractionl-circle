@@ -84,6 +84,42 @@ export const availableProviders = (env: Env): Provider[] => {
   return list;
 };
 
+// Embeddings for the semantic people-search. Deliberately single-provider: we pin
+// OpenAI text-embedding-3-small (1536d) so every vector lives in ONE space — mixing
+// providers with different dimensionalities would corrupt the vector(1536) column.
+// Returns null (never throws) when no key is configured or the call fails, so the
+// caller degrades cleanly to keyword search instead of breaking.
+export const EMBED_MODEL = 'text-embedding-3-small';
+export const EMBED_DIMS = 1536;
+
+export async function embed(
+  texts: string[],
+  deps: { env?: Env; timeoutMs?: number } = {},
+): Promise<number[][] | null> {
+  if (!texts.length) return [];
+  const env: Env = deps.env ?? ((k) => Deno.env.get(k));
+  const key = env('OPENAI_API_KEY');
+  if (!key) return null;
+  try {
+    const resp = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: EMBED_MODEL, input: texts }),
+      signal: AbortSignal.timeout(deps.timeoutMs ?? 20_000),
+    });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    const data = json?.data;
+    if (!Array.isArray(data) || data.length !== texts.length) return null;
+    // The API preserves input order via the `index` field; sort to be safe.
+    const out = [...data].sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).map((d) => d.embedding);
+    if (out.some((v) => !Array.isArray(v) || v.length !== EMBED_DIMS)) return null;
+    return out as number[][];
+  } catch {
+    return null;
+  }
+}
+
 // Try each provider in turn; return the first success. Throws only if every
 // configured provider fails (aggregating their errors). `providers` is injectable
 // for testing the fallback logic without the network.

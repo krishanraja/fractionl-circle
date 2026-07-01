@@ -138,6 +138,26 @@ Deno.serve(async (req) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
+
+        // Credit pack: a one-time payment (no subscription). Grant is idempotent on
+        // event.id inside the RPC, so a redelivered webhook never double-credits.
+        if (session.mode === 'payment' && session.metadata?.credit_pack) {
+          const creditUser = session.metadata?.supabase_user_id;
+          const credits = parseInt(session.metadata.credit_pack, 10);
+          const pi = typeof session.payment_intent === 'string' ? session.payment_intent : null;
+          if (creditUser && credits > 0) {
+            await supabase.rpc('grant_credits', {
+              p_user_id: creditUser, p_amount: credits, p_reason: 'purchase', p_ref: pi, p_event_id: event.id,
+            });
+            await emitAttribution('credits_purchased', {
+              user_id: creditUser, amount_cents: session.amount_total ?? null, currency: session.currency ?? null,
+              metadata: { credits: String(credits), payment_intent: pi, source_event: 'checkout.session.completed' },
+            }, `circle:credits:${event.id}`);
+            console.log(`User ${creditUser} purchased ${credits} credits`);
+          }
+          break;
+        }
+
         const userId = session.subscription
           ? (await stripeGet(`/subscriptions/${session.subscription}`)).metadata?.supabase_user_id
           : session.metadata?.supabase_user_id;
@@ -257,6 +277,13 @@ Deno.serve(async (req) => {
 
       case 'charge.refunded': {
         const charge = event.data.object;
+        // Full refund of a credit-pack payment -> claw back the granted credits.
+        // clawback_credits only matches 'purchase' ledger rows for this payment
+        // intent (subscription refunds match nothing) and is idempotent on event.id.
+        const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : null;
+        if (pi && charge.amount && charge.amount_refunded && charge.amount_refunded >= charge.amount) {
+          await supabase.rpc('clawback_credits', { p_payment_intent: pi, p_event_id: event.id });
+        }
         await emitAttribution('refunded', {
           stripe_customer_id: charge.customer ?? null,
           amount_cents: charge.amount_refunded ?? null,

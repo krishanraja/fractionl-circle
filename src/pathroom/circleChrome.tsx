@@ -2,17 +2,27 @@
 // Deep dive tab. Provides `circleCss` (the .thx classes the circle components use)
 // and BrandBar (the icon + wordmark lockup + theme toggle + settings entry).
 import { useEffect, useState } from 'react';
-import { Sun, Moon, Settings } from 'lucide-react';
+import { Sun, Moon, Settings, UserPlus, Bell } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { applyTheme } from '@/lib/applyUserPreferences';
 import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet';
 import { haptics } from '@/utils/haptics';
 import { C, MONO } from './tokens';
 
+interface BrandBarProps {
+  /** Pins the app's most important action — dropping a contact — into the nav. */
+  onDropContact?: () => void;
+  /** Opens the warm-reach drawer (people going quiet + banked decisions). */
+  onOpenWarmReach?: () => void;
+  /** Badge count on the bell; 0 hides the badge (the bell itself still shows). */
+  notifCount?: number;
+}
+
 // The branded top bar for the Circle tab. Mirrors EmberNav's lockup (icon +
-// wordmark) and adds a one-tap theme toggle + a settings entry (the new shell
-// otherwise has no way to reach preferences).
-export function BrandBar() {
+// wordmark) and adds the pinned "Drop a contact" action, a warm-reach bell, a
+// one-tap theme toggle + a settings entry (the new shell otherwise has no way to
+// reach preferences).
+export function BrandBar({ onDropContact, onOpenWarmReach, notifCount = 0 }: BrandBarProps = {}) {
   const { preferences, updatePreferences } = useUserProfile();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isDark, setIsDark] = useState(
@@ -44,6 +54,23 @@ export function BrandBar() {
         <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" />
         <span style={{ flex: 1 }} />
         <div className="navbtns">
+          {onDropContact && (
+            <button className="navcta" onClick={() => { haptics.tap(); onDropContact(); }} aria-label="Drop a contact">
+              <UserPlus size={15} strokeWidth={2.3} />
+              <span className="navcta-label">Drop</span>
+            </button>
+          )}
+          {onOpenWarmReach && (
+            <button
+              className="navbtn"
+              style={{ position: 'relative' }}
+              onClick={() => { haptics.tap(); onOpenWarmReach(); }}
+              aria-label={notifCount > 0 ? `Warm reach — ${notifCount} waiting` : 'Warm reach'}
+            >
+              <Bell size={16} />
+              {notifCount > 0 && <span className="navbadge">{notifCount > 9 ? '9+' : notifCount}</span>}
+            </button>
+          )}
           <button className="navbtn" onClick={toggleTheme} aria-label={isDark ? 'Switch to light' : 'Switch to dark'}>
             {isDark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
@@ -75,6 +102,17 @@ export const circleCss = `
 .thx .navbtn { background:none; border:1px solid ${C.line2}; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:${C.mid}; cursor:pointer; transition:border-color .2s ease, color .2s ease; }
 .thx .navbtn:hover { color:${C.accent}; border-color:${C.accentEdge}; }
 
+/* pinned primary action in the nav (Drop a contact) */
+.thx .navcta { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px; border:0; border-radius:8px; background:${C.accent}; color:#1A1206; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:filter .12s ease, transform .12s ease; }
+.thx .navcta:hover { filter:brightness(0.96); }
+.thx .navcta:active { transform:translateY(1px); }
+
+/* warm-reach bell badge */
+.thx .navbadge { position:absolute; top:-5px; right:-5px; min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:${C.accent}; color:#1A1206; font-family:${MONO}; font-size:9px; font-weight:700; line-height:1; display:flex; align-items:center; justify-content:center; border:1.5px solid ${C.bg}; }
+
+/* tight screens: collapse the Drop label to the icon so the lockup still fits */
+@media (max-width: 384px) { .thx .navcta-label { display:none; } .thx .navcta { padding:0 9px; } }
+
 /* the prominent primary action on the Circle hero (full-bleed .cta with an icon) */
 .thx .cta .ctaicon { display:inline-flex; align-items:center; gap:8px; }
 
@@ -89,6 +127,14 @@ export const circleCss = `
 .thx .woin input::placeholder { color:${C.lo}; }
 .thx .wosend { width:34px; height:34px; border-radius:7px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border:0; cursor:pointer; background:${C.accent}; color:#1A1206; }
 .thx .wosend:disabled { background:${C.panel3}; color:${C.lo}; cursor:default; }
+/* voice-note button inside the box */
+.thx .womic { width:34px; height:34px; border-radius:7px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border:1px solid ${C.line2}; background:none; color:${C.mid}; cursor:pointer; transition:color .2s ease, border-color .2s ease; }
+.thx .womic:hover { color:${C.accent}; border-color:${C.accentEdge}; }
+.thx .womic:disabled { opacity:0.5; cursor:default; }
+.thx .womic.rec { background:${C.accent}; color:#1A1206; border-color:${C.accent}; animation:thxpulse 1.3s ease-in-out infinite; }
+@keyframes thxpulse { 0%,100% { box-shadow:0 0 0 0 rgba(224,162,60,0.5); } 50% { box-shadow:0 0 0 5px rgba(224,162,60,0); } }
+/* provenance line on a people-search result */
+.thx .cmatch { font-family:${MONO}; font-size:9.5px; letter-spacing:0.04em; color:${C.lo}; margin-top:6px; display:flex; align-items:center; gap:5px; }
 
 /* contact / result rows */
 .thx .crow { background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; overflow:hidden; margin-top:8px; }
@@ -118,6 +164,7 @@ export const circleCss = `
 /* role badge (working-on results) */
 .thx .rolebadge { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; padding:2px 7px; border-radius:999px; color:${C.accent}; border:1px solid ${C.accentEdge}; flex:0 0 auto; }
 .thx .rolebadge.risk { color:${C.risk}; border-color:rgba(204,119,119,0.4); }
+.thx .rolebadge.inferred { color:${C.cool}; border-color:rgba(143,184,201,0.4); }
 
 /* secondary / ghost button (enrich, retry, none-of-these) */
 .thx .ghostbtn { display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid ${C.line2}; border-radius:8px; padding:7px 12px; font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:${C.mid}; cursor:pointer; transition:border-color .2s ease, color .2s ease; }

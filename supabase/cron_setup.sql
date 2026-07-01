@@ -37,6 +37,7 @@ select cron.unschedule('cron-sync-microsoft')   where exists (select 1 from cron
 select cron.unschedule('compute-warmth')        where exists (select 1 from cron.job where jobname = 'compute-warmth');
 select cron.unschedule('cron-warm-digest')      where exists (select 1 from cron.job where jobname = 'cron-warm-digest');
 select cron.unschedule('cron-reengage')         where exists (select 1 from cron.job where jobname = 'cron-reengage');
+select cron.unschedule('cron-embed-circle')     where exists (select 1 from cron.job where jobname = 'cron-embed-circle');
 
 -- ---------------------------------------------------------------------------
 -- Phase 5c: nightly Google contacts + calendar re-sync. 06:00 UTC daily.
@@ -142,7 +143,29 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Sanity check. Expected: five rows.
+-- Semantic search: nightly embedding backfill for the "who can help me" search.
+-- 07:45 UTC, i.e. AFTER compute-warmth (07:30) so the sweep is ordered by fresh
+-- warmth. Inert (embeds nothing) until OPENAI_API_KEY is set; keyword search still
+-- works in the meantime.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-embed-circle',
+  '45 7 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-embed-circle',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Sanity check. Expected: six rows.
 -- ---------------------------------------------------------------------------
 -- select jobname, schedule, active from cron.job where jobname like 'cron-%' or jobname = 'compute-warmth';
 

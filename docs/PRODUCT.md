@@ -164,6 +164,18 @@ It is honest: it renders nothing when there is nothing genuinely waiting, and it
 *Why:* give returning users a concrete reason to come back, and wire the `goal_reminders`
 toggle — which previously controlled nothing — to real behavior.
 
+**Nav restructure (2026-07-01).** The Circle home was reorganised so the two most important
+things are always in reach and the page leads with action:
+
+- **Drop a contact is pinned in the top nav** (`BrandBar` in `circleChrome.tsx`, amber `.navcta`
+  pill) — the app's most important action, one tap from anywhere on the tab.
+- **Warm reach moved into a nav bell + drawer.** The bell carries a badge (going-quiet + banked,
+  still gated by `goal_reminders`); tapping it opens `WarmReachDrawer.tsx` — a right-side sheet
+  listing the actual people going quiet (each with one-tap `ContactButton` reach, via the new
+  `getGoingQuietPeople`) and a banked-decisions link into the Plan. The old inline `ReturnSurface`
+  card is retired; its honest logic lives in the drawer.
+- **The box leads the page** — see the next section.
+
 ## The make-it-stronger coach + strength score
 
 The app is a coach, not just a report. At the right moments it asks the **one** question that
@@ -188,9 +200,65 @@ your own), because the user often needs to decide, not stare at a blank box.
   (skippable, dismissible) mounted on Home (the daily habit), under the read, and on the path's
   weak-read state. Built to drop in anywhere.
 
+## The people-finder box + credit-gated enrichment (2026-07-01)
+
+One box at the top of the Circle home (`WorkingOnInput.tsx`) does double duty, and takes typed
+**or voice** input (mic → `useVoiceRecording` → `transcribe` → fills the box → runs):
+
+- **"What are you working on"** → the existing read+rank loop (`extract-read` → `rank-inner-circle`)
+  surfaces the few people in your inner circle who matter for your direction.
+- **"Who — or the kind of person — are you looking for"** → a real search over your WHOLE network.
+
+Each submission is routed by `runBoxQuery` (`src/lib/theRead.ts`), which calls the new
+**`search-network`** edge function. That function first **classifies intent** (working_on vs
+find_people; when torn it prefers find_people, the non-destructive path), then for a find:
+
+1. **Tops up embeddings just-in-time** (bounded) and retrieves candidates two ways, unioned:
+   **semantic** nearest-neighbours via pgvector (`match_circle_persons`, cosine/HNSW over each
+   person's embedded profile — so "venture fund" reaches "Partner at Sequoia" by meaning) and
+   **keyword** hits (exact matches the vector may deprioritise). Falls back to keyword+warmth when
+   no embeddings provider is configured — never broken.
+2. **LLM-ranks the grounded fits**, two evidence-backed degrees: **first** (the person themselves
+   fits) and **second** (an INFERRED warm route grounded in the person's OWN history — e.g. "was at
+   Accel, a warm way into that fund"). Every claim must cite a real field; a second-degree match
+   with no cited evidence is dropped, and its confidence is capped. Nothing is invented.
+
+Results render in the box with the fact that matched ("Matched on / Route via …") and an "Inferred"
+tag for second-degree. This is the same honesty principle as the strength score: cite or don't claim.
+
+**The embedding pipeline.** `_shared/circleEmbed.ts` composes a deterministic profile blob (name,
+title, company, tags, note, dossier summary/experience/education/skills) and embeds it with OpenAI
+`text-embedding-3-small` (1536d, pinned to one model so all vectors share a space; `embed()` in
+`_shared/llm.ts` returns null without a key so search degrades to keyword). Vectors live on
+`circle_person.embedding` (+ `embedding_text` for drift detection, `embedded_at`). They're kept
+fresh by `embed-circle` (on-demand, per user), the just-in-time top-up in search, and
+**`cron-embed-circle`** (nightly 07:45 UTC, after warmth; re-embeds only what drifted).
+
+**Credit-gated max-effort enrichment.** When you want to go deeper on a result, "Dig deeper" runs
+**`enrich-max`**: the 10/10, leave-nothing-on-the-table tier. It (a) returns `no_keys` WITHOUT
+charging if it can't deliver, (b) **spends credits atomically before** any paid call, (c) runs live
+open-web research (Perplexity) + LLM synthesis into the dossier and re-embeds the person, and (d)
+**refunds** on any failure. Distinct from the free `enrich-linkedin` profile tier.
+
+**Credits system.** A prepaid balance on top of the subscription:
+
+- **Schema** (`credit_balance` + append-only `credit_ledger`): RLS is select-own with **no client
+  write policies**. All mutation is via `SECURITY DEFINER` RPCs granted **only to `service_role`**
+  (`grant_credits` / `spend_credits` / `refund_credits` / `clawback_credits`), so a user can never
+  mint or move credits directly. `spend_credits` locks the balance row (`FOR UPDATE`); grants are
+  idempotent on the Stripe event id.
+- **Purchase**: `stripe-checkout` gains a one-time `credits` (payment) mode; the **server** maps
+  price→credits via the `STRIPE_CREDIT_PACKS` secret, so a purchase can't be inflated client-side.
+  `stripe-webhook` grants on completion and claws back on a full refund.
+- **Pricing / margin** (`src/lib/creditPacks.ts`, `src/lib/creditCosts.ts`): Starter 120/$15 · Pro
+  650/$70 · Scale 3000/$280; 20 credits per deep dive. $/credit sits ~30–40× above marginal cost,
+  so every pack is margin-positive. Live Stripe price IDs ship as defaults (they're public), with
+  `VITE_STRIPE_CREDITS_*` env overrides. Balance + buy flow in `useCredits` / `BuyCreditsSheet`.
+
 ## Pricing
 
-Source of truth: `src/lib/tiers.ts` (price labels, feature bullets, Stripe price-id env vars).
+Source of truth: `src/lib/tiers.ts` (price labels, feature bullets, Stripe price-id env vars);
+`src/lib/creditPacks.ts` for the one-time credit packs.
 The DB-level tier enum is `free | pro | executive`. Three tiers:
 
 - **Free (Freemium), $0:** one full read of where you stand, your plan and next moves, build
@@ -335,12 +403,13 @@ reuses these existing columns — **no migration was added**. Warmth is recomput
 price-id Vercel envs for checkout. Two off-by-default flags gate native calendar write
 (`GOOGLE_CALENDAR_WRITE_ENABLED`, `WARM_DIGEST_NATIVE_CALENDAR`).
 
-**Scheduled jobs** (pg_cron, see `supabase/cron_setup.sql`). The live cron set is five jobs:
+**Scheduled jobs** (pg_cron, see `supabase/cron_setup.sql`). The live cron set is six jobs:
 `cron-sync-google` (nightly 06:00 UTC) and `cron-sync-microsoft` (07:00) contact+calendar
-sync, `compute-warmth` (07:30, after the syncs so warmth is current), weekly `cron-warm-digest`
-(Mon 13:00), and weekly `cron-reengage` (Mon 15:00, two hours after the digest so a drifted user
-gets the warm-circle nudge first; inert until Resend/VAPID are set). The legacy
-`cron-match-engine` and `cron-sunday-letter` schedules were removed.
+sync, `compute-warmth` (07:30, after the syncs so warmth is current), `cron-embed-circle` (07:45,
+after warmth so the sweep is warmth-ordered; re-embeds only drifted profiles for the semantic
+people-search), weekly `cron-warm-digest` (Mon 13:00), and weekly `cron-reengage` (Mon 15:00, two
+hours after the digest so a drifted user gets the warm-circle nudge first; inert until Resend/VAPID
+are set). The legacy `cron-match-engine` and `cron-sunday-letter` schedules were removed.
 
 ## Run and deploy
 
@@ -370,6 +439,17 @@ gets the warm-circle nudge first; inert until Resend/VAPID are set). The legacy
 - **Make-it-stronger coach + strength score** — `sharpness.ts`, `next-question`,
   `thesis_answers`, the `SharpenPrompt` card on Home/Read/Path, and `validate-thesis` folding
   answers into re-reads.
+- **Circle nav restructure** — Drop-a-contact pinned in the top nav (`BrandBar`), warm reach moved
+  to a nav bell + `WarmReachDrawer`, and the unified people-finder box leading the page.
+- **Intelligent people-search + semantic engine** — `search-network` (intent routing + pgvector
+  `match_circle_persons` ∪ keyword + evidence-backed first/second-degree ranking), the
+  `_shared/circleEmbed.ts` embedding pipeline (`embed-circle`, `cron-embed-circle`, `embed()` in
+  `_shared/llm.ts`), voice input on the box. Migration `20260701120000_person_embeddings.sql`.
+- **Credits + max-effort enrichment** — `credit_balance`/`credit_ledger` + the service-role-only
+  `grant/spend/refund/clawback` RPCs (migration `20260701130000_credits.sql`), one-time Stripe
+  credit packs via `stripe-checkout`/`stripe-webhook`, and `enrich-max` (Perplexity web research,
+  spend-before-call, refund-on-failure). Client: `useCredits`, `BuyCreditsSheet`, `creditPacks.ts`,
+  `creditCosts.ts`.
 
 ## Known follow-ups
 
