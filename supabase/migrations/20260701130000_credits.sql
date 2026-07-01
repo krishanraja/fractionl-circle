@@ -79,7 +79,9 @@ begin
     return;
   end if;
   insert into credit_ledger(user_id, delta, reason, ref) values (p_user_id, -p_amount, p_reason, p_ref);
-  update credit_balance set balance = balance - p_amount, updated_at = now() where user_id = p_user_id;
+  -- qualify the column: `balance` alone is ambiguous with the OUT-param of the
+  -- RETURNS TABLE(... balance ...) signature.
+  update credit_balance set balance = credit_balance.balance - p_amount, updated_at = now() where user_id = p_user_id;
   return query select true, cur - p_amount;
 end; $$;
 
