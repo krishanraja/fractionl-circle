@@ -30,17 +30,27 @@ export async function rankInnerCircle(): Promise<RankedPerson[]> {
   return Array.isArray(people) ? (people as RankedPerson[]) : [];
 }
 
+// One cited fact behind a match, so the UI can show honest provenance.
+export interface MatchEvidence {
+  claim: string;
+  source: string; // title | company | tags | note | summary | experience | education | skills
+}
+
 // A person surfaced by a people-search (find_people intent). Unlike RankedPerson
-// there is no inner-circle role; instead we carry what real fact matched (matched_on)
-// and how sure we are (confidence 0..1), so the UI can show honest provenance.
+// there is no inner-circle role; instead we carry the degree of the match, the real
+// fact that matched (matched_on), the cited evidence, and how sure we are
+// (confidence 0..1). "second" degree = an evidence-backed route to the target
+// (INFERRED), never an invented relationship.
 export interface NetworkMatch {
   id: string;
   name: string;
   title: string | null;
   company: string | null;
   why: string;
+  degree: 'first' | 'second';
   matched_on: string | null;
   confidence: number | null;
+  evidence: MatchEvidence[];
 }
 
 export type BoxIntent = 'working_on' | 'find_people';

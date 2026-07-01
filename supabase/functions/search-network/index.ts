@@ -1,24 +1,34 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
-import { chatJSON } from '../_shared/llm.ts';
+import { chatJSON, embed } from '../_shared/llm.ts';
+import { backfillEmbeddings, vecToStr } from '../_shared/circleEmbed.ts';
 
-// search-network (v1): the "who can help me with X" half of the Circle box.
+// search-network (v2): the "who can help me with X" half of the Circle box.
 //
 // First CLASSIFY the query: is the user describing their OWN direction
-// ("working_on") — in which case the client falls back to the existing read+rank
-// loop — or looking to FIND a person / a kind of person ("find_people")? For a
-// find, prefilter the WHOLE circle over data we ALREADY have (title, company, tags,
-// note, dossier) and LLM-rank the grounded first-degree fits, each with a one-line
-// why + the real fact that matched + a confidence.
+// ("working_on") — the client then falls back to the existing read+rank loop — or
+// looking to FIND a person / a kind of person ("find_people")?
 //
-// Honest by construction: only people whose REAL data supports the match are
-// returned; nothing is invented. v1 does NO new enrichment and NO second-degree
-// ("might know someone") — those arrive with the pgvector engine + the credit-gated
-// max-effort enrichment (see the plan). Provider-fallback LLM via _shared/llm.ts.
+// For a find, retrieve candidates two ways and union them:
+//   • SEMANTIC — pgvector nearest-neighbour over each person's embedded profile, so
+//     "venture fund" reaches "Partner at Sequoia" by meaning, beyond warmth or exact
+//     words. (Embeddings are topped up just-in-time + nightly; see cron-embed-circle.)
+//   • KEYWORD — literal token hits, to catch exact matches the vector may deprioritise.
+// When no embeddings provider is configured the semantic half is simply empty and
+// the search degrades to keyword + warmth — never broken.
+//
+// Then LLM-rank the grounded fits. Two degrees, both EVIDENCE-BACKED:
+//   • first  — the person themselves fits the query.
+//   • second — the person is a real, evidence-cited ROUTE to the target (a shared
+//     employer/school in THEIR OWN history), tagged INFERRED. Never an invented
+//     relationship: every claim must cite a real field or it is dropped.
+// Provider-fallback LLM via _shared/llm.ts.
 
 const MAX_CANDIDATES = 50;   // cap what we hand the ranker (token budget)
-const MAX_FETCH = 120;       // cap what we pull to prefilter over
+const MAX_FETCH = 120;       // cap what we pull for the keyword/warmth prefilter
+const SEM_K = 40;            // semantic nearest-neighbours to retrieve
 const MAX_RESULTS = 6;
+const SECOND_DEGREE_CONF_CAP = 0.6; // never over-claim an inferred route
 
 const STOPWORDS = new Set([
   'the', 'a', 'an', 'and', 'or', 'for', 'to', 'of', 'in', 'on', 'at', 'with', 'who',
@@ -34,18 +44,30 @@ Return ONLY JSON: { "intent": "working_on" | "find_people", "confidence": number
 - "working_on": describing their own situation, offer, or goal in the first person or as a statement about their practice (e.g. "productizing my CFO service", "pricing my retainer").
 - When genuinely torn, prefer "find_people" (the box's find path degrades gracefully to an honest empty state; the working_on path rewrites their profile).`;
 
-const RANK = `You match a fractional executive's REAL network to a "who can help with this" query. For each candidate you are given only facts we already hold (title, company, tags, note, and an enrichment summary / past employers when present).
+const RANK = `You match a fractional executive's REAL network to a "who can help with this" query. For each candidate you are given only facts we already hold (title, company, tags, note, enrichment summary, past employers, education, skills).
 
-Return ONLY JSON: { "people": [ { "candidate_id": string, "why": string, "matched_on": string, "confidence": number } ] }
+Return ONLY JSON: { "people": [ {
+  "candidate_id": string,
+  "degree": "first" | "second",
+  "why": string,
+  "matched_on": string,
+  "confidence": number,
+  "evidence": [ { "claim": string, "source": string } ]
+} ] }
+
+Two kinds of match, BOTH grounded in the candidate's own real facts:
+- "first": the candidate THEMSELVES fit the query (they are, or have been, the thing sought).
+- "second": the candidate is a warm ROUTE to the target because THEIR OWN history overlaps it — e.g. they worked at, or studied where, the target sits. This is an inference about a likely connection, never a stated relationship.
 
 Rules:
 - Pick from the candidates only; use their exact candidate_id.
-- FIRST-DEGREE ONLY: include a person only if THEIR OWN data fits the query (they are, or have been, the thing being sought). Do NOT guess who someone "might know" — that second-degree step does not exist yet.
-- "why": one tight sentence, grounded in the candidate's real facts, addressed to the user. NEVER a message to send.
-- "matched_on": the specific real fact that made them a fit, short (e.g. "Partner at Accel", "past: Sequoia", "tag: fintech", "title: Investor").
-- "confidence": 0..1 — how well the real facts support the match. Be conservative.
-- Only include grounded matches. If nothing genuinely fits, return an empty array. Never invent employers, roles, or relationships.
-- Return at most ${MAX_RESULTS} people, best first.`;
+- "why": one tight sentence, grounded, addressed to the user. For a "second" match, frame it as a likely route (e.g. "was a Principal at Accel 2018–21, so a warm way into that fund"). NEVER a message to send.
+- "matched_on": the single specific real fact behind the match, short (e.g. "Partner at Accel", "past: Sequoia", "tag: fintech").
+- "evidence": one or more { claim, source } citing the EXACT facts used. "source" must be one of: "title", "company", "tags", "note", "summary", "experience", "education", "skills". Every claim must be supported by the candidate's given data.
+- "confidence": 0..1. Be conservative. A "second" match is inherently uncertain — keep it modest.
+- Do NOT invent employers, roles, relationships, or "they probably know someone" guesses with no cited fact. If a match has no real evidence, drop it.
+- Prefer "first" matches. Include a "second" only when the overlap is concrete and cited.
+- Only include grounded matches. Return an empty array if nothing genuinely fits. At most ${MAX_RESULTS} people, best first.`;
 
 interface Row {
   id: string;
@@ -55,21 +77,24 @@ interface Row {
   tags: string[] | null;
   note: string | null;
   dossier: Record<string, unknown> | null;
-  warmth: number | null;
+  warmth?: number | null;
 }
 
 const trunc = (s: string, n: number) => (s.length > n ? s.slice(0, n) : s);
+const listFrom = (arr: unknown, keys: string[], n: number): string[] =>
+  (Array.isArray(arr) ? arr : [])
+    .map((e) => (e && typeof e === 'object' ? keys.map((k) => (e as Record<string, unknown>)[k]).filter(Boolean).join(' @ ') : ''))
+    .filter(Boolean)
+    .slice(0, n);
 
-// Compact, token-cheap view of a candidate for both the keyword prefilter and the ranker.
+// Compact, token-cheap view of a candidate for both the keyword prefilter and the
+// ranker. Works on circle_person rows and on match_circle_persons() RPC rows alike.
 function compact(r: Row) {
   const d = r.dossier ?? {};
   const summary = typeof d.summary === 'string' ? d.summary : (typeof d.llm_summary === 'string' ? d.llm_summary : '');
-  const exp = Array.isArray(d.experience) ? d.experience : [];
-  const past = exp
-    .map((e) => (e && typeof e === 'object' ? [(e as Record<string, unknown>).title, (e as Record<string, unknown>).company].filter(Boolean).join(' @ ') : ''))
-    .filter(Boolean)
-    .slice(0, 6)
-    .join('; ');
+  const past = listFrom(d.experience, ['title', 'company'], 6).join('; ');
+  const edu = listFrom(d.education, ['degree', 'school'], 4).join('; ');
+  const skills = Array.isArray(d.skills) ? d.skills.filter((s) => typeof s === 'string').slice(0, 12) : [];
   return {
     candidate_id: r.id,
     name: r.display_name,
@@ -79,8 +104,15 @@ function compact(r: Row) {
     note: r.note ? trunc(r.note, 200) : null,
     summary: summary ? trunc(summary, 240) : null,
     past: past || null,
+    education: edu || null,
+    skills: skills.length ? skills : null,
   };
 }
+type Compact = ReturnType<typeof compact>;
+
+const textOf = (c: Compact) =>
+  [c.name, c.title, c.company, (c.tags ?? []).join(' '), c.note, c.summary, c.past, c.education, (c.skills ?? []).join(' ')]
+    .filter(Boolean).join(' ').toLowerCase();
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -100,8 +132,7 @@ Deno.serve(async (req) => {
     let intent: 'working_on' | 'find_people' = 'find_people';
     try {
       const { content } = await chatJSON({ system: CLASSIFY, user: query, temperature: 0, maxTokens: 60 });
-      const parsed = JSON.parse(content);
-      if (parsed?.intent === 'working_on') intent = 'working_on';
+      if (JSON.parse(content)?.intent === 'working_on') intent = 'working_on';
     } catch {
       // Fail toward find_people — the honest, non-destructive path.
     }
@@ -109,7 +140,10 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ intent }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // ── Prefilter the whole circle over data we already have ─────────────────
+    // ── Keep the relevant slice embedded (best-effort, bounded, no-op w/o a key) ─
+    try { await backfillEmbeddings(supabase, { userId, limit: 40, window: 160 }); } catch { /* keyword fallback */ }
+
+    // ── Keyword / warmth prefilter (also the graceful fallback) ──────────────
     const { data: rows } = await supabase
       .from('circle_person')
       .select('id, display_name, title, company, tags, note, dossier, warmth')
@@ -120,37 +154,43 @@ Deno.serve(async (req) => {
     if (!all.length) {
       return new Response(JSON.stringify({ intent, people: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-
-    // Keyword-score candidates on literal token overlap, then blend with top-warmth
-    // fill so semantic-but-non-literal fits (e.g. "venture fund" vs "Partner at
-    // Sequoia") still reach the ranker. No embeddings yet — that's the v2 engine.
     const tokens = query.toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length > 2 && !STOPWORDS.has(t));
-    const textOf = (c: ReturnType<typeof compact>) =>
-      [c.name, c.title, c.company, (c.tags ?? []).join(' '), c.note, c.summary, c.past].filter(Boolean).join(' ').toLowerCase();
     const scored = all.map((c) => {
       const hay = textOf(c);
-      const score = tokens.reduce((n, t) => (hay.includes(t) ? n + 1 : n), 0);
-      return { c, score };
+      return { c, score: tokens.reduce((n, t) => (hay.includes(t) ? n + 1 : n), 0) };
     });
-    const hits = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score).map((s) => s.c);
-    const rest = scored.filter((s) => s.score === 0).map((s) => s.c); // already warmth-ordered
+    const keywordHits = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score).map((s) => s.c);
+    const warmthFill = scored.filter((s) => s.score === 0).map((s) => s.c); // already warmth-ordered
+
+    // ── Semantic nearest-neighbours (recall beyond warmth / exact words) ─────
+    let semantic: Compact[] = [];
+    const queryVecs = await embed([query]);
+    if (queryVecs) {
+      const { data: sem } = await supabase.rpc('match_circle_persons', {
+        query_embedding: vecToStr(queryVecs[0]),
+        match_count: SEM_K,
+      });
+      semantic = ((sem ?? []) as Row[]).map(compact);
+    }
+
+    // Union, semantic-first (best recall), then literal hits, then warmth fill.
     const seen = new Set<string>();
-    const candidates: ReturnType<typeof compact>[] = [];
-    for (const c of [...hits, ...rest]) {
+    const candidates: Compact[] = [];
+    for (const c of [...semantic, ...keywordHits, ...warmthFill]) {
       if (seen.has(c.candidate_id)) continue;
       seen.add(c.candidate_id);
       candidates.push(c);
       if (candidates.length >= MAX_CANDIDATES) break;
     }
 
-    // ── Rank the grounded first-degree fits ──────────────────────────────────
-    let ranked: Array<{ candidate_id: string; why: string; matched_on: string; confidence: number }> = [];
+    // ── Rank grounded first- and (evidence-backed) second-degree fits ────────
+    let ranked: Array<{ candidate_id: string; degree?: string; why: string; matched_on?: string; confidence?: number; evidence?: Array<{ claim: string; source: string }> }> = [];
     try {
       const { content } = await chatJSON({
         system: RANK,
         user: JSON.stringify({ query, candidates }),
         temperature: 0.2,
-        maxTokens: 700,
+        maxTokens: 1100,
       });
       const parsed = JSON.parse(content);
       ranked = Array.isArray(parsed?.people) ? parsed.people : [];
@@ -162,17 +202,31 @@ Deno.serve(async (req) => {
     const byId = new Map(candidates.map((c) => [c.candidate_id, c]));
     const people = ranked
       .filter((r) => byId.has(r.candidate_id) && typeof r.why === 'string' && r.why.trim())
-      .slice(0, MAX_RESULTS)
       .map((r) => {
+        const degree: 'first' | 'second' = r.degree === 'second' ? 'second' : 'first';
+        const evidence = Array.isArray(r.evidence)
+          ? r.evidence.filter((e) => e && typeof e.claim === 'string' && e.claim.trim()).map((e) => ({ claim: e.claim.trim(), source: typeof e.source === 'string' ? e.source : 'note' }))
+          : [];
+        return { r, degree, evidence };
+      })
+      // A second-degree (inferred) match with no cited evidence is exactly the
+      // hallucination we refuse to surface — drop it.
+      .filter(({ degree, evidence }) => degree === 'first' || evidence.length > 0)
+      .slice(0, MAX_RESULTS)
+      .map(({ r, degree, evidence }) => {
         const c = byId.get(r.candidate_id)!;
+        let confidence = typeof r.confidence === 'number' ? Math.max(0, Math.min(1, r.confidence)) : null;
+        if (degree === 'second' && confidence != null) confidence = Math.min(confidence, SECOND_DEGREE_CONF_CAP);
         return {
           id: c.candidate_id,
           name: c.name,
           title: c.title,
           company: c.company,
           why: r.why.trim(),
+          degree,
           matched_on: typeof r.matched_on === 'string' && r.matched_on.trim() ? r.matched_on.trim() : null,
-          confidence: typeof r.confidence === 'number' ? Math.max(0, Math.min(1, r.confidence)) : null,
+          confidence,
+          evidence,
         };
       });
 

@@ -164,6 +164,7 @@ export const circleCss = `
 /* role badge (working-on results) */
 .thx .rolebadge { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; padding:2px 7px; border-radius:999px; color:${C.accent}; border:1px solid ${C.accentEdge}; flex:0 0 auto; }
 .thx .rolebadge.risk { color:${C.risk}; border-color:rgba(204,119,119,0.4); }
+.thx .rolebadge.inferred { color:${C.cool}; border-color:rgba(143,184,201,0.4); }
 
 /* secondary / ghost button (enrich, retry, none-of-these) */
 .thx .ghostbtn { display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid ${C.line2}; border-radius:8px; padding:7px 12px; font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:${C.mid}; cursor:pointer; transition:border-color .2s ease, color .2s ease; }

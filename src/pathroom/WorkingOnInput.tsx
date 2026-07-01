@@ -22,7 +22,8 @@ const ROLE_LABEL: Record<string, string> = {
 const MAX_RECORDING_MS = 60_000;
 
 // One shape the row renderer can draw whether the box was read as "what I'm
-// working on" (has a role) or "who I'm looking for" (has matched_on provenance).
+// working on" (has a role) or "who I'm looking for" (has matched_on provenance,
+// a degree, and cited evidence).
 interface DisplayPerson {
   id: string;
   name: string;
@@ -30,6 +31,7 @@ interface DisplayPerson {
   company: string | null;
   why: string;
   role?: InnerRole | string;
+  degree?: 'first' | 'second';
   matchedOn?: string | null;
 }
 
@@ -93,7 +95,8 @@ export default function WorkingOnInput() {
         }));
       } else {
         people = (res.found ?? []).map((p) => ({
-          id: p.id, name: p.name, title: p.title, company: p.company, why: p.why, matchedOn: p.matched_on,
+          id: p.id, name: p.name, title: p.title, company: p.company, why: p.why,
+          degree: p.degree, matchedOn: p.matched_on,
         }));
       }
       setResults(people);
@@ -198,11 +201,12 @@ export default function WorkingOnInput() {
                       <div className="cname" style={{ overflow: 'visible' }}>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                         {p.role && <span className={cn('rolebadge', p.role === 'RISK' && 'risk')}>{ROLE_LABEL[p.role] ?? p.role}</span>}
+                        {p.degree === 'second' && <span className="rolebadge inferred">Inferred</span>}
                       </div>
                       {subtitle(p) && <div className="csub">{subtitle(p)}</div>}
                       <div className="cwhy">{p.why}</div>
                       {p.matchedOn && (
-                        <div className="cmatch"><Link2 size={10} /> Matched on {p.matchedOn}</div>
+                        <div className="cmatch"><Link2 size={10} /> {p.degree === 'second' ? 'Route via' : 'Matched on'} {p.matchedOn}</div>
                       )}
                     </div>
                   </div>
