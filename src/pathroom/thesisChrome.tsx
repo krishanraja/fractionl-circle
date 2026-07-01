@@ -1,7 +1,14 @@
 // Shared chrome for the thesis journey: the ember top nav (the brand mark IS the gauge,
 // dim when we know little, brighter as real fuel goes in) plus the extra CSS the dialogue,
 // the sharpen panel and the journey map all use. ThesisApp injects `chromeCss` once.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Sun, Moon, Settings, Activity } from 'lucide-react';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { applyTheme } from '@/lib/applyUserPreferences';
+import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet';
+import { haptics } from '@/utils/haptics';
+import PulseDrawer from './PulseDrawer';
+import type { MarketPulse } from './thesisData';
 import { C, MONO } from './tokens';
 
 export interface FuelRow { k: string; on: boolean; hint?: string }
@@ -21,8 +28,30 @@ export function emberStyle(fuel: number): React.CSSProperties {
   };
 }
 
-export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: FuelRow[]; hint?: string; onHome?: () => void }) {
+export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
+  fuel: number; fuels: FuelRow[]; hint?: string; onHome?: () => void;
+  market?: MarketPulse | null; onStrengthen?: () => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [pulseOpen, setPulseOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { preferences, updatePreferences } = useUserProfile();
+  const [isDark, setIsDark] = useState(
+    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  );
+  useEffect(() => { if (preferences?.theme) setIsDark(preferences.theme !== 'light'); }, [preferences?.theme]);
+
+  const toggleTheme = () => {
+    const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+    haptics.tap();
+    applyTheme(next);
+    setIsDark(next === 'dark');
+    void updatePreferences({ theme: next });
+  };
+
+  // The always-visible pulse indicator shows the fractional-market core metric.
+  const core = market?.market ?? null;
+
   return (
     <div style={{ position: 'relative' }}>
       <div className="topnav">
@@ -33,7 +62,29 @@ export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: F
           ? <button className="wmbtn" onClick={onHome} aria-label="Home"><img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" /></button>
           : <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" />}
         <span style={{ flex: 1 }} />
-        {onHome ? <button className="navhome" onClick={onHome}>home</button> : (hint ? <span className="navhint">{hint}</span> : null)}
+        <div className="navbtns">
+          {onStrengthen ? (
+            <button className="navpulse" onClick={() => { haptics.tap(); setPulseOpen(true); }} aria-label={core ? `Market pulse — ${core.label} ${core.score}` : 'Market pulse'}>
+              <Activity size={13} strokeWidth={2.2} />
+              {core ? (
+                <>
+                  <span className="navpulse-num">{core.score}</span>
+                  {core.delta != null && core.delta !== 0 ? (
+                    <span style={{ color: core.delta > 0 ? C.good : C.risk, fontFamily: MONO, fontSize: 10 }}>
+                      {core.delta > 0 ? '▲' : '▼'}{Math.abs(core.delta)}
+                    </span>
+                  ) : null}
+                </>
+              ) : null}
+            </button>
+          ) : null}
+          <button className="navbtn" onClick={toggleTheme} aria-label={isDark ? 'Switch to light' : 'Switch to dark'}>
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+          <button className="navbtn" onClick={() => setSettingsOpen(true)} aria-label="Settings">
+            <Settings size={16} />
+          </button>
+        </div>
       </div>
       {open ? (
         <div className="fuelpop">
@@ -49,6 +100,8 @@ export function EmberNav({ fuel, fuels, hint, onHome }: { fuel: number; fuels: F
           </div>
         </div>
       ) : null}
+      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} onStrengthen={() => onStrengthen?.()} />
+      <ProfileSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }
@@ -101,6 +154,14 @@ export const chromeCss = `
 .thx .wmbtn { background:none; border:0; padding:0; cursor:pointer; line-height:0; }
 .thx .navhome { background:none; border:1px solid ${C.line2}; border-radius:6px; padding:5px 10px; font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.mid}; cursor:pointer; }
 .thx .navhome:hover { color:${C.accent}; border-color:${C.accentEdge}; }
+/* Plan header control cluster: pulse indicator + theme + settings */
+.thx .navbtns { display:flex; align-items:center; gap:8px; }
+.thx .navbtn { background:none; border:1px solid ${C.line2}; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:${C.mid}; cursor:pointer; transition:border-color .2s ease, color .2s ease; }
+.thx .navbtn:hover { color:${C.accent}; border-color:${C.accentEdge}; }
+.thx .navpulse { display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 10px; border:1px solid ${C.line2}; border-radius:8px; background:none; color:${C.cool}; cursor:pointer; transition:border-color .2s ease; }
+.thx .navpulse:hover { border-color:${C.accentEdge}; }
+.thx .navpulse-num { font-family:${MONO}; font-size:12px; font-weight:600; color:${C.hi}; font-variant-numeric:tabular-nums; }
+@media (max-width:360px) { .thx .topnav { gap:8px; } .thx .navpulse { padding:0 8px; } }
 .thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:15px; cursor:pointer; margin-top:12px; transition:border-color .2s ease, transform .12s ease; }
 .thx .hometile:hover { border-color:${C.accentEdge}; }
 .thx .hometile:active { transform:translateY(1px); }
@@ -109,14 +170,16 @@ export const chromeCss = `
 .thx .htarrow { color:${C.lo}; font-family:${MONO}; flex:0 0 auto; }
 .thx .hticon { width:38px; height:38px; border-radius:10px; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; display:flex; align-items:center; justify-content:center; color:${C.accent}; flex:0 0 auto; }
 .thx .hometile.deepen { background:linear-gradient(180deg, rgba(224,162,60,0.1), ${C.panel}); border-color:${C.accentEdge}; }
-/* the venture ember orb (charge) on the real command-center Home */
-.thx .vorb { position:relative; width:118px; height:118px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+/* the venture ember orb (charge) on the real command-center Home. Compact on mobile
+   so the hero + the three action tiles + the pinned footer fit one no-scroll viewport;
+   the desktop grid (min-width:900px) restores the larger orb. */
+.thx .vorb { position:relative; width:96px; height:96px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
 .thx .vorbglow { position:absolute; inset:-26%; border-radius:50%; background:radial-gradient(circle, var(--thx-glow-halo), transparent 65%); filter:blur(var(--thx-glow-halo-blur)); animation:vorbpulse 4.5s ease-in-out infinite; }
 .thx .vorbsvg { position:absolute; inset:0; animation:vorbbreath 4.5s ease-in-out infinite; }
-.thx .vorbcore { position:absolute; top:50%; left:50%; width:36px; height:36px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
-.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:14px; }
-/* mobile: let the orb hero breathe before the instruments (reset on the desktop grid) */
-.thx .vpanels { margin-top:20px; }
+.thx .vorbcore { position:absolute; top:50%; left:50%; width:30px; height:30px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
+.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:10px; }
+/* mobile: a tighter gap before the instruments (reset on the desktop grid) */
+.thx .vpanels { margin-top:16px; }
 @keyframes vorbbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
 @keyframes vorbpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
 /* the live market-movement instrument (fed by Pulse) */
