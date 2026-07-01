@@ -186,7 +186,12 @@ export default function ThesisApp() {
   const canHome = !!data && phase !== 'home' && phase !== 'thinking';
   const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string, wide?: boolean) => (
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
-      <EmberNav fuel={fuel} fuels={fuels} hint={hint} onHome={canHome ? () => go('home') : undefined} />
+      <EmberNav
+        fuel={fuel} fuels={fuels} hint={hint}
+        onHome={canHome ? () => go('home') : undefined}
+        market={market}
+        onStrengthen={() => go('sharpen')}
+      />
       <div className="thxbody" ref={bodyRef}>
         <div className={'wrap' + (wide ? ' wrapwide' : '')} key={phase}>
           {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
@@ -226,9 +231,8 @@ export default function ThesisApp() {
     // One evolving thesis: the daily action is to deepen it, not start a new validation.
     return frame(
       <Home
-        data={data} thesis={thesisText} stepProgress={stepProgress} circle={circle} fuel={fuel} market={market}
+        data={data} stepProgress={stepProgress} circle={circle} fuel={fuel}
         sharp={sharp}
-        coach={<SharpenPrompt onAnswered={refreshAnswers} />}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => go('journey')}
         onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}
