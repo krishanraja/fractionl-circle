@@ -1,12 +1,11 @@
-// The market pulse, for a time-poor fractional operator. Leads with a rail of
-// eye-catching metrics - a big value + a colour-coded 30-day arrow down the left,
-// the strategic "what this means for you" read on the right - then the specific,
-// role-tailored trends they can attach to. Everything is grounded in Pulse data;
-// the strategic reads and trends are synthesised server-side (market-pulse edge fn).
-//
-// The drawer chrome is a fixed, full-height flex column that doesn't scroll; only the
-// trends list scrolls internally, and only when an expanded insight is long.
-import { useState } from 'react';
+// The market pulse, redesigned as a segmented, no-scroll drawer for mobile. One screen,
+// one job: a segmented control splits the two intents so neither is crushed -
+//   Market - the metric rail: a big value + a colour-coded 30-day arrow down the left,
+//            the strategic "what this means for you" read on the right.
+//   Trends - the role-tailored moves you can attach to, as a swipe carousel (one full
+//            card per page + dots), so each is fully readable with no vertical scroll.
+// Everything is grounded in Pulse data; the reads and trends are synthesised server-side.
+import { useRef, useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -28,8 +27,7 @@ function Arrow({ delta, suffix, positiveWhenUp }: { delta: number | null; suffix
 }
 
 // The stunning loading moment: a heartbeat pulse tracing across the market, over a
-// shimmer skeleton in the exact shape of the metric rail + trends, so the real content
-// settles into place rather than popping in.
+// shimmer skeleton in the shape of the metric rail, so the real content settles in.
 const WAVE = 'M0 17 H62 l7 0 6 -12 8 24 7 -12 H150 l6 0 6 -7 6 14 6 -7 H240';
 function PulseLoading() {
   return (
@@ -46,11 +44,6 @@ function PulseLoading() {
             <div className="vpmtext"><span className="vpskel vpskel-label" /><span className="vpskel vpskel-line" /><span className="vpskel vpskel-line short" /></div>
           </div>
         ))}
-      </div>
-      <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 12 }}>
-        <span className="vpskel vpskel-label" />
-        <span className="vpskel vpskel-line" style={{ marginTop: 12 }} />
-        <span className="vpskel vpskel-line short" style={{ marginTop: 8 }} />
       </div>
     </div>
   );
@@ -74,7 +67,20 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
   const verdict = marketVerdict(market?.market ?? null);
   const rv = roleVerdict(market?.role ?? null);
 
-  const [openIdx, setOpenIdx] = useState(0);
+  const [seg, setSeg] = useState<'market' | 'trends'>('market');
+  const [trendIdx, setTrendIdx] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const onTrackScroll = () => {
+    const el = trackRef.current;
+    if (!el || !el.clientWidth) return;
+    setTrendIdx(Math.round(el.scrollLeft / el.clientWidth));
+  };
+  const goTrend = (i: number) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -86,82 +92,89 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
       >
         <SheetTitle className="sr-only">The market this week</SheetTitle>
         <SheetDescription className="sr-only">
-          Plain-English metrics on the fractional market and demand for your role, from Pulse.
+          Plain-English metrics on the fractional market and the trends you can attach to, from Pulse.
         </SheetDescription>
 
         <div className="vpulsewrap">
           <div className="vpulsehead">
-            <span className="vmkttitle">The market · this week</span>
-            <span className="navhint" style={{ color: C.lo, marginTop: 4, display: 'block' }}>via pulse</span>
+            <span className="vmkttitle">This week · via pulse</span>
           </div>
 
           {loading && !hasData ? (
             <PulseLoading />
           ) : hasData ? (
             <>
-              {/* The metric rail: value + colour-coded 30-day arrow on the left, the
-                  strategic read on the right. */}
-              {metrics && metrics.length ? (
-                <div className="vpmetrics">
-                  {metrics.map((m) => (
-                    <div key={m.key} className="vpmetric">
-                      <div className="vpmval">
-                        <span className="vpmnum">{m.value}</span>
-                        <Arrow delta={m.delta} suffix={m.deltaSuffix} positiveWhenUp={m.positiveWhenUp} />
-                      </div>
-                      <div className="vpmtext">
-                        <div className="vpmlabel">{m.label}</div>
-                        <div className="vpminsight">{m.insight}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                // graceful fallback for payloads without metrics
-                <>
-                  {verdict ? (
-                    <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 12 }}>
-                      <div className="vpverdict"><span className="vpdot" style={{ background: C.cool }} /><span className="vpverdicttext">{verdict.sentence}</span></div>
-                      <div className="vpfollow">{verdict.followLine}</div>
-                    </div>
-                  ) : null}
-                  {rv ? (
-                    <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
-                      <div className="vprole">{rv.sentence}</div>
-                      <div className="vpmeaning">{rv.meaning}</div>
-                    </div>
-                  ) : null}
-                </>
-              )}
+              {/* Segmented control: two intents, each its own calm no-scroll screen. */}
+              <div className="vpseg" role="tablist">
+                <button role="tab" aria-selected={seg === 'market'} className={seg === 'market' ? 'on' : ''} onClick={() => setSeg('market')}>Market</button>
+                <button role="tab" aria-selected={seg === 'trends'} className={seg === 'trends' ? 'on' : ''} onClick={() => setSeg('trends')}>Trends</button>
+              </div>
 
-              {/* Trends you can attach to - accordion, full text on tap, "your angle". */}
-              {themes && themes.length ? (
-                <div className="vpulsecard vpulserising" style={{ marginTop: 12 }}>
-                  <span className="navhint" style={{ color: C.cool }}>Trends you can attach to</span>
-                  <div className="vpulsethemes">
-                    {themes.map((t, i) => {
-                      const isOpen = openIdx === i;
-                      return (
-                        <div key={i} className={'vptrend' + (isOpen ? ' open' : '')}>
-                          <button className="vptrendhead" onClick={() => setOpenIdx(isOpen ? -1 : i)} aria-expanded={isOpen}>
-                            <span className="vptrendlabel">{t.label}</span>
-                            {t.breakout ? <span className="vptrendbadge hot">{trendBadge(true)}</span> : null}
-                            <span className="vptrendchev">{isOpen ? '▾' : '▸'}</span>
-                          </button>
-                          {isOpen ? (
-                            <div className="vptrendbody">
-                              {t.summary ? <div className="vptrendsum">{t.summary}</div> : null}
-                              {t.angle ? (
-                                <div className="vptrendangle"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
-                              ) : null}
-                            </div>
-                          ) : null}
+              <div className="vpview" key={seg}>
+                {seg === 'market' ? (
+                  metrics && metrics.length ? (
+                    <div className="vpmetrics">
+                      {metrics.map((m) => (
+                        <div key={m.key} className="vpmetric">
+                          <div className="vpmval">
+                            <span className="vpmnum">{m.value}</span>
+                            <Arrow delta={m.delta} suffix={m.deltaSuffix} positiveWhenUp={m.positiveWhenUp} />
+                          </div>
+                          <div className="vpmtext">
+                            <div className="vpmlabel">{m.label}</div>
+                            <div className="vpminsight">{m.insight}</div>
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : null}
+                      ))}
+                    </div>
+                  ) : (
+                    // graceful fallback for payloads without a metric rail
+                    <div style={{ marginTop: 4 }}>
+                      {verdict ? (
+                        <div className="vpulsecard" style={{ marginTop: 8 }}>
+                          <div className="vpverdict"><span className="vpdot" style={{ background: C.cool }} /><span className="vpverdicttext">{verdict.sentence}</span></div>
+                          <div className="vpfollow">{verdict.followLine}</div>
+                        </div>
+                      ) : null}
+                      {rv ? (
+                        <div className="vpulsecard" style={{ marginTop: 10 }}>
+                          <div className="vprole">{rv.sentence}</div>
+                          <div className="vpmeaning">{rv.meaning}</div>
+                        </div>
+                      ) : null}
+                    </div>
+                  )
+                ) : themes && themes.length ? (
+                  <>
+                    <div className="vptrack" ref={trackRef} onScroll={onTrackScroll}>
+                      {themes.map((t, i) => (
+                        <div key={i} className="vptcard">
+                          <div className="vptcardin">
+                            <div className="vptcardhead">
+                              <span className="navhint" style={{ color: C.cool }}>Trend {i + 1} of {themes.length}</span>
+                              {t.breakout ? <span className="vptrendbadge hot">{trendBadge(true)}</span> : null}
+                            </div>
+                            <div className="vptcardtitle">{t.label}</div>
+                            {t.summary ? <div className="vptcardsum">{t.summary}</div> : null}
+                            {t.angle ? (
+                              <div className="vptrendangle"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {themes.length > 1 ? (
+                      <div className="vpdots">
+                        {themes.map((_, i) => (
+                          <button key={i} className={'vpdot-btn' + (i === trendIdx ? ' on' : '')} aria-label={`Trend ${i + 1}`} onClick={() => goTrend(i)} />
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="sub" style={{ marginTop: 14 }}>No standout trends this week - check back after the next refresh.</div>
+                )}
+              </div>
 
               <div className="navhint vpulsefoot">
                 {asOf ? `Updated ${asOf}` : null}{asOf && next ? ' · ' : ''}{next ? `next check ${next}` : null}
