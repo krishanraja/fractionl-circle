@@ -128,12 +128,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
           </div>
         </div>
       ) : null}
-      <PulseDrawer
-        open={pulseOpen}
-        onOpenChange={setPulseOpen}
-        market={market ?? null}
-        onStrengthen={onStrengthen ? () => { setPulseOpen(false); onStrengthen(); } : undefined}
-      />
+      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} />
       <ProfileSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
@@ -237,29 +232,35 @@ export const chromeCss = `
 .thx .vdn { color:${C.risk}; background:rgba(204,119,119,0.12); }
 .thx .vflat { color:${C.mid}; background:rgba(255,255,255,0.05); }
 .thx .vmktchip { display:inline-block; margin-top:11px; font-size:11.5px; color:${C.hi}; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; border-radius:999px; padding:5px 10px; }
-/* Pulse drawer: header with a right gutter (clears the Sheet's close button) + the
-   richer, role-personalised instrument cards. */
-.thx .vpulsehead { padding-right:44px; }
-.thx .vpulsecard { background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:12px; padding:13px 14px; }
+/* Pulse drawer: a fixed, full-height flex column that NEVER scrolls. The header,
+   market card and role card are fixed; the rising-themes region flexes and clips;
+   the "as of" line is pinned — so content can't force a scroll on any device. */
+.thx .vpulsewrap { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; padding:16px 18px calc(14px + env(safe-area-inset-bottom)); }
+.thx .vpulsehead { flex:0 0 auto; padding-right:44px; }
+.thx .vpulsecard { background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:12px; padding:11px 13px; }
+.thx .vpulsecard-fixed { flex:0 0 auto; }
+.thx .vpulserising { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+.thx .vpulsethemes { flex:1 1 auto; min-height:0; overflow:hidden; margin-top:7px; }
+.thx .vpulsefoot { flex:0 0 auto; margin-top:10px; color:${C.lo}; }
 .thx .vpulsescorewrap { display:flex; align-items:baseline; gap:8px; margin-top:6px; }
-.thx .vpulsescore { font-family:${MONO}; font-size:34px; font-weight:600; color:${C.hi}; line-height:1; font-variant-numeric:tabular-nums; }
+.thx .vpulsescore { font-family:${MONO}; font-size:30px; font-weight:600; color:${C.hi}; line-height:1; font-variant-numeric:tabular-nums; }
 .thx .vpulsescoremax { font-family:${MONO}; font-size:13px; color:${C.lo}; }
 .thx .vpulseband { font-size:12.5px; color:${C.mid}; }
 .thx .vpulsescale { font-family:${MONO}; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; margin-top:6px; }
-.thx .vmktmeters { margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+.thx .vmktmeters { margin-top:10px; display:flex; flex-direction:column; gap:7px; }
 .thx .vmktmeter { display:flex; align-items:center; gap:10px; }
 .thx .vmktmeterk { flex:0 0 58px; font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.mid}; }
 .thx .vmktmetertrack { flex:1; height:5px; border-radius:999px; background:${C.line2}; overflow:hidden; }
 .thx .vmktmeterfill { display:block; height:100%; border-radius:999px; background:${C.cool}; transition:width .5s ease; }
 .thx .vmktmeterv { flex:0 0 auto; font-family:${MONO}; font-size:11px; color:${C.mid}; font-variant-numeric:tabular-nums; }
-.thx .vpulsemeta { font-family:${MONO}; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; color:${C.lo}; margin-top:8px; }
-.thx .vpulseinsight { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:8px; }
-.thx .vpulsetheme { padding:9px 0; border-top:1px solid ${C.line}; }
+.thx .vpulsemeta { font-family:${MONO}; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; color:${C.lo}; margin-top:7px; }
+.thx .vpulseinsight { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:7px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.thx .vpulsetheme { padding:8px 0; border-top:1px solid ${C.line}; }
 .thx .vpulsetheme:first-child { border-top:0; padding-top:2px; }
 .thx .vpulsethemehead { display:flex; align-items:center; gap:8px; }
 .thx .vpulsethemelabel { font-size:13.5px; font-weight:600; color:${C.hi}; }
 .thx .vpulsebreak { font-family:${MONO}; font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; border:1px solid ${C.accentEdge}; border-radius:4px; padding:2px 5px; line-height:1; }
-.thx .vpulsethemesum { font-size:12px; color:${C.mid}; line-height:1.45; margin-top:4px; }
+.thx .vpulsethemesum { font-size:12px; color:${C.mid}; line-height:1.4; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .thx .navhint { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; }
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }

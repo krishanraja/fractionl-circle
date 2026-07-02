@@ -1,10 +1,14 @@
 // The market pulse, moved out of the Plan home body and into a nav-triggered drawer
 // (opened from the Pulse indicator in EmberNav). Shows the full "this week" read from
 // fractionl-pulse: the Fractional Working Index score with its demand/supply/culture
-// breakdown, the user's role demand + rank + this-week read, and the rising themes —
-// then a wide button that nudges the user to strengthen their plan (make-it-stronger).
+// breakdown, the user's role demand + rank + this-week read, and the rising themes.
 // Personalisation is role-grained (Pulse doesn't go finer than role), so we're honest
 // when we can't map a role. Renders a plain empty state when market data isn't in yet.
+//
+// The drawer is a fixed, full-height flex column that NEVER scrolls (overflow:hidden):
+// header + market card + role card are fixed, the rising-themes region flexes and
+// clips, and the "as of" line is pinned — so the content can't force a scroll on any
+// device.
 import {
   Sheet,
   SheetContent,
@@ -36,10 +40,9 @@ interface PulseDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   market: MarketPulse | null;
-  onStrengthen?: () => void;
 }
 
-export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }: PulseDrawerProps) {
+export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerProps) {
   const hasData = !!(market && (market.market || market.role));
   const m = market?.market ?? null;
   const role = market?.role ?? null;
@@ -52,7 +55,7 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="thx w-full sm:max-w-md p-0 overflow-y-auto"
+        className="thx w-full sm:max-w-md p-0 overflow-hidden flex flex-col"
         style={{ background: 'var(--thx-bg)' }}
       >
         <SheetTitle className="sr-only">The market this week</SheetTitle>
@@ -60,7 +63,7 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
           Live market movement for your role and the fractional economy, from Pulse.
         </SheetDescription>
 
-        <div className="wrap" style={{ padding: '18px 18px calc(24px + env(safe-area-inset-bottom))' }}>
+        <div className="vpulsewrap">
           {/* Header sits on its own lines with a right gutter, so the Sheet's
               built-in close button never overlaps the "via pulse" caption. */}
           <div className="vpulsehead">
@@ -72,7 +75,7 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
             <>
               {/* Headline: the Fractional Working Index score + 30-day move + band legend. */}
               {m ? (
-                <div className="vpulsecard" style={{ marginTop: 14 }}>
+                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 12 }}>
                   <span className="navhint" style={{ color: C.cool }}>Fractional market</span>
                   <div className="vpulsescorewrap">
                     <span className="vpulsescore">{m.score}</span>
@@ -94,9 +97,9 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
 
               {/* The user's role — the personalised core. */}
               {role ? (
-                <div className="vpulsecard" style={{ marginTop: 12 }}>
+                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
                   <span className="navhint" style={{ color: C.accent }}>Demand for fractional {role.label}s</span>
-                  <div className="vmktrow" style={{ marginTop: 8 }}>
+                  <div className="vmktrow" style={{ marginTop: 7 }}>
                     <span className="vmktname">{role.band ?? 'Demand'}{role.demand != null ? ` · ${role.demand}/100` : ''}</span>
                     <Delta v={role.deltaPct} suffix="%" />
                   </div>
@@ -106,7 +109,7 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
                   {role.insight ? <div className="vpulseinsight">{role.insight}</div> : null}
                 </div>
               ) : (
-                <div className="vpulsecard" style={{ marginTop: 12 }}>
+                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
                   <span className="navhint" style={{ color: C.lo }}>Your role</span>
                   <div className="sub" style={{ marginTop: 6 }}>
                     Name the exec role you offer (CMO, CFO, CTO…) in your plan and this tailors to your role's demand.
@@ -114,11 +117,12 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
                 </div>
               )}
 
-              {/* Rising themes — role-matched first, each with its summary. */}
+              {/* Rising themes — role-matched first. This is the flexible region: it
+                  shrinks and clips so the drawer never scrolls on any device. */}
               {themes && themes.length ? (
-                <div className="vpulsecard" style={{ marginTop: 12 }}>
+                <div className="vpulsecard vpulserising" style={{ marginTop: 10 }}>
                   <span className="navhint" style={{ color: C.cool }}>Rising {role ? `for ${role.label}s` : 'this week'}</span>
-                  <div style={{ marginTop: 8 }}>
+                  <div className="vpulsethemes">
                     {themes.map((t, i) => (
                       <div key={i} className="vpulsetheme">
                         <div className="vpulsethemehead">
@@ -132,15 +136,9 @@ export default function PulseDrawer({ open, onOpenChange, market, onStrengthen }
                 </div>
               ) : null}
 
-              <div className="navhint" style={{ marginTop: 14, color: C.lo }}>
+              <div className="navhint vpulsefoot">
                 {market?.asOf ? `as of ${market.asOf}` : null}{market?.asOf && nextUpdate ? ' · ' : ''}{nextUpdate ? `refreshes ${nextUpdate}` : null}
               </div>
-
-              {onStrengthen ? (
-                <button className="cta" style={{ marginTop: 16 }} onClick={onStrengthen}>
-                  <span>Make your plan stronger</span><span className="mono">→</span>
-                </button>
-              ) : null}
             </>
           ) : (
             <div className="sub" style={{ marginTop: 14 }}>
