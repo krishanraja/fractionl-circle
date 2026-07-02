@@ -3,22 +3,45 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '
 
 // market-pulse: the live "market movement" instrument for the command-center Home, fed by
 // the sister product fractionl-pulse (public, no-auth APIs). Role-level (Pulse is not
-// niche-grained): we derive the user's fractional role from their thesis, then pull the
-// overall Fractional Working Index, the role's demand band + this-week mover, and a rising
-// topic for that role. Pulse refreshes daily, so this genuinely moves "overnight". Robust
-// by construction: any Pulse call can fail and we still return what we have.
+// niche-grained): we derive the user's fractional role from their plan, then pull the
+// overall Fractional Working Index (score + 30-day move + demand/supply/culture breakdown),
+// the role's demand band, rank among the tracked roles and this-week human read, and the
+// top rising themes (role-matched first, each with its summary). Pulse refreshes daily, so
+// this genuinely moves "overnight". Robust by construction: any Pulse call can fail and we
+// still return what we have.
 
 const PULSE = 'https://dtlcprcpvdomrehbejhw.supabase.co/functions/v1';
 
+// Map the user's plan text to one of Pulse's six tracked fractional exec roles.
+// Pulse is role-grained (not niche-grained), so we deliberately only match the six
+// it tracks; genuinely different functions stay unmatched (the client shows an
+// honest "add your role focus" state rather than a mis-mapped role.)
 function roleFromThesis(t: string): { key: string; label: string } | null {
   const s = (t || '').toLowerCase();
-  if (/\bcfo\b|finance|financial|fractional finance/.test(s)) return { key: 'cfo', label: 'CFO' };
-  if (/\bcmo\b|marketing|brand|demand gen|growth/.test(s)) return { key: 'cmo', label: 'CMO' };
-  if (/\bcto\b|engineering|technical|technology|head of product|fractional product/.test(s)) return { key: 'cto', label: 'CTO' };
-  if (/\bcoo\b|operations|\bops\b/.test(s)) return { key: 'coo', label: 'COO' };
-  if (/\bcro\b|revenue|\bsales\b/.test(s)) return { key: 'cro', label: 'CRO' };
-  if (/\bceo\b|interim ceo/.test(s)) return { key: 'ceo', label: 'CEO' };
+  if (/\bcfo\b|finance|financial|fundrais|accounting|controller|fp&a|treasur/.test(s)) return { key: 'cfo', label: 'CFO' };
+  if (/\bcmo\b|marketing|brand|demand gen|growth|content marketing|\bseo\b|advertising|paid media|lifecycle|social media/.test(s)) return { key: 'cmo', label: 'CMO' };
+  if (/\bcto\b|engineering|technical|technology|head of product|fractional product|software|developer|devops|platform|infrastructure|\bai\b|machine learning|\bml\b|data engineer/.test(s)) return { key: 'cto', label: 'CTO' };
+  if (/\bcoo\b|operations|\bops\b|operational|process|supply chain|chief of staff|program management/.test(s)) return { key: 'coo', label: 'COO' };
+  if (/\bcro\b|revenue|\bsales\b|go-to-market|\bgtm\b|business development|bizdev|partnerships/.test(s)) return { key: 'cro', label: 'CRO' };
+  if (/\bceo\b|interim ceo|general manager|managing director/.test(s)) return { key: 'ceo', label: 'CEO' };
   return null;
+}
+
+function toNum(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+function roundOrNull(v: unknown): number | null {
+  const n = toNum(v);
+  return n != null ? Math.round(n) : null;
+}
+
+// From the meta scale string ("0-100: <30 Contracting · 30-44 Cooling · 45-59
+// Stable · …") pull the band segment matching this week's label, e.g. "45-59 Stable".
+function bandLegend(scale: unknown, label: unknown): string | null {
+  if (typeof scale !== 'string' || typeof label !== 'string') return null;
+  const seg = scale.split('·').map((s) => s.trim()).find((s) => s.toLowerCase().includes(label.toLowerCase()));
+  return seg ? seg.replace(/^0-100:\s*/, '').trim() : null;
 }
 
 async function getJson(url: string): Promise<any | null> {
@@ -46,33 +69,75 @@ Deno.serve(async (req) => {
       getJson(`${PULSE}/content-api/radar`),
     ]);
 
-    // overall market
-    let market: { score: number; label: string; delta: number | null } | null = null;
-    if (cur?.score) market = { score: Math.round(cur.score.overall), label: cur.score.label, delta: typeof cur.score.delta30d === 'number' ? Math.round(cur.score.delta30d * 10) / 10 : null };
-
-    // the user's role: demand band (fwi-roles) + this-week mover (current.topMovers)
-    let roleOut: { key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null } | null = null;
-    if (role) {
-      const rr = Array.isArray(roles?.roles) ? roles.roles.find((r: any) => r.role === role.key) : null;
-      const mv = Array.isArray(cur?.topMovers) ? cur.topMovers.find((m: any) => m.signalType === 'demand' && typeof m.role === 'string' && m.role.toLowerCase().includes(role.key)) : null;
-      roleOut = {
-        key: role.key, label: role.label,
-        demand: rr && typeof rr.demand === 'number' ? Math.round(rr.demand) : null,
-        band: rr?.band ?? null,
-        deltaPct: mv && typeof mv.changePct === 'number' ? Math.round(mv.changePct * 10) / 10 : null,
+    // overall market — score, 30-day move, and the demand/supply/culture breakdown
+    // that explains WHY the score is where it is (all already in fwi-api/current).
+    let market:
+      | { score: number; label: string; delta: number | null; emoji: string | null; scale: string | null; components: { demand: number | null; supply: number | null; culture: number | null } | null }
+      | null = null;
+    if (cur?.score) {
+      const comp = cur.score.components ?? null;
+      const compOut = comp
+        ? {
+            demand: roundOrNull(comp.demand?.score),
+            supply: roundOrNull(comp.supply?.score),
+            culture: roundOrNull(comp.culture?.score),
+          }
+        : null;
+      market = {
+        score: Math.round(cur.score.overall),
+        label: cur.score.label,
+        delta: toNum(cur.score.delta30d) != null ? Math.round(cur.score.delta30d * 10) / 10 : null,
+        emoji: typeof cur.score.emoji === 'string' ? cur.score.emoji : null,
+        // the band legend for this score, pulled from the meta scale string
+        scale: bandLegend(cur?.meta?.scale, cur.score.label),
+        components: compOut && (compOut.demand != null || compOut.supply != null || compOut.culture != null) ? compOut : null,
       };
     }
 
-    // a rising topic, role-matched where possible
-    let rising: string | null = null;
-    const topics = Array.isArray(radar?.rising_topics) ? radar.rising_topics : [];
-    if (topics.length) {
-      const match = role ? topics.find((t: any) => typeof t.role === 'string' && t.role.includes(role.key)) : null;
-      rising = (match || topics[0])?.label ?? null;
+    // the user's role: demand band + rank among all roles + this-week human read.
+    let roleOut:
+      | { key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null; rank: number | null; total: number | null; insight: string | null }
+      | null = null;
+    if (role) {
+      const roleList: any[] = Array.isArray(roles?.roles) ? roles.roles : [];
+      const rr = roleList.find((r: any) => r.role === role.key) ?? null;
+      const mv = Array.isArray(cur?.topMovers) ? cur.topMovers.find((m: any) => m.signalType === 'demand' && typeof m.role === 'string' && m.role.toLowerCase().includes(role.key)) : null;
+      // rank by demand (highest demand = 1st), so we can say "3rd of 6 roles".
+      let rank: number | null = null;
+      const total = roleList.length || null;
+      if (rr && toNum(rr.demand) != null) {
+        const ranked = roleList
+          .filter((r: any) => toNum(r.demand) != null)
+          .sort((a: any, b: any) => b.demand - a.demand);
+        const idx = ranked.findIndex((r: any) => r.role === role.key);
+        if (idx >= 0) rank = idx + 1;
+      }
+      roleOut = {
+        key: role.key, label: role.label,
+        demand: rr && toNum(rr.demand) != null ? Math.round(rr.demand) : null,
+        band: rr?.band ?? null,
+        deltaPct: mv && toNum(mv.changePct) != null ? Math.round(mv.changePct * 10) / 10 : null,
+        rank, total,
+        insight: mv && typeof mv.insight === 'string' ? mv.insight : null,
+      };
     }
 
+    // rising themes, role-matched first — up to three, each with its summary sentence
+    // so the drawer reads as real insight rather than a bare tag.
+    const topics: any[] = Array.isArray(radar?.rising_topics) ? radar.rising_topics : [];
+    const matched = role ? topics.filter((t: any) => typeof t.role === 'string' && t.role.includes(role.key)) : [];
+    const general = topics.filter((t: any) => !matched.includes(t));
+    const ordered = [...matched, ...general].slice(0, 3);
+    const themes = ordered.map((t: any) => ({
+      label: t?.label ?? null,
+      summary: typeof t?.summary === 'string' ? t.summary : null,
+      breakout: !!t?.is_breakout,
+    })).filter((t) => t.label);
+    const rising = themes[0]?.label ?? null;
+
     const asOf = cur?.meta?.asOf ?? radar?.meta?.week_start ?? null;
-    return new Response(JSON.stringify({ market, role: roleOut, rising, asOf }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const nextUpdate = typeof cur?.meta?.nextUpdate === 'string' ? cur.meta.nextUpdate : null;
+    return new Response(JSON.stringify({ market, role: roleOut, rising, themes: themes.length ? themes : null, asOf, nextUpdate }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     return safeErrorResponse(error, getCorsHeaders(req));
   }

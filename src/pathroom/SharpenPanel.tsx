@@ -15,7 +15,7 @@ function readDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result as string); r.onerror = rej; r.readAsDataURL(file); });
 }
 
-export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCard, onLinkedin, cardCount, linkedinDone, edges }: {
+export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCard, onLinkedin, cardCount, linkedinDone, edges, compact = false }: {
   thesis: string;
   onAdmire: (dataUrl: string) => Promise<AdmireResult>;
   onSaveInspiration: (insp: { name: string; positioning?: string | null; kind?: string; field?: string | null; why: string }) => Promise<void>;
@@ -24,6 +24,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
   cardCount: number;
   linkedinDone: boolean;
   edges: { name: string; why: string }[];
+  compact?: boolean; // one-line rows instead of tall description cards (the focused "Make it stronger" screen)
 }) {
   const [admire, setAdmire] = useState<AdmireStep>('idle');
   const [res, setRes] = useState<AdmireResult | null>(null);
@@ -56,7 +57,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
   function reset() { setAdmire('idle'); setRes(null); }
 
   return (
-    <div style={{ marginTop: 18 }}>
+    <div style={{ marginTop: compact ? 10 : 18 }}>
       {edges.length ? (
         <div className="edgerow">
           <div className="navhint" style={{ color: C.accent }}>Your edge, sharper</div>
@@ -65,7 +66,44 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
         </div>
       ) : null}
 
-      {admire === 'idle' ? (
+      {admire === 'idle' && compact ? (
+        <>
+          <div className="ovl" style={{ marginTop: 20 }}>Add a bit more signal</div>
+
+          <button className="fuelrowc" onClick={() => admireInput.current?.click()}>
+            <span className="fuelicon">◎</span>
+            <span className="fuelrowc-t">Screenshot a business you admire</span>
+            <span className="fueltag thesis">edge</span>
+            <span className="htarrow">→</span>
+          </button>
+          <input ref={admireInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAdmireFile(f); }} />
+
+          <button className={'fuelrowc' + (cardCount ? ' done' : '')} onClick={() => cardInput.current?.click()}>
+            <span className="fuelicon">▸</span>
+            <span className="fuelrowc-t">Snap a business card</span>
+            {cardCount ? <span className="donechk">✓ {cardCount}</span> : <span className="fueltag circle">circle</span>}
+            <span className="htarrow">→</span>
+          </button>
+          <input ref={cardInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onCardFile(f); }} />
+
+          {!liOpen ? (
+            <button className={'fuelrowc' + (linkedinDone ? ' done' : '')} onClick={() => !linkedinDone && setLiOpen(true)} disabled={linkedinDone}>
+              <span className="fuelicon">in</span>
+              <span className="fuelrowc-t">Connect your LinkedIn</span>
+              {linkedinDone ? <span className="donechk">✓ linked</span> : <span className="fueltag ability">fit</span>}
+              <span className="htarrow">→</span>
+            </button>
+          ) : (
+            <div className="extracted">
+              <div className="navhint">Your LinkedIn</div>
+              <input style={{ marginTop: 10 }} value={li} onChange={(e) => setLi(e.target.value)} placeholder="linkedin.com/in/your-profile" />
+              <button className="cta" style={{ marginTop: 10 }} disabled={!li.trim()} onClick={() => { onLinkedin(li.trim()); setLiOpen(false); }}><span>Link it</span><span className="mono">→</span></button>
+            </div>
+          )}
+
+          {err ? <div className="mono" style={{ fontSize: 11, color: C.risk, marginTop: 10 }}>{err}</div> : null}
+        </>
+      ) : admire === 'idle' ? (
         <>
           <div className="ovl" style={{ marginTop: 22 }}>Make it stronger</div>
 

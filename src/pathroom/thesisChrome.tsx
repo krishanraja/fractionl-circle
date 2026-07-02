@@ -2,7 +2,7 @@
 // dim when we know little, brighter as real fuel goes in) plus the extra CSS the dialogue,
 // the sharpen panel and the journey map all use. ThesisApp injects `chromeCss` once.
 import { useEffect, useRef, useState } from 'react';
-import { Sun, Moon, Settings, Activity } from 'lucide-react';
+import { Sun, Moon, Settings, Activity, ChevronLeft } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { applyTheme } from '@/lib/applyUserPreferences';
 import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet';
@@ -87,7 +87,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
           <img src="/brand/fractionl-icon.png" alt="" className="ember" style={emberStyle(fuel)} />
         </button>
         {onHome
-          ? <button className="wmbtn" onClick={onHome} aria-label="Home"><img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" /></button>
+          ? <button className="navback" onClick={onHome} aria-label="Back to your plan"><ChevronLeft size={15} strokeWidth={2.4} /><span>Plan</span></button>
           : <img src="/brand/fractionl-wordmark.png" alt="Fractionl" className="wm" />}
         <span style={{ flex: 1 }} />
         <div className="navbtns">
@@ -128,7 +128,12 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
           </div>
         </div>
       ) : null}
-      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} />
+      <PulseDrawer
+        open={pulseOpen}
+        onOpenChange={setPulseOpen}
+        market={market ?? null}
+        onStrengthen={onStrengthen ? () => { setPulseOpen(false); onStrengthen(); } : undefined}
+      />
       <ProfileSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
@@ -180,6 +185,11 @@ export const chromeCss = `
 .thx .ember { width:26px; height:26px; transition:filter .8s ease, opacity .8s ease; pointer-events:none; -webkit-user-drag:none; }
 .thx .wm { height:15px; opacity:0.9; display:block; }
 .thx .wmbtn { background:none; border:0; padding:0; cursor:pointer; line-height:0; }
+/* explicit back-to-Plan control shown on deep screens (replaces the old hidden
+   wordmark-is-home trick): an obvious labelled exit back to the venture home. */
+.thx .navback { display:inline-flex; align-items:center; gap:3px; background:none; border:1px solid ${C.line2}; border-radius:8px; height:30px; padding:0 11px 0 7px; color:${C.mid}; font-family:${MONO}; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; transition:border-color .2s ease, color .2s ease; }
+.thx .navback:hover { color:${C.accent}; border-color:${C.accentEdge}; }
+.thx .navback:active { transform:translateY(1px); }
 .thx .navhome { background:none; border:1px solid ${C.line2}; border-radius:6px; padding:5px 10px; font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.mid}; cursor:pointer; }
 .thx .navhome:hover { color:${C.accent}; border-color:${C.accentEdge}; }
 /* Plan header control cluster: pulse indicator + theme + settings */
@@ -190,7 +200,7 @@ export const chromeCss = `
 .thx .navpulse:hover { border-color:${C.accentEdge}; }
 .thx .navpulse-num { font-family:${MONO}; font-size:12px; font-weight:600; color:${C.hi}; font-variant-numeric:tabular-nums; }
 @media (max-width:360px) { .thx .topnav { gap:8px; } .thx .navpulse { padding:0 8px; } }
-.thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:15px; cursor:pointer; margin-top:12px; transition:border-color .2s ease, transform .12s ease; }
+.thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:13px; cursor:pointer; margin-top:9px; transition:border-color .2s ease, transform .12s ease; }
 .thx .hometile:hover { border-color:${C.accentEdge}; }
 .thx .hometile:active { transform:translateY(1px); }
 .thx .htk { font-size:14.5px; font-weight:600; color:${C.hi}; }
@@ -201,13 +211,18 @@ export const chromeCss = `
 /* the venture ember orb (charge) on the real command-center Home. Compact on mobile
    so the hero + the three action tiles + the pinned footer fit one no-scroll viewport;
    the desktop grid (min-width:900px) restores the larger orb. */
-.thx .vorb { position:relative; width:96px; height:96px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+.thx .vorb { position:relative; width:clamp(76px, 19vh, 96px); height:clamp(76px, 19vh, 96px); display:flex; align-items:center; justify-content:center; margin:0 auto; }
 .thx .vorbglow { position:absolute; inset:-26%; border-radius:50%; background:radial-gradient(circle, var(--thx-glow-halo), transparent 65%); filter:blur(var(--thx-glow-halo-blur)); animation:vorbpulse 4.5s ease-in-out infinite; }
 .thx .vorbsvg { position:absolute; inset:0; animation:vorbbreath 4.5s ease-in-out infinite; }
 .thx .vorbcore { position:absolute; top:50%; left:50%; width:30px; height:30px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
-.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:10px; }
+.thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:6px; }
 /* mobile: a tighter gap before the instruments (reset on the desktop grid) */
-.thx .vpanels { margin-top:16px; }
+.thx .vpanels { margin-top:10px; }
+/* Mobile no-scroll home: fill the framed body and center the hero+tiles so the
+   venture orb, the three action tiles and the pinned footer always fit one
+   viewport without an internal scroll. The desktop grid (min-width:900px) below
+   re-lays this into two regions, so these rules are effectively mobile-only. */
+.thx .thxbody:has(.vhome) > .wrap { min-height:100%; display:flex; flex-direction:column; justify-content:center; padding-top:14px; padding-bottom:14px; }
 @keyframes vorbbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
 @keyframes vorbpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
 /* the live market-movement instrument (fed by Pulse) */
@@ -222,6 +237,29 @@ export const chromeCss = `
 .thx .vdn { color:${C.risk}; background:rgba(204,119,119,0.12); }
 .thx .vflat { color:${C.mid}; background:rgba(255,255,255,0.05); }
 .thx .vmktchip { display:inline-block; margin-top:11px; font-size:11.5px; color:${C.hi}; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; border-radius:999px; padding:5px 10px; }
+/* Pulse drawer: header with a right gutter (clears the Sheet's close button) + the
+   richer, role-personalised instrument cards. */
+.thx .vpulsehead { padding-right:44px; }
+.thx .vpulsecard { background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:12px; padding:13px 14px; }
+.thx .vpulsescorewrap { display:flex; align-items:baseline; gap:8px; margin-top:6px; }
+.thx .vpulsescore { font-family:${MONO}; font-size:34px; font-weight:600; color:${C.hi}; line-height:1; font-variant-numeric:tabular-nums; }
+.thx .vpulsescoremax { font-family:${MONO}; font-size:13px; color:${C.lo}; }
+.thx .vpulseband { font-size:12.5px; color:${C.mid}; }
+.thx .vpulsescale { font-family:${MONO}; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; margin-top:6px; }
+.thx .vmktmeters { margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+.thx .vmktmeter { display:flex; align-items:center; gap:10px; }
+.thx .vmktmeterk { flex:0 0 58px; font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.mid}; }
+.thx .vmktmetertrack { flex:1; height:5px; border-radius:999px; background:${C.line2}; overflow:hidden; }
+.thx .vmktmeterfill { display:block; height:100%; border-radius:999px; background:${C.cool}; transition:width .5s ease; }
+.thx .vmktmeterv { flex:0 0 auto; font-family:${MONO}; font-size:11px; color:${C.mid}; font-variant-numeric:tabular-nums; }
+.thx .vpulsemeta { font-family:${MONO}; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; color:${C.lo}; margin-top:8px; }
+.thx .vpulseinsight { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:8px; }
+.thx .vpulsetheme { padding:9px 0; border-top:1px solid ${C.line}; }
+.thx .vpulsetheme:first-child { border-top:0; padding-top:2px; }
+.thx .vpulsethemehead { display:flex; align-items:center; gap:8px; }
+.thx .vpulsethemelabel { font-size:13.5px; font-weight:600; color:${C.hi}; }
+.thx .vpulsebreak { font-family:${MONO}; font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; border:1px solid ${C.accentEdge}; border-radius:4px; padding:2px 5px; line-height:1; }
+.thx .vpulsethemesum { font-size:12px; color:${C.mid}; line-height:1.45; margin-top:4px; }
 .thx .navhint { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; }
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }
@@ -240,6 +278,16 @@ export const chromeCss = `
 .thx .fuelcard:hover { border-color:${C.accentEdge}; }
 .thx .fuelcard.done { border-color:rgba(127,185,150,0.4); }
 .thx .fuelcard:disabled { cursor:default; }
+/* compact one-line variant for the focused "Make it stronger" screen */
+.thx .fuelrowc { display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:10px; padding:10px 13px; cursor:pointer; margin-top:8px; transition:border-color .2s ease, transform .12s ease; }
+.thx .fuelrowc:hover { border-color:${C.accentEdge}; }
+.thx .fuelrowc:active { transform:translateY(1px); }
+.thx .fuelrowc:disabled { cursor:default; opacity:0.85; }
+.thx .fuelrowc.done { border-color:rgba(127,185,150,0.4); }
+.thx .fuelrowc-t { flex:1; min-width:0; font-size:13.5px; font-weight:600; color:${C.hi}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.thx .fuelrowc .fueltag { margin-top:0; flex:0 0 auto; }
+.thx .fuelrowc .donechk { margin-top:0; flex:0 0 auto; }
+.thx .fuelrowc .htarrow { flex:0 0 auto; }
 .thx .fuelicon { width:30px; height:30px; border-radius:8px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-family:${MONO}; font-size:13px; border:1px solid ${C.line2}; color:${C.accent}; }
 .thx .fueltitle2 { font-size:14.5px; font-weight:600; color:${C.hi}; }
 .thx .fuelfor { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; }
@@ -313,6 +361,18 @@ export const chromeCss = `
 .thx .spk-send:disabled { opacity:0.5; cursor:default; }
 .thx .spk-done { display:flex; align-items:center; gap:9px; border:1px solid ${C.line}; border-radius:12px; padding:13px 14px; background:${C.panel}; font-size:13px; color:${C.mid}; line-height:1.45; }
 .thx .spk-doneicon { color:${C.good}; font-weight:700; }
+/* The "Make it stronger" centrepiece owns a stable slot: a reserved min-height so
+   the skeleton, the loaded question and the resting state share one footprint and
+   the quick-input rows below never get shoved as the AI question loads. */
+.thx .spk-focus { min-height:360px; }
+.thx .spk-focus.spk-rest { display:flex; align-items:center; justify-content:center; text-align:center; gap:9px; font-size:13.5px; color:${C.mid}; line-height:1.5; }
+.thx .spk-skel { background:linear-gradient(90deg, ${C.line2} 25%, ${C.line} 37%, ${C.line2} 63%); background-size:400% 100%; border-radius:6px; animation:spkshimmer 1.4s ease infinite; }
+.thx .spk-skel-q { height:18px; margin-top:12px; }
+.thx .spk-skel-q.short { width:68%; margin-top:8px; }
+.thx .spk-skel-opt { height:42px; border-radius:8px; }
+.thx .spk-body { animation: thxfade .28s ease both; }
+.thx .spk-skelnote { font-family:${MONO}; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; margin-top:14px; }
+@keyframes spkshimmer { 0%{background-position:100% 0} 100%{background-position:0 0} }
 /* strength score readout */
 .thx .scorewrap { display:flex; align-items:baseline; gap:8px; }
 .thx .scorenum { font-family:${MONO}; font-size:30px; font-weight:600; color:${C.hi}; font-variant-numeric:tabular-nums; line-height:1; }
@@ -320,7 +380,7 @@ export const chromeCss = `
 .thx .scorepend { font-family:${MONO}; font-size:11px; color:${C.accent}; }
 .thx .scorehold { font-size:12px; color:${C.mid}; margin-top:4px; }
 /* the single, visible door to strengthening — sits right under the score/weakness */
-.thx .strengthencta { display:inline-flex; align-items:center; gap:6px; margin-top:13px; padding:9px 15px; border-radius:999px; border:1px solid ${C.accent}; background:${C.accent}; color:#1A1206; font-size:12.5px; font-weight:700; cursor:pointer; transition:filter .12s ease, transform .12s ease; }
+.thx .strengthencta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 15px; border-radius:999px; border:1px solid ${C.accent}; background:${C.accent}; color:#1A1206; font-size:12.5px; font-weight:700; cursor:pointer; transition:filter .12s ease, transform .12s ease; }
 .thx .strengthencta:hover { filter:brightness(1.05); }
 .thx .strengthencta:active { transform:translateY(1px); }
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
