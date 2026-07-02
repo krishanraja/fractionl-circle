@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
+import { chatJSON } from '../_shared/llm.ts';
 
 // market-pulse: the live "market movement" instrument for the command-center Home, fed by
 // the sister product fractionl-pulse (public, no-auth APIs). Role-level (Pulse is not
@@ -128,12 +129,30 @@ Deno.serve(async (req) => {
     const matched = role ? topics.filter((t: any) => typeof t.role === 'string' && t.role.includes(role.key)) : [];
     const general = topics.filter((t: any) => !matched.includes(t));
     const ordered = [...matched, ...general].slice(0, 3);
-    const themes = ordered.map((t: any) => ({
+    const themes: Array<{ label: string; summary: string | null; breakout: boolean; angle?: string | null }> = ordered.map((t: any) => ({
       label: t?.label ?? null,
       summary: typeof t?.summary === 'string' ? t.summary : null,
       breakout: !!t?.is_breakout,
     })).filter((t) => t.label);
     const rising = themes[0]?.label ?? null;
+
+    // Turn each rising theme into ONE concrete "your angle" for the operator's role —
+    // the layperson's "what do I do with this?". A bonus: any failure (no key, bad
+    // JSON) just omits angles and the themes still ship with their descriptions.
+    if (themes.length) {
+      try {
+        const roleLabel = roleOut?.label ? `fractional ${roleOut.label}` : 'fractional executive';
+        const sys = `You help a ${roleLabel} turn market trends into ONE concrete action they can take this week. For each trend give "angle": one short sentence (max 140 chars) on how THEY could attach to it — post a take on LinkedIn, raise it in a client conversation, or work it into their pitch. Plain and specific, no jargon, no em dashes. Return ONLY JSON { "angles": [ { "label": string, "angle": string } ] }, echoing each label exactly.`;
+        const usr = JSON.stringify({ role: roleLabel, trends: themes.map((t) => ({ label: t.label, summary: t.summary })) });
+        const { content } = await chatJSON({ system: sys, user: usr, temperature: 0.5, maxTokens: 400 });
+        const parsed = JSON.parse(content);
+        const byLabel = new Map<string, string>();
+        for (const a of (Array.isArray(parsed?.angles) ? parsed.angles : [])) {
+          if (a?.label && typeof a?.angle === 'string' && a.angle.trim()) byLabel.set(String(a.label), a.angle.trim().slice(0, 160));
+        }
+        for (const t of themes) t.angle = byLabel.get(t.label) ?? null;
+      } catch (_e) { /* angles are a bonus; themes still ship without them */ }
+    }
 
     const asOf = cur?.meta?.asOf ?? radar?.meta?.week_start ?? null;
     const nextUpdate = typeof cur?.meta?.nextUpdate === 'string' ? cur.meta.nextUpdate : null;

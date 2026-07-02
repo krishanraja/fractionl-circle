@@ -1,14 +1,14 @@
-// The market pulse, moved out of the Plan home body and into a nav-triggered drawer
-// (opened from the Pulse indicator in EmberNav). Shows the full "this week" read from
-// fractionl-pulse: the Fractional Working Index score with its demand/supply/culture
-// breakdown, the user's role demand + rank + this-week read, and the rising themes.
-// Personalisation is role-grained (Pulse doesn't go finer than role), so we're honest
-// when we can't map a role. Renders a plain empty state when market data isn't in yet.
+// The market pulse, in plain English for a time-poor, non-technical fractional
+// operator. It answers three questions fast, leading with meaning not metrics:
+//   A. Is your finger on the pulse? — a plain verdict on the whole fractional market.
+//   B. Are you doing the right thing? — a plain read on demand for THEIR role.
+//   C. What can you attach to? — the rising trends, expandable, each with "your angle".
+// The exact figures (score/100, demand·supply·culture bars, rank, %) still exist,
+// tucked behind an optional "see the numbers" toggle — honest, but never in the way.
 //
-// The drawer is a fixed, full-height flex column that NEVER scrolls (overflow:hidden):
-// header + market card + role card are fixed, the rising-themes region flexes and
-// clips, and the "as of" line is pinned — so the content can't force a scroll on any
-// device.
+// The drawer chrome is a fixed, full-height flex column that doesn't scroll; only the
+// trends list scrolls internally, and only when an expanded insight is long.
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sheet';
 import type { MarketPulse } from './thesisData';
 import { C } from './tokens';
+import { marketVerdict, roleVerdict, shortDate, trendBadge, type Sentiment } from './pulseLanguage';
 
 function Delta({ v, suffix = '' }: { v: number | null; suffix?: string }) {
   if (v == null) return null;
@@ -24,7 +25,7 @@ function Delta({ v, suffix = '' }: { v: number | null; suffix?: string }) {
   return <span className={'vdelta ' + (flat ? 'vflat' : up ? 'vup' : 'vdn')}>{flat ? '•' : up ? '▲' : '▼'} {Math.abs(v)}{suffix}</span>;
 }
 
-// A labelled 0-100 component meter (demand / supply / culture).
+// A labelled 0-100 component meter — only shown inside the tucked-away numbers block.
 function Meter({ label, v }: { label: string; v: number | null }) {
   const pct = v == null ? 0 : Math.max(0, Math.min(100, v));
   return (
@@ -35,6 +36,8 @@ function Meter({ label, v }: { label: string; v: number | null }) {
     </div>
   );
 }
+
+const DOT: Record<Sentiment, string> = { good: C.good, steady: C.cool, soft: C.gold };
 
 interface PulseDrawerProps {
   open: boolean;
@@ -47,9 +50,16 @@ export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerP
   const m = market?.market ?? null;
   const role = market?.role ?? null;
   const comp = m?.components ?? null;
-  const themes = market?.themes ?? (market?.rising ? [{ label: market.rising, summary: null, breakout: false }] : null);
-  // ISO -> plain date for "refreshes {date}"
-  const nextUpdate = market?.nextUpdate ? market.nextUpdate.slice(0, 10) : null;
+  const themes = market?.themes ?? (market?.rising ? [{ label: market.rising, summary: null, breakout: false, angle: null }] : null);
+
+  const verdict = marketVerdict(m);
+  const rv = roleVerdict(role);
+  const asOf = shortDate(market?.asOf);
+  const next = shortDate(market?.nextUpdate);
+
+  // Accordion: one trend open at a time (the first by default). Numbers stay hidden.
+  const [openIdx, setOpenIdx] = useState(0);
+  const [showNumbers, setShowNumbers] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -57,15 +67,16 @@ export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerP
         side="right"
         className="thx w-full sm:max-w-md p-0 overflow-hidden flex flex-col"
         style={{ background: 'var(--thx-bg)' }}
+        // Don't yank focus onto the first trend on open (its focus ring gets clipped
+        // by the scroll region and reads as a stray line); keyboard users can still Tab in.
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <SheetTitle className="sr-only">The market this week</SheetTitle>
         <SheetDescription className="sr-only">
-          Live market movement for your role and the fractional economy, from Pulse.
+          A plain-English read on the fractional market and demand for your role, from Pulse.
         </SheetDescription>
 
         <div className="vpulsewrap">
-          {/* Header sits on its own lines with a right gutter, so the Sheet's
-              built-in close button never overlaps the "via pulse" caption. */}
           <div className="vpulsehead">
             <span className="vmkttitle">The market · this week</span>
             <span className="navhint" style={{ color: C.lo, marginTop: 4, display: 'block' }}>via pulse</span>
@@ -73,76 +84,96 @@ export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerP
 
           {hasData ? (
             <>
-              {/* Headline: the Fractional Working Index score + 30-day move + band legend. */}
-              {m ? (
+              {/* A. Finger on the pulse — the whole fractional market, in one sentence. */}
+              {verdict ? (
                 <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 12 }}>
-                  <span className="navhint" style={{ color: C.cool }}>Fractional market</span>
-                  <div className="vpulsescorewrap">
-                    <span className="vpulsescore">{m.score}</span>
-                    <span className="vpulsescoremax">/100</span>
-                    <span className="vpulseband">{m.emoji ? m.emoji + ' ' : ''}{m.label}</span>
-                    <span style={{ flex: 1 }} />
-                    <Delta v={m.delta} />
+                  <div className="vpverdict">
+                    <span className="vpdot" style={{ background: DOT[verdict.sentiment] }} />
+                    <span className="vpverdicttext">{verdict.sentence}</span>
                   </div>
-                  {m.scale ? <div className="vpulsescale">{m.scale} · 30-day move</div> : <div className="vpulsescale">30-day move</div>}
+                  <div className="vpfollow">{verdict.followLine}</div>
+                </div>
+              ) : null}
+
+              {/* B. Are you doing the right thing — demand for their role, in plain words. */}
+              {rv ? (
+                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
+                  <div className="vprole">{rv.sentence}</div>
+                  <div className="vpmeaning">{rv.meaning}</div>
+                </div>
+              ) : (
+                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
+                  <div className="vprole">We can't tell which role you offer yet.</div>
+                  <div className="vpmeaning">Name it in your plan (CMO, CFO, CTO…) and this tailors to demand for what you do.</div>
+                </div>
+              )}
+
+              {/* C. Trends you can attach to — an accordion, full text on tap, no truncation. */}
+              {themes && themes.length ? (
+                <div className="vpulsecard vpulserising" style={{ marginTop: 10 }}>
+                  <span className="navhint" style={{ color: C.cool }}>Trends you can attach to</span>
+                  <div className="vpulsethemes">
+                    {themes.map((t, i) => {
+                      const isOpen = openIdx === i;
+                      return (
+                        <div key={i} className={'vptrend' + (isOpen ? ' open' : '')}>
+                          <button className="vptrendhead" onClick={() => setOpenIdx(isOpen ? -1 : i)} aria-expanded={isOpen}>
+                            <span className="vptrendlabel">{t.label}</span>
+                            <span className={'vptrendbadge' + (t.breakout ? ' hot' : '')}>{trendBadge(t.breakout)}</span>
+                            <span className="vptrendchev">{isOpen ? '▾' : '▸'}</span>
+                          </button>
+                          {isOpen ? (
+                            <div className="vptrendbody">
+                              {t.summary ? <div className="vptrendsum">{t.summary}</div> : null}
+                              {t.angle ? (
+                                <div className="vptrendangle"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Optional: the exact figures, for anyone who wants them. Hidden by default. */}
+              <button className="vpnumbtn" onClick={() => setShowNumbers((s) => !s)}>
+                {showNumbers ? 'Hide the numbers' : 'See the numbers'} <span className="mono">{showNumbers ? '▴' : '▾'}</span>
+              </button>
+              {showNumbers ? (
+                <div className="vpnumbers">
+                  {m ? (
+                    <div className="vpnumrow">
+                      <span className="vpnumk">Market</span>
+                      <span className="vpnumv">{m.score}/100 · {m.label}</span>
+                      <Delta v={m.delta} />
+                    </div>
+                  ) : null}
                   {comp ? (
-                    <div className="vmktmeters">
+                    <div className="vmktmeters" style={{ marginTop: 8 }}>
                       <Meter label="Demand" v={comp.demand} />
                       <Meter label="Supply" v={comp.supply} />
                       <Meter label="Culture" v={comp.culture} />
                     </div>
                   ) : null}
-                </div>
-              ) : null}
-
-              {/* The user's role — the personalised core. */}
-              {role ? (
-                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
-                  <span className="navhint" style={{ color: C.accent }}>Demand for fractional {role.label}s</span>
-                  <div className="vmktrow" style={{ marginTop: 7 }}>
-                    <span className="vmktname">{role.band ?? 'Demand'}{role.demand != null ? ` · ${role.demand}/100` : ''}</span>
-                    <Delta v={role.deltaPct} suffix="%" />
-                  </div>
-                  {role.rank != null && role.total != null ? (
-                    <div className="vpulsemeta">#{role.rank} of {role.total} tracked roles by demand</div>
+                  {role ? (
+                    <div className="vpnumrow" style={{ marginTop: 8 }}>
+                      <span className="vpnumk">{role.label}</span>
+                      <span className="vpnumv">{role.demand != null ? `${role.demand}/100` : '—'}{role.rank != null && role.total != null ? ` · #${role.rank} of ${role.total}` : ''}</span>
+                      <Delta v={role.deltaPct} suffix="%" />
+                    </div>
                   ) : null}
-                  {role.insight ? <div className="vpulseinsight">{role.insight}</div> : null}
-                </div>
-              ) : (
-                <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 10 }}>
-                  <span className="navhint" style={{ color: C.lo }}>Your role</span>
-                  <div className="sub" style={{ marginTop: 6 }}>
-                    Name the exec role you offer (CMO, CFO, CTO…) in your plan and this tailors to your role's demand.
-                  </div>
-                </div>
-              )}
-
-              {/* Rising themes — role-matched first. This is the flexible region: it
-                  shrinks and clips so the drawer never scrolls on any device. */}
-              {themes && themes.length ? (
-                <div className="vpulsecard vpulserising" style={{ marginTop: 10 }}>
-                  <span className="navhint" style={{ color: C.cool }}>Rising {role ? `for ${role.label}s` : 'this week'}</span>
-                  <div className="vpulsethemes">
-                    {themes.map((t, i) => (
-                      <div key={i} className="vpulsetheme">
-                        <div className="vpulsethemehead">
-                          <span className="vpulsethemelabel">{t.label}</span>
-                          {t.breakout ? <span className="vpulsebreak">breakout</span> : null}
-                        </div>
-                        {t.summary ? <div className="vpulsethemesum">{t.summary}</div> : null}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               ) : null}
 
               <div className="navhint vpulsefoot">
-                {market?.asOf ? `as of ${market.asOf}` : null}{market?.asOf && nextUpdate ? ' · ' : ''}{nextUpdate ? `refreshes ${nextUpdate}` : null}
+                {asOf ? `Updated ${asOf}` : null}{asOf && next ? ' · ' : ''}{next ? `next check ${next}` : null}
               </div>
             </>
           ) : (
             <div className="sub" style={{ marginTop: 14 }}>
-              Market data loads with your read — run or re-read your plan and it'll show up here.
+              The market read loads with your plan — run or re-read your plan and it'll show up here.
             </div>
           )}
         </div>

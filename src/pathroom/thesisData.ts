@@ -77,7 +77,7 @@ export interface MarketPulse {
     insight?: string | null; // this-week human read, e.g. "124 jobs — below market average"
   } | null;
   rising: string | null; // kept: the single top theme label (back-compat)
-  themes?: { label: string; summary?: string | null; breakout?: boolean }[] | null;
+  themes?: { label: string; summary?: string | null; breakout?: boolean; angle?: string | null }[] | null;
   asOf: string | null;
   nextUpdate?: string | null; // ISO date/time of the next Pulse refresh
 }
