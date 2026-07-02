@@ -57,11 +57,16 @@ export default function ThesisApp() {
   const [circleFrom, setCircleFrom] = useState<'home' | 'journey'>('journey');
   const [market, setMarket] = useState<MarketPulse | null>(null);
   const [unrunAnswers, setUnrunAnswers] = useState(0);
+  // How many people the user ACTUALLY reached this session on the reach step —
+  // real evidence (each stamps last_interaction_at), so completion isn't a free tick.
+  const [reachedCount, setReachedCount] = useState(0);
   const timers = useRef<number[]>([]);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // Land at the top of every new screen (kills "I end up half way down a new page").
   useEffect(() => { if (bodyRef.current) bodyRef.current.scrollTop = 0; }, [phase]);
+  // Fresh reach evidence each time the reach step is opened.
+  useEffect(() => { if (phase === 'reachout') setReachedCount(0); }, [phase]);
 
   // Banked-but-not-yet-run sharpen answers drive the provisional score lift.
   const refreshAnswers = () => { if (userId) getUnrunAnswerCount(userId).then(setUnrunAnswers).catch(() => {}); };
@@ -128,6 +133,12 @@ export default function ThesisApp() {
   const DEEP_PHASES: Phase[] = ['sharpen', 'journey', 'home', 'addpeople', 'reachout'];
   const go = (p: Phase) => { if (locked && DEEP_PHASES.includes(p)) { setPhase('gate'); return; } setPhase(p); };
 
+  // Open the strengthen surface, optionally FOCUSED on a specific journey move so
+  // the coach question targets that move (not the whole thesis). Global entries
+  // (the ember, the home CTA, the read) pass no focus.
+  const [sharpenFocus, setSharpenFocus] = useState<string | null>(null);
+  const openSharpen = (focus?: string | null) => { setSharpenFocus(focus ?? null); go('sharpen'); };
+
   async function onCard(dataUrl: string) {
     const person = await addContactFromImage(dataUrl);
     setCircle((l) => [person, ...l]); setCardCount((c) => c + 1);
@@ -190,7 +201,7 @@ export default function ThesisApp() {
         fuel={fuel} fuels={fuels} hint={hint}
         onHome={canHome ? () => go('home') : undefined}
         market={market}
-        onStrengthen={() => go('sharpen')}
+        onStrengthen={() => openSharpen(null)}
       />
       <div className="thxbody" ref={bodyRef}>
         <div className={'wrap' + (wide ? ' wrapwide' : '')} key={phase}>
@@ -207,23 +218,31 @@ export default function ThesisApp() {
   }
 
   if (phase === 'reachout' && data) {
-    // The warm-reach step's action. On return, mark that step done and refresh
-    // the circle so warmth/faces reflect anyone the user just reached.
-    const warmIdx = (data.steps || []).findIndex((s) => s.big);
+    // The warm-reach step's action, focused on THIS plan + move: surface the people
+    // who fit the idea (not random cold contacts). Completion is evidence-based —
+    // the step only ticks if the user actually reached someone; otherwise leaving
+    // does NOT mark it done, and claiming it took an action elsewhere is explicit.
+    const steps = data.steps || [];
+    const warmIdx = steps.findIndex((s) => s.big);
     const js = journeyState(data, circle, stepProgress);
     const markIdx = warmIdx >= 0 ? warmIdx : js.current;
+    const move = steps[markIdx]?.title;
     const back = (markDone: boolean) => {
       if (markDone) onMarkDone(markIdx);
       if (userId) getCircle(userId).then(setCircle).catch(() => {});
       setPhase('journey');
     };
+    const reached = reachedCount > 0;
     return frame(
-      <ReachOut />,
+      <ReachOut thesis={thesisText} move={move} onReached={setReachedCount} />,
       <>
-        <button className="cta" onClick={() => back(true)}><span>Done — back to path</span><span className="mono">→</span></button>
-        <button className="foothint" onClick={() => back(false)}>back without marking done</button>
+        <button className="cta" onClick={() => back(reached)}>
+          <span>{reached ? `Reached ${reachedCount} — back to path` : 'Back to path'}</span>
+          <span className="mono">→</span>
+        </button>
+        {!reached ? <button className="foothint" onClick={() => back(true)}>I reached out another way — mark this done</button> : null}
       </>,
-      'reach, then it warms',
+      reached ? 'reached — it warms now' : 'reach one, then it counts',
     );
   }
 
@@ -233,7 +252,7 @@ export default function ThesisApp() {
       <Home
         data={data} stepProgress={stepProgress} circle={circle} fuel={fuel}
         sharp={sharp}
-        onStrengthen={() => go('sharpen')}
+        onStrengthen={() => openSharpen(null)}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => go('journey')}
         onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}
@@ -265,7 +284,7 @@ export default function ThesisApp() {
     ) : (
       <>
         <button className="cta" onClick={() => setPhase('journey')}><span>See your path</span><span className="mono">→</span></button>
-        <button className="foothint" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => setPhase('sharpen')}>
+        <button className="foothint" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => openSharpen(null)}>
           {busyRerun ? 'reading...' : unrunAnswers > 0 ? `see how it lands again to lock in your gains (+${sharp.provisional})` : 'add a bit more to make it stronger first'}
         </button>
       </>
@@ -285,7 +304,7 @@ export default function ThesisApp() {
     // single door — press-and-hold the ember mark.
     return frame(
       <>
-        <SharpenPrompt onAnswered={refreshAnswers} focus />
+        <SharpenPrompt onAnswered={refreshAnswers} focus topic={sharpenFocus || undefined} />
         <SharpenPanel
           thesis={thesisText}
           onAdmire={(d) => extractAdmire(d, thesisText)}
@@ -325,14 +344,14 @@ export default function ThesisApp() {
       } else if (cur?.big || /network|warm|reach|intro|referr|consult|client|prospect|outreach/.test(t)) {
         primary = { label: 'Reach out now', onClick: () => go('reachout') };
       } else if (/value|position|offer|edge|differen|prop|pric|message|brand|narrativ|credib/.test(t)) {
-        primary = { label: 'Make this move stronger', onClick: () => go('sharpen') };
+        primary = { label: 'Make this move stronger', onClick: () => openSharpen(`${cur.title}${cur.why ? '. ' + cur.why : ''}`) };
       } else {
-        primary = { label: 'Work on this move', onClick: () => go('sharpen') };
+        primary = { label: 'Work on this move', onClick: () => openSharpen(`${cur.title}${cur.why ? '. ' + cur.why : ''}`) };
       }
       footer = (
         <>
           <button className="cta" onClick={primary.onClick}><span>{primary.label}</span><span className="mono">→</span></button>
-          {!js.warmBlocked ? <button className="foothint" onClick={() => onMarkDone(js.current)}>mark this move done</button> : null}
+          {!js.warmBlocked ? <button className="foothint" onClick={() => onMarkDone(js.current)}>I've done this — mark done</button> : null}
         </>
       );
     }

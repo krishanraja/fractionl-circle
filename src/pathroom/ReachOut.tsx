@@ -18,7 +18,13 @@ function mailto(p: ReachPerson): string {
   return `mailto:${encodeURIComponent(p.email || '')}?subject=${encodeURIComponent(p.subject)}&body=${encodeURIComponent(p.message)}`;
 }
 
-export default function ReachOut({ onLoaded }: { onLoaded?: (n: number) => void }) {
+export default function ReachOut({ thesis, move, onLoaded, onReached }: {
+  thesis?: string;
+  move?: string | null;
+  onLoaded?: (n: number) => void;
+  onReached?: (count: number) => void;
+}) {
+  const focused = !!thesis?.trim();
   const [loading, setLoading] = useState(true);
   const [people, setPeople] = useState<ReachPerson[]>([]);
   const [reached, setReached] = useState<Set<string>>(new Set());
@@ -26,21 +32,26 @@ export default function ReachOut({ onLoaded }: { onLoaded?: (n: number) => void 
 
   useEffect(() => {
     let live = true;
-    getWarmDigest()
+    getWarmDigest(focused ? { thesis: thesis!, move } : undefined)
       .then((ppl) => { if (!live) return; setPeople(ppl); onLoaded?.(ppl.length); })
       .catch(() => { if (live) setFailed(true); })
       .finally(() => { if (live) setLoading(false); });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [thesis, move]);
 
   async function act(p: ReachPerson, channel: 'email' | 'linkedin' | 'copy') {
     if (channel === 'email' && p.email) window.location.href = mailto(p);
     else if (channel === 'linkedin' && p.linkedin_url) openLinkedIn(p.linkedin_url);
     else if (channel === 'copy') await copyToClipboard(p.message, 'Draft');
-    // Acting on a draft counts as reaching out: warm them back up.
+    // Acting on a draft counts as reaching out: warm them back up, and tell the
+    // path this move actually happened (so completion is evidence-based).
     if (channel !== 'copy') {
-      setReached((s) => new Set(s).add(p.id));
+      setReached((s) => {
+        const next = new Set(s).add(p.id);
+        onReached?.(next.size);
+        return next;
+      });
       await markReachedOut(p.id).catch(() => {});
     }
   }
@@ -50,19 +61,23 @@ export default function ReachOut({ onLoaded }: { onLoaded?: (n: number) => void 
       <div className="ovl">Your move</div>
       <div className="h" style={{ marginTop: 8, fontSize: 20 }}>Reach out to your network.</div>
       <div className="sub" style={{ marginTop: 6 }}>
-        Pre-written and grounded in your real relationship. Open one, send it, and it counts. No new tool to learn.
+        {focused
+          ? 'The people in your circle who fit this idea — each with why they fit and a ready draft about it. Open one, send it, and it counts.'
+          : 'Pre-written and grounded in your real relationship. Open one, send it, and it counts. No new tool to learn.'}
       </div>
 
       {loading ? (
-        <div className="rmuted" style={{ marginTop: 22 }}>Finding who's going quiet…</div>
+        <div className="rmuted" style={{ marginTop: 22 }}>{focused ? 'Finding who fits this idea…' : "Finding who's going quiet…"}</div>
       ) : failed ? (
         <div className="panel" style={{ marginTop: 18 }}>
           <div className="rmuted">Couldn't load your people just now. Try again in a moment.</div>
         </div>
       ) : people.length === 0 ? (
         <div className="panel" style={{ marginTop: 18 }}>
-          <div style={{ fontSize: 14, color: C.hi, fontWeight: 600 }}>Your circle is warm right now.</div>
-          <div className="rmuted" style={{ marginTop: 6 }}>No one's gone cold. Add more people and warm-reach moves will surface here as relationships cool.</div>
+          <div style={{ fontSize: 14, color: C.hi, fontWeight: 600 }}>{focused ? 'No one in your circle fits this yet.' : 'Your circle is warm right now.'}</div>
+          <div className="rmuted" style={{ marginTop: 6 }}>{focused
+            ? 'Add people who match your buyer — or connect a source — and the right people to reach for this idea will surface here.'
+            : "No one's gone cold. Add more people and warm-reach moves will surface here as relationships cool."}</div>
         </div>
       ) : (
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -79,7 +94,7 @@ export default function ReachOut({ onLoaded }: { onLoaded?: (n: number) => void 
                   </div>
                   <span className="rband" style={{ color: bandColor[p.band] || C.mid, borderColor: (bandColor[p.band] || C.mid) + '55' }}>{p.band}</span>
                 </div>
-                <div className="rwhy">{p.why_now}</div>
+                <div className="rwhy">{p.why_fit || p.why_now}</div>
                 <div className="rdraft">{p.message}</div>
                 <div className="ractions">
                   {p.email ? <button className="rbtn primary" onClick={() => act(p, 'email')}>Open in email</button> : null}
