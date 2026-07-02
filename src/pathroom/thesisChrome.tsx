@@ -263,19 +263,20 @@ export const chromeCss = `
 .thx .vptrendsum { font-size:13px; color:${C.mid}; line-height:1.5; }
 .thx .vptrendangle { font-size:13px; color:${C.hi}; line-height:1.45; margin-top:9px; background:rgba(224,162,60,0.08); border:1px solid ${C.accentEdge}; border-radius:9px; padding:9px 11px; }
 .thx .vptrendanglek { display:block; font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; margin-bottom:4px; }
-/* the tucked-away exact figures */
-.thx .vpnumbtn { flex:0 0 auto; align-self:flex-start; margin-top:10px; background:none; border:0; cursor:pointer; font-family:${MONO}; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.lo}; padding:2px 0; }
-.thx .vpnumbtn:hover { color:${C.mid}; }
-.thx .vpnumbers { flex:0 0 auto; margin-top:8px; border:1px solid ${C.line2}; border-radius:11px; padding:11px 12px; background:${C.panel}; }
-.thx .vpnumrow { display:flex; align-items:center; gap:10px; }
-.thx .vpnumk { flex:0 0 auto; font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.mid}; }
-.thx .vpnumv { flex:1; font-family:${MONO}; font-size:11.5px; color:${C.hi}; font-variant-numeric:tabular-nums; text-align:right; }
-.thx .vmktmeters { margin-top:10px; display:flex; flex-direction:column; gap:7px; }
-.thx .vmktmeter { display:flex; align-items:center; gap:10px; }
-.thx .vmktmeterk { flex:0 0 58px; font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.mid}; }
-.thx .vmktmetertrack { flex:1; height:5px; border-radius:999px; background:${C.line2}; overflow:hidden; }
-.thx .vmktmeterfill { display:block; height:100%; border-radius:999px; background:${C.cool}; transition:width .5s ease; }
-.thx .vmktmeterv { flex:0 0 auto; font-family:${MONO}; font-size:11px; color:${C.mid}; font-variant-numeric:tabular-nums; }
+/* the metric rail: eye-catching value + colour-coded 30-day arrow down the left,
+   the strategic read on the right — all vertically aligned. */
+.thx .vpmetrics { flex:0 0 auto; margin-top:6px; }
+.thx .vpmetric { display:flex; gap:14px; align-items:flex-start; padding:11px 0; border-top:1px solid ${C.line}; }
+.thx .vpmetric:first-child { border-top:0; }
+.thx .vpmval { flex:0 0 60px; display:flex; flex-direction:column; align-items:flex-start; }
+.thx .vpmnum { font-family:${MONO}; font-size:25px; font-weight:600; color:${C.hi}; line-height:1; font-variant-numeric:tabular-nums; }
+.thx .vpmarrow { font-family:${MONO}; font-size:11px; margin-top:6px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.thx .vpmarrow.up { color:${C.good}; }
+.thx .vpmarrow.dn { color:${C.risk}; }
+.thx .vpmarrow.flat { color:${C.mid}; }
+.thx .vpmtext { flex:1; min-width:0; padding-top:1px; }
+.thx .vpmlabel { font-family:${MONO}; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:${C.cool}; }
+.thx .vpminsight { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:4px; }
 .thx .navhint { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; }
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }
