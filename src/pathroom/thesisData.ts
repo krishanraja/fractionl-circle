@@ -77,7 +77,11 @@ export interface MarketPulse {
     insight?: string | null; // this-week human read, e.g. "124 jobs — below market average"
   } | null;
   rising: string | null; // kept: the single top theme label (back-compat)
+  // The eye-catching metric rail: value + a real 30-day arrow (delta) + a strategic
+  // one-liner. positiveWhenUp drives arrow colour (e.g. competition up = not good).
+  metrics?: { key: string; label: string; value: string; delta: number | null; deltaSuffix?: string; positiveWhenUp?: boolean; insight: string }[] | null;
   themes?: { label: string; summary?: string | null; breakout?: boolean; angle?: string | null }[] | null;
+  roleLandscape?: { label: string; demand: number; band: string | null }[] | null; // which roles are fractionalising
   asOf: string | null;
   nextUpdate?: string | null; // ISO date/time of the next Pulse refresh
 }

@@ -64,11 +64,30 @@ Deno.serve(async (req) => {
     const thesis: string = typeof body?.thesis === 'string' ? body.thesis : '';
     const role = roleFromThesis(thesis);
 
-    const [cur, roles, radar] = await Promise.all([
+    const [cur, roles, radar, hist] = await Promise.all([
       getJson(`${PULSE}/fwi-api/current`),
       getJson(`${PULSE}/fwi-roles`),
       getJson(`${PULSE}/content-api/radar`),
+      getJson(`${PULSE}/fwi-api/history?months=3`),
     ]);
+
+    // Real 30-day change for each FWI component, from the daily history — this is what
+    // powers the colour-coded arrows (only the overall index carries its own delta).
+    const histRows: any[] = Array.isArray(hist?.history) ? hist.history : [];
+    const delta30 = (field: string): number | null => {
+      if (histRows.length < 2) return null;
+      const latest = histRows[histRows.length - 1];
+      const t = new Date(latest?.date ?? '').getTime();
+      if (!Number.isFinite(t)) return null;
+      let prior = histRows[0];
+      for (const p of histRows) {
+        const pt = new Date(p?.date ?? '').getTime();
+        if (Number.isFinite(pt) && pt <= t - 30 * 86_400_000) prior = p; else break;
+      }
+      const a = toNum(latest?.[field]); const b = toNum(prior?.[field]);
+      if (a == null || b == null) return null;
+      return Math.round((a - b) * 10) / 10;
+    };
 
     // overall market — score, 30-day move, and the demand/supply/culture breakdown
     // that explains WHY the score is where it is (all already in fwi-api/current).
@@ -123,40 +142,104 @@ Deno.serve(async (req) => {
       };
     }
 
-    // rising themes, role-matched first — up to three, each with its summary sentence
-    // so the drawer reads as real insight rather than a bare tag.
+    // Which roles are fractionalising — the whole role board, hottest first. Grounds
+    // the "which roles are heating up" question and the synthesis below.
+    const roleLandscape = (Array.isArray(roles?.roles) ? roles.roles : [])
+      .filter((r: any) => toNum(r.demand) != null)
+      .sort((a: any, b: any) => b.demand - a.demand)
+      .map((r: any) => ({ label: String(r.label || r.role), demand: Math.round(r.demand), band: r.band ?? null }));
+
+    // The radar's rising topics, role-matched first — the raw material + a graceful
+    // fallback if the strategic synthesis call is unavailable.
     const topics: any[] = Array.isArray(radar?.rising_topics) ? radar.rising_topics : [];
     const matched = role ? topics.filter((t: any) => typeof t.role === 'string' && t.role.includes(role.key)) : [];
     const general = topics.filter((t: any) => !matched.includes(t));
-    const ordered = [...matched, ...general].slice(0, 3);
-    const themes: Array<{ label: string; summary: string | null; breakout: boolean; angle?: string | null }> = ordered.map((t: any) => ({
-      label: t?.label ?? null,
-      summary: typeof t?.summary === 'string' ? t.summary : null,
-      breakout: !!t?.is_breakout,
-    })).filter((t) => t.label);
-    const rising = themes[0]?.label ?? null;
+    const baseThemes: Array<{ label: string; summary: string | null; breakout: boolean; angle?: string | null }> =
+      [...matched, ...general].slice(0, 3)
+        .map((t: any) => ({ label: t?.label ?? null, summary: typeof t?.summary === 'string' ? t.summary : null, breakout: !!t?.is_breakout }))
+        .filter((t) => t.label);
+    const rising = baseThemes[0]?.label ?? null;
 
-    // Turn each rising theme into ONE concrete "your angle" for the operator's role —
-    // the layperson's "what do I do with this?". A bonus: any failure (no key, bad
-    // JSON) just omits angles and the themes still ship with their descriptions.
-    if (themes.length) {
-      try {
-        const roleLabel = roleOut?.label ? `fractional ${roleOut.label}` : 'fractional executive';
-        const sys = `You help a ${roleLabel} turn market trends into ONE concrete action they can take this week. For each trend give "angle": one short sentence (max 140 chars) on how THEY could attach to it — post a take on LinkedIn, raise it in a client conversation, or work it into their pitch. Plain and specific, no jargon, no em dashes. Return ONLY JSON { "angles": [ { "label": string, "angle": string } ] }, echoing each label exactly.`;
-        const usr = JSON.stringify({ role: roleLabel, trends: themes.map((t) => ({ label: t.label, summary: t.summary })) });
-        const { content } = await chatJSON({ system: sys, user: usr, temperature: 0.5, maxTokens: 400 });
-        const parsed = JSON.parse(content);
-        const byLabel = new Map<string, string>();
-        for (const a of (Array.isArray(parsed?.angles) ? parsed.angles : [])) {
-          if (a?.label && typeof a?.angle === 'string' && a.angle.trim()) byLabel.set(String(a.label), a.angle.trim().slice(0, 160));
+    // ONE strategic synthesis: role-tailored metric insights + three SPECIFIC, grounded
+    // trends that answer the operator's real questions (which roles are fractionalising,
+    // what businesses are hiring, where THEIR function has an opening). Numbers all come
+    // from the data we pass — the model only writes the strategic read, never figures.
+    const roleName = roleOut?.label ? `fractional ${roleOut.label}` : 'fractional executive';
+    const metricInsights: Record<string, string> = {};
+    let strategicThemes: Array<{ label: string; summary: string; angle: string; breakout: boolean }> = [];
+    try {
+      const sys = `You are a sharp market strategist briefing a ${roleName} in plain English. Using ONLY the data given (never invent figures), produce SPECIFIC, STRATEGIC reads for THIS person — no vague platitudes, no generic "fractional vs full-time" filler.
+
+Return ONLY JSON:
+{
+  "insights": {
+    "demand": string,      // are companies hiring fractional execs, and who? (the pipeline is led by VC-backed startups: SEC Form D fundraising filings run 1-3 months ahead of hires)
+    "role": string,        // where ${roleName} demand sits versus the other roles, and what that means for them
+    "competition": string, // what the talent-supply move means for standing out
+    "buzz": string         // what the awareness move means for being visible now
+  },
+  "themes": [              // EXACTLY 3, tailored to a ${roleName}, each answering a strategic question, grounded in the data
+    { "label": string, "summary": string, "angle": string, "breakout": boolean }
+  ]
+}
+The three themes must cover: (1) which roles are fractionalising fastest and what it signals for a ${roleName}; (2) what kinds of businesses are hiring fractional execs right now (VC-backed startups / recently funded scaleups per the Form D lead) and how a ${roleName} reaches them; (3) a concrete opening for a ${roleName} this week. Each: "label" max 60 chars; "summary" max 200 chars, plain and specific; "angle" one concrete action max 140 chars. No jargon, no em dashes.`;
+      const usr = JSON.stringify({
+        role: roleName,
+        market: market ? { score: market.score, label: market.label, delta30d: market.delta } : null,
+        components: market?.components ?? null,
+        componentMoves30d: { demand: delta30('demand'), supply: delta30('supply'), culture: delta30('culture') },
+        yourRole: roleOut ? { label: roleOut.label, demand: roleOut.demand, band: roleOut.band, rank: roleOut.rank, of: roleOut.total, weekMove: roleOut.deltaPct } : null,
+        roleLandscape,
+        buyerSignal: 'Fractional demand is led by VC-backed startups: SEC Form D fundraising filings run 1-3 months ahead of fractional hires.',
+        radarTopics: baseThemes.map((t) => ({ label: t.label, summary: t.summary })),
+        risingQuestions: Array.isArray(radar?.breakout_questions) ? radar.breakout_questions.slice(0, 5) : [],
+      });
+      const { content } = await chatJSON({ system: sys, user: usr, temperature: 0.5, maxTokens: 900 });
+      const parsed = JSON.parse(content);
+      if (parsed?.insights && typeof parsed.insights === 'object') {
+        for (const k of ['demand', 'role', 'competition', 'buzz']) {
+          if (typeof parsed.insights[k] === 'string' && parsed.insights[k].trim()) metricInsights[k] = parsed.insights[k].trim().slice(0, 200);
         }
-        for (const t of themes) t.angle = byLabel.get(t.label) ?? null;
-      } catch (_e) { /* angles are a bonus; themes still ship without them */ }
-    }
+      }
+      if (Array.isArray(parsed?.themes)) {
+        strategicThemes = parsed.themes.slice(0, 3).map((t: any) => ({
+          label: typeof t?.label === 'string' ? t.label.trim().slice(0, 80) : '',
+          summary: typeof t?.summary === 'string' ? t.summary.trim().slice(0, 240) : '',
+          angle: typeof t?.angle === 'string' ? t.angle.trim().slice(0, 160) : '',
+          breakout: !!t?.breakout,
+        })).filter((t: any) => t.label && t.summary);
+      }
+    } catch (_e) { /* fall back to plain insights + the radar themes below */ }
+
+    // Deterministic fallback insights so the metric rail always reads sensibly.
+    const fb = (k: string): string => {
+      if (k === 'demand') return 'Companies are still hiring fractional execs; the pipeline is led by recently funded startups.';
+      if (k === 'role') return roleOut?.band ? `Demand for fractional ${roleOut.label}s is ${String(roleOut.band).toLowerCase()} right now.` : 'Name your role in your plan to see demand for what you do.';
+      if (k === 'competition') return 'More operators are entering — a sharp niche is how you stand out.';
+      return 'Awareness is steady — a good time to be visible with a point of view.';
+    };
+    const ins = (k: string): string => metricInsights[k] || fb(k);
+
+    // The eye-catching metric rail: a value + a real 30-day arrow (where we have one) +
+    // a strategic one-liner. positiveWhenUp drives arrow colour (supply rising means MORE
+    // competition, so "up" is not good there).
+    const c = market?.components ?? null;
+    const metrics: Array<{ key: string; label: string; value: string; delta: number | null; deltaSuffix: string; positiveWhenUp: boolean; insight: string }> = [];
+    if (c?.demand != null) metrics.push({ key: 'demand', label: 'Companies hiring', value: String(c.demand), delta: delta30('demand'), deltaSuffix: '', positiveWhenUp: true, insight: ins('demand') });
+    if (roleOut) metrics.push({ key: 'role', label: `Demand for ${roleOut.label}s`, value: roleOut.demand != null ? String(roleOut.demand) : (roleOut.band ?? '—'), delta: roleOut.deltaPct, deltaSuffix: '%', positiveWhenUp: true, insight: ins('role') });
+    else if (market) metrics.push({ key: 'market', label: 'Fractional market', value: String(market.score), delta: market.delta, deltaSuffix: '', positiveWhenUp: true, insight: ins('role') });
+    if (c?.supply != null) metrics.push({ key: 'competition', label: 'Competition', value: String(c.supply), delta: delta30('supply'), deltaSuffix: '', positiveWhenUp: false, insight: ins('competition') });
+    if (c?.culture != null) metrics.push({ key: 'buzz', label: 'Market buzz', value: String(c.culture), delta: delta30('culture'), deltaSuffix: '', positiveWhenUp: true, insight: ins('buzz') });
+
+    // Prefer the strategic trends; fall back to the radar-derived set so there's always
+    // something to attach to.
+    const outThemes = strategicThemes.length
+      ? strategicThemes.map((t) => ({ label: t.label, summary: t.summary, breakout: t.breakout, angle: t.angle || null }))
+      : (baseThemes.length ? baseThemes : null);
 
     const asOf = cur?.meta?.asOf ?? radar?.meta?.week_start ?? null;
     const nextUpdate = typeof cur?.meta?.nextUpdate === 'string' ? cur.meta.nextUpdate : null;
-    return new Response(JSON.stringify({ market, role: roleOut, rising, themes: themes.length ? themes : null, asOf, nextUpdate }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ market, role: roleOut, rising, metrics, themes: outThemes, roleLandscape, asOf, nextUpdate }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     return safeErrorResponse(error, getCorsHeaders(req));
   }
