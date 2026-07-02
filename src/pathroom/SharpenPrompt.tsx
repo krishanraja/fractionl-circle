@@ -14,9 +14,9 @@
 import { useEffect, useState } from 'react';
 import { getNextQuestion, saveThesisAnswer, type NextQuestion } from './thesisData';
 
-export default function SharpenPrompt({ onAnswered, dimensionHint, focus = false }: {
+export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
   onAnswered?: () => void;
-  dimensionHint?: string; // optional: prefer a question on this dimension's topic
+  topic?: string; // a journey move's title/why — biases the question toward that move
   focus?: boolean; // occupy a stable slot (skeleton + resting state) instead of staying quiet
 }) {
   const [q, setQ] = useState<NextQuestion | null>(null);
@@ -29,13 +29,15 @@ export default function SharpenPrompt({ onAnswered, dimensionHint, focus = false
 
   async function load() {
     setLoading(true);
-    const next = await getNextQuestion();
+    const next = await getNextQuestion(topic);
     setQ(next);
     setLoading(false);
     setTyping(false);
     setText('');
   }
-  useEffect(() => { void load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  // Reload if the focused move changes (entering strengthen from a different step).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, [topic]);
 
   async function answer(value: string) {
     if (!q || busy || !value.trim()) return;

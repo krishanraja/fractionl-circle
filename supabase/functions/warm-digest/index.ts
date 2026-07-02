@@ -14,7 +14,16 @@ Deno.serve(async (req) => {
     const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`warm-digest:${userId}`, 10, 60_000);
 
-    const digest = await buildWarmDigestForUser(userId, supabase);
+    // Optional path-focus: when the app is on a specific plan + move, it passes
+    // { context: { thesis, move } } so we surface people who FIT that idea and
+    // draft the touch around it. Absent → the classic warmth/going-quiet digest.
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const ctx = body?.context;
+    const context = ctx && typeof ctx.thesis === 'string' && ctx.thesis.trim()
+      ? { thesis: ctx.thesis as string, move: typeof ctx.move === 'string' ? ctx.move : null }
+      : undefined;
+
+    const digest = await buildWarmDigestForUser(userId, supabase, Date.now(), context);
     return new Response(JSON.stringify(digest), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -51,6 +51,11 @@ Deno.serve(async (req) => {
     const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`next-question:${userId}`, 12, 60_000);
 
+    // Optional focus: a journey move's title/why. When present, the question should
+    // target THAT move, not just the globally-weakest dimension. Backward compatible.
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const focus = typeof body?.focus === 'string' && body.focus.trim() ? body.focus.trim().slice(0, 300) : null;
+
     const { data: run } = await supabase
       .from('thesis_runs')
       .select('id, thesis, background, result')
@@ -89,10 +94,14 @@ Deno.serve(async (req) => {
     try {
       const profile = await loadProfileContext(supabase, userId);
       const prefs = await loadUserAiPreferences(supabase, userId);
-      const system = SYSTEM + profilePromptBlock(profile) + personalitySystemSuffix(prefs?.ai_personality);
+      const focusDirective = focus
+        ? `\n\nThe user is working a SPECIFIC move on their path right now: "${focus}". Make the question directly advance THAT move (concrete next decision for it). Set "dimension" to a short name for the move.`
+        : '';
+      const system = SYSTEM + focusDirective + profilePromptBlock(profile) + personalitySystemSuffix(prefs?.ai_personality);
       const user = JSON.stringify({
         thesis: run?.thesis ?? '',
         background: run?.background ?? '',
+        current_move: focus,
         weakest_dimension: weak ? { label: weak.row.label, side: weak.side, band: weak.row.band, confidence: weak.row.confidence, evidence: weak.row.evidence ?? '' } : null,
         already_asked: Array.from(asked).slice(0, 8),
       });

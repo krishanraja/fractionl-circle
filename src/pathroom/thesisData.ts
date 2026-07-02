@@ -188,9 +188,10 @@ export async function getCircle(userId: string): Promise<CircleP[]> {
     .map((p) => ({ id: p.id, name: p.display_name, title: p.title, company: p.company, note: p.note, source: p.source }));
 }
 
-// One person to reach this week: the cooling cohort with a grounded "why now" and
-// a ready-to-send draft, from the warm-digest edge fn (the same brain the Monday
-// email uses). Powers the warm-reach step's actual action.
+// People to reach, with a grounded reason and a ready-to-send draft, from the
+// warm-digest edge fn (the same brain the Monday email uses). Powers the warm-reach
+// step's actual action. Without context it's the cooling cohort; WITH a plan+move
+// context it's the people who FIT that idea (why_fit set), drafted around it.
 export interface ReachPerson {
   id: string;
   name: string;
@@ -201,12 +202,18 @@ export interface ReachPerson {
   band: string;
   recency_days: number | null;
   why_now: string;
+  why_fit?: string | null; // set on a path-focused reach: why this person fits THIS move
   subject: string;
   message: string;
 }
 
-export async function getWarmDigest(): Promise<ReachPerson[]> {
-  const { data, error } = await supabase.functions.invoke('warm-digest', { body: {} });
+export interface ReachContext { thesis: string; move?: string | null }
+
+// Pass a { thesis, move } context to surface people who fit that specific plan/move
+// (path-focused reach); omit it for the classic going-quiet digest.
+export async function getWarmDigest(context?: ReachContext): Promise<ReachPerson[]> {
+  const body = context?.thesis?.trim() ? { context: { thesis: context.thesis, move: context.move ?? null } } : {};
+  const { data, error } = await supabase.functions.invoke('warm-digest', { body });
   if (error) throw error;
   const d = data as { people?: ReachPerson[] } | null;
   return Array.isArray(d?.people) ? d!.people! : [];
@@ -224,9 +231,12 @@ export interface NextQuestion {
   source?: string;
 }
 
-export async function getNextQuestion(): Promise<NextQuestion | null> {
+// `focus` (a journey move's title/why) biases the question toward THAT move instead
+// of the whole thesis; omit it for the general weakest-dimension question.
+export async function getNextQuestion(focus?: string): Promise<NextQuestion | null> {
   try {
-    const { data, error } = await supabase.functions.invoke('next-question', { body: {} });
+    const body = focus?.trim() ? { focus: focus.trim() } : {};
+    const { data, error } = await supabase.functions.invoke('next-question', { body });
     if (error) throw error;
     const d = data as NextQuestion | null;
     return d?.question ? d : null;
