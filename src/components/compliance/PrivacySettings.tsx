@@ -10,7 +10,7 @@ import { useDataPrivacy } from '@/hooks/useDataPrivacy';
 import { toast } from 'sonner';
 
 const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; required?: boolean }[] = [
-  { type: 'essential', label: 'Essential Services', description: 'Core app functionality — authentication, data storage, and session management.', required: true },
+  { type: 'essential', label: 'Essential Services', description: 'Core app functionality - authentication, data storage, and session management.', required: true },
   { type: 'analytics', label: 'Usage Analytics', description: 'Behavioral analytics to improve features and user experience.' },
   { type: 'ai_processing', label: 'AI Processing', description: 'Send business data to AI services (OpenAI) for insights, briefings, and strategy analysis.' },
   { type: 'voice_recording', label: 'Voice Recording & Transcription', description: 'Record and transcribe voice for activity logging and contact creation.' },

@@ -1,12 +1,12 @@
 -- Credits: a prepaid balance, on top of the subscription, that buys the max-effort
 -- "leave nothing on the table" enrichment (enrich-max). Two tables:
---   • credit_balance — the current balance per user (the fast read).
---   • credit_ledger  — append-only history; every grant/spend/refund/clawback is a
+--   • credit_balance - the current balance per user (the fast read).
+--   • credit_ledger  - append-only history; every grant/spend/refund/clawback is a
 --     row, so balance is always reconstructable and auditable.
 --
 -- Security model: users may READ their own balance and ledger, but may NOT write
 -- either. All mutation goes through SECURITY DEFINER RPCs that are executable ONLY
--- by service_role — i.e. by trusted edge functions (the Stripe webhook grants; the
+-- by service_role - i.e. by trusted edge functions (the Stripe webhook grants; the
 -- enrich-max function spends/refunds after verifying the caller). This makes it
 -- impossible for a user to mint themselves credits by calling the DB directly.
 
@@ -51,7 +51,7 @@ begin
     insert into credit_ledger(user_id, delta, reason, ref, stripe_event_id)
     values (p_user_id, p_amount, p_reason, p_ref, p_event_id);
   exception when unique_violation then
-    -- already granted for this Stripe event — no double credit.
+    -- already granted for this Stripe event - no double credit.
     return coalesce((select balance from credit_balance where user_id = p_user_id), 0);
   end;
   insert into credit_balance(user_id, balance) values (p_user_id, p_amount)
@@ -101,7 +101,7 @@ begin
 end; $$;
 
 -- ── Clawback (Stripe refund of a pack). Reverses the credits granted for a payment
--- intent, once per refund event. Balance may go negative — an honest debt, not a
+-- intent, once per refund event. Balance may go negative - an honest debt, not a
 -- silent write-off. ────────────────────────────────────────────────────────────
 create or replace function clawback_credits(
   p_payment_intent text, p_event_id text
@@ -127,7 +127,7 @@ begin
 end; $$;
 
 -- Mutation is service_role-only: trusted edge functions call these after verifying
--- the caller. Never grant to `authenticated` — that would let a user mint credits.
+-- the caller. Never grant to `authenticated` - that would let a user mint credits.
 revoke all on function grant_credits(uuid, int, text, text, text) from public;
 revoke all on function spend_credits(uuid, int, text, text) from public;
 revoke all on function refund_credits(uuid, int, text, text) from public;

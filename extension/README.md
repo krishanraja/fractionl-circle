@@ -1,8 +1,8 @@
-# Circle — LinkedIn Capture
+# Circle - LinkedIn Capture
 
 Chrome / Arc browser extension that captures LinkedIn profiles into your
 Circle as you browse them. Runs client-side in your own authenticated
-LinkedIn session — no server-side scraping, no background crawling, only
+LinkedIn session - no server-side scraping, no background crawling, only
 pages you actively visit.
 
 ## What it does
@@ -21,7 +21,7 @@ pages you actively visit.
 ## What it does **not** do
 
 - No scraping of pages you're not viewing.
-- No harvesting of anyone else's data — the extension has zero server-side
+- No harvesting of anyone else's data - the extension has zero server-side
   access beyond the edge function.
 - No mail / inbox / body scanning.
 - No auto-browsing, auto-following, auto-anything.
@@ -63,8 +63,8 @@ see:
 
 - A brief **purple dot** on the extension toolbar badge when a capture
   succeeds (red `!` if it failed).
-- The last 8 captures — with name, "new" / "merged" chip, and relative time
-  — inside the popup.
+- The last 8 captures - with name, "new" / "merged" chip, and relative time
+  - inside the popup.
 
 Check your Circle on the web: the person appears with
 `source = linkedin_extension` on the raw record; the fingerprint pipeline
@@ -73,12 +73,12 @@ Contacts, or Microsoft.
 
 ## Troubleshooting
 
-- **Popup shows "Not connected"** — the pairing token is missing or
+- **Popup shows "Not connected"** - the pairing token is missing or
   expired. Repeat the pair flow.
-- **Profile doesn't show up in Circle** — check the service worker console
+- **Profile doesn't show up in Circle** - check the service worker console
   (`chrome://extensions` → **Service worker** link under the extension).
-- **403 / 401 from extension-ingest** — your session expired. Re-pair.
-- **LinkedIn changed the DOM** — extraction is intentionally permissive
+- **403 / 401 from extension-ingest** - your session expired. Re-pair.
+- **LinkedIn changed the DOM** - extraction is intentionally permissive
   (tries multiple selectors, falls back to null). If `display_name` goes
   missing across the board, update `content-linkedin.js` selectors.
 
@@ -95,5 +95,5 @@ popup.css
 
 ## Publishing
 
-For now: load unpacked. Chrome Web Store submission is a follow-up — the
+For now: load unpacked. Chrome Web Store submission is a follow-up - the
 listing needs screenshots, a privacy policy URL, and a 128x128 icon.

@@ -16,7 +16,7 @@ type ToasterToast = ToastProps & {
 }
 
 // Used at type-level below via `typeof actionTypes`; the eslint warning
-// for "assigned but only used as a type" is the expected trade-off — the
+// for "assigned but only used as a type" is the expected trade-off - the
 // const shape drives the discriminated-union `Action` type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actionTypes = {

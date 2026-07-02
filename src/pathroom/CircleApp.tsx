@@ -3,8 +3,8 @@
 // once. A brand-new user (no plan yet) is held in the warm, gated "Start here"
 // onboarding until they've grounded their first plan; everyone else lands in the
 // two-tab shell:
-//   • Circle — your warm network (the daily habit).
-//   • Plan   — read the market against what you want to offer, and your next moves.
+//   • Circle - your warm network (the daily habit).
+//   • Plan   - read the market against what you want to offer, and your next moves.
 import { useEffect, useState } from 'react';
 import { Users, Compass } from 'lucide-react';
 import { useAppFrame } from '@/hooks/useAppFrame';

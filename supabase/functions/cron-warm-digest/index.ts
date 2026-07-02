@@ -34,7 +34,7 @@ const esc = (s: string): string =>
 
 const mailtoFor = (p: DigestPerson): string | null => {
   if (!p.email) return null;
-  // Hand-encode so spaces become %20 and newlines %0A — mail clients render a
+  // Hand-encode so spaces become %20 and newlines %0A - mail clients render a
   // URLSearchParams "+" as a literal plus in the body.
   return `mailto:${encodeURIComponent(p.email)}?subject=${encodeURIComponent(p.subject)}&body=${encodeURIComponent(p.message)}`;
 };
@@ -60,7 +60,7 @@ const nextMondayNine = (now: Date): { start: string; end: string } => {
 const buildIcs = (people: DigestPerson[], now: Date, uidSeed: string): string => {
   const { start, end } = nextMondayNine(now);
   const dtstamp = `${now.getUTCFullYear()}${two(now.getUTCMonth() + 1)}${two(now.getUTCDate())}T${two(now.getUTCHours())}${two(now.getUTCMinutes())}${two(now.getUTCSeconds())}Z`;
-  const names = people.map((p) => `• ${p.name}${p.company ? ` (${p.company})` : ''} — ${p.why_now}`).join('\n');
+  const names = people.map((p) => `• ${p.name}${p.company ? ` (${p.company})` : ''} - ${p.why_now}`).join('\n');
   const desc = icsText(`Reach out to the people going quiet in your circle:\n\n${names}\n\nOpen your circle: ${APP_URL}`);
   return [
     'BEGIN:VCALENDAR',
@@ -74,7 +74,7 @@ const buildIcs = (people: DigestPerson[], now: Date, uidSeed: string): string =>
     `DTSTART:${start}`,
     `DTEND:${end}`,
     'RRULE:FREQ=WEEKLY',
-    'SUMMARY:Warm reach — keep your circle warm',
+    'SUMMARY:Warm reach - keep your circle warm',
     `DESCRIPTION:${desc}`,
     'BEGIN:VALARM',
     'TRIGGER:-PT10M',
@@ -116,7 +116,7 @@ const personCard = (p: DigestPerson): string => {
 const buildEmailHtml = (people: DigestPerson[]): string => `
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
   <h1 style="font-size:22px;margin:0 0 4px">Keep your circle warm</h1>
-  <p style="font-size:14px;color:#666;margin:0 0 20px">${people.length} ${people.length === 1 ? 'person is' : 'people are'} going quiet. A short touch now keeps the relationship alive. Each draft is ready to send — tap to open it in your inbox.</p>
+  <p style="font-size:14px;color:#666;margin:0 0 20px">${people.length} ${people.length === 1 ? 'person is' : 'people are'} going quiet. A short touch now keeps the relationship alive. Each draft is ready to send - tap to open it in your inbox.</p>
   ${people.map(personCard).join('')}
   <p style="font-size:12px;color:#999;margin-top:20px">The attached calendar hold puts a recurring 20-minute warm-reach block on your calendar. <a href="${esc(APP_URL)}" style="color:#9a6a16">Open your circle</a> · manage this email in settings.</p>
 </div>`;

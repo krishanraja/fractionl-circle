@@ -10,7 +10,7 @@ max_rows = 1000
 [auth]
 enabled = true
 # Local dev defaults. Production site_url and the custom auth domain
-# (auth.circle.fractionl.ai) are managed in the Supabase dashboard — see
+# (auth.circle.fractionl.ai) are managed in the Supabase dashboard - see
 # docs/supabase-custom-domain.md. Production redirect targets are listed below
 # so OAuth round-trips resolve in every environment.
 site_url = "http://localhost:3000"
@@ -69,7 +69,7 @@ verify_jwt = false
 [functions.cron-warm-digest]
 verify_jwt = false
 
-# Weekly "come back — here's what's waiting" re-engagement sweep (service-role, x-cron-secret).
+# Weekly "come back - here's what's waiting" re-engagement sweep (service-role, x-cron-secret).
 [functions.cron-reengage]
 verify_jwt = false
 

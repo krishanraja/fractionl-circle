@@ -85,7 +85,7 @@ export const availableProviders = (env: Env): Provider[] => {
 };
 
 // Embeddings for the semantic people-search. Deliberately single-provider: we pin
-// OpenAI text-embedding-3-small (1536d) so every vector lives in ONE space — mixing
+// OpenAI text-embedding-3-small (1536d) so every vector lives in ONE space - mixing
 // providers with different dimensionalities would corrupt the vector(1536) column.
 // Returns null (never throws) when no key is configured or the call fails, so the
 // caller degrades cleanly to keyword search instead of breaking.

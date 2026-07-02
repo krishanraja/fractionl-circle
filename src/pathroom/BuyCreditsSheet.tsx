@@ -1,4 +1,4 @@
-// Buy credits — the top-up surface, shown from Settings and from the "Dig deeper"
+// Buy credits - the top-up surface, shown from Settings and from the "Dig deeper"
 // flow when a search wants to go 10/10 but the balance is short. Lists the packs,
 // shows the live balance, and sends the user to Stripe checkout for a one-time buy.
 import { useState } from 'react';
@@ -28,7 +28,7 @@ export default function BuyCreditsSheet({ open, onOpenChange }: BuyCreditsSheetP
     try {
       await buyCredits(priceId); // redirects to Stripe
     } catch {
-      setErr('Could not start checkout — try again in a moment.');
+      setErr('Could not start checkout - try again in a moment.');
       setBusy(null);
     }
   };
@@ -47,12 +47,12 @@ export default function BuyCreditsSheet({ open, onOpenChange }: BuyCreditsSheetP
           </div>
           <div className="h" style={{ marginTop: 10, fontSize: 20 }}>Go deeper on anyone</div>
           <div className="sub">
-            Credits fund the 10/10 enrichment — live web research across every source we can reach — so the
+            Credits fund the 10/10 enrichment - live web research across every source we can reach - so the
             right person surfaces even when your data is thin. {DEEP_ENRICH_CREDITS} credits per deep dive.
           </div>
 
           <div className="sub" style={{ marginTop: 12, color: C.hi }}>
-            Balance: <span className="mono" style={{ color: C.accent }}>{balance ?? '—'}</span> credits
+            Balance: <span className="mono" style={{ color: C.accent }}>{balance ?? '-'}</span> credits
           </div>
 
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>

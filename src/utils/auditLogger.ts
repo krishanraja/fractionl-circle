@@ -63,7 +63,7 @@ class AuditLogger {
       if (!user) return;
 
       // security_audit_log is service-role-only (tamper-proof), so the browser
-      // cannot insert directly — it 403s. Write through the audit-log edge
+      // cannot insert directly - it 403s. Write through the audit-log edge
       // function, which stamps user_id from the verified JWT and inserts with
       // the service role. Fire and forget; never block the UI.
       await supabase.functions.invoke('audit-log', {

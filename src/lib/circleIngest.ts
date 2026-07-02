@@ -489,7 +489,7 @@ export const ingestSharedContact = async (
 // Reuses the same canonicalize-into-circle_person path as every other source
 // so dedupe by fingerprint just works. Caller picks the source_kind so a
 // screenshot lands as `business_card_photo` and a typed/pasted add as
-// `manual_add` — both are visible in Sources & tools.
+// `manual_add` - both are visible in Sources & tools.
 export interface QuickAddInput {
   name: string;
   email?: string | null;

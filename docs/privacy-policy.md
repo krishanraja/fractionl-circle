@@ -1,6 +1,6 @@
-# Privacy Policy — Circle (DRAFT)
+# Privacy Policy - Circle (DRAFT)
 
-> **STATUS: DRAFT — NOT LEGAL ADVICE. Must be reviewed and finalised by counsel before publishing.** Placeholders are marked `[…]`. This scaffold reflects what the product actually does so a lawyer has an accurate starting point.
+> **STATUS: DRAFT - NOT LEGAL ADVICE. Must be reviewed and finalised by counsel before publishing.** Placeholders are marked `[…]`. This scaffold reflects what the product actually does so a lawyer has an accurate starting point.
 
 **Effective date:** [DATE] · **Controller:** fractionl ([legal entity, address]) · **Contact:** privacy@fractionl.ai
 
@@ -19,7 +19,7 @@ Contract (running the service), consent (connected accounts, certain analytics),
 ## 4. Data about your network
 Circle stores information about third parties in your professional network so you can manage those relationships. We do not market to your contacts. You can export or delete this data at any time.
 
-## 5. Sharing — subprocessors
+## 5. Sharing - subprocessors
 We use the processors listed in `SUBPROCESSORS.md` (Supabase, Vercel, OpenAI, Stripe, Resend, and Google/Microsoft if you connect them). **We do not sell your personal data** or share it for cross-context behavioural advertising.
 
 ## 6. AI processing

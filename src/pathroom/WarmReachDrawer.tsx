@@ -1,8 +1,8 @@
 // Warm reach, moved out of the body and into a nav-triggered drawer. Two honest
 // sections, both computed from data we already have:
-//   • Going quiet — people you've spoken to but not in 30+ days, each with one-tap
+//   • Going quiet - people you've spoken to but not in 30+ days, each with one-tap
 //     warm reach (never never-contacted rows, so we never nag strangers).
-//   • Banked decisions — answers you've made but not yet folded into a read; one
+//   • Banked decisions - answers you've made but not yet folded into a read; one
 //     tap opens the Plan to lock them in.
 // Renders an honest empty state when there is genuinely nothing waiting.
 import { useEffect, useState } from 'react';
@@ -76,7 +76,7 @@ export default function WarmReachDrawer({ open, onOpenChange, onOpenPlan }: Warm
                 {quiet.length} {quiet.length === 1 ? 'person is' : 'people are'} going quiet
               </div>
               <div className="sub" style={{ marginTop: 4 }}>
-                You've spoken before — a quick, warm note keeps the door open.
+                You've spoken before - a quick, warm note keeps the door open.
               </div>
               <div style={{ marginTop: 12 }}>
                 {quiet.map((p) => {
@@ -131,7 +131,7 @@ export default function WarmReachDrawer({ open, onOpenChange, onOpenPlan }: Warm
 
           {nothingWaiting && (
             <div className="sub" style={{ marginTop: 16 }}>
-              Nothing waiting right now — you're all caught up. We'll surface people here as
+              Nothing waiting right now - you're all caught up. We'll surface people here as
               they start to go quiet.
             </div>
           )}

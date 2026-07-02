@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS public.talent_contact_identities (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
--- Each (user, kind, normalized value) must be unique — this is what makes
+-- Each (user, kind, normalized value) must be unique - this is what makes
 -- concurrent bulk imports safe.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_talent_contact_identities_unique
   ON public.talent_contact_identities(user_id, kind, value_normalized);
@@ -74,7 +74,7 @@ CREATE POLICY "Users manage their own contact identities"
 
 -- Backfill identities from existing talent_contacts rows.
 -- Normalizations here mirror src/hooks/useDuplicateDetection.ts and
--- supabase/functions/_shared/identity.ts — keep them in sync.
+-- supabase/functions/_shared/identity.ts - keep them in sync.
 
 INSERT INTO public.talent_contact_identities (user_id, contact_id, kind, value_normalized, value_raw, source)
 SELECT user_id, id, 'email', lower(trim(email)), email, 'backfill'
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS public.talent_contact_merges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   -- The contact that absorbed the data. The "loser" contact was either
-  -- deleted or never created — snapshot_loser captures its state.
+  -- deleted or never created - snapshot_loser captures its state.
   surviving_contact_id UUID REFERENCES public.talent_contacts(id) ON DELETE CASCADE NOT NULL,
   snapshot_winner_before JSONB NOT NULL,
   snapshot_loser JSONB NOT NULL,

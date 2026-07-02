@@ -8,7 +8,7 @@ import { useEffect } from 'react';
  *     `--app-height` CSS variable. We prefer `window.visualViewport.height`
  *     (which excludes browser chrome AND shrinks when the keyboard opens) and
  *     fall back to `innerHeight`. This is the belt-and-braces value behind the
- *     `.app-frame` height stack — correct even on old iOS Safari where `vh`
+ *     `.app-frame` height stack - correct even on old iOS Safari where `vh`
  *     over-reports and `dvh` is unsupported.
  *
  *  2. Adds `app-locked` to <html>, which pins <body> (position:fixed) and kills

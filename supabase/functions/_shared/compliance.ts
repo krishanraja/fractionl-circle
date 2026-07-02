@@ -129,7 +129,7 @@ export function safeErrorResponse(
     );
   }
 
-  // Generic error — never expose internals
+  // Generic error - never expose internals
   return new Response(
     JSON.stringify({ error: 'An internal error occurred' }),
     { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -210,7 +210,7 @@ export async function checkRateLimitDurable(
   });
 
   if (error) {
-    // Fail open on DB error — a rate-limit outage must not block traffic.
+    // Fail open on DB error - a rate-limit outage must not block traffic.
     console.error('rate_limit_rpc_failed', error.message);
     return;
   }

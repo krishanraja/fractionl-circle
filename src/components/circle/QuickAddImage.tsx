@@ -45,8 +45,8 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
     setNote('');
     setPreviewUrl(URL.createObjectURL(file));
     setStep('parsing');
-    // Resilient: whatever the parser does — succeeds, finds no name, errors, or
-    // the key is missing — we land in an editable confirm card with the photo
+    // Resilient: whatever the parser does - succeeds, finds no name, errors, or
+    // the key is missing - we land in an editable confirm card with the photo
     // still attached. A bad read becomes a 2-second manual add, never a dead end.
     try {
       const base64 = await fileToBase64(file);
@@ -55,7 +55,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
       });
       if (res.error) {
         setParsed({ name: '' });
-        setNote("Couldn't read that one automatically — add the details below and save.");
+        setNote("Couldn't read that one automatically - add the details below and save.");
         haptics.error();
         setStep('review');
         return;
@@ -76,13 +76,13 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
         website: p.website,
         detected_platform: p.platform,
       });
-      setNote(name ? '' : "Couldn't make out the name — add it and save. I kept everything else I could read.");
+      setNote(name ? '' : "Couldn't make out the name - add it and save. I kept everything else I could read.");
       haptics.tap();
       setStep('review');
     } catch {
       // Even a hard failure (couldn't read the file) → manual add, photo kept.
       setParsed({ name: '' });
-      setNote("Couldn't read that image — add the details here and save.");
+      setNote("Couldn't read that image - add the details here and save.");
       haptics.error();
       setStep('review');
     }
@@ -159,7 +159,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
 
   return (
     <div className="space-y-3">
-      {/* Single file input — iOS surfaces its own action sheet
+      {/* Single file input - iOS surfaces its own action sheet
           (Take Photo / Photo Library / Choose Files); Android opens the
           gallery with a camera shortcut. Matches Apple Notes "Scan" feel. */}
       <input
@@ -200,7 +200,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
       )}
 
       <p className="ssrc" style={{ textAlign: 'center' }}>
-        LinkedIn screenshot, business card, name tag, calendar invite — whatever you have.
+        LinkedIn screenshot, business card, name tag, calendar invite - whatever you have.
       </p>
     </div>
   );

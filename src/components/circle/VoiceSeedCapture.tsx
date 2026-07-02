@@ -141,7 +141,7 @@ export const VoiceSeedCapture = ({ onDone, onClose }: VoiceSeedCaptureProps) => 
         {step === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center max-w-sm mb-6">
             <p className="text-sm text-foreground leading-relaxed">
-              Name a few people you trust — anyone you'd want us to start with. A quick hint about each helps (an ex-colleague, an old boss, a friend).
+              Name a few people you trust - anyone you'd want us to start with. A quick hint about each helps (an ex-colleague, an old boss, a friend).
             </p>
           </motion.div>
         )}

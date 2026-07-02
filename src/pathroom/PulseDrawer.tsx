@@ -1,6 +1,6 @@
 // The market pulse, for a time-poor fractional operator. Leads with a rail of
-// eye-catching metrics — a big value + a colour-coded 30-day arrow down the left,
-// the strategic "what this means for you" read on the right — then the specific,
+// eye-catching metrics - a big value + a colour-coded 30-day arrow down the left,
+// the strategic "what this means for you" read on the right - then the specific,
 // role-tailored trends they can attach to. Everything is grounded in Pulse data;
 // the strategic reads and trends are synthesised server-side (market-pulse edge fn).
 //
@@ -27,13 +27,43 @@ function Arrow({ delta, suffix, positiveWhenUp }: { delta: number | null; suffix
   return <span className={'vpmarrow ' + tone}>{glyph} {Math.abs(delta)}{suffix || ''}</span>;
 }
 
+// The stunning loading moment: a heartbeat pulse tracing across the market, over a
+// shimmer skeleton in the exact shape of the metric rail + trends, so the real content
+// settles into place rather than popping in.
+const WAVE = 'M0 17 H62 l7 0 6 -12 8 24 7 -12 H150 l6 0 6 -7 6 14 6 -7 H240';
+function PulseLoading() {
+  return (
+    <div className="vploading">
+      <svg className="vpwave" viewBox="0 0 240 34" preserveAspectRatio="none" aria-hidden="true">
+        <path className="vpwave-base" d={WAVE} />
+        <path className="vpwave-run" d={WAVE} />
+      </svg>
+      <div className="vploadlabel">Reading the market…</div>
+      <div className="vpmetrics">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="vpmetric">
+            <div className="vpmval"><span className="vpskel vpskel-num" /><span className="vpskel vpskel-arr" /></div>
+            <div className="vpmtext"><span className="vpskel vpskel-label" /><span className="vpskel vpskel-line" /><span className="vpskel vpskel-line short" /></div>
+          </div>
+        ))}
+      </div>
+      <div className="vpulsecard vpulsecard-fixed" style={{ marginTop: 12 }}>
+        <span className="vpskel vpskel-label" />
+        <span className="vpskel vpskel-line" style={{ marginTop: 12 }} />
+        <span className="vpskel vpskel-line short" style={{ marginTop: 8 }} />
+      </div>
+    </div>
+  );
+}
+
 interface PulseDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   market: MarketPulse | null;
+  loading?: boolean;
 }
 
-export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerProps) {
+export default function PulseDrawer({ open, onOpenChange, market, loading }: PulseDrawerProps) {
   const hasData = !!(market && (market.market || market.role || (market.metrics && market.metrics.length)));
   const metrics = market?.metrics ?? null;
   const themes = market?.themes ?? (market?.rising ? [{ label: market.rising, summary: null, breakout: false, angle: null }] : null);
@@ -65,7 +95,9 @@ export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerP
             <span className="navhint" style={{ color: C.lo, marginTop: 4, display: 'block' }}>via pulse</span>
           </div>
 
-          {hasData ? (
+          {loading && !hasData ? (
+            <PulseLoading />
+          ) : hasData ? (
             <>
               {/* The metric rail: value + colour-coded 30-day arrow on the left, the
                   strategic read on the right. */}
@@ -102,7 +134,7 @@ export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerP
                 </>
               )}
 
-              {/* Trends you can attach to — accordion, full text on tap, "your angle". */}
+              {/* Trends you can attach to - accordion, full text on tap, "your angle". */}
               {themes && themes.length ? (
                 <div className="vpulsecard vpulserising" style={{ marginTop: 12 }}>
                   <span className="navhint" style={{ color: C.cool }}>Trends you can attach to</span>
@@ -137,7 +169,7 @@ export default function PulseDrawer({ open, onOpenChange, market }: PulseDrawerP
             </>
           ) : (
             <div className="sub" style={{ marginTop: 14 }}>
-              The market read loads with your plan — run or re-read your plan and it'll show up here.
+              The market read loads with your plan - run or re-read your plan and it'll show up here.
             </div>
           )}
         </div>

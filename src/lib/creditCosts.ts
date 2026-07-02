@@ -6,6 +6,6 @@
 export const DEEP_ENRICH_CREDITS = 20; // one max-effort person enrichment
 
 // Rough marginal $ cost of one deep enrichment (Perplexity research + LLM synthesis
-// + re-embed). Internal sanity check only — the cheapest pack's $/credit must stay
+// + re-embed). Internal sanity check only - the cheapest pack's $/credit must stay
 // well above DEEP_ENRICH_MARGINAL_USD / DEEP_ENRICH_CREDITS.
 export const DEEP_ENRICH_MARGINAL_USD = 0.06;

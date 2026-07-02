@@ -130,7 +130,7 @@ const WelcomeContent = ({
       />
       <h1 className="text-title-1 text-foreground mb-2">Your circle, warmed up</h1>
       <p className="text-body text-foreground-secondary">
-        Drop in anyone you meet — we'll remember who they are and surface the right people when you need them
+        Drop in anyone you meet - we'll remember who they are and surface the right people when you need them
       </p>
     </div>
 

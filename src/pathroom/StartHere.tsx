@@ -1,5 +1,5 @@
 // First-run "Start here" (live). The warm, grounded gate that runs before a new
-// user ever sees a result — deliberately NOT a one-box "type an idea -> AI report"
+// user ever sees a result - deliberately NOT a one-box "type an idea -> AI report"
 // (that reads as an LLM wrapper). To unlock "See how it lands" you give the things
 // only you can: at least ten people who could help you sell, at least one business
 // you admire, and a few honest words about who you want to sell to and why.
@@ -123,7 +123,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
 
   async function run() {
     if (!ready || !userId) return;
-    const thesis = `${objective.trim()}${sellTo.trim() ? ` — for ${sellTo.trim()}` : ''}`;
+    const thesis = `${objective.trim()}${sellTo.trim() ? ` - for ${sellTo.trim()}` : ''}`;
     const background = why.trim();
     const transcript = `Who I want to sell to: ${sellTo.trim()}\nWhy me: ${why.trim()}\nObjective & ideas: ${objective.trim()}`;
     await saveAboutYou(userId, { target_buyer: sellTo.trim(), positioning: objective.trim().slice(0, 280), first_run_transcript: transcript });
@@ -179,10 +179,10 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
       <div className="thxbody"><div className="wrap">
         <div className="ovl">Start here</div>
         <div className="h" style={{ marginTop: 8 }}>Let's build your plan from what you actually know.</div>
-        <div className="sub">No generic advice. We start with your people, your taste, and your goal — then read the market against all three. Three quick things and you're set.</div>
+        <div className="sub">No generic advice. We start with your people, your taste, and your goal - then read the market against all three. Three quick things and you're set.</div>
         {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginTop: 12 }}>{err}</div> : null}
 
-        {/* 1 — About you */}
+        {/* 1 - About you */}
         <div className="fuelcard" style={{ flexDirection: 'column', alignItems: 'stretch', cursor: 'default', marginTop: 18 }}>
           <button onClick={() => setAboutOpen((o) => !o)} style={{ display: 'flex', gap: 12, alignItems: 'center', background: 'none', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}>
             <span className="fuelicon" style={aboutDone ? { borderColor: C.good, color: C.good } : undefined}>
@@ -192,28 +192,28 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
               <span className="fueltitle2" style={{ display: 'block' }}>A bit about you</span>
               <span className="fuelfor">Who you want to sell to, why you, and what you're going for. Plain words.</span>
             </span>
-            <span className="navhint" style={{ color: aboutDone ? C.good : C.accent }}>{aboutDone ? 'done' : aboutOpen ? '—' : 'open'}</span>
+            <span className="navhint" style={{ color: aboutDone ? C.good : C.accent }}>{aboutDone ? 'done' : aboutOpen ? '-' : 'open'}</span>
           </button>
           {aboutOpen ? (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <input value={sellTo} onChange={(e) => setSellTo(e.target.value)} placeholder="Who do you want to sell to? (e.g. seed B2B SaaS founders)" />
               <input value={why} onChange={(e) => setWhy(e.target.value)} placeholder="Why you? (the experience that makes you the one they pick)" />
-              <textarea value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="What are you going for right now — your objective and any ideas? A stream of consciousness is fine." />
+              <textarea value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="What are you going for right now - your objective and any ideas? A stream of consciousness is fine." />
             </div>
           ) : null}
         </div>
 
-        {/* 2 — Your people */}
+        {/* 2 - Your people */}
         <GateCard
           icon={Users}
           title="Add your people"
-          sub={`At least ${MIN_PEOPLE} people who could help you sell — clients, peers, anyone warm. Snap a screenshot, paste a list, or import your contacts in one go.`}
+          sub={`At least ${MIN_PEOPLE} people who could help you sell - clients, peers, anyone warm. Snap a screenshot, paste a list, or import your contacts in one go.`}
           done={peopleDone}
           badge={`${circleCount}/${MIN_PEOPLE}`}
           onClick={() => setAddOpen(true)}
         />
 
-        {/* 3 — An inspiration */}
+        {/* 3 - An inspiration */}
         <div className={'fuelcard' + (inspDone ? ' done' : '')} style={{ flexDirection: 'column', alignItems: 'stretch', cursor: 'default' }}>
           <button onClick={() => setInspOpen((o) => !o)} style={{ display: 'flex', gap: 12, alignItems: 'center', background: 'none', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}>
             <span className="fuelicon" style={inspDone ? { borderColor: C.good, color: C.good } : undefined}>
@@ -244,7 +244,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
         </div>
 
         <div className="mono" style={{ fontSize: 10.5, color: C.lo, marginTop: 16, lineHeight: 1.6 }}>
-          Everything you add stays yours and keeps working after today — your people become your circle, your inspiration shapes your edge.
+          Everything you add stays yours and keeps working after today - your people become your circle, your inspiration shapes your edge.
         </div>
       </div></div>
 

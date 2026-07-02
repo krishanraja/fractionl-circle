@@ -45,7 +45,7 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, reloa
     );
   }, [people, debouncedQuery, useServerSearch]);
 
-  // Empty circle — the warm first-run prompt.
+  // Empty circle - the warm first-run prompt.
   if (!circleLoading && totalPeople === 0) {
     return (
       <section className="emptywrap">
@@ -99,7 +99,7 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, reloa
 
       {truncated && (
         <p className="ssrc" style={{ textAlign: 'center', marginTop: 12 }}>
-          Showing {people.length} of {totalPeople.toLocaleString()} — refine your search.
+          Showing {people.length} of {totalPeople.toLocaleString()} - refine your search.
         </p>
       )}
     </section>

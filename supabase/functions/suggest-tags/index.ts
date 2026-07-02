@@ -6,7 +6,7 @@ import { chatJSON } from '../_shared/llm.ts';
 // title, company, headline, notes), propose intent tags for the three buckets the
 // confirm card offers. The UI always shows the static presets; these AI picks are
 // a head start, pre-highlighted but not auto-selected. Degrades to an empty
-// object when no LLM key is configured — never blocks the add.
+// object when no LLM key is configured - never blocks the add.
 
 // Allowed preset slugs per bucket. Mirrors src/lib/contactTags.ts. The model is
 // told to prefer these and may add at most two short free slugs per bucket.
@@ -21,7 +21,7 @@ const SYSTEM = `You tag a newly-saved professional contact for a fractional exec
 Return ONLY JSON: { "met": string[], "brings": string[], "work": string[] }
 - "met" = where/how they likely met. "brings" = what this person brings to the user (capital, customers, expertise...). "work" = how they might work together.
 - Prefer slugs from the allowed lists you are given. You MAY add at most TWO short lowercase_underscore free slugs per bucket when a preset clearly does not fit (e.g. a niche the person specializes in under "brings").
-- Only suggest what the person's title/company/headline/notes actually support. "met" is usually unknowable from a profile — leave it empty unless the notes say so. Empty arrays are correct when you are unsure. Never invent.
+- Only suggest what the person's title/company/headline/notes actually support. "met" is usually unknowable from a profile - leave it empty unless the notes say so. Empty arrays are correct when you are unsure. Never invent.
 - At most 3 slugs per bucket. No prose.`;
 
 interface Suggestions { met: string[]; brings: string[]; work: string[]; }

@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { auditLogger } from '@/utils/auditLogger';
 
 /**
- * Session Manager — handles:
+ * Session Manager - handles:
  * - Auto-logout after inactivity (SOC2 CC6.1, HIPAA §164.312(a)(2)(iii))
  * - Session activity tracking
  * - Audit logging of auth events

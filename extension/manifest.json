@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Circle — LinkedIn Capture",
+  "name": "Circle - LinkedIn Capture",
   "short_name": "Circle",
   "version": "0.1.0",
-  "description": "Client-side capture of LinkedIn profiles into your Circle. No scraping of anyone else's data — only pages you're actively viewing in your own session.",
+  "description": "Client-side capture of LinkedIn profiles into your Circle. No scraping of anyone else's data - only pages you're actively viewing in your own session.",
   "permissions": [
     "storage",
     "activeTab"

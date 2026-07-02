@@ -1,6 +1,6 @@
 // Shared "who is this user" envelope. AI surfaces (next-question,
 // rank-inner-circle, the warm digest) load this and inject it into the
-// system prompt so output is anchored to the specific fractional operator —
+// system prompt so output is anchored to the specific fractional operator -
 // never generic. Wave 1 reads only columns that already exist on user_profiles
 // (no migration). Wave 2 will add motivation/journey/offer-maturity behind a
 // flag.
@@ -60,15 +60,15 @@ const humanize = (slug: string): string =>
 // Builds the prompt fragment. Returns '' when we know nothing, so callers can
 // concatenate unconditionally without leaving an empty header in the prompt.
 const MOTIVATION_NOTE: Record<string, string> = {
-  pushed: 'left corporate involuntarily (layoff/restructure) — likely urgency and a thinner runway; lead with speed-to-pipeline and reassurance, never doom',
-  pulled: 'chose to go independent (burnout/autonomy) — high conviction; can be coached toward a real practice',
-  lifestyle: 'wants a sustainable portfolio life — steady, values fit over volume',
+  pushed: 'left corporate involuntarily (layoff/restructure) - likely urgency and a thinner runway; lead with speed-to-pipeline and reassurance, never doom',
+  pulled: 'chose to go independent (burnout/autonomy) - high conviction; can be coached toward a real practice',
+  lifestyle: 'wants a sustainable portfolio life - steady, values fit over volume',
 };
 
 export function profilePromptBlock(p: ProfileContext | null): string {
   if (!p) return '';
   const lines: string[] = [];
-  // Identity statement leads — it is the single most anchoring line.
+  // Identity statement leads - it is the single most anchoring line.
   if (p.identity_statement) lines.push(`Identity: ${p.identity_statement}`);
   if (p.role) lines.push(`They are a fractional ${ROLE_LABELS[p.role] ?? humanize(p.role)}.`);
   if (p.business_type) lines.push(`Engagement model: ${humanize(p.business_type)}.`);
@@ -86,5 +86,5 @@ export function profilePromptBlock(p: ProfileContext | null): string {
     lines.push(`Why they went fractional: ${MOTIVATION_NOTE[p.motivation_type]}.`);
   }
   if (!lines.length) return '';
-  return `\n\nABOUT THIS SPECIFIC USER — anchor every suggestion to this; never produce generic, could-be-anyone output:\n- ${lines.join('\n- ')}`;
+  return `\n\nABOUT THIS SPECIFIC USER - anchor every suggestion to this; never produce generic, could-be-anyone output:\n- ${lines.join('\n- ')}`;
 }

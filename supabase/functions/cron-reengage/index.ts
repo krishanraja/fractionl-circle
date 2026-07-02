@@ -1,9 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 
-// Weekly "come back — here's what's waiting" re-engagement sweep. Service-role
+// Weekly "come back - here's what's waiting" re-engagement sweep. Service-role
 // auth via CRON_SECRET. It finds people who onboarded but have drifted (active
-// 5–21 days ago — inactive but not abandoned) and, only when there is something
+// 5–21 days ago - inactive but not abandoned) and, only when there is something
 // genuinely waiting for them, nudges them back into the app:
 //   - an email (Resend) in plain, warm language naming what's waiting;
 //   - a Web Push ping for users who keep the app installed.
@@ -48,8 +48,8 @@ const hookLines = (h: Hooks): string[] => {
   }
   if (h.banked > 0) {
     lines.push(h.banked === 1
-      ? `1 decision is waiting — see how your plan lands again.`
-      : `${h.banked} decisions are waiting — see how your plan lands again.`);
+      ? `1 decision is waiting - see how your plan lands again.`
+      : `${h.banked} decisions are waiting - see how your plan lands again.`);
   }
   return lines;
 };
@@ -65,7 +65,7 @@ const pushBodyFor = (h: Hooks): string => {
 const buildEmailHtml = (lines: string[]): string => `
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
   <h1 style="font-size:22px;margin:0 0 4px">Here's what's waiting</h1>
-  <p style="font-size:14px;color:#666;margin:0 0 20px">It has been a little while. A few small things are worth a look — they will not take long.</p>
+  <p style="font-size:14px;color:#666;margin:0 0 20px">It has been a little while. A few small things are worth a look - they will not take long.</p>
   <div style="border:1px solid #eee;border-radius:12px;padding:16px;margin:0 0 14px">
     ${lines.map((l) => `<div style="font-size:15px;color:#333;margin:0 0 10px">${esc(l)}</div>`).join('')}
     <a href="${esc(APP_URL)}/" style="display:inline-block;background:#E0982A;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;margin-top:4px">Open your circle →</a>

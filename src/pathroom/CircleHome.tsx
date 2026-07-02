@@ -1,5 +1,5 @@
-// The free hero, in the ember (.thx) system. The most important action — dropping
-// a contact — is pinned in the nav; warm reach lives behind the nav bell. The body
+// The free hero, in the ember (.thx) system. The most important action - dropping
+// a contact - is pinned in the nav; warm reach lives behind the nav bell. The body
 // leads with the one box you can work from (what you're working on, or who you're
 // looking for), then your circle.
 import { useCallback, useEffect, useState } from 'react';
@@ -36,7 +36,7 @@ export default function CircleHome({ onOpenPlan }: { onOpenPlan?: () => void }) 
   }, [userId]);
 
   // The bell badge = people going quiet + decisions banked. Respect the opt-out
-  // (default on): only an explicit false silences the nudge — the same rule the old
+  // (default on): only an explicit false silences the nudge - the same rule the old
   // "Since you were away" card used.
   const loadNotif = useCallback(async () => {
     if (!userId || preferences?.goal_reminders === false) { setNotifCount(0); return; }

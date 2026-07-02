@@ -178,7 +178,7 @@ export const QuickAddPaste = ({ onDone, onClose, prefill }: QuickAddPasteProps) 
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Paste a LinkedIn URL, an Instagram handle, an email signature, a bio — anything you have."
+        placeholder="Paste a LinkedIn URL, an Instagram handle, an email signature, a bio - anything you have."
         rows={5}
         autoFocus
         style={{ minHeight: 120 }}

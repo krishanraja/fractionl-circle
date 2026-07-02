@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
       getJson(`${PULSE}/fwi-api/history?months=3`),
     ]);
 
-    // Real 30-day change for each FWI component, from the daily history — this is what
+    // Real 30-day change for each FWI component, from the daily history - this is what
     // powers the colour-coded arrows (only the overall index carries its own delta).
     const histRows: any[] = Array.isArray(hist?.history) ? hist.history : [];
     const delta30 = (field: string): number | null => {
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       return Math.round((a - b) * 10) / 10;
     };
 
-    // overall market — score, 30-day move, and the demand/supply/culture breakdown
+    // overall market - score, 30-day move, and the demand/supply/culture breakdown
     // that explains WHY the score is where it is (all already in fwi-api/current).
     let market:
       | { score: number; label: string; delta: number | null; emoji: string | null; scale: string | null; components: { demand: number | null; supply: number | null; culture: number | null } | null }
@@ -142,14 +142,14 @@ Deno.serve(async (req) => {
       };
     }
 
-    // Which roles are fractionalising — the whole role board, hottest first. Grounds
+    // Which roles are fractionalising - the whole role board, hottest first. Grounds
     // the "which roles are heating up" question and the synthesis below.
     const roleLandscape = (Array.isArray(roles?.roles) ? roles.roles : [])
       .filter((r: any) => toNum(r.demand) != null)
       .sort((a: any, b: any) => b.demand - a.demand)
       .map((r: any) => ({ label: String(r.label || r.role), demand: Math.round(r.demand), band: r.band ?? null }));
 
-    // The radar's rising topics, role-matched first — the raw material + a graceful
+    // The radar's rising topics, role-matched first - the raw material + a graceful
     // fallback if the strategic synthesis call is unavailable.
     const topics: any[] = Array.isArray(radar?.rising_topics) ? radar.rising_topics : [];
     const matched = role ? topics.filter((t: any) => typeof t.role === 'string' && t.role.includes(role.key)) : [];
@@ -163,12 +163,12 @@ Deno.serve(async (req) => {
     // ONE strategic synthesis: role-tailored metric insights + three SPECIFIC, grounded
     // trends that answer the operator's real questions (which roles are fractionalising,
     // what businesses are hiring, where THEIR function has an opening). Numbers all come
-    // from the data we pass — the model only writes the strategic read, never figures.
+    // from the data we pass - the model only writes the strategic read, never figures.
     const roleName = roleOut?.label ? `fractional ${roleOut.label}` : 'fractional executive';
     const metricInsights: Record<string, string> = {};
     let strategicThemes: Array<{ label: string; summary: string; angle: string; breakout: boolean }> = [];
     try {
-      const sys = `You are a sharp market strategist briefing a ${roleName} in plain English. Using ONLY the data given (never invent figures), produce SPECIFIC, STRATEGIC reads for THIS person — no vague platitudes, no generic "fractional vs full-time" filler.
+      const sys = `You are a sharp market strategist briefing a ${roleName} in plain English. Using ONLY the data given (never invent figures), produce SPECIFIC, STRATEGIC reads for THIS person - no vague platitudes, no generic "fractional vs full-time" filler.
 
 Return ONLY JSON:
 {
@@ -215,8 +215,8 @@ The three themes must cover: (1) which roles are fractionalising fastest and wha
     const fb = (k: string): string => {
       if (k === 'demand') return 'Companies are still hiring fractional execs; the pipeline is led by recently funded startups.';
       if (k === 'role') return roleOut?.band ? `Demand for fractional ${roleOut.label}s is ${String(roleOut.band).toLowerCase()} right now.` : 'Name your role in your plan to see demand for what you do.';
-      if (k === 'competition') return 'More operators are entering — a sharp niche is how you stand out.';
-      return 'Awareness is steady — a good time to be visible with a point of view.';
+      if (k === 'competition') return 'More operators are entering - a sharp niche is how you stand out.';
+      return 'Awareness is steady - a good time to be visible with a point of view.';
     };
     const ins = (k: string): string => metricInsights[k] || fb(k);
 
@@ -226,7 +226,7 @@ The three themes must cover: (1) which roles are fractionalising fastest and wha
     const c = market?.components ?? null;
     const metrics: Array<{ key: string; label: string; value: string; delta: number | null; deltaSuffix: string; positiveWhenUp: boolean; insight: string }> = [];
     if (c?.demand != null) metrics.push({ key: 'demand', label: 'Companies hiring', value: String(c.demand), delta: delta30('demand'), deltaSuffix: '', positiveWhenUp: true, insight: ins('demand') });
-    if (roleOut) metrics.push({ key: 'role', label: `Demand for ${roleOut.label}s`, value: roleOut.demand != null ? String(roleOut.demand) : (roleOut.band ?? '—'), delta: roleOut.deltaPct, deltaSuffix: '%', positiveWhenUp: true, insight: ins('role') });
+    if (roleOut) metrics.push({ key: 'role', label: `Demand for ${roleOut.label}s`, value: roleOut.demand != null ? String(roleOut.demand) : (roleOut.band ?? '-'), delta: roleOut.deltaPct, deltaSuffix: '%', positiveWhenUp: true, insight: ins('role') });
     else if (market) metrics.push({ key: 'market', label: 'Fractional market', value: String(market.score), delta: market.delta, deltaSuffix: '', positiveWhenUp: true, insight: ins('role') });
     if (c?.supply != null) metrics.push({ key: 'competition', label: 'Competition', value: String(c.supply), delta: delta30('supply'), deltaSuffix: '', positiveWhenUp: false, insight: ins('competition') });
     if (c?.culture != null) metrics.push({ key: 'buzz', label: 'Market buzz', value: String(c.culture), delta: delta30('culture'), deltaSuffix: '', positiveWhenUp: true, insight: ins('buzz') });

@@ -4,7 +4,7 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '
 
 // security_audit_log is service-role-only (tamper-proof: a client must not be
 // able to forge or read audit entries). The browser therefore cannot insert
-// directly — it 403s. This function is the write path: it verifies the JWT,
+// directly - it 403s. This function is the write path: it verifies the JWT,
 // STAMPS user_id from the verified token (never trusts the client), and inserts
 // with the service role. Fixes the recurring client-side 403.
 

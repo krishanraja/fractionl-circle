@@ -10,7 +10,7 @@ export function PreferencesApplier() {
   useEffect(() => {
     if (!preferences) return;
     applyUserPreferences(preferences);
-    hideBootSplash(); // theme is now correct for this user — safe to reveal the app
+    hideBootSplash(); // theme is now correct for this user - safe to reveal the app
   }, [preferences]);
 
   useEffect(() => {

@@ -28,9 +28,9 @@ export function emberStyle(fuel: number): React.CSSProperties {
   };
 }
 
-export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
+export function EmberNav({ fuel, fuels, onHome, market, marketLoading, onStrengthen }: {
   fuel: number; fuels: FuelRow[]; hint?: string; onHome?: () => void;
-  market?: MarketPulse | null; onStrengthen?: () => void;
+  market?: MarketPulse | null; marketLoading?: boolean; onStrengthen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [pulseOpen, setPulseOpen] = useState(false);
@@ -55,7 +55,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
   // The ember mark IS the strength gauge, so it's the single door to strength:
   //   tap  → what's powering your plan (the fuel breakdown)
   //   hold → make it stronger (the coach question + the fuel cards)
-  // One door, two gestures — no duplicate "strengthen" prompts scattered elsewhere.
+  // One door, two gestures - no duplicate "strengthen" prompts scattered elsewhere.
   const holdTimer = useRef<number | null>(null);
   const held = useRef(false);
   const startHold = () => {
@@ -82,7 +82,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
           onPointerCancel={endHold}
           onClick={onEmberClick}
           onContextMenu={(e) => e.preventDefault()}
-          aria-label={onStrengthen ? "Your plan strength — tap for what's powering it, press and hold to make it stronger" : "What's powering your plan"}
+          aria-label={onStrengthen ? "Your plan strength - tap for what's powering it, press and hold to make it stronger" : "What's powering your plan"}
         >
           <img src="/brand/fractionl-icon.png" alt="" className="ember" style={emberStyle(fuel)} />
         </button>
@@ -92,7 +92,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
         <span style={{ flex: 1 }} />
         <div className="navbtns">
           {onStrengthen ? (
-            <button className="navpulse" onClick={() => { haptics.tap(); setPulseOpen(true); }} aria-label={core ? `Market pulse — ${core.label} ${core.score}` : 'Market pulse'}>
+            <button className={'navpulse' + (marketLoading && !core ? ' navpulse-loading' : '')} onClick={() => { haptics.tap(); setPulseOpen(true); }} aria-label={core ? `Market pulse - ${core.label} ${core.score}` : (marketLoading ? 'Reading the market' : 'Market pulse')}>
               <Activity size={13} strokeWidth={2.2} />
               {core ? (
                 <>
@@ -103,6 +103,8 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
                     </span>
                   ) : null}
                 </>
+              ) : marketLoading ? (
+                <span className="navpulse-dots"><span /><span /><span /></span>
               ) : null}
             </button>
           ) : null}
@@ -128,7 +130,7 @@ export function EmberNav({ fuel, fuels, onHome, market, onStrengthen }: {
           </div>
         </div>
       ) : null}
-      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} />
+      <PulseDrawer open={pulseOpen} onOpenChange={setPulseOpen} market={market ?? null} loading={!!marketLoading} />
       <ProfileSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
@@ -234,7 +236,7 @@ export const chromeCss = `
 .thx .vmktchip { display:inline-block; margin-top:11px; font-size:11.5px; color:${C.hi}; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; border-radius:999px; padding:5px 10px; }
 /* Pulse drawer: a fixed, full-height flex column that NEVER scrolls. The header,
    market card and role card are fixed; the rising-themes region flexes and clips;
-   the "as of" line is pinned — so content can't force a scroll on any device. */
+   the "as of" line is pinned - so content can't force a scroll on any device. */
 .thx .vpulsewrap { display:flex; flex-direction:column; height:100%; min-height:0; overflow:hidden; padding:16px 18px calc(14px + env(safe-area-inset-bottom)); }
 .thx .vpulsehead { flex:0 0 auto; padding-right:44px; }
 .thx .vpulsecard { background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:12px; padding:11px 13px; }
@@ -251,7 +253,7 @@ export const chromeCss = `
 /* B. the plain role read */
 .thx .vprole { font-size:14.5px; font-weight:600; color:${C.hi}; line-height:1.35; }
 .thx .vpmeaning { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:6px; }
-/* C. the trends accordion — full text on tap, no truncation */
+/* C. the trends accordion - full text on tap, no truncation */
 .thx .vptrend { border-top:1px solid ${C.line}; }
 .thx .vptrend:first-child { border-top:0; }
 .thx .vptrendhead { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:0; cursor:pointer; padding:10px 0; }
@@ -264,7 +266,7 @@ export const chromeCss = `
 .thx .vptrendangle { font-size:13px; color:${C.hi}; line-height:1.45; margin-top:9px; background:rgba(224,162,60,0.08); border:1px solid ${C.accentEdge}; border-radius:9px; padding:9px 11px; }
 .thx .vptrendanglek { display:block; font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; margin-bottom:4px; }
 /* the metric rail: eye-catching value + colour-coded 30-day arrow down the left,
-   the strategic read on the right — all vertically aligned. */
+   the strategic read on the right - all vertically aligned. */
 .thx .vpmetrics { flex:0 0 auto; margin-top:6px; }
 .thx .vpmetric { display:flex; gap:14px; align-items:flex-start; padding:11px 0; border-top:1px solid ${C.line}; }
 .thx .vpmetric:first-child { border-top:0; }
@@ -277,6 +279,31 @@ export const chromeCss = `
 .thx .vpmtext { flex:1; min-width:0; padding-top:1px; }
 .thx .vpmlabel { font-family:${MONO}; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:${C.cool}; }
 .thx .vpminsight { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:4px; }
+/* Pulse loading: a heartbeat pulse-wave tracing across the market, over a shimmer
+   skeleton in the exact shape of the metric rail so the content settles into place. */
+.thx .vploading { flex:0 0 auto; }
+.thx .vpwave { width:100%; height:34px; margin-top:12px; overflow:visible; }
+.thx .vpwave path { fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.thx .vpwave-base { stroke:${C.line2}; }
+.thx .vpwave-run { stroke:${C.accent}; stroke-dasharray:26 520; filter:drop-shadow(0 0 5px ${C.accentDim}); animation:vpwaverun 1.8s linear infinite; }
+@keyframes vpwaverun { from { stroke-dashoffset:546; } to { stroke-dashoffset:0; } }
+.thx .vploadlabel { font-family:${MONO}; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; margin-top:6px; animation:vploadfade 1.8s ease-in-out infinite; }
+@keyframes vploadfade { 0%,100%{opacity:0.5} 50%{opacity:0.9} }
+.thx .vpskel { display:block; background:linear-gradient(90deg, ${C.line2} 25%, ${C.line} 37%, ${C.line2} 63%); background-size:400% 100%; border-radius:5px; animation:spkshimmer 1.4s ease infinite; }
+.thx .vpskel-num { width:38px; height:24px; }
+.thx .vpskel-arr { width:30px; height:11px; margin-top:8px; border-radius:999px; }
+.thx .vpskel-label { width:110px; height:8px; }
+.thx .vpskel-line { width:100%; height:11px; margin-top:8px; }
+.thx .vpskel-line.short { width:66%; }
+/* the nav pulse pill while the market reads */
+.thx .navpulse-loading { color:${C.accent}; border-color:${C.accentEdge}; }
+.thx .navpulse-loading svg { animation:navpulsebeat 1.2s ease-in-out infinite; }
+@keyframes navpulsebeat { 0%,100%{opacity:0.5; transform:scale(0.9)} 50%{opacity:1; transform:scale(1.12)} }
+.thx .navpulse-dots { display:inline-flex; gap:3px; align-items:center; }
+.thx .navpulse-dots span { width:4px; height:4px; border-radius:50%; background:${C.accent}; animation:navpulsedot 1s ease-in-out infinite; }
+.thx .navpulse-dots span:nth-child(2) { animation-delay:.15s; }
+.thx .navpulse-dots span:nth-child(3) { animation-delay:.3s; }
+@keyframes navpulsedot { 0%,100%{opacity:0.3} 50%{opacity:1} }
 .thx .navhint { font-family:${MONO}; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:${C.lo}; }
 .thx .fuelpop { position:absolute; top:50px; left:14px; width:248px; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; z-index:9; box-shadow:0 14px 50px rgba(0,0,0,0.55); }
 .thx .fuelrow { display:flex; align-items:center; gap:9px; padding:7px 0; font-size:12.5px; }
@@ -396,7 +423,7 @@ export const chromeCss = `
 .thx .scoremax { font-family:${MONO}; font-size:13px; color:${C.lo}; }
 .thx .scorepend { font-family:${MONO}; font-size:11px; color:${C.accent}; }
 .thx .scorehold { font-size:12px; color:${C.mid}; margin-top:4px; }
-/* the single, visible door to strengthening — sits right under the score/weakness */
+/* the single, visible door to strengthening - sits right under the score/weakness */
 .thx .strengthencta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 15px; border-radius:999px; border:1px solid ${C.accent}; background:${C.accent}; color:#1A1206; font-size:12.5px; font-weight:700; cursor:pointer; transition:filter .12s ease, transform .12s ease; }
 .thx .strengthencta:hover { filter:brightness(1.05); }
 .thx .strengthencta:active { transform:translateY(1px); }

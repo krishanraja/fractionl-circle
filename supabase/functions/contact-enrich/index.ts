@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Require authentication — prevents abuse of external API credits
+    // Require authentication - prevents abuse of external API credits
     const { userId } = await requireAuth(req);
 
     // Rate limit: 30 enrichments per minute per user

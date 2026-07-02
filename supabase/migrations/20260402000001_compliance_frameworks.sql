@@ -1,6 +1,6 @@
 -- ============================================================================
 -- COMPLIANCE FRAMEWORKS: SOC2, HIPAA, GDPR, CCPA, ISO 27001
--- Non-breaking, additive migration — no existing tables are altered destructively
+-- Non-breaking, additive migration - no existing tables are altered destructively
 -- ============================================================================
 
 -- ── 1. Consent Management (GDPR Art.6-7, CCPA §1798.120) ───────────────

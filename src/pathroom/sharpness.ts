@@ -2,7 +2,7 @@
 // explainable: the read's seven graded dimensions (band x confidence) carry the
 // bulk, grounded inputs add the rest, and answered sharpen-questions add a small
 // PROVISIONAL lift until the next re-run locks them into a fresh read. The same
-// computation surfaces the weakest dimension(s) — exactly what the question engine
+// computation surfaces the weakest dimension(s) - exactly what the question engine
 // asks about next.
 import type { Scorecard, ScoreRowT, Band } from './thesisViews';
 
@@ -30,7 +30,7 @@ export interface Sharpness {
 }
 
 // A band's intrinsic strength. "risk" (used for Crowding) is a genuine drag, not
-// a neutral — a crowded niche is a real weakness — so it scores low.
+// a neutral - a crowded niche is a real weakness - so it scores low.
 const BAND_W: Record<Band, number> = { weak: 0.3, mixed: 0.62, strong: 1.0, risk: 0.42 };
 // Low confidence caps how strong a dimension can read: you cannot be at 100 on a
 // finding the research could not stand behind.

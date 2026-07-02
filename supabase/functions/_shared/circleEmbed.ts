@@ -21,7 +21,7 @@ interface PersonRow {
 const trunc = (s: string, n: number) => (s.length > n ? s.slice(0, n) : s);
 
 // The deterministic text we embed for a person. Deterministic so the SAME person
-// with the SAME data always produces the SAME string — that's what lets backfill
+// with the SAME data always produces the SAME string - that's what lets backfill
 // detect drift (composed != stored embedding_text) and re-embed only what changed.
 export function composeEmbedText(p: PersonRow): string {
   const d = p.dossier ?? {};

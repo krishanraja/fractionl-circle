@@ -14,13 +14,13 @@ import { chatJSON } from '../_shared/llm.ts';
 // Responses:
 //   { status: 'done', dossier, note }
 //   { status: 'needs_disambiguation', candidates: [...] }
-//   { status: 'no_keys' }     (nothing configured — the contact still exists)
+//   { status: 'no_keys' }     (nothing configured - the contact still exists)
 //   { status: 'failed', reason }
 //
 // Providers (all optional; graceful when a key is absent):
-//   APOLLO_API_KEY     — candidate search + enrich by linkedin_url
-//   PROXYCURL_API_KEY  — full public-profile scrape
-//   any LLM key        — grounded summary fallback (via _shared/llm.ts)
+//   APOLLO_API_KEY     - candidate search + enrich by linkedin_url
+//   PROXYCURL_API_KEY  - full public-profile scrape
+//   any LLM key        - grounded summary fallback (via _shared/llm.ts)
 //
 // Privacy: user-initiated, one person at a time, public-profile data only.
 
@@ -49,7 +49,7 @@ const json = (data: Record<string, unknown>, cors: Record<string, string>, statu
   new Response(JSON.stringify(data), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
 // Free tier gets a monthly allowance of deep dives (the costly, Pro-flavoured
-// action); Pro/Executive are unlimited. Tune freely — this is just config.
+// action); Pro/Executive are unlimited. Tune freely - this is just config.
 const FREE_DEEP_ENRICH_PER_MONTH = 5;
 const ENRICH_FEATURE = 'deep_enrich';
 
@@ -63,7 +63,7 @@ async function effectiveTier(supabase: any, userId: string): Promise<'free' | 'p
     const trialing = data.status === 'trialing' && data.trial_ends_at && new Date(data.trial_ends_at) > new Date();
     return (trialing ? 'pro' : (data.tier ?? 'free')) as 'free' | 'pro' | 'executive';
   } catch {
-    return 'free'; // fail open on a billing hiccup — never trap the user
+    return 'free'; // fail open on a billing hiccup - never trap the user
   }
 }
 
@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
     // Compose a short human note. Don't clobber an existing user note.
     const summaryText = typeof dossier.summary === 'string' ? dossier.summary : '';
     const roleLine = [title, company].filter(Boolean).join(' at ');
-    const note = person.note || [roleLine, summaryText].filter(Boolean).join(' — ') || null;
+    const note = person.note || [roleLine, summaryText].filter(Boolean).join(' - ') || null;
 
     const update: Record<string, unknown> = {
       dossier,

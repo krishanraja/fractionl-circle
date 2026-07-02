@@ -62,7 +62,7 @@ export default function ReachOut({ thesis, move, onLoaded, onReached }: {
       <div className="h" style={{ marginTop: 8, fontSize: 20 }}>Reach out to your network.</div>
       <div className="sub" style={{ marginTop: 6 }}>
         {focused
-          ? 'The people in your circle who fit this idea — each with why they fit and a ready draft about it. Open one, send it, and it counts.'
+          ? 'The people in your circle who fit this idea - each with why they fit and a ready draft about it. Open one, send it, and it counts.'
           : 'Pre-written and grounded in your real relationship. Open one, send it, and it counts. No new tool to learn.'}
       </div>
 
@@ -76,7 +76,7 @@ export default function ReachOut({ thesis, move, onLoaded, onReached }: {
         <div className="panel" style={{ marginTop: 18 }}>
           <div style={{ fontSize: 14, color: C.hi, fontWeight: 600 }}>{focused ? 'No one in your circle fits this yet.' : 'Your circle is warm right now.'}</div>
           <div className="rmuted" style={{ marginTop: 6 }}>{focused
-            ? 'Add people who match your buyer — or connect a source — and the right people to reach for this idea will surface here.'
+            ? 'Add people who match your buyer - or connect a source - and the right people to reach for this idea will surface here.'
             : "No one's gone cold. Add more people and warm-reach moves will surface here as relationships cool."}</div>
         </div>
       ) : (

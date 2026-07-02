@@ -61,9 +61,9 @@ export async function writeWarmReachHold(
 
   const tz = await calendarTimeZone(accessToken);
   const date = nextMondayDate(now);
-  const names = people.map((p) => `• ${p.name}${p.company ? ` (${p.company})` : ''} — ${p.why_now}`).join('\n');
+  const names = people.map((p) => `• ${p.name}${p.company ? ` (${p.company})` : ''} - ${p.why_now}`).join('\n');
   const body = {
-    summary: 'Warm reach — keep your circle warm',
+    summary: 'Warm reach - keep your circle warm',
     description: `Reach out to the people going quiet in your circle:\n\n${names}\n\nOpen your circle: ${appUrl}`,
     start: { dateTime: `${date}T09:00:00`, timeZone: tz },
     end: { dateTime: `${date}T09:20:00`, timeZone: tz },

@@ -70,14 +70,14 @@ const SheetBody = ({
       <div>
         <div className="ovl">Add someone</div>
         <div className="h" style={{ marginTop: 6 }}>Add to your circle</div>
-        <div className="sub">Whatever you've got — a name, screenshot, link, voice memo.</div>
+        <div className="sub">Whatever you've got - a name, screenshot, link, voice memo.</div>
       </div>
 
       {clipboardHint && (
         <button className="modetile" style={{ minHeight: 0, flexDirection: 'row', alignItems: 'center', gap: 9 }} onClick={onUseClipboard}>
           <Sparkles size={16} style={{ color: 'var(--thx-accent)', flex: '0 0 auto' }} />
           <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--thx-hi)' }}>
-            Use clipboard — <span style={{ color: 'var(--thx-mid)' }}>{clipboardHint}</span>
+            Use clipboard - <span style={{ color: 'var(--thx-mid)' }}>{clipboardHint}</span>
           </span>
           <span
             role="button"
@@ -177,7 +177,7 @@ export const AddToCircleSheet = ({
         if (!looksLikeContact(raw)) return;
         setClipboardText(raw);
         setClipboardHint(shortPreview(raw));
-      } catch { /* permission denied or unsupported — ignore */ }
+      } catch { /* permission denied or unsupported - ignore */ }
     })();
     return () => { cancelled = true; };
   }, [open]);

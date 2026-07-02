@@ -6,7 +6,7 @@ import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPer
 
 // next-question: the proactive Socratic coach. Given the user's latest read, it
 // finds the weakest graded dimension (or the biggest missing input) and asks the
-// ONE highest-leverage question to sharpen it — framed as a DECISION (a few crisp
+// ONE highest-leverage question to sharpen it - framed as a DECISION (a few crisp
 // options to choose), because the user should decide, not write an essay. The
 // answer (saved client-side to thesis_answers) folds into the next read, raising
 // the strength score toward 100. Resilient: a deterministic templated question per
@@ -25,7 +25,7 @@ function weakestDimension(opp: Row[], ability: Row[]): { row: Row; side: string 
   return scored[0];
 }
 
-// Deterministic fallback questions per dimension — sharp, decision-shaped.
+// Deterministic fallback questions per dimension - sharp, decision-shaped.
 const FALLBACK: Record<string, { topic: string; question: string; options: string[] }> = {
   'Demand': { topic: 'Demand', question: 'Who, specifically, has this problem badly enough to pay this month?', options: ['Seed founders with no senior hire yet', 'Series A teams scaling too fast', 'PE-backed ops under margin pressure'] },
   'Burning need': { topic: 'The pain', question: 'What breaks for them if they do nothing for 90 days?', options: ['They miss their next raise', 'They burn cash on the wrong hires', 'They stall and a competitor passes them'] },
@@ -36,7 +36,7 @@ const FALLBACK: Record<string, { topic: string; question: string; options: strin
   'Credibility': { topic: 'Proof', question: 'What proof would make a skeptical buyer believe you fast?', options: ['A named case study', 'A strong referral', 'A sharp point of view published'] },
 };
 
-const SYSTEM = `You are a sharp, warm strategy coach for a fractional executive. Your job: ask the ONE question that most sharpens their business thesis right now, targeting the weakest part of their validated read. The user often does not know what to do next, so do NOT ask an open essay prompt — ask a focused question and offer 2 to 4 crisp, specific, MUTUALLY DISTINCT options they can pick to make a decision (they can also type their own). The question must develop their thinking in a way they would not have alone: concrete, grounded in their thesis and the weak dimension, never generic.
+const SYSTEM = `You are a sharp, warm strategy coach for a fractional executive. Your job: ask the ONE question that most sharpens their business thesis right now, targeting the weakest part of their validated read. The user often does not know what to do next, so do NOT ask an open essay prompt - ask a focused question and offer 2 to 4 crisp, specific, MUTUALLY DISTINCT options they can pick to make a decision (they can also type their own). The question must develop their thinking in a way they would not have alone: concrete, grounded in their thesis and the weak dimension, never generic.
 
 Return ONLY JSON: { "topic": string, "dimension": string, "question": string, "why": string, "options": [string, string, string] }
 - "dimension": echo the weak dimension you are sharpening.

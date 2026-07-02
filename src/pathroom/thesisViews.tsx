@@ -27,7 +27,7 @@ const BANDVAL: Record<Band, number> = { weak: 1, mixed: 2, strong: 3, risk: 3 };
 
 export const thesisCss = `
 .thx * { box-sizing:border-box; margin:0; padding:0; }
-/* .thx is THEME ONLY — colour, type, component skins. It must never set
+/* .thx is THEME ONLY - colour, type, component skins. It must never set
    width/height/min-height/position. All sizing lives on the layout classes
    (.app-frame, .thxframe, .thx-page) so a broadly-applied theme rule can never
    fight a frame's height. (A stray min-height:100vh here once forced the locked
@@ -35,7 +35,7 @@ export const thesisCss = `
 .thx { background:${C.bg}; color:${C.hi}; font-family:${FONT}; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; }
 /* Standalone, normally-scrolling full-page surface (preview fixtures, and any
    future non-framed page): fill the viewport so the themed background covers it.
-   Locked/framed surfaces do NOT use this — they size via .app-frame/.thxframe. */
+   Locked/framed surfaces do NOT use this - they size via .app-frame/.thxframe. */
 .thx-page { min-height:100dvh; }
 .thx .wrap { max-width:520px; margin:0 auto; padding:24px 20px 80px; }
 .thx .ovl { font-family:${MONO}; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:${C.lo}; }

@@ -238,7 +238,7 @@ export const SwipeableRow = ({
         className,
       )}
     >
-      {/* Right actions tray — revealed by swiping LEFT */}
+      {/* Right actions tray - revealed by swiping LEFT */}
       {rightActions.length > 0 && (
         <motion.div
           className="absolute right-0 top-0 bottom-0 flex items-stretch"
@@ -249,7 +249,7 @@ export const SwipeableRow = ({
         </motion.div>
       )}
 
-      {/* Left actions tray — revealed by swiping RIGHT */}
+      {/* Left actions tray - revealed by swiping RIGHT */}
       {leftActions.length > 0 && (
         <motion.div
           className="absolute left-0 top-0 bottom-0 flex items-stretch"

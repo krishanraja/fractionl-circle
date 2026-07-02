@@ -33,7 +33,7 @@ export interface ParsedCrmCsv {
 }
 
 // ---------------------------------------------------------------------------
-// Tokenizer (RFC-4180-ish) — duplicated inline rather than exported from
+// Tokenizer (RFC-4180-ish) - duplicated inline rather than exported from
 // linkedinCsv.ts to keep the module surface small. Behaviour identical.
 // ---------------------------------------------------------------------------
 

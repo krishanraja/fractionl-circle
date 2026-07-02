@@ -22,7 +22,7 @@
 //     request in `requested` or `scheduled`. User picks a slot themselves.
 //
 //   start <request_id>
-//     Mark in_progress — typically right after the call ends.
+//     Mark in_progress - typically right after the call ends.
 //
 //   deliver <request_id> [--note "..."]
 //     Mark delivered. Stamps completed_at. --note populates ops_notes, which

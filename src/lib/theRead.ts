@@ -22,7 +22,7 @@ export async function setReadFromText(text: string): Promise<void> {
 }
 
 // Re-rank the user's real network for their current direction. Returns [] when
-// the read is thin or the circle is empty — an encouraging empty state, not an error.
+// the read is thin or the circle is empty - an encouraging empty state, not an error.
 export async function rankInnerCircle(): Promise<RankedPerson[]> {
   const { data, error } = await supabase.functions.invoke('rank-inner-circle');
   if (error) throw error;
@@ -57,7 +57,7 @@ export type BoxIntent = 'working_on' | 'find_people';
 
 // Search the WHOLE network for people who fit a "who can help with X" query.
 // v1 matches over data already connected (title/company/tags/note/dossier); no new
-// enrichment. Returns [] on a thin/ungrounded result — an honest empty state.
+// enrichment. Returns [] on a thin/ungrounded result - an honest empty state.
 export async function searchNetwork(query: string): Promise<NetworkMatch[]> {
   const { data, error } = await supabase.functions.invoke('search-network', { body: { query } });
   if (error) throw error;
@@ -82,7 +82,7 @@ export async function runBoxQuery(text: string): Promise<BoxResult> {
     const people = (data as { people?: unknown })?.people;
     return { intent: 'find_people', found: Array.isArray(people) ? (people as NetworkMatch[]) : [] };
   }
-  // working_on: the query is about the user's own direction — read it and rank the
+  // working_on: the query is about the user's own direction - read it and rank the
   // inner circle, exactly as the box did before.
   await setReadFromText(text);
   const working = await rankInnerCircle();

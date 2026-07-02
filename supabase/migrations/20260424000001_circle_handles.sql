@@ -11,7 +11,7 @@
 --   }
 --
 -- The existing top-level `linkedin_url` column stays as the canonical
--- LinkedIn URL (many queries and the Match Engine read it directly) — we
+-- LinkedIn URL (many queries and the Match Engine read it directly) - we
 -- mirror the value into `handles.linkedin` at ingest time for symmetry.
 
 alter table circle_person

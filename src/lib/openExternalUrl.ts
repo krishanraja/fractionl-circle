@@ -1,5 +1,5 @@
 /**
- * Open a URL in a new tab using a transient anchor — more reliable than
+ * Open a URL in a new tab using a transient anchor - more reliable than
  * window.open() when the call chain is not a direct user gesture.
  */
 export function openExternalUrl(url: string): void {

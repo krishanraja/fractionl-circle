@@ -24,7 +24,7 @@ import { hideBootSplash } from "@/lib/bootSplash";
 /**
  * Reveal the app (fade the boot splash) for logged-out / public screens, where the
  * theme is already correct from the pre-paint script. Logged-in screens reveal
- * themselves once their saved theme is applied — see PreferencesApplier — so the
+ * themselves once their saved theme is applied - see PreferencesApplier - so the
  * dark→light settle is never visible. A safety timeout in index.html is the backstop.
  */
 function BootSplashGate() {

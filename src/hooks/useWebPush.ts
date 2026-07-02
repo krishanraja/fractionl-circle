@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
  * Web Push opt-in hook for the Circle PWA.
  *
  * Entirely inert and safe when VITE_VAPID_PUBLIC_KEY is missing or the
- * platform lacks Service Worker / Notification / PushManager support — in that
+ * platform lacks Service Worker / Notification / PushManager support - in that
  * case `supported` is false and subscribe()/unsubscribe() no-op. None of the
  * exposed methods ever throw to the caller; they resolve to a boolean.
  *
