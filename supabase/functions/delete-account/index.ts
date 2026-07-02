@@ -3,11 +3,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 
 // Right-to-erasure, server side (GDPR Art.17). The user's identity comes from
-// the verified JWT (requireAuth) — never the request body — so a caller can
+// the verified JWT (requireAuth) - never the request body - so a caller can
 // only ever delete THEMSELVES. We then:
-//   1. erase_user_data(uuid)  — wipes every user-owned row across the full
+//   1. erase_user_data(uuid)  - wipes every user-owned row across the full
 //      surface + anonymises the profile (self-only guard inside the RPC too).
-//   2. auth.admin.deleteUser  — removes the auth identity, which the client RPC
+//   2. auth.admin.deleteUser  - removes the auth identity, which the client RPC
 //      alone could never do.
 // Both run under the service role so the wipe is complete regardless of RLS.
 

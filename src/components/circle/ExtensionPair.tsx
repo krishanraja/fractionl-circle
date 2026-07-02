@@ -77,7 +77,7 @@ export const ExtensionPair = () => {
       setTimeout(() => setCopied(false), 1500);
     } catch {
       haptics.error();
-      toast.error('Could not copy — select the text manually.');
+      toast.error('Could not copy - select the text manually.');
     }
   };
 
@@ -92,7 +92,7 @@ export const ExtensionPair = () => {
           <li>Paste this token into the popup and hit <span className="font-medium">Connect</span>.</li>
         </ol>
         <p className="mt-2">
-          Tokens expire after about an hour — if it stops working, come back here and grab a fresh one.
+          Tokens expire after about an hour - if it stops working, come back here and grab a fresh one.
           Treat the token like a password: anyone with it can access your Circle session until it expires.
         </p>
       </div>

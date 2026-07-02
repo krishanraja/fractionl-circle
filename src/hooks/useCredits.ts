@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 // Client access to the prepaid credit balance + the two actions that move it:
-//   • buyCredits  — open Stripe checkout for a one-time pack (mode: 'credits').
-//   • digDeeper   — spend credits on the max-effort enrichment of one person.
+//   • buyCredits  - open Stripe checkout for a one-time pack (mode: 'credits').
+//   • digDeeper   - spend credits on the max-effort enrichment of one person.
 // The balance is read-only here (RLS); all writes happen server-side via the
 // service-role RPCs, so this hook can trust whatever the DB / edge functions report.
 
@@ -22,7 +22,7 @@ export function useCredits() {
 
   const refresh = useCallback(async () => {
     if (!user?.id) { setBalance(null); return; }
-    // credit_balance isn't in the generated types yet (new table) — cast the
+    // credit_balance isn't in the generated types yet (new table) - cast the
     // relation name, same as other post-schema queries in this codebase.
     const { data } = await supabase
       .from('credit_balance' as never)

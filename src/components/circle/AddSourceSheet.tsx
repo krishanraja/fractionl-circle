@@ -28,7 +28,7 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
         The more people you bring in, the warmer your reach and the sharper your plan. Start with whichever is easiest.
       </p>
     </div>
-    {/* Featured recommendation — hero card */}
+    {/* Featured recommendation - hero card */}
     <button
       onClick={() => onPick('linkedin')}
       className="w-full text-left rounded-2xl bg-primary/8 p-4 flex items-center gap-4 hover:bg-primary/12 transition-colors active:scale-[0.99] transition-transform duration-100"
@@ -50,7 +50,7 @@ const PickerBody = ({ onPick }: { onPick: (v: Exclude<View, 'pick'>) => void }) 
       <ChevronRight className="w-5 h-5 text-foreground-muted shrink-0" />
     </button>
 
-    {/* Grouped settings-style list — iOS Settings convention */}
+    {/* Grouped settings-style list - iOS Settings convention */}
     <div className="rounded-2xl bg-surface-muted/70 backdrop-blur overflow-hidden divide-y divide-border/40">
       {[
         { id: 'crm' as const, icon: Database, label: 'Import CRM or sheet', hint: 'HubSpot · Attio · Folk · spreadsheet' },

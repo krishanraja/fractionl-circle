@@ -7,7 +7,7 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- ── 1. Scheduled Data Retention Purge (SOC2 CC6.5, GDPR Art.5(1)(e)) ───
--- Runs daily at 3:00 AM UTC — purges expired behavioral/session data
+-- Runs daily at 3:00 AM UTC - purges expired behavioral/session data
 
 SELECT cron.schedule(
   'purge-expired-data',
@@ -45,7 +45,7 @@ SELECT cron.schedule(
 );
 
 -- ── 2. Data Subject Request Deadline Monitor (GDPR Art.12(3)) ───────────
--- Runs daily — flags overdue DSRs (GDPR requires response within 30 days)
+-- Runs daily - flags overdue DSRs (GDPR requires response within 30 days)
 
 SELECT cron.schedule(
   'check-dsr-deadlines',
@@ -73,7 +73,7 @@ SELECT cron.schedule(
 );
 
 -- ── 3. Security Anomaly Detection Function ──────────────────────────────
--- Can be called manually or scheduled — detects suspicious patterns
+-- Can be called manually or scheduled - detects suspicious patterns
 
 CREATE OR REPLACE FUNCTION public.check_security_anomalies()
 RETURNS TABLE(anomaly_type TEXT, details JSONB, severity TEXT)

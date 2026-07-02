@@ -1,4 +1,4 @@
-// "What's waiting for you" — the in-app reason to come back, computed entirely
+// "What's waiting for you" - the in-app reason to come back, computed entirely
 // from data we already have (no new backend): people you've let go quiet, and
 // decisions you've banked but not yet folded into a read. Shows the single most
 // important hook with one tap back into the Plan. Honest: renders nothing when
@@ -36,7 +36,7 @@ export default function ReturnSurface({ onOpenPlan }: { onOpenPlan: () => void }
   let cta = 'Open your plan';
   if (quiet > 0) {
     headline = `${quiet} ${quiet === 1 ? 'person is' : 'people are'} going quiet`;
-    sub = "You've spoken before — a quick, warm note keeps the door open.";
+    sub = "You've spoken before - a quick, warm note keeps the door open.";
     cta = 'Open your warm reach';
   } else if (banked > 0) {
     headline = `${banked} decision${banked === 1 ? '' : 's'} banked`;

@@ -1,9 +1,9 @@
-# Re-engagement & web push — ops guide
+# Re-engagement & web push - ops guide
 
 *Verified accurate against `supabase/functions/cron-reengage/index.ts`,
 `supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29.*
 
-How the "come back — here's what's waiting" sweep works, and how to turn on the
+How the "come back - here's what's waiting" sweep works, and how to turn on the
 two delivery channels (email + web push) it shares with the warm digest. Both
 channels are **inert by default**: the feature ships and the cron job runs with
 no keys set; it just skips the unconfigured channel and counts the skip.
@@ -18,9 +18,9 @@ cron jobs). It:
    and were **last active 5–21 days ago** (drifted, but not abandoned). Capped at
    500 users per run.
 2. For each, computes cheap "what's waiting" counts:
-   - **going quiet** — people in their circle with no interaction in 30+ days;
-   - **decisions waiting** — banked answers not yet folded into a fresh read.
-3. **Skips the user entirely if both counts are 0** — it never sends an empty
+   - **going quiet** - people in their circle with no interaction in 30+ days;
+   - **decisions waiting** - banked answers not yet folded into a fresh read.
+3. **Skips the user entirely if both counts are 0** - it never sends an empty
    nudge.
 4. Sends a short, plain-language email (Resend) and a web push (`send-push`),
    each naming what's waiting and linking back to the app.
@@ -54,18 +54,18 @@ no-op until you configure keys.
 
 2. Set the **server** secrets (Supabase → Project Settings → Edge Functions →
    Secrets, or `supabase secrets set`):
-   - `VAPID_PUBLIC_KEY` — the public key from step 1
-   - `VAPID_PRIVATE_KEY` — the private key from step 1
-   - `VAPID_SUBJECT` — a `mailto:` or `https:` contact URL
+   - `VAPID_PUBLIC_KEY` - the public key from step 1
+   - `VAPID_PRIVATE_KEY` - the private key from step 1
+   - `VAPID_SUBJECT` - a `mailto:` or `https:` contact URL
 
 3. Set the **frontend** env vars (Vite, public bundle):
-   - `VITE_VAPID_PUBLIC_KEY` — the **same** public key as `VAPID_PUBLIC_KEY`
-   - `VITE_PUSH_ENABLED=true` — flips the in-app subscribe flow on
+   - `VITE_VAPID_PUBLIC_KEY` - the **same** public key as `VAPID_PUBLIC_KEY`
+   - `VITE_PUSH_ENABLED=true` - flips the in-app subscribe flow on
 
 Until `VITE_PUSH_ENABLED=true` and a public key are present, the app never asks
 to subscribe; until the three server secrets are present, `send-push` no-ops.
 
-## Email setup (Resend — stays inert until set)
+## Email setup (Resend - stays inert until set)
 
 If `RESEND_API_KEY` is missing, `cron-reengage` skips email cleanly and reports
 it as `skipped_email_unconfigured` (push still fires). To enable:
@@ -80,5 +80,5 @@ it as `skipped_email_unconfigured` (push still fires). To enable:
 ## The in-app "what's waiting" surface
 
 The in-app surface that shows the same hooks (people going quiet, decisions
-waiting) needs **no configuration** — it reads the user's own data directly. The
+waiting) needs **no configuration** - it reads the user's own data directly. The
 keys above only gate the outbound email and push reminders.

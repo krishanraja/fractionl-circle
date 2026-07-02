@@ -14,7 +14,7 @@
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <title>Fractionl | Your circle, warmed up</title>
-    <meta name="description" content="Drop in anyone you meet — a name, a screenshot, a link, a voice memo — and Fractionl remembers who they are and surfaces the right people the moment you need them." />
+    <meta name="description" content="Drop in anyone you meet - a name, a screenshot, a link, a voice memo - and Fractionl remembers who they are and surfaces the right people the moment you need them." />
     <meta name="author" content="Fractionl" />
     <link rel="canonical" href="https://circle.fractionl.ai/" />
 
@@ -61,7 +61,7 @@
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
           "url": "https://circle.fractionl.ai",
-          "description": "Fractionl is a personal circle that warms itself up: drop in anyone you meet — a name, screenshot, link or voice memo — and it remembers who they are and surfaces the right people the moment you need them.",
+          "description": "Fractionl is a personal circle that warms itself up: drop in anyone you meet - a name, screenshot, link or voice memo - and it remembers who they are and surfaces the right people the moment you need them.",
           "publisher": { "@type": "Organization", "name": "Fractionl" },
           "offers": [
             { "@type": "Offer", "name": "Free", "description": "Capture your whole circle, smart tags, and surface the right people when you need them.", "price": "0", "priceCurrency": "USD" },
@@ -82,7 +82,7 @@
     <div id="root"></div>
     <!-- Branded splash kept OUTSIDE #root so React mounting doesn't drop it. It
          stays up until the app has applied the resolved theme (or a safety
-         timeout), then fades — so the dark→light theme settle is never seen. -->
+         timeout), then fades - so the dark→light theme settle is never seen. -->
     <div id="boot-splash">
       <div class="boot-orb"></div>
     </div>
@@ -97,7 +97,7 @@
       @keyframes bootpulse { 0%,100%{opacity:.45; transform:scale(.9)} 50%{opacity:1; transform:scale(1.12)} }
       @media (prefers-reduced-motion: reduce) { #boot-splash .boot-orb { animation:none; } }
     </style>
-    <!-- The splash is hidden from the bundle (hideBootSplash) — see main.tsx /
+    <!-- The splash is hidden from the bundle (hideBootSplash) - see main.tsx /
          PreferencesApplier / BootSplashGate. No inline script: the CSP blocks it. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>

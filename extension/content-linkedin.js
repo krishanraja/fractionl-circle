@@ -1,4 +1,4 @@
-// Circle — LinkedIn Capture: content script.
+// Circle - LinkedIn Capture: content script.
 //
 // Runs on https://www.linkedin.com/in/* pages the user actively visits in
 // their own authenticated session. Reads the page DOM + any embedded
@@ -111,7 +111,7 @@
 
   function splitHeadline(headline) {
     if (!headline) return { title: null, company: null };
-    // "Fractional CMO at Acme" — last "at" wins so "Head of Growth at Acme" beats
+    // "Fractional CMO at Acme" - last "at" wins so "Head of Growth at Acme" beats
     // "Lecturer at Stanford at Acme".
     const atIdx = headline.lastIndexOf(' at ');
     if (atIdx > -1) {

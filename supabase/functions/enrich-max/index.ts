@@ -7,7 +7,7 @@ import { embedPersons } from '../_shared/circleEmbed.ts';
 // enrich-max: the credit-gated "10/10, leave nothing on the table" enrichment for a
 // single person. Where the free enrich-linkedin tier pulls a profile from the people
 // APIs, this tier runs live OPEN-WEB research (Perplexity) and synthesises what it
-// finds into the dossier — the long-tail signal that LinkedIn scraping misses (press,
+// finds into the dossier - the long-tail signal that LinkedIn scraping misses (press,
 // talks, portfolios, sector moves). It then re-embeds the person so the richer profile
 // is immediately searchable.
 //
@@ -18,7 +18,7 @@ import { embedPersons } from '../_shared/circleEmbed.ts';
 //   3. If the run wholly fails, REFUND the credits. The user never pays for nothing.
 //
 // The credit RPCs are service_role-only, so this trusted function is the only path
-// that can move a user's balance — the client cannot mint or spend credits directly.
+// that can move a user's balance - the client cannot mint or spend credits directly.
 
 const DEEP_ENRICH_CREDITS = 20; // keep in sync with src/lib/creditCosts.ts
 
@@ -43,7 +43,7 @@ interface PersonRow {
 async function research(p: PersonRow): Promise<{ text: string; citations: string[] } | null> {
   const key = Deno.env.get('PERPLEXITY_API_KEY');
   if (!key) return null;
-  const who = [p.display_name, [p.title, p.company].filter(Boolean).join(' at '), p.location].filter(Boolean).join(' — ');
+  const who = [p.display_name, [p.title, p.company].filter(Boolean).join(' at '), p.location].filter(Boolean).join(' - ');
   const prompt = `Find current, public professional information about this specific person for a personal CRM dossier.
 PERSON: ${who}
 ${p.linkedin_url ? `LINKEDIN: ${p.linkedin_url}` : ''}
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     if (!person) return json({ error: 'not found' }, cors, 404);
 
     // 1. Can we deliver? Need both research (Perplexity) and a synthesis LLM. If not,
-    //    don't charge — the free profile enrichment still exists via enrich-linkedin.
+    //    don't charge - the free profile enrichment still exists via enrich-linkedin.
     const hasResearch = !!Deno.env.get('PERPLEXITY_API_KEY');
     const hasLlm = !!(Deno.env.get('OPENAI_API_KEY') || Deno.env.get('LOVABLE_API_KEY') || Deno.env.get('ANTHROPIC_API_KEY'));
     if (!hasResearch || !hasLlm) return json({ status: 'no_keys' }, cors);

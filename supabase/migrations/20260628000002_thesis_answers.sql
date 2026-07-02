@@ -1,6 +1,6 @@
 -- Answers to the proactive "sharpen" questions. Each is a decision the user made
 -- that develops their thesis; validate-thesis folds them into the next read so the
--- bands/confidence — and the strength score — rise. Mirrors thesis_inspiration:
+-- bands/confidence - and the strength score - rise. Mirrors thesis_inspiration:
 -- user-owned, RLS-scoped, newest-first.
 create table if not exists public.thesis_answers (
   id uuid primary key default gen_random_uuid(),

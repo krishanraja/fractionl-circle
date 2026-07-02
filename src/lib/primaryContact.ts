@@ -210,7 +210,7 @@ function buildAction(channel: ContactChannel, data: ChannelData, name: string): 
 // ---------------------------------------------------------------------------
 
 function pickSourcePriority(raws: ContactableRaw[]): ContactChannel[] {
-  // Earliest raw record wins — that's "how they were loaded in".
+  // Earliest raw record wins - that's "how they were loaded in".
   const ordered = [...raws].sort((a, b) => (a.ingested_at ?? '').localeCompare(b.ingested_at ?? ''));
   const first = ordered[0];
   const kind = first?.source_kind ?? '';
@@ -253,7 +253,7 @@ export function primaryContactAction(
   for (const ch of DEFAULT_PRIORITY) appendIfViable(ch);
 
   if (!actions.length) {
-    // Nothing viable — always keep a copy-name fallback so the button is never disabled.
+    // Nothing viable - always keep a copy-name fallback so the button is never disabled.
     const fallback = buildAction('copy_name', data, person.display_name)!;
     actions.push(fallback);
   }

@@ -34,5 +34,5 @@ alter table move_edits enable row level security;
 create policy move_edits_owner_read on move_edits
   for select using (auth.uid() = user_id);
 
--- Intentionally no user INSERT/UPDATE policy — edit logs are always written
+-- Intentionally no user INSERT/UPDATE policy - edit logs are always written
 -- by the server (edge function or DB function) with the service role key.

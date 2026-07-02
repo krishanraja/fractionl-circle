@@ -1,6 +1,6 @@
 // The one box at the top of Circle. Say what you're working on (we surface the few
-// people in your circle who matter most, each with a role + why) OR name who — or
-// the kind of person — you're looking for (we search your whole network for a real,
+// people in your circle who matter most, each with a role + why) OR name who - or
+// the kind of person - you're looking for (we search your whole network for a real,
 // grounded fit). Type it or voice-note it. One-tap warm reach on every result.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Loader2, Sparkles, Mic, Square, Link2 } from 'lucide-react';
@@ -117,7 +117,7 @@ export default function WorkingOnInput() {
         setContacts(map);
       }
     } catch {
-      setErr('Could not read that just now — give it another try in a moment.');
+      setErr('Could not read that just now - give it another try in a moment.');
     } finally {
       setBusy(false);
     }
@@ -136,11 +136,11 @@ export default function WorkingOnInput() {
         if (error) throw new Error(error.message || 'Transcription failed');
         const tr = (data as { transcript?: string } | null)?.transcript?.trim() ?? '';
         if (cancelled) return;
-        if (!tr) { setErr('Nothing came through — try again?'); return; }
+        if (!tr) { setErr('Nothing came through - try again?'); return; }
         setText(tr);
         void run(tr);
       } catch {
-        if (!cancelled) setErr('Could not hear that clearly — try again, or type it.');
+        if (!cancelled) setErr('Could not hear that clearly - try again, or type it.');
       } finally {
         if (!cancelled) { setTranscribing(false); resetRecording(); }
       }
@@ -161,12 +161,12 @@ export default function WorkingOnInput() {
     setDigging((prev) => new Set(prev).add(id));
     try {
       const res = await digDeeper(id);
-      if (res.status === 'done') { toast.success('Found more — re-ranking.'); void run(); }
+      if (res.status === 'done') { toast.success('Found more - re-ranking.'); void run(); }
       else if (res.status === 'insufficient') { toast('Not enough credits to dig deeper.'); setBuyOpen(true); }
       else if (res.status === 'no_keys') { toast('Deep search isn’t switched on yet.'); }
-      else { toast('Couldn’t find more on them — you weren’t charged.'); }
+      else { toast('Couldn’t find more on them - you weren’t charged.'); }
     } catch {
-      toast('Something went wrong — you weren’t charged.');
+      toast('Something went wrong - you weren’t charged.');
     } finally {
       setDigging((prev) => { const n = new Set(prev); n.delete(id); return n; });
     }
@@ -210,7 +210,7 @@ export default function WorkingOnInput() {
           <p className="sub" style={{ marginTop: 10 }}>
             {intent === 'find_people'
               ? BOX.foundEmpty
-              : "No one jumps out yet — add a few more people, or tell me a bit more about what you're working on."}
+              : "No one jumps out yet - add a few more people, or tell me a bit more about what you're working on."}
           </p>
         ) : (
           <div style={{ marginTop: 4 }}>
@@ -251,12 +251,12 @@ export default function WorkingOnInput() {
             })}
             {intent === 'find_people' && (
               <p className="sub" style={{ marginTop: 10, fontSize: 11.5 }}>
-                Dig deeper runs a full web search on someone — {DEEP_ENRICH_CREDITS} credits each.{' '}
+                Dig deeper runs a full web search on someone - {DEEP_ENRICH_CREDITS} credits each.{' '}
                 <button
                   onClick={() => setBuyOpen(true)}
                   style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--thx-accent)', font: 'inherit' }}
                 >
-                  {balance ?? '—'} credits · Buy more
+                  {balance ?? '-'} credits · Buy more
                 </button>
               </p>
             )}

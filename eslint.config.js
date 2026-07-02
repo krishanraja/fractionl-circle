@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   // `dist` is build output. `supabase/functions/**` is Deno code (Deno globals,
-  // URL imports, its own `deno lint` workflow + deno-lint-ignore directives) —
+  // URL imports, its own `deno lint` workflow + deno-lint-ignore directives) -
   // it must not be linted by this browser/React ESLint config.
   { ignores: ["dist", "supabase/functions/**"] },
   {

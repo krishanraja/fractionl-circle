@@ -133,7 +133,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
               <span style={{ flex: 1 }}>
                 <span className="fueltitle2">Connect your LinkedIn</span>
                 <div className="fuelfor">Your background, verified. Shows whether you can win it, not just whether it is winnable.</div>
-                {linkedinDone ? <span className="donechk">✓ linked — see how it lands to use it</span> : <span className="fueltag ability">feeds fit + credibility</span>}
+                {linkedinDone ? <span className="donechk">✓ linked - see how it lands to use it</span> : <span className="fueltag ability">feeds fit + credibility</span>}
               </span>
             </button>
           ) : (

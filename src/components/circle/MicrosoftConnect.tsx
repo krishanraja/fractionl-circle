@@ -40,7 +40,7 @@ export const MicrosoftConnect = () => {
         <p className="mb-2 font-medium text-foreground">What we read</p>
         <ul className="list-disc pl-4 space-y-1">
           <li>Your Outlook contacts.</li>
-          <li>Calendar events for the last 90 days — to know who you've met and how recently.</li>
+          <li>Calendar events for the last 90 days - to know who you've met and how recently.</li>
         </ul>
         <p className="mt-2">
           We do <span className="font-medium">not</span> read mail bodies. Personal Microsoft accounts and

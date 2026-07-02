@@ -101,7 +101,7 @@ select cron.schedule(
 
 -- ---------------------------------------------------------------------------
 -- Warm network: weekly "keep your circle warm" digest. Mondays at 13:00 UTC
--- (~6am PT / ~9am ET) — a start-of-week nudge that lands in the inbox and on
+-- (~6am PT / ~9am ET) - a start-of-week nudge that lands in the inbox and on
 -- the calendar where senior leaders actually plan.
 -- ---------------------------------------------------------------------------
 select cron.schedule(
@@ -121,7 +121,7 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Re-engagement: weekly "come back — here's what's waiting" sweep. Mondays at
+-- Re-engagement: weekly "come back - here's what's waiting" sweep. Mondays at
 -- 15:00 UTC, i.e. AFTER the warm digest (13:00) so a drifted user gets the
 -- warm-circle nudge first and this only reaches those who still have something
 -- genuinely waiting. Inert until Resend/VAPID keys are set.

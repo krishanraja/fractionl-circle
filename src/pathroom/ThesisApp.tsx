@@ -36,7 +36,7 @@ export default function ThesisApp() {
   // Free users get one full pass and the read; the deepening tools are Pro.
   const locked = !isProOrAbove;
   // The page lock (useAppFrame) is owned by CircleApp, the shell that hosts this
-  // flow under the Deep-dive tab — so we don't lock the viewport a second time here.
+  // flow under the Deep-dive tab - so we don't lock the viewport a second time here.
   const [phase, setPhase] = useState<Phase>('loading');
   const [data, setData] = useState<Scorecard | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
@@ -56,8 +56,11 @@ export default function ThesisApp() {
   const [runCount, setRunCount] = useState(0);
   const [circleFrom, setCircleFrom] = useState<'home' | 'journey'>('journey');
   const [market, setMarket] = useState<MarketPulse | null>(null);
+  // The market read is a multi-second call (it synthesises the metric insights +
+  // strategic trends), so the drawer shows a branded loading state while it's in flight.
+  const [marketLoading, setMarketLoading] = useState(false);
   const [unrunAnswers, setUnrunAnswers] = useState(0);
-  // How many people the user ACTUALLY reached this session on the reach step —
+  // How many people the user ACTUALLY reached this session on the reach step -
   // real evidence (each stamps last_interaction_at), so completion isn't a free tick.
   const [reachedCount, setReachedCount] = useState(0);
   const timers = useRef<number[]>([]);
@@ -72,6 +75,13 @@ export default function ThesisApp() {
   const refreshAnswers = () => { if (userId) getUnrunAnswerCount(userId).then(setUnrunAnswers).catch(() => {}); };
   useEffect(refreshAnswers, [userId, data]);
 
+  // Fetch the market read with a loading flag so the Pulse drawer can show a stunning
+  // loading state (the call runs an LLM synthesis, so it's a few seconds).
+  const loadMarket = (t: string) => {
+    setMarketLoading(true);
+    getMarketPulse(t).then(setMarket).catch(() => {}).finally(() => setMarketLoading(false));
+  };
+
   useEffect(() => {
     if (authLoading || subLoading) return;
     if (!userId) { setPhase('signin'); return; }
@@ -84,7 +94,7 @@ export default function ThesisApp() {
           setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background);
           // Pro lands on the deepening dashboard; free re-views the read they earned (Home is Pro-only).
           setPhase(isProOrAbove ? 'home' : 'read');
-          getMarketPulse(r.thesis).then(setMarket).catch(() => {});
+          loadMarket(r.thesis);
         } else setPhase('capture');
       })
       .catch(() => setPhase('capture'));
@@ -101,7 +111,7 @@ export default function ThesisApp() {
       timers.current.forEach(clearTimeout);
       setData(r); setShown(r.journey?.length || CANONICAL_JOURNEY.length); setDone(true);
       setRunCount((c) => c + 1);
-      getMarketPulse(thesis).then(setMarket).catch(() => {});
+      loadMarket(thesis);
       if (userId) { const full = await getLatestRunFull(userId); if (full) { setRunId(full.id); setStepProgress(full.stepProgress); } }
     } catch {
       timers.current.forEach(clearTimeout);
@@ -184,7 +194,7 @@ export default function ThesisApp() {
   if (phase === 'gate') return centered(
     <div style={{ maxWidth: 360 }}>
       <div className="ovl">Pro</div>
-      <div className="h" style={{ marginTop: 10 }}>Your plan is free — going deeper is Pro.</div>
+      <div className="h" style={{ marginTop: 10 }}>Your plan is free - going deeper is Pro.</div>
       <div className="sub">You've seen where you stand. Pro opens the rest: make your plan stronger and re-read as it evolves, your living path, your network's warm reach, and ongoing market monitoring. $39 a month.</div>
       <button className="cta" style={{ marginTop: 18 }} onClick={async () => { const pid = getPriceId('pro'); if (pid) await openCheckout(pid); }}><span>Upgrade to Pro</span><span className="mono">→</span></button>
       <button className="foothint" style={{ marginTop: 14 }} onClick={() => setPhase(data ? 'read' : 'capture')}>back</button>
@@ -201,6 +211,7 @@ export default function ThesisApp() {
         fuel={fuel} fuels={fuels} hint={hint}
         onHome={canHome ? () => go('home') : undefined}
         market={market}
+        marketLoading={marketLoading}
         onStrengthen={() => openSharpen(null)}
       />
       <div className="thxbody" ref={bodyRef}>
@@ -219,7 +230,7 @@ export default function ThesisApp() {
 
   if (phase === 'reachout' && data) {
     // The warm-reach step's action, focused on THIS plan + move: surface the people
-    // who fit the idea (not random cold contacts). Completion is evidence-based —
+    // who fit the idea (not random cold contacts). Completion is evidence-based -
     // the step only ticks if the user actually reached someone; otherwise leaving
     // does NOT mark it done, and claiming it took an action elsewhere is explicit.
     const steps = data.steps || [];
@@ -237,12 +248,12 @@ export default function ThesisApp() {
       <ReachOut thesis={thesisText} move={move} onReached={setReachedCount} />,
       <>
         <button className="cta" onClick={() => back(reached)}>
-          <span>{reached ? `Reached ${reachedCount} — back to path` : 'Back to path'}</span>
+          <span>{reached ? `Reached ${reachedCount} - back to path` : 'Back to path'}</span>
           <span className="mono">→</span>
         </button>
-        {!reached ? <button className="foothint" onClick={() => back(true)}>I reached out another way — mark this done</button> : null}
+        {!reached ? <button className="foothint" onClick={() => back(true)}>I reached out another way - mark this done</button> : null}
       </>,
-      reached ? 'reached — it warms now' : 'reach one, then it counts',
+      reached ? 'reached - it warms now' : 'reach one, then it counts',
     );
   }
 
@@ -301,7 +312,7 @@ export default function ThesisApp() {
   if (phase === 'sharpen' && data) {
     // One strengthen surface, both ways in: the decision-shaped question (multiple-
     // choice pills) up top, then the "make it stronger" fuel cards. Reached from the
-    // single door — press-and-hold the ember mark.
+    // single door - press-and-hold the ember mark.
     return frame(
       <>
         <SharpenPrompt onAnswered={refreshAnswers} focus topic={sharpenFocus || undefined} />
@@ -351,7 +362,7 @@ export default function ThesisApp() {
       footer = (
         <>
           <button className="cta" onClick={primary.onClick}><span>{primary.label}</span><span className="mono">→</span></button>
-          {!js.warmBlocked ? <button className="foothint" onClick={() => onMarkDone(js.current)}>I've done this — mark done</button> : null}
+          {!js.warmBlocked ? <button className="foothint" onClick={() => onMarkDone(js.current)}>I've done this - mark done</button> : null}
         </>
       );
     }
@@ -359,7 +370,7 @@ export default function ThesisApp() {
       <>
         <JourneyMap data={data} circle={circle} progress={stepProgress} />
         {/* When the read is too thin to map, asking the right question beats
-            guessing at steps — surface the coach right here. */}
+            guessing at steps - surface the coach right here. */}
         {js.weak ? <div style={{ marginTop: 18 }}><SharpenPrompt onAnswered={refreshAnswers} /></div> : null}
       </>,
       footer, 'your path, charged',

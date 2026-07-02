@@ -11,8 +11,8 @@ One-time Google Cloud Console setup for the `Connect Google` source.
 
 In **APIs & Services → Library**, enable:
 
-- **People API** — reads Google Contacts + Other Contacts.
-- **Google Calendar API** — reads calendar events.
+- **People API** - reads Google Contacts + Other Contacts.
+- **Google Calendar API** - reads calendar events.
 
 ## 3. OAuth consent screen
 
@@ -24,7 +24,7 @@ In **APIs & Services → Library**, enable:
 - App domain: `circle.fractionl.ai` (or your domain).
 - Authorized domains: `fractionl.ai`. (Add `supabase.co` only if you are still
   on the raw `<ref>.supabase.co` host; once the Supabase custom auth domain is
-  live — see `supabase-custom-domain.md` — `fractionl.ai` alone is correct.)
+  live - see `supabase-custom-domain.md` - `fractionl.ai` alone is correct.)
 - Save.
 
 On the **Scopes** step, add these and nothing else (non-restricted only):
@@ -38,7 +38,7 @@ https://www.googleapis.com/auth/contacts.other.readonly
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
 
-Do **not** add `gmail.readonly` or any other restricted scope — that triggers
+Do **not** add `gmail.readonly` or any other restricted scope - that triggers
 Google's annual CASA audit (~$15k, 4–8 weeks). We do not currently use any
 restricted scopes.
 
@@ -50,7 +50,7 @@ published.
 **APIs & Services → Credentials → Create credentials → OAuth client ID**:
 
 - Application type: **Web application**.
-- Name: `Circle — edge functions`.
+- Name: `Circle - edge functions`.
 - Authorized redirect URIs: add **exactly** the callback on your active auth
   host. Once the Supabase custom domain is live (see
   `supabase-custom-domain.md`), this is:
@@ -87,7 +87,7 @@ supabase functions deploy oauth-google-callback --no-verify-jwt
 supabase functions deploy sync-google
 ```
 
-`oauth-google-callback` must deploy with `--no-verify-jwt` — Google calls it
+`oauth-google-callback` must deploy with `--no-verify-jwt` - Google calls it
 directly with no user token. State validation in the callback covers auth.
 
 ## 7. Smoke test
@@ -104,19 +104,19 @@ directly with no user token. State validation in the callback covers auth.
 
 ## Troubleshooting
 
-- **`error=redirect_uri_mismatch`** — the URI in step 4 doesn't exactly match
+- **`error=redirect_uri_mismatch`** - the URI in step 4 doesn't exactly match
   what Google is seeing. Double-check the project ref.
-- **`error=access_denied`** — user tapped Cancel on the consent screen.
-- **`unknown_state`** after callback — the one-time state from `oauth_states`
+- **`error=access_denied`** - user tapped Cancel on the consent screen.
+- **`unknown_state`** after callback - the one-time state from `oauth_states`
   was already consumed or never inserted. Try again from the Circle tab.
-- **`No google source — reconnect first.`** from sync-google — the callback
+- **`No google source - reconnect first.`** from sync-google - the callback
   didn't get to the "create source" step. Check edge function logs.
-- **Audience errors** — your OAuth consent screen is still in testing and
+- **Audience errors** - your OAuth consent screen is still in testing and
   your Google account isn't in the test users list. Add it.
 
 ## Publishing (later)
 
 To let non-test-users connect, submit the OAuth consent screen for
 verification. Since we only use non-restricted + sensitive scopes, this is
-Google's lighter-weight "brand verification" — a few screenshots and a demo
+Google's lighter-weight "brand verification" - a few screenshots and a demo
 video, typically a few days' turnaround.

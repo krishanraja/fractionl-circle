@@ -3,9 +3,9 @@
 // (they still run even if the main app bundle fails to load/execute):
 //
 //   1. Pre-paint theme: apply the saved theme to <html> before first paint so
-//      there's no dark→light flash. Dark-first — anything but 'light' is dark.
+//      there's no dark→light flash. Dark-first - anything but 'light' is dark.
 //   2. Splash safety net: if the app hasn't revealed itself in time (normally the
-//      bundle hides the splash once the theme is applied — see PreferencesApplier
+//      bundle hides the splash once the theme is applied - see PreferencesApplier
 //      / BootSplashGate), drop the splash anyway so it can never get stuck.
 (function () {
   try {

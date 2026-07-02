@@ -11,7 +11,7 @@
 -- and stays correct as tables are added.
 --
 -- FK safety: every cross-table FK in public is CASCADE or SET NULL (verified),
--- so per-user deletes need no ordering — deleting talent_contacts /
+-- so per-user deletes need no ordering - deleting talent_contacts /
 -- conversation_sessions / sources cascades their childless children.
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -19,9 +19,9 @@
 -- Three tables are deliberately retained on erasure as a lawful exception
 -- (legal_obligation, 7-year hold per data_retention_policies) and are listed
 -- separately so the choice is explicit and reviewable by counsel:
---   data_subject_requests  — the audit trail of the request itself
---   security_audit_log     — security/legal incident record
---   user_consents          — proof of consent lifecycle
+--   data_subject_requests  - the audit trail of the request itself
+--   security_audit_log     - security/legal incident record
+--   user_consents          - proof of consent lifecycle
 -- ─────────────────────────────────────────────────────────────────────────────
 
 create or replace function public._dsar_user_tables()
@@ -66,12 +66,12 @@ end;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- export_user_data — GDPR Art.15/20. Returns one JSON document with every row
+-- export_user_data - GDPR Art.15/20. Returns one JSON document with every row
 -- the user owns across the full surface PLUS their profile, retained records,
 -- and a manifest. Self-only.
 --
 -- Drop first: the prior versions returned a different type, which CREATE OR
--- REPLACE cannot change. Drop is safe — nothing depends on these but the
+-- REPLACE cannot change. Drop is safe - nothing depends on these but the
 -- client RPC calls, which are unchanged in shape.
 -- ─────────────────────────────────────────────────────────────────────────────
 drop function if exists public.export_user_data(uuid);
@@ -113,10 +113,10 @@ end;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- erase_user_data — GDPR Art.17. Deletes every user-owned row across the full
+-- erase_user_data - GDPR Art.17. Deletes every user-owned row across the full
 -- surface and anonymises the profile. Retains the three legal-obligation tables.
 -- Records a completion entry in data_subject_requests as the erasure audit.
--- Self-only. Does NOT delete the auth.users row — the delete-account edge
+-- Self-only. Does NOT delete the auth.users row - the delete-account edge
 -- function does that after this returns (service-role, admin API).
 -- ─────────────────────────────────────────────────────────────────────────────
 drop function if exists public.erase_user_data(uuid);

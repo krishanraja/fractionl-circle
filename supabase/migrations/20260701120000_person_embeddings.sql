@@ -5,7 +5,7 @@
 --
 -- We store the embedding, the exact text we embedded (embedding_text) so a nightly
 -- backfill can detect staleness and only re-embed what changed, and when it was
--- embedded. Embeddings are OpenAI text-embedding-3-small (1536 dims) — a single
+-- embedded. Embeddings are OpenAI text-embedding-3-small (1536 dims) - a single
 -- consistent model so every vector shares one space.
 
 create extension if not exists vector;

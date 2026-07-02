@@ -22,7 +22,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Intercept POSTs to /share-contact — these come from the OS share sheet.
+  // Intercept POSTs to /share-contact - these come from the OS share sheet.
   if (event.request.method === 'POST' && url.pathname === '/share-contact') {
     event.respondWith(handleShareTarget(event.request));
     return;
@@ -141,7 +141,7 @@ self.addEventListener('message', async (event) => {
 
     event.ports[0]?.postMessage({ blob, meta });
 
-    // Clear after read — one-shot.
+    // Clear after read - one-shot.
     if (fileRes) await cache.delete(SHARE_KEY);
     if (metaRes) await cache.delete(`${SHARE_KEY}_meta`);
   }

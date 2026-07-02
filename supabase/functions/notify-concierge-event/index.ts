@@ -76,7 +76,7 @@ function composeMessage(event: Event, req: RequestRow, email: string | null) {
         blocks: [
           {
             type: 'section',
-            text: { type: 'mrkdwn', text: `*New concierge request* — \`${req.id.slice(0, 8)}\`` },
+            text: { type: 'mrkdwn', text: `*New concierge request* - \`${req.id.slice(0, 8)}\`` },
           },
           {
             type: 'section',
@@ -90,7 +90,7 @@ function composeMessage(event: Event, req: RequestRow, email: string | null) {
             text: { type: 'mrkdwn', text: `*Notes*\n${req.notes}` },
           } : null,
         ].filter(Boolean),
-        subject: `[Circle] New concierge request — ${who}`,
+        subject: `[Circle] New concierge request - ${who}`,
         html: `<p><strong>New concierge request</strong> (${req.id.slice(0, 8)})</p>
 <p><strong>User:</strong> ${who}</p>
 <p><strong>Preferred times:</strong> ${req.preferred_times ?? '<em>none</em>'}</p>
@@ -99,34 +99,34 @@ ${req.notes ? `<p><strong>Notes:</strong><br>${req.notes.replace(/\n/g, '<br>')}
       };
     case 'scheduled':
       return {
-        text: `:calendar: Concierge scheduled — ${who} on ${req.scheduled_at ?? 'TBD'}`,
+        text: `:calendar: Concierge scheduled - ${who} on ${req.scheduled_at ?? 'TBD'}`,
         blocks: undefined,
-        subject: `[Circle] Concierge scheduled — ${who}`,
+        subject: `[Circle] Concierge scheduled - ${who}`,
         html: `<p>Concierge scheduled for <strong>${req.scheduled_at ?? 'TBD'}</strong></p>
 <p><strong>User:</strong> ${who}</p>
 <p><strong>Assigned:</strong> ${req.assigned_to ?? '<em>unassigned</em>'}</p>`,
       };
     case 'in_progress':
       return {
-        text: `:construction: Concierge in progress — ${who}`,
+        text: `:construction: Concierge in progress - ${who}`,
         blocks: undefined,
-        subject: `[Circle] Concierge in progress — ${who}`,
+        subject: `[Circle] Concierge in progress - ${who}`,
         html: `<p>Concierge in progress for ${who}. Circle normalization underway.</p>`,
       };
     case 'delivered':
       return {
-        text: `:white_check_mark: Concierge delivered — ${who}`,
+        text: `:white_check_mark: Concierge delivered - ${who}`,
         blocks: undefined,
-        subject: `[Circle] Concierge delivered — ${who}`,
+        subject: `[Circle] Concierge delivered - ${who}`,
         html: `<p>Concierge delivered for ${who}.</p>
 ${req.ops_notes ? `<p><strong>Ops notes:</strong><br>${req.ops_notes.replace(/\n/g, '<br>')}</p>` : ''}
 ${req.result_stats ? `<pre>${JSON.stringify(req.result_stats, null, 2)}</pre>` : ''}`,
       };
     case 'cancelled':
       return {
-        text: `:x: Concierge cancelled — ${who}`,
+        text: `:x: Concierge cancelled - ${who}`,
         blocks: undefined,
-        subject: `[Circle] Concierge cancelled — ${who}`,
+        subject: `[Circle] Concierge cancelled - ${who}`,
         html: `<p>Concierge cancelled by ${who}.</p>
 ${req.ops_notes ? `<p><strong>Ops notes:</strong><br>${req.ops_notes.replace(/\n/g, '<br>')}</p>` : ''}`,
       };

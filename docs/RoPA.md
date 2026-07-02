@@ -1,6 +1,6 @@
-# Records of Processing Activities (RoPA) — GDPR Art. 30
+# Records of Processing Activities (RoPA) - GDPR Art. 30
 
-**Last reviewed:** 2026-06-02. **Status: DRAFT — for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
+**Last reviewed:** 2026-06-02. **Status: DRAFT - for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
 
 **Controller:** fractionl (Circle). **Contact:** privacy@fractionl.ai
 
@@ -22,8 +22,8 @@
 ## Special category data
 None intended. **No health, biometric, or PHI data is processed** (HIPAA out of scope).
 
-## Third-party processing of contact data — note
+## Third-party processing of contact data - note
 Circle stores personal data about the user's *network* (third parties who are not Circle users). The lawful basis is the user's legitimate interest in managing their professional relationships; contacts are not marketed to by Circle. This must be disclosed in the privacy policy and is erasable on request.
 
 ## International transfers
-Production data resides in AWS `us-east-1` (USA). EU transfers rely on SCCs — confirm with counsel.
+Production data resides in AWS `us-east-1` (USA). EU transfers rely on SCCs - confirm with counsel.

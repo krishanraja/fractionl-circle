@@ -72,7 +72,7 @@ export const ContactConfirmCard = ({
                 autoComplete={f.autoComplete}
                 value={v}
                 onChange={(e) => setField(f.key, e.target.value)}
-                placeholder={isName ? 'Required' : '—'}
+                placeholder={isName ? 'Required' : '-'}
                 aria-required={isName}
                 style={isName ? { fontWeight: 600 } : undefined}
               />

@@ -39,7 +39,7 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
       <>
         <div className="ovl">Where you stand</div>
         <div className="h" style={{ marginTop: 10 }}>This one is too thin to map yet.</div>
-        <div className="sub">Your idea is still too broad for the market to answer clearly, so a path would be guesswork. Make it clearer — who it's for and why you — and the map writes itself.</div>
+        <div className="sub">Your idea is still too broad for the market to answer clearly, so a path would be guesswork. Make it clearer - who it's for and why you - and the map writes itself.</div>
         <div className="panel" style={{ marginTop: 16 }}>
           <div className="grp">What is missing</div>
           <div style={{ fontSize: 13, color: C.mid, marginTop: 8, lineHeight: 1.5 }}>A specific buyer, and the one reason they pick you over the crowded field.</div>

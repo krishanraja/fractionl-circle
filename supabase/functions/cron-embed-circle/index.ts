@@ -8,7 +8,7 @@ import { backfillEmbeddings } from '../_shared/circleEmbed.ts';
 // the function timeout or the embeddings bill. Prioritises never-embedded then
 // oldest, so a fresh circle becomes searchable within a run or two.
 //
-// Scheduled after compute-warmth (07:30 UTC) so warmth — which orders the sweep —
+// Scheduled after compute-warmth (07:30 UTC) so warmth - which orders the sweep -
 // is current. Inert (embeds nothing) until OPENAI_API_KEY is set; the search still
 // works via keyword matching in the meantime.
 

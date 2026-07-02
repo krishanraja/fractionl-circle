@@ -10,7 +10,7 @@ import { haptics } from '@/utils/haptics';
 import { C, MONO } from './tokens';
 
 interface BrandBarProps {
-  /** Pins the app's most important action — dropping a contact — into the nav. */
+  /** Pins the app's most important action - dropping a contact - into the nav. */
   onDropContact?: () => void;
   /** Opens the warm-reach drawer (people going quiet + banked decisions). */
   onOpenWarmReach?: () => void;
@@ -36,7 +36,7 @@ export function BrandBar({ onDropContact, onOpenWarmReach, notifCount = 0 }: Bra
   }, [preferences?.theme]);
 
   const toggleTheme = () => {
-    // Read the ACTUAL current theme from the DOM rather than local state — state
+    // Read the ACTUAL current theme from the DOM rather than local state - state
     // could lag the async theme application, which made the first tap a no-op.
     const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     haptics.tap();
@@ -65,7 +65,7 @@ export function BrandBar({ onDropContact, onOpenWarmReach, notifCount = 0 }: Bra
               className="navbtn"
               style={{ position: 'relative' }}
               onClick={() => { haptics.tap(); onOpenWarmReach(); }}
-              aria-label={notifCount > 0 ? `Warm reach — ${notifCount} waiting` : 'Warm reach'}
+              aria-label={notifCount > 0 ? `Warm reach - ${notifCount} waiting` : 'Warm reach'}
             >
               <Bell size={16} />
               {notifCount > 0 && <span className="navbadge">{notifCount > 9 ? '9+' : notifCount}</span>}
@@ -88,7 +88,7 @@ export const circleCss = `
 /* Invariant: the locked shell is sized only by .app-frame (height = visible
    viewport). Pin min-height:0 so no inherited rule can ever force it taller than
    the viewport and push the bottom tab bar below the fold. Belt-and-suspenders
-   now that .thx itself carries no sizing — kept as a guardrail against regressions. */
+   now that .thx itself carries no sizing - kept as a guardrail against regressions. */
 .thx.app-frame { min-height:0; }
 /* bottom tab bar */
 .thx .tabbar { flex:0 0 auto; display:flex; align-items:stretch; border-top:1px solid ${C.line}; background:${C.bg}; padding-bottom:max(env(safe-area-inset-bottom), 8px); }

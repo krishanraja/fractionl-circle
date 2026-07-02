@@ -14,7 +14,7 @@ export default function Terms() {
         </Button>
         <h1 className="text-2xl font-bold mb-1">Terms of use</h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Fractionl Circle — last updated May 2026
+          Fractionl Circle - last updated May 2026
         </p>
         <div className="space-y-4 text-sm text-foreground leading-relaxed">
           <p>

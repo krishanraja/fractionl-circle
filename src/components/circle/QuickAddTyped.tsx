@@ -65,7 +65,7 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        placeholder="Anything else you remember (optional) — role, where you met, why they matter…"
+        placeholder="Anything else you remember (optional) - role, where you met, why they matter…"
         rows={3}
       />
       <TagChips tags={tags} onChange={setTags} context={{ name, notes }} />

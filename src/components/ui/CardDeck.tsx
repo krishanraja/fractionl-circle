@@ -94,7 +94,7 @@ export function CardDeck<T>({
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      {/* Card stage — the only flexible area; one card fills it. */}
+      {/* Card stage - the only flexible area; one card fills it. */}
       <div className="relative min-h-0 flex-1">
         <AnimatePresence initial={false} custom={dir} mode="popLayout">
           <motion.div
@@ -115,7 +115,7 @@ export function CardDeck<T>({
         </AnimatePresence>
       </div>
 
-      {/* Controls — dots + chevrons. Hidden entirely for a single card. */}
+      {/* Controls - dots + chevrons. Hidden entirely for a single card. */}
       {count > 1 && (
         <div className="mt-3 flex shrink-0 items-center justify-between gap-3">
           <button

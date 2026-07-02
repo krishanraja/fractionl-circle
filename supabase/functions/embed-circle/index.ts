@@ -5,7 +5,7 @@ import { backfillEmbeddings } from '../_shared/circleEmbed.ts';
 // embed-circle: on-demand embedding for the signed-in user's circle. Backfills the
 // people whose profile blob is new or has drifted (e.g. just after enrichment) so
 // semantic search can reach them. Bounded per call; the nightly cron sweeps the rest.
-// Returns { embedded } — 0 is normal (nothing stale, or no embeddings provider set).
+// Returns { embedded } - 0 is normal (nothing stale, or no embeddings provider set).
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);

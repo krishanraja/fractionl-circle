@@ -35,7 +35,7 @@ const MODE = SECRET.startsWith('sk_live_') ? 'LIVE' : 'TEST';
 const PRODUCTS = [
   {
     slug: 'operator',
-    name: 'Circle — Operator',
+    name: 'Circle - Operator',
     description: 'Help me run. Up to 3 Streams, 3 Matches a day, inbox + calendar, Sunday Letter text.',
     tierEnum: 'pro',
     prices: [
@@ -46,7 +46,7 @@ const PRODUCTS = [
   },
   {
     slug: 'chief_of_staff',
-    name: 'Circle — Chief of Staff',
+    name: 'Circle - Chief of Staff',
     description: 'Help me scale. Unlimited Streams, Sunday Letter audio, external signal feeds, priority compute.',
     tierEnum: 'executive',
     prices: [

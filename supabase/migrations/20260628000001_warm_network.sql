@@ -1,7 +1,7 @@
 -- Network warmth + reminders (the "keep your circle warm" slice).
 --
 -- 1. recompute_circle_warmth(): a set-based, deterministic recompute of every
---    circle_person.warmth from facts the app already owns — recency of last
+--    circle_person.warmth from facts the app already owns - recency of last
 --    interaction, response_rate, and whether the person has a recent signal.
 --    No LLM, no per-row round trips. Called nightly by the compute-warmth edge
 --    function (service role) right after the Google/Microsoft sync refreshes

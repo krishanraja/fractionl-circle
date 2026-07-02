@@ -1,4 +1,4 @@
-// Credit-pack catalogue — the one-time top-ups that fund max-effort enrichment, on
+// Credit-pack catalogue - the one-time top-ups that fund max-effort enrichment, on
 // top of the subscription. Mirrors src/lib/tiers.ts: price labels + Stripe price-ID
 // env vars live here as the single client source of truth.
 //
@@ -20,7 +20,7 @@ export interface CreditPack {
 }
 
 // Live one-time price IDs on the Fractionl AI Stripe account. Stripe price IDs are
-// public (they ride along in client-side checkout), so we ship them as defaults —
+// public (they ride along in client-side checkout), so we ship them as defaults -
 // the buy flow works out of the box, and the VITE_* envs still override if set.
 export const CREDIT_PACKS: CreditPack[] = [
   { slug: 'starter', name: 'Starter', credits: 120,  priceLabel: '$15',  priceIdEnv: 'VITE_STRIPE_CREDITS_STARTER_PRICE_ID', priceId: 'price_1ToNxiHdk8IR8OrUg0569WYD', highlighted: false },

@@ -5,7 +5,7 @@
 // decision that raises the strength score on the next read.
 //
 // Two registers:
-//  - inline (default): quiet — renders nothing until there's something to ask,
+//  - inline (default): quiet - renders nothing until there's something to ask,
 //    so it never intrudes on the read / journey screens.
 //  - focus (the "Make it stronger" screen, where the question is the centrepiece):
 //    it OWNS a stable slot. It shows a skeleton of the same height while the AI
@@ -16,7 +16,7 @@ import { getNextQuestion, saveThesisAnswer, type NextQuestion } from './thesisDa
 
 export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
   onAnswered?: () => void;
-  topic?: string; // a journey move's title/why — biases the question toward that move
+  topic?: string; // a journey move's title/why - biases the question toward that move
   focus?: boolean; // occupy a stable slot (skeleton + resting state) instead of staying quiet
 }) {
   const [q, setQ] = useState<NextQuestion | null>(null);
@@ -83,7 +83,7 @@ export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
       return (
         <div className="spk spk-done">
           <span className="spk-doneicon">✓</span>
-          <span>Sharp for now — {streak} decision{streak === 1 ? '' : 's'} banked. See how it lands again to lock the gains in.</span>
+          <span>Sharp for now - {streak} decision{streak === 1 ? '' : 's'} banked. See how it lands again to lock the gains in.</span>
         </div>
       );
     }
@@ -93,7 +93,7 @@ export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
         <span className="spk-doneicon">✓</span>
         <span>
           {streak > 0
-            ? `Sharp for now — ${streak} decision${streak === 1 ? '' : 's'} banked. See how it lands again to lock the gains in.`
+            ? `Sharp for now - ${streak} decision${streak === 1 ? '' : 's'} banked. See how it lands again to lock the gains in.`
             : "You're sharp here for now. Add a bit more signal below, then see how it lands."}
         </span>
       </div>

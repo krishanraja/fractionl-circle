@@ -30,7 +30,7 @@ export function canonicalLinkedIn(input: string | null | undefined): string | nu
     /linkedin\.com\/pub\/([^/?#\s]+)/i,
   ]);
   if (slug) return `https://www.linkedin.com/in/${slug}`;
-  // Raw slug like "jenna-park" or "@jenna-park" — LinkedIn accepts them at /in/.
+  // Raw slug like "jenna-park" or "@jenna-park" - LinkedIn accepts them at /in/.
   if (/^[a-z0-9_-]+$/i.test(trimmed.replace(/^@+/, ''))) {
     return `https://www.linkedin.com/in/${cleanHandle(trimmed)}`;
   }
@@ -108,7 +108,7 @@ export function handleForPlatform(
     const v = canonicalX(candidate);
     return v ? { x: v } : {};
   }
-  // No platform supplied — infer from URL if we can.
+  // No platform supplied - infer from URL if we can.
   return inferHandlesFromUrl(candidate);
 }
 

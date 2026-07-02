@@ -1,7 +1,7 @@
 # Fractionl
 
 **Two halves in one mobile-first app for people building a business off their network.**
-**Circle** is your warm network — the people who can help you sell. **Plan** reads the live
+**Circle** is your warm network - the people who can help you sell. **Plan** reads the live
 market against what you want to offer and shows where you stand (a strength score 0–100 with
 banded, evidence-backed signals) plus your next moves.
 

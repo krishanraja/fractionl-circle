@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
         .eq('user_id', user.id);
     }
 
-    // Create Checkout Session — a one-time payment for a credit pack, or the
+    // Create Checkout Session - a one-time payment for a credit pack, or the
     // recurring subscription. The webhook reads metadata.credit_pack to grant credits.
     const session = isCredits
       ? await stripeRequest('/checkout/sessions', {

@@ -242,7 +242,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     try {
       const ok = await subscribePush();
       if (ok) {
-        toast.success("You're set — we'll ping you when something's waiting.");
+        toast.success("You're set - we'll ping you when something's waiting.");
       } else {
         toast.error('Allow notifications in your browser to enable this.');
       }
@@ -499,7 +499,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
               onBlur={() => void savePositioning()}
             />
             <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
-              Optional. Your LinkedIn headline, in one line — we use it to flavor AI suggestions.
+              Optional. Your LinkedIn headline, in one line - we use it to flavor AI suggestions.
             </p>
           </div>
 
@@ -618,7 +618,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Goal reminders"
-            description="Surfaces what's waiting for you — in the app and by email"
+            description="Surfaces what's waiting for you - in the app and by email"
           >
             <Switch
               checked={preferences?.goal_reminders ?? true}

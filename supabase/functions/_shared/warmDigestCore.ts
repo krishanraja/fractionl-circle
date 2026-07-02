@@ -3,7 +3,7 @@
 // touch for each. Shared by warm-digest (on-demand preview, user JWT) and
 // cron-warm-digest (weekly delivery, service role) so both speak with one brain.
 //
-// It does NOT send anything and writes nothing — selection + drafting only. The
+// It does NOT send anything and writes nothing - selection + drafting only. The
 // caller decides how to deliver (email, push, in-app).
 
 // deno-lint-ignore-file no-explicit-any
@@ -13,7 +13,7 @@ import { loadProfileContext, profilePromptBlock } from './profileContext.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from './aiPersonality.ts';
 import { backfillEmbeddings, vecToStr } from './circleEmbed.ts';
 
-// A person must have gone at least this quiet to be worth a nudge — below this
+// A person must have gone at least this quiet to be worth a nudge - below this
 // they were contacted recently and a reminder would just be nagging.
 const COOL_DAYS = 30;
 // Only people who were genuinely warm are worth resurfacing.
@@ -122,7 +122,7 @@ const SYSTEM = `You are a fractional executive's chief of staff. They have a han
 For EACH person return:
 - "why_now": one tight sentence, addressed to the user, on why now is the moment to reach out. Ground it in a real fact you are given (how long it has been, their title/company, or a recent signal). Never invent an event.
 - "subject": a short, human email subject. No marketing tone.
-- "message": a short draft (3 to 5 sentences) the user could send almost as-is. Warm, specific, in a senior peer's voice. Open with their first name. Reference the real relationship or a given fact. Make a light, concrete ask (a catch-up, a quick call). NEVER invent meetings, projects, mutual friends, or news that you were not given. If you have little to go on, a genuine "it has been too long, I'd love to reconnect" is correct — do not manufacture specifics.
+- "message": a short draft (3 to 5 sentences) the user could send almost as-is. Warm, specific, in a senior peer's voice. Open with their first name. Reference the real relationship or a given fact. Make a light, concrete ask (a catch-up, a quick call). NEVER invent meetings, projects, mutual friends, or news that you were not given. If you have little to go on, a genuine "it has been too long, I'd love to reconnect" is correct - do not manufacture specifics.
 
 Return ONLY JSON: { "people": [ { "id": string, "why_now": string, "subject": string, "message": string } ] }
 Use each person's exact id. Plain language, no jargon, no em dashes.`;
@@ -133,7 +133,7 @@ Use each person's exact id. Plain language, no jargon, no em dashes.`;
 const CONTEXT_SYSTEM = `You are a fractional executive's chief of staff. The user is pushing ONE specific move forward for their business idea, and you are given a shortlist of REAL people from their network who best fit that idea (matched on their profile). Write each one a short, warm reach-out about THIS idea.
 
 You are given the user's idea and their current move. For EACH person return:
-- "why_fit": one tight sentence, addressed to the user, on why THIS person is worth reaching for THIS idea/move — ground it in a real fact about them (their title, company, or background). This is about fit to the idea, NOT how long it has been.
+- "why_fit": one tight sentence, addressed to the user, on why THIS person is worth reaching for THIS idea/move - ground it in a real fact about them (their title, company, or background). This is about fit to the idea, NOT how long it has been.
 - "subject": a short, human email subject tied to the idea. No marketing tone.
 - "message": a short draft (3 to 5 sentences) reaching out about this specific idea/move. Warm, specific, in a senior peer's voice. Open with their first name. Reference a real fact about them and why they came to mind for this. Make a light, concrete ask (a quick call about the idea, their read on it, or an intro). NEVER invent meetings, projects, mutual friends, or news you were not given.
 
@@ -155,7 +155,7 @@ async function selectByRelevance(
   now: number,
   context: DigestContext,
 ): Promise<Ranked[] | null> {
-  const queryText = [context.thesis, context.move].filter(Boolean).join(' — ').trim();
+  const queryText = [context.thesis, context.move].filter(Boolean).join(' - ').trim();
   if (!queryText) return null;
   try { await backfillEmbeddings(supabase, { userId, limit: 40 }); } catch (_e) { /* best-effort */ }
   const vecs = await embed([

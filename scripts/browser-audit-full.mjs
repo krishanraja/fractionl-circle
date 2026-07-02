@@ -1,5 +1,5 @@
 /**
- * Full production audit — AUDIT_EMAIL, AUDIT_PASSWORD, optional VERCEL_TOKEN
+ * Full production audit - AUDIT_EMAIL, AUDIT_PASSWORD, optional VERCEL_TOKEN
  */
 import { chromium, devices } from 'playwright';
 import { writeFileSync } from 'fs';

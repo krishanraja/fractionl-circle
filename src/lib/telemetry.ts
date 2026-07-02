@@ -3,7 +3,7 @@
 // Sentry (or equivalent) is wired, only this file needs to change.
 //
 // Why this shape:
-//   - One reportError() signature — no divergent call sites when the
+//   - One reportError() signature - no divergent call sites when the
 //     telemetry provider lands.
 //   - Context is a plain object so it can be serialised.
 //   - The function never throws; telemetry failures must never cascade
@@ -22,9 +22,9 @@ export function reportError(error: unknown, context: ErrorContext = {}): void {
 
     console.error('[telemetry]', payload);
 
-    // Sentry hook point — install @sentry/react and call
+    // Sentry hook point - install @sentry/react and call
     // Sentry.captureException(error, { extra: context }) here when ready.
   } catch {
-    // Swallow — never let the reporter break the app.
+    // Swallow - never let the reporter break the app.
   }
 }

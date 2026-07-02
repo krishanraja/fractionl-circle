@@ -40,8 +40,8 @@ Deno.serve(async (req) => {
     if (!read) return new Response(JSON.stringify({ people: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
     // Anchor the ranking to the user's declared practice (role, positioning,
-    // stages, verticals) — the same profile envelope the match engine and idea
-    // extraction use — so the network filter and the profile share one brain.
+    // stages, verticals) - the same profile envelope the match engine and idea
+    // extraction use - so the network filter and the profile share one brain.
     const profile = await loadProfileContext(supabase, userId);
 
     // Re-read the network fresh (stateless). Prefilter by warmth/recency to a small set.

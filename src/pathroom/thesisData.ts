@@ -4,6 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Scorecard } from './thesisViews';
 import { judgeLocal, type Verdict, type JudgeKind } from './thesisJudge';
 
+// Belt-and-suspenders: strip any em dash the model slips into user-facing text
+// (the prompts already ask for none), so the product never shows one. Deep-cleans
+// every string in the object in one pass.
+const EM_DASH = new RegExp(String.fromCharCode(0x2014), 'g');
+function stripEmDash<T>(v: T): T {
+  try { return JSON.parse(JSON.stringify(v).replace(EM_DASH, '-')); } catch { return v; }
+}
+
 export interface RunFull { id: string; result: Scorecard; stepProgress: number[]; thesis: string; background: string }
 
 // The latest saved run, with its id, the thesis/background that produced it, and step
@@ -74,7 +82,7 @@ export interface MarketPulse {
   role: {
     key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null;
     rank?: number | null; total?: number | null; // rank by demand among the tracked roles
-    insight?: string | null; // this-week human read, e.g. "124 jobs — below market average"
+    insight?: string | null; // this-week human read, e.g. "124 jobs - below market average"
   } | null;
   rising: string | null; // kept: the single top theme label (back-compat)
   // The eye-catching metric rail: value + a real 30-day arrow (delta) + a strategic
@@ -92,7 +100,7 @@ export async function getMarketPulse(thesis: string): Promise<MarketPulse | null
   try {
     const { data, error } = await supabase.functions.invoke('market-pulse', { body: { thesis } });
     if (error) throw error;
-    return data as MarketPulse;
+    return stripEmDash(data as MarketPulse);
   } catch { return null; }
 }
 
@@ -106,7 +114,7 @@ export async function getCircleCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
-// People you've actually spoken to, but not in 30+ days — the honest "going quiet"
+// People you've actually spoken to, but not in 30+ days - the honest "going quiet"
 // signal (people never contacted, e.g. raw CSV rows, are deliberately excluded so
 // we never nag about strangers). Powers the return surface.
 export async function getGoingQuietCount(userId: string): Promise<number> {
@@ -120,8 +128,8 @@ export async function getGoingQuietCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
-// The actual people behind getGoingQuietCount — spoken to before, but quiet for
-// 30+ days — with the fields the warm-reach drawer needs to offer one-tap reach.
+// The actual people behind getGoingQuietCount - spoken to before, but quiet for
+// 30+ days - with the fields the warm-reach drawer needs to offer one-tap reach.
 // Warmest first, so the most worth-saving relationships surface at the top. Never
 // includes never-contacted rows (last_interaction_at is null), so we never nag
 // strangers. RLS scopes to the owner.
@@ -220,7 +228,7 @@ export async function getWarmDigest(context?: ReachContext): Promise<ReachPerson
   const { data, error } = await supabase.functions.invoke('warm-digest', { body });
   if (error) throw error;
   const d = data as { people?: ReachPerson[] } | null;
-  return Array.isArray(d?.people) ? d!.people! : [];
+  return stripEmDash(Array.isArray(d?.people) ? d!.people! : []);
 }
 
 // The proactive sharpen question: the single highest-leverage thing to decide
@@ -243,7 +251,7 @@ export async function getNextQuestion(focus?: string): Promise<NextQuestion | nu
     const { data, error } = await supabase.functions.invoke('next-question', { body });
     if (error) throw error;
     const d = data as NextQuestion | null;
-    return d?.question ? d : null;
+    return d?.question ? stripEmDash(d) : null;
   } catch {
     return null;
   }
@@ -258,7 +266,7 @@ export async function saveThesisAnswer(a: { run_id: string | null; dimension: st
   if (error) throw error;
 }
 
-// How many answers are banked but not yet folded into a read — the provisional
+// How many answers are banked but not yet folded into a read - the provisional
 // score lift the user has earned but not locked in.
 export async function getUnrunAnswerCount(userId: string): Promise<number> {
   const { count } = await supabase

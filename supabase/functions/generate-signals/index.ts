@@ -8,9 +8,9 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '
 // (person, kind, recent window).
 //
 // Sources:
-//   1. Warmth-decay  — circle_person whose last_interaction_at is older than
+//   1. Warmth-decay  - circle_person whose last_interaction_at is older than
 //      WARMTH_DECAY_DAYS but who are linked to an active match (going cold).
-//   2. Mention        — explicit "reconnect / follow up / should talk to <name>"
+//   2. Mention        - explicit "reconnect / follow up / should talk to <name>"
 //      intentions parsed from the user's recent Sunday Letters. (ai_conversations
 //      is a legacy single-tenant table locked to 'default_user' RLS, so it is NOT
 //      a valid per-user source and is intentionally skipped.)
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     // Two cohorts go cold and both deserve a touch:
     //   (a) anyone tied to an active match (a live thread that can die), and
     //   (b) anyone who was genuinely warm (warmth >= WARM_FLOOR) and has gone
-    //       quiet, even with no open match — the broad-network case.
+    //       quiet, even with no open match - the broad-network case.
     // Merge them, highest priority / warmth first, dedupe by person, then cap.
     try {
       const staleBefore = daysAgoIso(WARMTH_DECAY_DAYS);

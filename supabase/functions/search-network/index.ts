@@ -6,20 +6,20 @@ import { backfillEmbeddings, vecToStr } from '../_shared/circleEmbed.ts';
 // search-network (v2): the "who can help me with X" half of the Circle box.
 //
 // First CLASSIFY the query: is the user describing their OWN direction
-// ("working_on") — the client then falls back to the existing read+rank loop — or
+// ("working_on") - the client then falls back to the existing read+rank loop - or
 // looking to FIND a person / a kind of person ("find_people")?
 //
 // For a find, retrieve candidates two ways and union them:
-//   • SEMANTIC — pgvector nearest-neighbour over each person's embedded profile, so
+//   • SEMANTIC - pgvector nearest-neighbour over each person's embedded profile, so
 //     "venture fund" reaches "Partner at Sequoia" by meaning, beyond warmth or exact
 //     words. (Embeddings are topped up just-in-time + nightly; see cron-embed-circle.)
-//   • KEYWORD — literal token hits, to catch exact matches the vector may deprioritise.
+//   • KEYWORD - literal token hits, to catch exact matches the vector may deprioritise.
 // When no embeddings provider is configured the semantic half is simply empty and
-// the search degrades to keyword + warmth — never broken.
+// the search degrades to keyword + warmth - never broken.
 //
 // Then LLM-rank the grounded fits. Two degrees, both EVIDENCE-BACKED:
-//   • first  — the person themselves fits the query.
-//   • second — the person is a real, evidence-cited ROUTE to the target (a shared
+//   • first  - the person themselves fits the query.
+//   • second - the person is a real, evidence-cited ROUTE to the target (a shared
 //     employer/school in THEIR OWN history), tagged INFERRED. Never an invented
 //     relationship: every claim must cite a real field or it is dropped.
 // Provider-fallback LLM via _shared/llm.ts.
@@ -57,14 +57,14 @@ Return ONLY JSON: { "people": [ {
 
 Two kinds of match, BOTH grounded in the candidate's own real facts:
 - "first": the candidate THEMSELVES fit the query (they are, or have been, the thing sought).
-- "second": the candidate is a warm ROUTE to the target because THEIR OWN history overlaps it — e.g. they worked at, or studied where, the target sits. This is an inference about a likely connection, never a stated relationship.
+- "second": the candidate is a warm ROUTE to the target because THEIR OWN history overlaps it - e.g. they worked at, or studied where, the target sits. This is an inference about a likely connection, never a stated relationship.
 
 Rules:
 - Pick from the candidates only; use their exact candidate_id.
 - "why": one tight sentence, grounded, addressed to the user. For a "second" match, frame it as a likely route (e.g. "was a Principal at Accel 2018–21, so a warm way into that fund"). NEVER a message to send.
 - "matched_on": the single specific real fact behind the match, short (e.g. "Partner at Accel", "past: Sequoia", "tag: fintech").
 - "evidence": one or more { claim, source } citing the EXACT facts used. "source" must be one of: "title", "company", "tags", "note", "summary", "experience", "education", "skills". Every claim must be supported by the candidate's given data.
-- "confidence": 0..1. Be conservative. A "second" match is inherently uncertain — keep it modest.
+- "confidence": 0..1. Be conservative. A "second" match is inherently uncertain - keep it modest.
 - Do NOT invent employers, roles, relationships, or "they probably know someone" guesses with no cited fact. If a match has no real evidence, drop it.
 - Prefer "first" matches. Include a "second" only when the overlap is concrete and cited.
 - Only include grounded matches. Return an empty array if nothing genuinely fits. At most ${MAX_RESULTS} people, best first.`;
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
       const { content } = await chatJSON({ system: CLASSIFY, user: query, temperature: 0, maxTokens: 60 });
       if (JSON.parse(content)?.intent === 'working_on') intent = 'working_on';
     } catch {
-      // Fail toward find_people — the honest, non-destructive path.
+      // Fail toward find_people - the honest, non-destructive path.
     }
     if (intent === 'working_on') {
       return new Response(JSON.stringify({ intent }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
         return { r, degree, evidence };
       })
       // A second-degree (inferred) match with no cited evidence is exactly the
-      // hallucination we refuse to surface — drop it.
+      // hallucination we refuse to surface - drop it.
       .filter(({ degree, evidence }) => degree === 'first' || evidence.length > 0)
       .slice(0, MAX_RESULTS)
       .map(({ r, degree, evidence }) => {

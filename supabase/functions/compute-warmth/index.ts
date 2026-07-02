@@ -5,8 +5,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 // the set-based SQL function recompute_circle_warmth() (see the warm_network
 // migration): the math lives in Postgres so it is one atomic, fast pass over the
 // whole table rather than thousands of edge round-trips. Scheduled to run right
-// after the Google/Microsoft contact+calendar sync so last_interaction_at — and
-// therefore warmth — is current before the weekly digest reads it.
+// after the Google/Microsoft contact+calendar sync so last_interaction_at - and
+// therefore warmth - is current before the weekly digest reads it.
 //
 // This also closes the loop "lightly": when the nightly sync records a fresh
 // interaction with someone the digest flagged, their recency resets here and

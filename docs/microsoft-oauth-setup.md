@@ -26,7 +26,7 @@ Copy the **Application (client) ID**.
 - **Certificates & secrets** → **New client secret**.
 - Description: `Circle edge fns`.
 - Expires: 24 months (re-issue ahead of expiry).
-- Copy the secret **Value** (not the ID — only shown once).
+- Copy the secret **Value** (not the ID - only shown once).
 
 ## 3. API permissions
 
@@ -46,7 +46,7 @@ Calendars.Read
 Do **not** add `Mail.Read` or any `Mail.*` scope. We deliberately stay out
 of mail bodies (parallel to Google's restricted Gmail scope).
 
-You typically don't need admin consent for these — they're standard user
+You typically don't need admin consent for these - they're standard user
 scopes.
 
 ## 4. Set edge-function secrets
@@ -101,12 +101,12 @@ share that file). Run the new sections that schedule `cron-sync-google` and
 
 ## Troubleshooting
 
-- **`AADSTS500113: No reply address`** — your Redirect URI in step 1 doesn't
+- **`AADSTS500113: No reply address`** - your Redirect URI in step 1 doesn't
   match the SUPABASE_URL the edge function computed. Same project ref.
-- **`AADSTS900561: The endpoint only accepts POST requests`** — happens if
+- **`AADSTS900561: The endpoint only accepts POST requests`** - happens if
   you accidentally browsed the callback URL directly. Normal during
   development.
-- **`unknown_state`** after callback — the one-time state from `oauth_states`
+- **`unknown_state`** after callback - the one-time state from `oauth_states`
   was consumed already or never inserted. Try again from Circle.
-- **Empty results from `/me/contacts`** — the user is on a personal account
+- **Empty results from `/me/contacts`** - the user is on a personal account
   with no Outlook contacts. Calendar may still return events.

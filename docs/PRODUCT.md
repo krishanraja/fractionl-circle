@@ -9,13 +9,13 @@ room) are superseded and live in `docs/_archive/`.*
 This cycle retired the older "Circle CRM" generation (Ideas → Matches → Moves → Streams →
 Sunday Letter) and the academic framing it shipped with. Four changes, each with its WHY:
 
-1. **Plain-language vocabulary** — single source of truth `src/pathroom/copy.ts`. User-facing
+1. **Plain-language vocabulary** - single source of truth `src/pathroom/copy.ts`. User-facing
    renames: the **Deep dive** tab → **Plan**; **thesis** → **your idea / what you want to
    offer**; **validate / run the deep dive** → **see how it lands**; **the read / scorecard** →
    **where you stand**; **sharpen** → **make it stronger**. The **Circle** tab keeps its name.
    *Why:* the old terms ("thesis", "deep dive", "validate") read as intellectual and smart-ass;
    the product must feel approachable, warm, and simple to a time-poor business leader. (Code
-   symbols — files, types, table names — still say "thesis" internally; only what the user
+   symbols - files, types, table names - still say "thesis" internally; only what the user
    reads changed.)
 2. **Gated, grounded first-run onboarding** (`src/pathroom/StartHere.tsx`). A brand-new user
    (no saved plan) is held in a warm "Start here" that unlocks **See how it lands** only after
@@ -24,7 +24,7 @@ Sunday Letter) and the academic framing it shipped with. Four changes, each with
    their objective (stream-of-consciousness accepted). *Why:* a one-box "type an idea → AI
    report" reads as a generic LLM wrapper; a small amount of uniquely-theirs input is healthy
    friction that grounds the output in the user's real network, taste, and goal.
-3. **Re-engagement** — an in-app return surface plus a dormant weekly email + web-push sweep.
+3. **Re-engagement** - an in-app return surface plus a dormant weekly email + web-push sweep.
    *Why:* give returning users a concrete reason to come back, computed from data we already
    have, and wire the dead `goal_reminders` flag to real behavior.
 4. **Legacy removal (the "no patchwork" cleanup).** Deleted the dead Today/layout/navigation
@@ -37,15 +37,15 @@ Sunday Letter) and the academic framing it shipped with. Four changes, each with
 
 Two halves in one mobile-first app (`src/pathroom/CircleApp.tsx`), so both read as one app:
 
-- **Circle** — your warm network: the people who can help you sell, kept warm over time.
-- **Plan** — reads the live market against what you want to offer and shows **where you
+- **Circle** - your warm network: the people who can help you sell, kept warm over time.
+- **Plan** - reads the live market against what you want to offer and shows **where you
   stand** (a strength score 0–100 with banded, evidence-backed signals) plus your next moves.
 
 It is not an answer machine. The value is the opposite of a glib AI reply: it goes and
 checks, it is honest about what it cannot confirm, and it turns a scary idea into moves you
 can start. Two things keep it from being a one-shot report: (1) a **make-it-stronger coach**
 that, at the right moments, asks the single highest-leverage question framed as a decision you
-tap — pushing a **strength score toward 100**; (2) the **Circle** that turns the abstract
+tap - pushing a **strength score toward 100**; (2) the **Circle** that turns the abstract
 "reach out to your network" into named people with ready-to-send drafts, kept warm over time.
 
 Live at `circle.fractionl.ai`. Signed in, a returning user lands in the two-tab shell
@@ -57,12 +57,12 @@ Live at `circle.fractionl.ai`. Signed in, a returning user lands in the two-tab 
 `CircleApp` calls `getRunCount(userId)` and, when it is `0`, renders `StartHere` instead of the
 two-tab shell. The gate holds the user until they supply all three of:
 
-- **A bit about you** — who you want to sell to, why you, and your objective/ideas (plain words;
+- **A bit about you** - who you want to sell to, why you, and your objective/ideas (plain words;
   a stream of consciousness is fine).
-- **Your people** — at least **10** in your circle (`MIN_PEOPLE = 10`), reachable fast via the
+- **Your people** - at least **10** in your circle (`MIN_PEOPLE = 10`), reachable fast via the
   Add-to-Circle / Add-source sheets: screenshot, paste a list, LinkedIn CSV, CRM/sheet, or an
-  instant Google/Microsoft contacts sync — so the 10-person gate is never a wall.
-- **A business you admire** — at least **1**, typed or read from a screenshot (`extract-admire`).
+  instant Google/Microsoft contacts sync - so the 10-person gate is never a wall.
+- **A business you admire** - at least **1**, typed or read from a screenshot (`extract-admire`).
 
 The brand mark (`EmberNav`) brightens as each input goes in; **See how it lands** is disabled
 until all three are done. *Why the friction:* these three are exactly the inputs the read is
@@ -70,8 +70,8 @@ grounded in, so the friction buys real, non-generic value instead of reading as 
 wrapper. On unlock it runs the live read once and hands off to the **Plan** tab.
 
 **Persistence (no migration).** The typed about-you is mirrored to `localStorage`
-(`fr_about_<userId>`) so connecting Google/Microsoft contacts — which leaves and returns to the
-app via an OAuth redirect — never loses what a time-poor user typed; it is cleared on a
+(`fr_about_<userId>`) so connecting Google/Microsoft contacts - which leaves and returns to the
+app via an OAuth redirect - never loses what a time-poor user typed; it is cleared on a
 successful run. On run, `saveAboutYou` writes into existing `user_profiles` identity columns
 (`target_buyer`, `positioning`, `first_run_transcript`) and `markFirstRunComplete` stamps
 `onboarding_completed` / `onboarding_completed_at` / `first_run_completed_at`. All best-effort:
@@ -119,7 +119,7 @@ orchestrator; the **Plan** tab hosts it.)
 6. **The living journey map (action-first).** The path to first retained client as a timeline,
    with the circle woven in: the warm-network move (the biggest lever) shows the real faces it
    touches and lights up as you add people. The primary button **performs** the current move,
-   it does not just mark it complete — the warm-reach step opens **Reach out** (the named
+   it does not just mark it complete - the warm-reach step opens **Reach out** (the named
    people with pre-written drafts, one tap to email/LinkedIn; see below), offer/positioning
    steps open the make-it-stronger screen; "mark this move done" is a secondary link. Step
    tracking persists (`thesis_runs.step_progress`); a weak read does not pretend, it pivots to
@@ -137,8 +137,8 @@ orchestrator; the **Plan** tab hosts it.)
    warm reach"), not as a dead-end.
 9. **Home (the command center).** A returning user with a saved plan lands here inside the Plan
    tab, not back in the linear flow. It is the living state of your one venture: the
-   **strength-score orb** (the 0–100 number, with a one-line "what's holding you back" — your
-   weakest dimension — and any pending lift from banked decisions), the **make-it-stronger
+   **strength-score orb** (the 0–100 number, with a one-line "what's holding you back" - your
+   weakest dimension - and any pending lift from banked decisions), the **make-it-stronger
    coach** (the daily question; see below), a **live market-movement instrument fed by
    fractionl-pulse** (your role's demand and the overall Fractional Working Index, with
    this-week deltas, plus a rising topic), and the permanent icon'd sections you navigate:
@@ -153,28 +153,28 @@ the **return surface** (`ReturnSurface.tsx`): the in-app "what's waiting for you
 entirely from data we already have (no new backend). It shows the single most important hook
 with one tap back into the Plan:
 
-- **People going quiet** — circle people you have actually spoken to but not in 30+ days
+- **People going quiet** - circle people you have actually spoken to but not in 30+ days
   (`circle_person.last_interaction_at` older than 30 days; people never contacted, e.g. raw CSV
   rows, are deliberately excluded so we never nag about strangers). `getGoingQuietCount`.
-- **Banked decisions to fold in** — make-it-stronger answers not yet applied
+- **Banked decisions to fold in** - make-it-stronger answers not yet applied
   (`thesis_answers.applied_at is null`). `getUnrunAnswerCount`.
 
 It is honest: it renders nothing when there is nothing genuinely waiting, and it is gated by
 `user_preferences.goal_reminders` (opt-out, default on; only an explicit `false` silences it).
 *Why:* give returning users a concrete reason to come back, and wire the `goal_reminders`
-toggle — which previously controlled nothing — to real behavior.
+toggle - which previously controlled nothing - to real behavior.
 
 **Nav restructure (2026-07-01).** The Circle home was reorganised so the two most important
 things are always in reach and the page leads with action:
 
 - **Drop a contact is pinned in the top nav** (`BrandBar` in `circleChrome.tsx`, amber `.navcta`
-  pill) — the app's most important action, one tap from anywhere on the tab.
+  pill) - the app's most important action, one tap from anywhere on the tab.
 - **Warm reach moved into a nav bell + drawer.** The bell carries a badge (going-quiet + banked,
-  still gated by `goal_reminders`); tapping it opens `WarmReachDrawer.tsx` — a right-side sheet
+  still gated by `goal_reminders`); tapping it opens `WarmReachDrawer.tsx` - a right-side sheet
   listing the actual people going quiet (each with one-tap `ContactButton` reach, via the new
   `getGoingQuietPeople`) and a banked-decisions link into the Plan. The old inline `ReturnSurface`
   card is retired; its honest logic lives in the drawer.
-- **The box leads the page** — see the next section.
+- **The box leads the page** - see the next section.
 
 ## The make-it-stronger coach + strength score
 
@@ -186,7 +186,7 @@ your own), because the user often needs to decide, not stare at a blank box.
   graded dimensions (band × confidence: low confidence caps how high a dimension can score),
   plus grounded inputs (background, LinkedIn, businesses-admired, circle), plus a small
   provisional lift for banked-but-not-yet-run decisions. It also exposes the **weakest
-  dimension(s)** — exactly what the coach asks about next.
+  dimension(s)** - exactly what the coach asks about next.
 - **The question (`next-question` edge fn).** Finds the weakest dimension and asks the
   highest-leverage question to strengthen it, grounded in the user's idea + profile (reuses
   `chatJSON` + `profilePromptBlock` + `personalitySystemSuffix`). A deterministic per-dimension
@@ -207,7 +207,7 @@ One box at the top of the Circle home (`WorkingOnInput.tsx`) does double duty, a
 
 - **"What are you working on"** → the existing read+rank loop (`extract-read` → `rank-inner-circle`)
   surfaces the few people in your inner circle who matter for your direction.
-- **"Who — or the kind of person — are you looking for"** → a real search over your WHOLE network.
+- **"Who - or the kind of person - are you looking for"** → a real search over your WHOLE network.
 
 Each submission is routed by `runBoxQuery` (`src/lib/theRead.ts`), which calls the new
 **`search-network`** edge function. That function first **classifies intent** (working_on vs
@@ -215,11 +215,11 @@ find_people; when torn it prefers find_people, the non-destructive path), then f
 
 1. **Tops up embeddings just-in-time** (bounded) and retrieves candidates two ways, unioned:
    **semantic** nearest-neighbours via pgvector (`match_circle_persons`, cosine/HNSW over each
-   person's embedded profile — so "venture fund" reaches "Partner at Sequoia" by meaning) and
+   person's embedded profile - so "venture fund" reaches "Partner at Sequoia" by meaning) and
    **keyword** hits (exact matches the vector may deprioritise). Falls back to keyword+warmth when
-   no embeddings provider is configured — never broken.
+   no embeddings provider is configured - never broken.
 2. **LLM-ranks the grounded fits**, two evidence-backed degrees: **first** (the person themselves
-   fits) and **second** (an INFERRED warm route grounded in the person's OWN history — e.g. "was at
+   fits) and **second** (an INFERRED warm route grounded in the person's OWN history - e.g. "was at
    Accel, a warm way into that fund"). Every claim must cite a real field; a second-degree match
    with no cited evidence is dropped, and its confidence is capped. Nothing is invented.
 
@@ -388,13 +388,13 @@ Key ones:
 **Data** (Supabase project `ksyuwacuigshvcyptlhe`, all user-owned + RLS): `thesis_runs`
 (`result` jsonb scorecard + `step_progress` for the journey loop), `thesis_inspiration` (the
 admired businesses that sharpen the edge), `thesis_answers` (decisions from the make-it-stronger
-coach; `applied_at` marks those folded into a read — `null` is a "banked decision" for the
+coach; `applied_at` marks those folded into a read - `null` is a "banked decision" for the
 return surface + re-engagement), `circle_person` (with `warmth`, `last_interaction_at`,
 `response_rate`, `source`/`note`), `push_subscriptions`, `user_preferences` (incl. `warm_digest`
 and `goal_reminders` opt-outs), `user_profiles` (incl. the first-run identity columns
 `target_buyer`, `positioning`, `first_run_transcript`, `onboarding_completed`,
 `onboarding_completed_at`, `first_run_completed_at`, `last_active_at`). The first-run onboarding
-reuses these existing columns — **no migration was added**. Warmth is recomputed by the
+reuses these existing columns - **no migration was added**. Warmth is recomputed by the
 `recompute_circle_warmth()` SQL fn.
 
 **Secrets** (Supabase function secrets): `PERPLEXITY_API_KEY`, `GOOGLE_API_KEY`,
@@ -420,32 +420,32 @@ are set). The legacy `cron-match-engine` and `cron-sunday-letter` schedules were
 
 ## Shipped this cycle (all live)
 
-- **Plain-language vocabulary** — single source of truth `copy.ts`; the Plan tab + the
+- **Plain-language vocabulary** - single source of truth `copy.ts`; the Plan tab + the
   see-how-it-lands / where-you-stand / make-it-stronger naming throughout.
-- **Gated, grounded first-run onboarding** — `StartHere.tsx` (about-you + ≥10 people + ≥1
+- **Gated, grounded first-run onboarding** - `StartHere.tsx` (about-you + ≥10 people + ≥1
   admired business → one live read), persisting into existing `user_profiles` columns with no
   migration; `localStorage` survival across the OAuth contacts-sync redirect.
-- **Re-engagement** — the in-app `ReturnSurface` on the Circle landing (people going quiet +
+- **Re-engagement** - the in-app `ReturnSurface` on the Circle landing (people going quiet +
   banked decisions, gated by `goal_reminders`) and the dormant weekly `cron-reengage` email +
   web-push sweep (see `docs/reengagement-and-push.md`).
-- **Legacy removal** — the Ideas/Matches/Moves/Streams/Sunday-Letter frontend, hooks, edge
+- **Legacy removal** - the Ideas/Matches/Moves/Streams/Sunday-Letter frontend, hooks, edge
   functions, `_shared` cores, and cron schedules are gone; `ui/button.tsx` + `ui/progress.tsx`
   aligned to the ember tokens.
-- **Network warmth + weekly digest** — nightly `compute-warmth`, the Monday "keep your circle
+- **Network warmth + weekly digest** - nightly `compute-warmth`, the Monday "keep your circle
   warm" email (Resend) with one-tap `mailto:` drafts + an `.ics` hold + web push, opt-out via
   `user_preferences.warm_digest`.
-- **Action-first Path + Reach out** — the journey's primary button performs the move; the
+- **Action-first Path + Reach out** - the journey's primary button performs the move; the
   warm step opens `ReachOut` (people + drafts + one-tap email/LinkedIn).
-- **Make-it-stronger coach + strength score** — `sharpness.ts`, `next-question`,
+- **Make-it-stronger coach + strength score** - `sharpness.ts`, `next-question`,
   `thesis_answers`, the `SharpenPrompt` card on Home/Read/Path, and `validate-thesis` folding
   answers into re-reads.
-- **Circle nav restructure** — Drop-a-contact pinned in the top nav (`BrandBar`), warm reach moved
+- **Circle nav restructure** - Drop-a-contact pinned in the top nav (`BrandBar`), warm reach moved
   to a nav bell + `WarmReachDrawer`, and the unified people-finder box leading the page.
-- **Intelligent people-search + semantic engine** — `search-network` (intent routing + pgvector
+- **Intelligent people-search + semantic engine** - `search-network` (intent routing + pgvector
   `match_circle_persons` ∪ keyword + evidence-backed first/second-degree ranking), the
   `_shared/circleEmbed.ts` embedding pipeline (`embed-circle`, `cron-embed-circle`, `embed()` in
   `_shared/llm.ts`), voice input on the box. Migration `20260701120000_person_embeddings.sql`.
-- **Credits + max-effort enrichment** — `credit_balance`/`credit_ledger` + the service-role-only
+- **Credits + max-effort enrichment** - `credit_balance`/`credit_ledger` + the service-role-only
   `grant/spend/refund/clawback` RPCs (migration `20260701130000_credits.sql`), one-time Stripe
   credit packs via `stripe-checkout`/`stripe-webhook`, and `enrich-max` (Perplexity web research,
   spend-before-call, refund-on-failure). Client: `useCredits`, `BuyCreditsSheet`, `creditPacks.ts`,
@@ -463,7 +463,7 @@ are set). The legacy `cron-match-engine` and `cron-sunday-letter` schedules were
 - Ongoing market monitoring (the Pro "re-read over time") is a future build.
 - Network warmth (shipped, Track A): `compute-warmth` + `cron-warm-digest` are
   deployed and scheduled (warmth recompute nightly 07:30 UTC; digest Mondays
-  13:00 UTC). No new secrets were needed — it reuses `RESEND_API_KEY`,
+  13:00 UTC). No new secrets were needed - it reuses `RESEND_API_KEY`,
   `VAPID_*`, `CRON_SECRET`, `OPENAI/LOVABLE`, `APP_URL`. Track B (after the
   Google CASA audit / Microsoft `Mail.Send` consent): graduate the digest action
   from a prefilled `mailto:` + `.ics` hold to native Gmail/Outlook drafts and

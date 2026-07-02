@@ -1,7 +1,7 @@
 // Turns the raw Pulse market data into plain English for a time-poor, non-technical
 // fractional operator. Pure + deterministic (no Date.now, no I/O) so it's easy to test
 // and the drawer stays a dumb renderer. The numbers still exist behind a "see the
-// numbers" toggle — this is the translation layer that leads with meaning.
+// numbers" toggle - this is the translation layer that leads with meaning.
 import type { MarketPulse } from './thesisData';
 
 export type Sentiment = 'good' | 'steady' | 'soft';
@@ -18,7 +18,7 @@ const BAND_BASE: Record<string, string> = {
 
 const key = (label?: string | null): string => (label || '').trim().toLowerCase();
 
-// The 30-day move, in words. A small band around 0 is "holding" — we drop the
+// The 30-day move, in words. A small band around 0 is "holding" - we drop the
 // clause entirely then, since the base level already says it (avoids "steady, and
 // holding steady").
 function trendPhrase(delta: number | null | undefined): string {
@@ -49,7 +49,7 @@ export function marketVerdict(m: MarketPulse['market']): MarketVerdict | null {
 
   const followLine =
     sentiment === 'good' ? 'A good week to be putting yourself out there.'
-    : sentiment === 'soft' ? 'Worth being proactive — lean on warm introductions right now.'
+    : sentiment === 'soft' ? 'Worth being proactive - lean on warm introductions right now.'
     : 'A fine time to keep your name in front of people.';
 
   return { sentence, followLine, sentiment };
@@ -71,7 +71,7 @@ function moveWord(deltaPct?: number | null): string {
 
 export interface RoleVerdict { sentence: string; meaning: string; sentiment: Sentiment }
 
-// "Demand for fractional CMOs is steady — one of the most in-demand roles right now."
+// "Demand for fractional CMOs is steady - one of the most in-demand roles right now."
 // plus a one-line read on what that means for the operator.
 export function roleVerdict(role: MarketPulse['role']): RoleVerdict | null {
   if (!role) return null;
@@ -82,7 +82,7 @@ export function roleVerdict(role: MarketPulse['role']): RoleVerdict | null {
 
   let sentence = `Demand for fractional ${role.label}s is ${base}`;
   if (move) sentence += ` ${move}`;
-  if (rankp) sentence += ` — ${rankp}`;
+  if (rankp) sentence += ` - ${rankp}`;
   sentence += '.';
 
   const rank = BAND_RANK[k] ?? 2;
@@ -93,9 +93,9 @@ export function roleVerdict(role: MarketPulse['role']): RoleVerdict | null {
   else sentiment = 'steady';
 
   const meaning =
-    sentiment === 'good' ? 'A good sign for what you offer — buyers are out there.'
-    : sentiment === 'soft' ? 'Quieter than usual — warm introductions will beat cold outreach.'
-    : 'Steady enough to keep selling — just stay visible.';
+    sentiment === 'good' ? 'A good sign for what you offer - buyers are out there.'
+    : sentiment === 'soft' ? 'Quieter than usual - warm introductions will beat cold outreach.'
+    : 'Steady enough to keep selling - just stay visible.';
 
   return { sentence, meaning, sentiment };
 }

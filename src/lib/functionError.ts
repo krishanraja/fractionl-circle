@@ -24,7 +24,7 @@ export async function readEdgeError(err: unknown): Promise<EdgeErrorBody> {
         return { ...(body as EdgeErrorBody), status: res.status };
       }
     } catch {
-      // Body was not JSON (or already consumed) — fall through to text/message.
+      // Body was not JSON (or already consumed) - fall through to text/message.
     }
     try {
       const text = await res.clone().text();
@@ -45,10 +45,10 @@ export function humanizeEdgeError(body: EdgeErrorBody, fallback: string): string
     return body.message || 'That feature is available on a paid plan.';
   }
   if (code.includes('not configured') || /not configured/i.test(body.message ?? '')) {
-    return "That's on us — your account is fine. We're still finishing this connection. Try a CSV or Quick add for now.";
+    return "That's on us - your account is fine. We're still finishing this connection. Try a CSV or Quick add for now.";
   }
   if (body.status === 429 || code.includes('rate')) {
-    return 'A few too many tries in a row — give it a moment and retry.';
+    return 'A few too many tries in a row - give it a moment and retry.';
   }
   return body.message || fallback;
 }
