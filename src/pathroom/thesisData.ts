@@ -65,10 +65,21 @@ export async function saveInspiration(userId: string, insp: { name: string; posi
 }
 
 export interface MarketPulse {
-  market: { score: number; label: string; delta: number | null } | null;
-  role: { key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null } | null;
-  rising: string | null;
+  market: {
+    score: number; label: string; delta: number | null;
+    emoji?: string | null;
+    scale?: string | null; // human scale legend, e.g. "45-59 Stable"
+    components?: { demand: number | null; supply: number | null; culture: number | null } | null;
+  } | null;
+  role: {
+    key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null;
+    rank?: number | null; total?: number | null; // rank by demand among the tracked roles
+    insight?: string | null; // this-week human read, e.g. "124 jobs — below market average"
+  } | null;
+  rising: string | null; // kept: the single top theme label (back-compat)
+  themes?: { label: string; summary?: string | null; breakout?: boolean }[] | null;
   asOf: string | null;
+  nextUpdate?: string | null; // ISO date/time of the next Pulse refresh
 }
 
 // Live market movement (role-level) from the sister product fractionl-pulse, via the

@@ -41,7 +41,7 @@ export default function Home({ data, stepProgress, circle, fuel, sharp, onStreng
   return (
     <div className="vhome">
       <div className="vhero">
-        <div className="ovl" style={{ textAlign: 'center', marginBottom: 12 }}>Your venture</div>
+        <div className="ovl" style={{ textAlign: 'center', marginBottom: 8 }}>Your venture</div>
         <div className="vorb">
           <div className="vorbglow" />
           <svg className="vorbsvg" viewBox="0 0 100 100">

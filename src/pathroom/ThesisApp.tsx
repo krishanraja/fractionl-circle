@@ -285,7 +285,7 @@ export default function ThesisApp() {
     // single door — press-and-hold the ember mark.
     return frame(
       <>
-        <SharpenPrompt onAnswered={refreshAnswers} />
+        <SharpenPrompt onAnswered={refreshAnswers} focus />
         <SharpenPanel
           thesis={thesisText}
           onAdmire={(d) => extractAdmire(d, thesisText)}
@@ -295,6 +295,7 @@ export default function ThesisApp() {
           cardCount={cardCount}
           linkedinDone={linkedinDone}
           edges={edges}
+          compact
         />
       </>,
       <>
