@@ -197,28 +197,28 @@ export const chromeCss = `
 .thx .navpulse:hover { border-color:${C.accentEdge}; }
 .thx .navpulse-num { font-family:${MONO}; font-size:12px; font-weight:600; color:${C.hi}; font-variant-numeric:tabular-nums; }
 @media (max-width:360px) { .thx .topnav { gap:8px; } .thx .navpulse { padding:0 8px; } }
-.thx .hometile { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:13px; cursor:pointer; margin-top:9px; transition:border-color .2s ease, transform .12s ease; }
-.thx .hometile:hover { border-color:${C.accentEdge}; }
-.thx .hometile:active { transform:translateY(1px); }
-.thx .htk { font-size:14.5px; font-weight:600; color:${C.hi}; }
-.thx .htv { font-size:12.5px; color:${C.mid}; margin-top:3px; line-height:1.4; }
 .thx .htarrow { color:${C.lo}; font-family:${MONO}; flex:0 0 auto; }
 .thx .hticon { width:38px; height:38px; border-radius:10px; background:rgba(224,162,60,0.1); border:1px solid ${C.accentEdge}; display:flex; align-items:center; justify-content:center; color:${C.accent}; flex:0 0 auto; }
-.thx .hometile.deepen { background:linear-gradient(180deg, rgba(224,162,60,0.1), ${C.panel}); border-color:${C.accentEdge}; }
 /* the venture ember orb (charge) on the real command-center Home. Compact on mobile
-   so the hero + the three action tiles + the pinned footer fit one no-scroll viewport;
-   the desktop grid (min-width:900px) restores the larger orb. */
+   so the hero, the quiet links and the pinned footer fit one no-scroll viewport;
+   the desktop block (min-width:900px) restores the larger orb. The whole hero is
+   one tappable button into "where you stand". */
+.thx .vorbbtn { background:none; border:0; padding:0; cursor:pointer; display:block; margin:0 auto; -webkit-tap-highlight-color:transparent; }
+.thx .vorbbtn:active .vorbsvg { transform:scale(0.985); }
 .thx .vorb { position:relative; width:clamp(76px, 19vh, 96px); height:clamp(76px, 19vh, 96px); display:flex; align-items:center; justify-content:center; margin:0 auto; }
 .thx .vorbglow { position:absolute; inset:-26%; border-radius:50%; background:radial-gradient(circle, var(--thx-glow-halo), transparent 65%); filter:blur(var(--thx-glow-halo-blur)); animation:vorbpulse 4.5s ease-in-out infinite; }
 .thx .vorbsvg { position:absolute; inset:0; animation:vorbbreath 4.5s ease-in-out infinite; }
 .thx .vorbcore { position:absolute; top:50%; left:50%; width:30px; height:30px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
 .thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:6px; }
-/* mobile: a tighter gap before the instruments (reset on the desktop grid) */
-.thx .vpanels { margin-top:10px; }
-/* Mobile no-scroll home: fill the framed body and center the hero+tiles so the
-   venture orb, the three action tiles and the pinned footer always fit one
-   viewport without an internal scroll. The desktop grid (min-width:900px) below
-   re-lays this into two regions, so these rules are effectively mobile-only. */
+/* the quiet secondary links row under the hero: read / path / decisions. Small
+   mono, deliberately not tiles - the one orange action lives in the footer. */
+.thx .homelinks { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
+.thx .homelink { background:none; border:0; padding:6px 2px; cursor:pointer; font-family:${MONO}; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.mid}; }
+.thx .homelink:hover { color:${C.accent}; }
+.thx .homelinksep { color:${C.lo}; }
+/* Mobile no-scroll home: fill the framed body and center the hero + links so the
+   venture orb, the quiet links and the pinned footer always fit one viewport
+   without an internal scroll. */
 .thx .thxbody:has(.vhome) > .wrap { min-height:100%; display:flex; flex-direction:column; justify-content:center; padding-top:14px; padding-bottom:14px; }
 @keyframes vorbbreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
 @keyframes vorbpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
@@ -433,9 +433,6 @@ export const chromeCss = `
 .thx .scorepend { font-family:${MONO}; font-size:11px; color:${C.accent}; }
 .thx .scorehold { font-size:12px; color:${C.mid}; margin-top:4px; }
 /* the single, visible door to strengthening - sits right under the score/weakness */
-.thx .strengthencta { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:9px 15px; border-radius:999px; border:1px solid ${C.accent}; background:${C.accent}; color:#1A1206; font-size:12.5px; font-weight:700; cursor:pointer; transition:filter .12s ease, transform .12s ease; }
-.thx .strengthencta:hover { filter:brightness(1.05); }
-.thx .strengthencta:active { transform:translateY(1px); }
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
 /* living + breathing motion, restrained for the quiet-instrument register */
 @keyframes thxrise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
@@ -455,14 +452,13 @@ export const chromeCss = `
   .thx .topnav { padding-left:max(20px, calc((100% - 760px) / 2)); padding-right:max(20px, calc((100% - 760px) / 2)); }
   .thx .thxbody { display:flex; flex-direction:column; justify-content:center; }
   .thx .thxbody > .wrap { max-width:680px; width:100%; margin:0 auto; padding-top:24px; padding-bottom:24px; }
-  .thx .thxbody > .wrap.wrapwide { max-width:920px; }
   .thx .thxfoot { padding-left:0; padding-right:0; }
   .thx .thxfoot .cta, .thx .thxfoot .foothint { max-width:680px; margin-left:auto; margin-right:auto; }
-  /* command-center Home: two regions, orb hero beside the instruments */
-  .thx .vhome { display:grid; grid-template-columns:0.85fr 1.15fr; gap:52px; align-items:center; }
-  .thx .vhome .vpanels { margin-top:0; }
+  /* command-center Home: one centered column, the orb hero large */
+  .thx .vhome { display:flex; flex-direction:column; align-items:center; }
   .thx .vhome .vorb { width:190px; height:190px; }
   .thx .vhome .vorbcore { width:56px; height:56px; }
   .thx .vhome .vorbcap { font-size:11px; margin-top:16px; }
+  .thx .vhome .homelinks { margin-top:26px; }
 }
 `;

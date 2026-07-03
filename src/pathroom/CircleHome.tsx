@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { AddToCircleSheet } from '@/components/circle/AddToCircleSheet';
+import { AddSourceSheet } from '@/components/circle/AddSourceSheet';
 import { CirclePeopleList } from '@/components/circle/CirclePeopleList';
 import WorkingOnInput from './WorkingOnInput';
 import { BrandBar } from './circleChrome';
@@ -18,6 +19,7 @@ export default function CircleHome({ onOpenPlan }: { onOpenPlan?: () => void }) 
   const userId = user?.id;
   const { preferences } = useUserProfile();
   const [addOpen, setAddOpen] = useState(false);
+  const [srcOpen, setSrcOpen] = useState(false);
   const [warmOpen, setWarmOpen] = useState(false);
   const [total, setTotal] = useState(0);
   const [countLoading, setCountLoading] = useState(true);
@@ -81,7 +83,16 @@ export default function CircleHome({ onOpenPlan }: { onOpenPlan?: () => void }) 
         </div>
       </div>
 
-      <AddToCircleSheet open={addOpen} onOpenChange={setAddOpen} onAdded={handleAdded} />
+      {/* The Circle tab owns growing your people: the add sheet plus the bigger
+          source imports (LinkedIn CSV, CRM sheet) that used to live only in
+          onboarding and on the Plan side. */}
+      <AddToCircleSheet
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onAdded={handleAdded}
+        onConnectSourceClick={() => { setAddOpen(false); setSrcOpen(true); }}
+      />
+      <AddSourceSheet open={srcOpen} onOpenChange={setSrcOpen} onIngested={handleAdded} />
       {onOpenPlan && (
         <WarmReachDrawer open={warmOpen} onOpenChange={setWarmOpen} onOpenPlan={onOpenPlan} />
       )}

@@ -135,20 +135,28 @@ orchestrator; the **Plan** tab hosts it.)
    you upload the file when it lands). The circle powers the real warm-reach score and the
    named steps, and is reached in-context from the journey map ("add people to light up your
    warm reach"), not as a dead-end.
-9. **Home (the command center).** A returning user with a saved plan lands here inside the Plan
-   tab, not back in the linear flow. It is the living state of your one venture: the
-   **strength-score orb** (the 0–100 number, with a one-line "what's holding you back" - your
-   weakest dimension - and any pending lift from banked decisions), the **make-it-stronger
-   coach** (the daily question; see below), a **live market-movement instrument fed by
-   fractionl-pulse** (your role's demand and the overall Fractional Working Index, with
-   this-week deltas, plus a rising topic), and the permanent icon'd sections you navigate:
-   **Where you stand** (the read), **Your next customer** (the path), **Your network** (the
-   circle). One evolving plan, deepened daily, not many runs. Two regions on desktop (orb hero
-   beside the instruments), stacked on mobile.
+9. **Home (the command center), laser-focused (2026-07-03).** A returning user with a saved
+   plan lands here inside the Plan tab, not back in the linear flow. It is the living state of
+   your one venture, with exactly ONE orange action: the **tappable strength-score orb** (the
+   0–100 number with the "what's holding you back" line; tap it to open **Where you stand**),
+   ONE **contextual primary action** pinned in the footer (picked by `primaryAction.ts`:
+   genuinely weak - weakest dimension under 60 or a too-thin read - leads to "Make it
+   stronger"; banked decisions waiting lead to "See how it lands again (+N)"; otherwise the
+   current path move with its action-first label, the same words the journey footer repeats,
+   so the action reads continuous across screens), and a **quiet mono links row** (Where you
+   stand · Your path · Your decisions - the decisions link appears once the first decision is
+   banked and opens the decision-log sheet). The market instrument lives behind the nav Pulse
+   pill. People are owned by the Circle tab: the old "Your network" tile is gone, and the
+   in-plan add-people surface remains only as the journey's contextual "add people to light up
+   your warm reach" detour. One evolving plan, one door. Same centered column on desktop,
+   larger orb.
 
 ## The Circle landing + return surface
 
-The **Circle** tab (`CircleHome.tsx`) is the warm-network home and the daily habit. On it sits
+The **Circle** tab (`CircleHome.tsx`) is the warm-network home and the daily habit. As of
+2026-07-03 it fully owns growing your people: the add sheet's "connect a source" row (LinkedIn
+CSV / CRM sheet imports via `AddSourceSheet`, with dedupe/merge) is now reachable here, not
+only during onboarding. On it sits
 the **return surface** (`ReturnSurface.tsx`): the in-app "what's waiting for you", computed
 entirely from data we already have (no new backend). It shows the single most important hook
 with one tap back into the Plan:
@@ -307,8 +315,9 @@ locked user reaches a deep phase.
   comes together. No bare spinners or "loading..." text.
 - Desktop is first-class, not a stretched phone: at >=900px every surface centers into a
   console (the read's two panels sit side by side, content is vertically balanced, the
-  action stays pinned). The command-center Home goes further on desktop (a two-region
-  layout: a large ember-orb hero beside the instruments). See the mock at /preview/cockpit.
+  action stays pinned). The command-center Home keeps the same centered column on desktop
+  with a larger ember-orb hero (2026-07-03; the earlier two-region tile layout is retired -
+  the /preview/cockpit mock predates this).
 
 ## Architecture
 
@@ -327,7 +336,10 @@ locked user reaches a deep phase.
 - `ThesisApp.tsx` - the Plan orchestrator (home, capture, thinking, read, make-it-stronger,
   journey, add-people, gate). (File/type names still say "thesis" internally; the user reads
   the `copy.ts` names.)
-- `Home.tsx` - the Plan home hub / dashboard (returning-user landing; tiles into read/path/circle).
+- `Home.tsx` - the Plan home hub (returning-user landing; tappable score orb + quiet links +
+  the decision-log sheet; the one contextual primary action is pinned by ThesisApp's footer).
+- `primaryAction.ts` - the pure one-orange-action selector (home footer + journey footer speak
+  through it), with the ACTION_BIAS_FLOOR calibration (60): sell before you polish.
 - `CaptureDialogue.tsx` - the guided, gated capture dialogue (returning users / a new idea).
 - `thesisJudge.ts` - the deterministic client fallback for the sufficiency judge (+ types).
 - `SharpenPanel.tsx` - the after-read "make it stronger" panel (admire / card / LinkedIn + re-read).

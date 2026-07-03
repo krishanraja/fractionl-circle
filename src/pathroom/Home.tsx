@@ -1,14 +1,13 @@
-// The command-center Home for your one venture: a living ember orb (charge) + strength
-// score, and the permanent icon'd sections you navigate (Where you are / Your next
-// customer / Your network / Your decisions). One evolving thesis you deepen daily. The
-// market pulse and the make-it-stronger coach now live behind the nav Pulse indicator
-// (EmberNav → PulseDrawer), keeping this body a clean, no-scroll set of actions. Renders
-// inside .thxbody. Two regions on desktop, stacked on mobile.
+// The command-center Home for your one venture, laser-focused: a living, TAPPABLE
+// ember orb (tap it to see where you stand), the strength score, and a quiet row
+// of secondary links (where you stand / your path / your decisions). The ONE
+// orange action lives in the frame's pinned footer, picked contextually by
+// primaryAction.ts - one journey, one door. People are owned by the Circle tab.
+// Renders inside .thxbody.
 import { useState } from 'react';
-import { Compass, ListChecks, Target, Users } from 'lucide-react';
 import { C } from './tokens';
-import type { Scorecard } from './thesisViews';
-import type { CircleP, DecisionEntry } from './thesisData';
+import { PLAN } from './copy';
+import type { DecisionEntry } from './thesisData';
 import { holdingBack, type Sharpness } from './sharpness';
 
 // The visible decision log: institutional memory the user can see. Each entry is a
@@ -64,73 +63,53 @@ function DecisionSheet({ decisions, onMarkOutcome, onClose }: {
   );
 }
 
-export default function Home({ data, stepProgress, circle, fuel, sharp, decisions, onMarkOutcome, onStrengthen, onOpenRead, onOpenPath, onOpenCircle }: {
-  data: Scorecard;
-  stepProgress: number[];
-  circle: CircleP[];
+export default function Home({ fuel, sharp, decisions, onMarkOutcome, onOpenRead, onOpenPath }: {
   fuel: number;
   sharp: Sharpness;
   decisions: DecisionEntry[];
   onMarkOutcome: (id: string, outcome: 'worked' | 'didnt_work' | null) => void;
-  onStrengthen: () => void;
   onOpenRead: () => void;
   onOpenPath: () => void;
-  onOpenCircle: () => void;
 }) {
   const [logOpen, setLogOpen] = useState(false);
-  const opp = data.opportunity || [];
-  const steps = data.steps || [];
-  const oppStrong = opp.filter((r) => r.band === 'strong').length;
-  const oppRisk = opp.some((r) => r.band === 'risk');
-  const done = stepProgress.length;
-  const n = circle.length;
-  const nextStep = steps.find((_, i) => !stepProgress.includes(i));
-  const nd = decisions.length;
-  const latest = decisions[0];
   const r = 44, circ = 2 * Math.PI * r;
-
-  const section = (icon: React.ReactNode, k: string, v: string, onClick: () => void) => (
-    <button className="hometile" key={k} onClick={onClick}>
-      <span className="hticon">{icon}</span>
-      <span style={{ flex: 1, minWidth: 0 }}><span className="htk">{k}</span><div className="htv">{v}</div></span>
-      <span className="htarrow">→</span>
-    </button>
-  );
 
   return (
     <div className="vhome">
       <div className="vhero">
         <div className="ovl" style={{ textAlign: 'center', marginBottom: 8 }}>Your venture</div>
-        <div className="vorb">
-          <div className="vorbglow" />
-          <svg className="vorbsvg" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r={r} fill="none" stroke={C.line2} strokeWidth="5" />
-            <circle cx="50" cy="50" r={r} fill="none" stroke={C.accent} strokeWidth="5" strokeLinecap="round"
-              strokeDasharray={circ} strokeDashoffset={circ * (1 - Math.max(0.04, Math.min(1, fuel)))} transform="rotate(-90 50 50)"
-              style={{ transition: 'stroke-dashoffset .8s ease', filter: 'var(--thx-glow-ring)' }} />
-          </svg>
-          <img src="/brand/fractionl-icon.png" alt="" className="vorbcore" />
-        </div>
-        <div className="vorbcap">
-          <div className="scorewrap" style={{ justifyContent: 'center' }}>
-            <span className="scorenum">{sharp.score}</span>
-            <span className="scoremax">/100 strength</span>
-            {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
+        <button className="vorbbtn" onClick={onOpenRead} aria-label={PLAN.openResult}>
+          <div className="vorb">
+            <div className="vorbglow" />
+            <svg className="vorbsvg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r={r} fill="none" stroke={C.line2} strokeWidth="5" />
+              <circle cx="50" cy="50" r={r} fill="none" stroke={C.accent} strokeWidth="5" strokeLinecap="round"
+                strokeDasharray={circ} strokeDashoffset={circ * (1 - Math.max(0.04, Math.min(1, fuel)))} transform="rotate(-90 50 50)"
+                style={{ transition: 'stroke-dashoffset .8s ease', filter: 'var(--thx-glow-ring)' }} />
+            </svg>
+            <img src="/brand/fractionl-icon.png" alt="" className="vorbcore" />
           </div>
-          <div className="scorehold">{holdingBack(sharp)}</div>
-          <button className="strengthencta" onClick={onStrengthen}>
-            Make it stronger <span className="mono">→</span>
-          </button>
-        </div>
+          <div className="vorbcap">
+            <div className="scorewrap" style={{ justifyContent: 'center' }}>
+              <span className="scorenum">{sharp.score}</span>
+              <span className="scoremax">/100 strength</span>
+              {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
+            </div>
+            <div className="scorehold">{holdingBack(sharp)}</div>
+          </div>
+        </button>
       </div>
 
-      <div className="vpanels">
-        {section(<Compass size={18} />, 'Where you are', opp.length ? `${oppStrong} of ${opp.length} signals strong${oppRisk ? ', crowding flagged' : ''}` : 'where you stand', onOpenRead)}
-        {section(<Target size={18} />, 'Your next customer', nextStep ? `Next: ${nextStep.title}` : (steps.length ? `${done} of ${steps.length} moves done` : 'the path to your first client'), onOpenPath)}
-        {section(<Users size={18} />, 'Your network', n ? `${n} ${n === 1 ? 'person' : 'people'} for warm reach` : 'add people for warm reach', onOpenCircle)}
-        {section(<ListChecks size={18} />, 'Your decisions',
-          nd ? `${nd} locked in · latest: ${latest.answer.length > 46 ? latest.answer.slice(0, 46).trimEnd() + '...' : latest.answer}` : 'answer one question to bank your first',
-          nd ? () => setLogOpen(true) : onStrengthen)}
+      <div className="homelinks">
+        <button className="homelink" onClick={onOpenRead}>{PLAN.resultTitle}</button>
+        <span className="homelinksep">·</span>
+        <button className="homelink" onClick={onOpenPath}>Your path</button>
+        {decisions.length > 0 ? (
+          <>
+            <span className="homelinksep">·</span>
+            <button className="homelink" onClick={() => setLogOpen(true)}>Your decisions</button>
+          </>
+        ) : null}
       </div>
 
       {logOpen ? <DecisionSheet decisions={decisions} onMarkOutcome={onMarkOutcome} onClose={() => setLogOpen(false)} /> : null}

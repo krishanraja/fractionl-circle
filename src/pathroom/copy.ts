@@ -26,6 +26,8 @@ export const PLAN = {
   runShort: 'See how it lands',
   running: 'Reading the market…',
   rerun: 'See how it lands now',
+  /** Rerunning with banked answers waiting. Callers append " (+N)". */
+  rerunAgain: 'See how it lands again',
 
   /** The result of a run. */
   result: 'where you stand',
