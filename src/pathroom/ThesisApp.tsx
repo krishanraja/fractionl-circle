@@ -16,6 +16,7 @@ import { chromeCss, EmberNav, Loader, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
 import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
+import { pickHomeAction, movePrimary } from './primaryAction';
 import ReachOut from './ReachOut';
 import SharpenPrompt from './SharpenPrompt';
 import Home from './Home';
@@ -55,7 +56,6 @@ export default function ThesisApp() {
   const [busyRerun, setBusyRerun] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [runCount, setRunCount] = useState(0);
-  const [circleFrom, setCircleFrom] = useState<'home' | 'journey'>('journey');
   const [market, setMarket] = useState<MarketPulse | null>(null);
   // The market read is a multi-second call (it synthesises the metric insights +
   // strategic trends), so the drawer shows a branded loading state while it's in flight.
@@ -218,7 +218,7 @@ export default function ThesisApp() {
 
   // The framed phases: header + scrolling body + pinned footer action.
   const canHome = !!data && phase !== 'home' && phase !== 'thinking';
-  const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string, wide?: boolean) => (
+  const frame = (body: React.ReactNode, footer: React.ReactNode, hint?: string) => (
     <div className="thx thxframe"><style>{thesisCss + chromeCss}</style>
       <EmberNav
         fuel={fuel} fuels={fuels} hint={hint}
@@ -228,7 +228,7 @@ export default function ThesisApp() {
         onStrengthen={() => openSharpen(null)}
       />
       <div className="thxbody" ref={bodyRef}>
-        <div className={'wrap' + (wide ? ' wrapwide' : '')} key={phase}>
+        <div className="wrap" key={phase}>
           {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginBottom: 12 }}>{err}</div> : null}
           {body}
         </div>
@@ -237,8 +237,10 @@ export default function ThesisApp() {
     </div>
   );
 
+  // addpeople is the journey's contextual sub-flow ("add people for THIS move"),
+  // not a destination of its own - the Circle tab owns browsing and growing people.
   if (phase === 'addpeople' && userId) {
-    return frame(<ThesisCircle userId={userId} onBack={() => { getCircle(userId).then(setCircle).catch(() => {}); setPhase(circleFrom); }} />, null);
+    return frame(<ThesisCircle userId={userId} onBack={() => { getCircle(userId).then(setCircle).catch(() => {}); setPhase('journey'); }} />, null);
   }
 
   if (phase === 'reachout' && data) {
@@ -271,20 +273,31 @@ export default function ThesisApp() {
   }
 
   if (phase === 'home' && data) {
-    // One evolving thesis: the daily action is to deepen it, not start a new validation.
+    // One evolving thesis, one door: the pinned footer carries the single
+    // contextual primary action the chief of staff picked (primaryAction.ts).
+    // When it's a path move, the journey footer repeats the identical words, so
+    // the action reads continuous across the two screens.
+    const js = journeyState(data, circle, stepProgress);
+    const act = pickHomeAction({
+      weakestPct: sharp.weakest[0]?.pct ?? null,
+      unrunAnswers, provisional: sharp.provisional,
+      js, steps: data.steps || [],
+    });
+    const onAct = act.kind === 'sharpen' ? () => openSharpen(null)
+      : act.kind === 'rerun' ? onRerun
+      : () => go('journey');
     return frame(
       <Home
-        data={data} stepProgress={stepProgress} circle={circle} fuel={fuel}
-        sharp={sharp}
+        fuel={fuel} sharp={sharp}
         decisions={decisions}
         onMarkOutcome={onMarkOutcome}
-        onStrengthen={() => openSharpen(null)}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => go('journey')}
-        onOpenCircle={() => { setCircleFrom('home'); go('addpeople'); }}
       />,
-      <button className="cta" onClick={() => go('journey')}><span>Continue your path</span><span className="mono">→</span></button>,
-      undefined, true,
+      <button className="cta" disabled={act.kind === 'rerun' && busyRerun} onClick={onAct}>
+        <span>{act.kind === 'rerun' && busyRerun ? 'reading...' : act.label}</span>
+        <span className="mono">→</span>
+      </button>,
     );
   }
 
@@ -361,22 +374,15 @@ export default function ThesisApp() {
       footer = <button className="foothint" onClick={startAnother}>+ start another plan</button>;
     } else {
       // Action-first: the primary button DOES the current move, it does not just
-      // mark it complete. Marking done is the secondary affordance.
-      const cur = steps[js.current];
-      const t = (cur?.title || '').toLowerCase();
-      let primary: { label: string; onClick: () => void };
-      if (js.warmBlocked) {
-        primary = { label: 'Add people to light up your warm reach', onClick: () => { setCircleFrom('journey'); go('addpeople'); } };
-      } else if (cur?.big || /network|warm|reach|intro|referr|consult|client|prospect|outreach/.test(t)) {
-        primary = { label: 'Reach out now', onClick: () => go('reachout') };
-      } else if (/value|position|offer|edge|differen|prop|pric|message|brand|narrativ|credib/.test(t)) {
-        primary = { label: 'Make this move stronger', onClick: () => openSharpen(`${cur.title}${cur.why ? '. ' + cur.why : ''}`) };
-      } else {
-        primary = { label: 'Work on this move', onClick: () => openSharpen(`${cur.title}${cur.why ? '. ' + cur.why : ''}`) };
-      }
+      // mark it complete (branching lives in primaryAction.ts, shared with the
+      // home footer so both speak the same words). Marking done is secondary.
+      const mp = movePrimary(js, steps);
+      const onPrimary = mp.kind === 'addpeople' ? () => go('addpeople')
+        : mp.kind === 'reachout' ? () => go('reachout')
+        : () => openSharpen(mp.focus);
       footer = (
         <>
-          <button className="cta" onClick={primary.onClick}><span>{primary.label}</span><span className="mono">→</span></button>
+          <button className="cta" onClick={onPrimary}><span>{mp.label}</span><span className="mono">→</span></button>
           {!js.warmBlocked ? <button className="foothint" onClick={() => onMarkDone(js.current)}>I've done this - mark done</button> : null}
         </>
       );

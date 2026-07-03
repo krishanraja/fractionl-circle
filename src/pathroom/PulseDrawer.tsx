@@ -49,6 +49,42 @@ function PulseLoading() {
   );
 }
 
+type ThemeT = NonNullable<MarketPulse['themes']>[number];
+
+// Depth on demand: the stacked cards stay glanceable (clamped previews), and
+// tapping one opens this bottom sheet with the FULL trend - title, summary and
+// your angle, unclamped. Same hand-rolled pattern as Home's DecisionSheet:
+// fixed inset, z-1000 (above the Radix drawer's z-50), backdrop tap closes.
+// Rendered INSIDE SheetContent so backdrop taps never count as "outside" and
+// dismiss the whole drawer.
+function TrendSheet({ t, onClose }: { t: ThemeT; onClose: () => void }) {
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, maxHeight: '72dvh', overflowY: 'auto', background: C.bg, borderTop: `1px solid ${C.line2}`, borderRadius: '14px 14px 0 0', padding: '18px 20px 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span className="ovl" style={{ flex: 1 }}>This week's trend</span>
+          <button className="mono" onClick={onClose} aria-label="Close" style={{ background: 'none', border: 0, color: C.lo, fontSize: 14, cursor: 'pointer' }}>×</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12 }}>
+          <div style={{ flex: 1, fontSize: 17, fontWeight: 600, color: C.hi, lineHeight: 1.3 }}>{t.label}</div>
+          {t.breakout ? <span className="vptrendbadge hot" style={{ flex: '0 0 auto', marginTop: 2 }}>{trendBadge(true)}</span> : null}
+        </div>
+        {t.summary ? (
+          <div style={{ fontSize: 13.5, color: C.mid, lineHeight: 1.55, marginTop: 10 }}>{t.summary}</div>
+        ) : null}
+        {t.angle ? (
+          <div className="vptrendangle" style={{ marginTop: 14, padding: '10px 12px' }}>
+            {/* same box as the card's angle, but the copy is unclamped */}
+            <div style={{ fontSize: 12.5, color: C.hi, lineHeight: 1.5 }}>
+              <span className="vptrendanglek">Your angle</span>{t.angle}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 interface PulseDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -68,6 +104,8 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
   const rv = roleVerdict(market?.role ?? null);
 
   const [seg, setSeg] = useState<'market' | 'trends'>('market');
+  // The trend opened for its full read; resets for free when Radix unmounts the drawer.
+  const [openTheme, setOpenTheme] = useState<ThemeT | null>(null);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -76,6 +114,7 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
         className="thx w-full sm:max-w-md p-0 overflow-hidden flex flex-col"
         style={{ background: 'var(--thx-bg)' }}
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => { if (openTheme) { e.preventDefault(); setOpenTheme(null); } }}
       >
         <SheetTitle className="sr-only">The market this week</SheetTitle>
         <SheetDescription className="sr-only">
@@ -132,25 +171,29 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
                     </div>
                   )
                 ) : themes && themes.length ? (
-                  // All trends stacked, sharing the height equally, no scroll and no swipe.
-                  <div className="vpstack">
-                    {themes.map((t, i) => (
-                      <div key={i} className="vptcard">
-                        <div className="vptcardin">
-                          <div className="vptcardhead">
-                            <div className="vptcardtitle">{t.label}</div>
-                            {t.breakout ? <span className="vptrendbadge hot">{trendBadge(true)}</span> : null}
-                          </div>
-                          {t.summary ? <div className="vptcardsum">{t.summary}</div> : null}
-                          {t.angle ? (
-                            <div className="vptrendangle">
-                              <div className="vptrendanglec"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
+                  // All trends stacked, sharing the height equally, no scroll and no
+                  // swipe. The clamps are a PREVIEW: tap a card for the full read.
+                  <>
+                    <div className="vpstack">
+                      {themes.map((t, i) => (
+                        <div key={i} className="vptcard">
+                          <button className="vptcardin" onClick={() => setOpenTheme(t)} aria-label={`Read the full trend: ${t.label}`}>
+                            <div className="vptcardhead">
+                              <div className="vptcardtitle">{t.label}</div>
+                              {t.breakout ? <span className="vptrendbadge hot">{trendBadge(true)}</span> : null}
                             </div>
-                          ) : null}
+                            {t.summary ? <div className="vptcardsum">{t.summary}</div> : null}
+                            {t.angle ? (
+                              <div className="vptrendangle">
+                                <div className="vptrendanglec"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
+                              </div>
+                            ) : null}
+                          </button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                    <div className="navhint" style={{ flex: '0 0 auto', marginTop: 8, textAlign: 'center' }}>tap a card for the full read</div>
+                  </>
                 ) : (
                   <div className="sub" style={{ marginTop: 14 }}>No standout trends this week - check back after the next refresh.</div>
                 )}
@@ -159,6 +202,8 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
               <div className="navhint vpulsefoot">
                 {asOf ? `Updated ${asOf}` : null}{asOf && next ? ' · ' : ''}{next ? `next check ${next}` : null}
               </div>
+
+              {openTheme ? <TrendSheet t={openTheme} onClose={() => setOpenTheme(null)} /> : null}
             </>
           ) : (
             <div className="sub" style={{ marginTop: 14 }}>
