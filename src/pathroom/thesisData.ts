@@ -258,23 +258,73 @@ export async function getNextQuestion(focus?: string): Promise<NextQuestion | nu
 }
 
 // Persist a decision the user made. validate-thesis folds unapplied answers into
-// the next read, raising the strength score.
-export async function saveThesisAnswer(a: { run_id: string | null; dimension: string; topic: string; question: string; answer: string }): Promise<void> {
+// the next read, raising the strength score; applied answers stay in the log as
+// settled memory every future read builds on. `options` preserves the branches
+// the coach offered, so the log records what was considered, not just chosen.
+export async function saveThesisAnswer(a: { run_id: string | null; dimension: string; topic: string; question: string; answer: string; options?: string[] }): Promise<void> {
   const { error } = await supabase.from('thesis_answers').insert({
     run_id: a.run_id, dimension: a.dimension, topic: a.topic, question: a.question, answer: a.answer,
+    options: a.options?.length ? a.options : null,
   });
   if (error) throw error;
 }
 
+// Record that the user declined a coach question (refresh/dismiss). Best-effort
+// memory so the coach stops re-asking angles the user does not want; skips never
+// count as banked decisions or provisional lift.
+export async function saveSkippedQuestion(a: { run_id: string | null; dimension: string; topic: string; question: string }): Promise<void> {
+  try {
+    await supabase.from('thesis_answers').insert({
+      run_id: a.run_id, dimension: a.dimension, topic: a.topic, question: a.question, answer: '', status: 'skipped',
+    });
+  } catch { /* non-fatal: losing one skip never blocks the coach */ }
+}
+
 // How many answers are banked but not yet folded into a read - the provisional
-// score lift the user has earned but not locked in.
+// score lift the user has earned but not locked in. Skipped questions never count.
 export async function getUnrunAnswerCount(userId: string): Promise<number> {
   const { count } = await supabase
     .from('thesis_answers')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
+    .eq('status', 'answered')
     .is('applied_at', null);
   return count ?? 0;
+}
+
+// The visible decision log: what you decided, when, whether a read has folded it
+// in, and (optionally) how it turned out. Newest first, skips excluded.
+export interface DecisionEntry {
+  id: string;
+  dimension: string | null;
+  topic: string | null;
+  question: string;
+  answer: string;
+  applied_at: string | null;
+  outcome: 'worked' | 'didnt_work' | null;
+  created_at: string;
+}
+
+export async function getDecisionLog(userId: string, limit = 50): Promise<DecisionEntry[]> {
+  const { data } = await supabase
+    .from('thesis_answers')
+    .select('id, dimension, topic, question, answer, applied_at, outcome, created_at')
+    .eq('user_id', userId)
+    .eq('status', 'answered')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  return (data as DecisionEntry[]) ?? [];
+}
+
+// One-tap retrospective on a decision. The outcome colors the settled-decision
+// memory future reads build on (a decision that did not work is weighed, not
+// repeated). Tapping the same outcome again clears it.
+export async function markDecisionOutcome(id: string, outcome: 'worked' | 'didnt_work' | null): Promise<void> {
+  const { error } = await supabase
+    .from('thesis_answers')
+    .update({ outcome, outcome_at: outcome ? new Date().toISOString() : null })
+    .eq('id', id);
+  if (error) throw error;
 }
 
 // Record that the user reached out: stamp last_interaction_at = now so warmth

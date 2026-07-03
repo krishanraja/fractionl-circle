@@ -11,6 +11,9 @@ export interface JourneyT { label: string; finding?: string; source?: string; lo
 export interface Scorecard {
   read: string; from?: string; to?: string;
   opportunity: ScoreRowT[]; ability: ScoreRowT[]; flags: string[]; steps: StepT[]; journey: JourneyT[]; citations?: string[];
+  // The sparring-partner line: the single strongest evidence-backed argument
+  // against pursuing this thesis. Optional - older runs don't carry it.
+  case_against?: string;
 }
 
 // The canonical journey labels shown while the live research call runs (~19s).
@@ -168,6 +171,7 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
 
 export function ReadView({ data }: { data: Scorecard }) {
   const [flagsOpen, setFlagsOpen] = useState(false);
+  const [againstOpen, setAgainstOpen] = useState(false);
   const [readOpen, setReadOpen] = useState(false);
   const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
   return (
@@ -185,6 +189,19 @@ export function ReadView({ data }: { data: Scorecard }) {
         </div>
       </div>
       <div className="mono" style={{ fontSize: 9.5, color: C.lo, marginTop: 9, textAlign: 'center' }}>tap any line for the evidence. bands, not exact numbers.</div>
+      {/* The sparring partner: the sceptic's strongest evidence-backed shot, one tap
+          away. Same honesty register as the flags - shown, never softened. */}
+      {data.case_against ? (
+        <div style={{ marginTop: 12 }}>
+          <button className="row" style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, borderTop: `1px solid ${C.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '11px 0' }} onClick={() => setAgainstOpen((o) => !o)}>
+            <span className="ovl" style={{ flex: 1, color: C.risk }}>The case against, before you commit</span>
+            <span className="mono" style={{ color: C.lo, fontSize: 11 }}>{againstOpen ? '–' : '+'}</span>
+          </button>
+          {againstOpen ? (
+            <div style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.5, marginTop: 4 }}>{data.case_against}</div>
+          ) : null}
+        </div>
+      ) : null}
       {data.flags?.length ? (
         <div style={{ marginTop: 12 }}>
           <button className="row" style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, borderTop: `1px solid ${C.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '11px 0' }} onClick={() => setFlagsOpen((o) => !o)}>

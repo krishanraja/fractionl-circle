@@ -196,6 +196,14 @@ your own), because the user often needs to decide, not stare at a blank box.
   the score in (`applied_at` is stamped on those folded in). Answers give immediate provisional
   credit; the re-read (one paid Perplexity call) is on the user's terms via a "see how it lands
   again to lock in your gains (+N)" affordance.
+- **The memory (2026-07-03).** Applied answers do not evaporate: they ride every future read as
+  settled ground ("build on these, never re-open them"), alongside the previous read as a
+  movement baseline. Skipped coach questions are recorded (`status = 'skipped'`) and never
+  re-asked or counted as banked. When every dimension is strong the coach switches to red-team
+  mode (the sparring partner) instead of going quiet. The visible log lives on Home's "Your
+  decisions" tile: what you decided, when, banked vs in-your-read, and a one-tap worked / didn't
+  outcome that colors the memory future reads use. Migration
+  `20260703120000_decision_log.sql`; see `docs/VALUE_SHARPENING_2026-07-03.md`.
 - **Where it surfaces.** `SharpenPrompt.tsx` is a calm, reusable, one-question-at-a-time card
   (skippable, dismissible) mounted on Home (the daily habit), under the read, and on the path's
   weak-read state. Built to drop in anywhere.
@@ -451,6 +459,32 @@ are set). The legacy `cron-match-engine` and `cron-sunday-letter` schedules were
   spend-before-call, refund-on-failure). Client: `useCredits`, `BuyCreditsSheet`, `creditPacks.ts`,
   `creditCosts.ts`.
 
+## Sharpened this cycle (2026-07-03): the read carries memory
+
+Driven by the AI-native operator evidence corpus; full strategy + decision record in
+`docs/VALUE_SHARPENING_2026-07-03.md`. No UX-flow change - all of it is behind existing screens.
+
+- **The read loads the user model.** `validate-thesis` (previously the only AI surface that
+  ignored the shared profile envelope) now carries `profilePromptBlock` + the tone preference,
+  and the envelope itself now includes the user's own onboarding words
+  (`first_run_transcript`, clamped) - upgrading `next-question`, `warm-digest`, and
+  `rank-inner-circle` at the same time. `judge-thesis` also knows who is asking.
+- **Decisions compound.** Settled (applied) `thesis_answers` ride every future read as fixed
+  ground; the previous run's scorecard is injected as the movement baseline ("never fabricate
+  improvement"). Pure builders in `_shared/decisionContext.ts`, unit-tested.
+- **The sparring partner.** Every read returns a `case_against` - the sceptic's strongest
+  evidence-backed argument, rendered as a tap-to-open line in the read ("The case against,
+  before you commit"). The coach red-teams the strongest claim when nothing is weak.
+- **Grounded flags.** The seeded `benchmarks` + `landmines` reference tables (pricing bands,
+  month-6 crisis, under-pricing trap, each with an honest provenance tier) now feed the read's
+  flags instead of sitting orphaned.
+- **The visible decision log.** Home gains a "Your decisions" tile + sheet (banked vs
+  in-your-read, one-tap worked / didn't outcomes). Skips are recorded and excluded everywhere
+  decisions count.
+- **Deploy order:** apply `20260703120000_decision_log.sql` before deploying the updated
+  `validate-thesis` / `next-question` / `judge-thesis` / `cron-reengage` (they filter on
+  `status`).
+
 ## Known follow-ups
 
 - Set the production Stripe Pro monthly Price object to $39 and point
@@ -459,7 +493,13 @@ are set). The legacy `cron-match-engine` and `cron-sunday-letter` schedules were
 - Configure Resend + VAPID to activate `cron-reengage` email/push (it is wired and scheduled,
   but inert until the keys are set).
 - Extend the make-it-stronger coach to every surface (Circle, Reach out) so it is truly ambient
-  on any topic, and add a short history of decisions made over time.
+  on any topic. (The short history of decisions shipped 2026-07-03 as Home's "Your decisions"
+  tile.)
+- The weekly chief-of-staff brief (the $79 tier's first bullet): compose the Monday email from
+  the existing brains (`warmDigestCore` + `market-pulse` + latest run + `next-question`), gate
+  to `executive`, and flip the tier copy honestly when it ships. Then the draft correction loop
+  (editable Reach-out/digest drafts persisted to a `draft_edits` table, few-shotting the user's
+  real voice back into the digest). Sequenced in `docs/VALUE_SHARPENING_2026-07-03.md`.
 - Ongoing market monitoring (the Pro "re-read over time") is a future build.
 - Network warmth (shipped, Track A): `compute-warmth` + `cron-warm-digest` are
   deployed and scheduled (warmth recompute nightly 07:30 UTC; digest Mondays

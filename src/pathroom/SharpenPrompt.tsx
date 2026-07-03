@@ -12,7 +12,7 @@
 //    thinks and a calm resting state when there's nothing to ask, so the content
 //    below it (the quick-input rows) never gets shoved around as things load.
 import { useEffect, useState } from 'react';
-import { getNextQuestion, saveThesisAnswer, type NextQuestion } from './thesisData';
+import { getNextQuestion, saveThesisAnswer, saveSkippedQuestion, type NextQuestion } from './thesisData';
 
 export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
   onAnswered?: () => void;
@@ -43,13 +43,20 @@ export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
     if (!q || busy || !value.trim()) return;
     setBusy(true);
     try {
-      await saveThesisAnswer({ run_id: q.run_id, dimension: q.dimension, topic: q.topic, question: q.question, answer: value.trim() });
+      await saveThesisAnswer({ run_id: q.run_id, dimension: q.dimension, topic: q.topic, question: q.question, answer: value.trim(), options: q.options });
       setStreak((s) => s + 1);
       onAnswered?.();
       await load();
     } finally {
       setBusy(false);
     }
+  }
+
+  // Declining a question is signal too: record the skip (best-effort) so the
+  // coach learns which angles this user refuses instead of re-asking them.
+  function recordSkip() {
+    if (!q) return;
+    void saveSkippedQuestion({ run_id: q.run_id, dimension: q.dimension, topic: q.topic, question: q.question });
   }
 
   const shellClass = 'spk' + (focus ? ' spk-focus' : '');
@@ -105,10 +112,10 @@ export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
       <div className="spk-head">
         <span className="spk-tag">Make stronger · {q.dimension}</span>
         <span className="spk-ctrls">
-          <button className="spk-icon" title="Another question" disabled={busy} onClick={() => void load()}>↻</button>
+          <button className="spk-icon" title="Another question" disabled={busy} onClick={() => { recordSkip(); void load(); }}>↻</button>
           {/* On the focus screen the question is the centrepiece and you leave via
               the header back control, so the confusing per-card dismiss is hidden. */}
-          {!focus ? <button className="spk-icon" title="Dismiss" onClick={() => setDismissed(true)}>×</button> : null}
+          {!focus ? <button className="spk-icon" title="Dismiss" onClick={() => { recordSkip(); setDismissed(true); }}>×</button> : null}
         </span>
       </div>
       {/* Keyed on the question so each new/refreshed question fades into the
