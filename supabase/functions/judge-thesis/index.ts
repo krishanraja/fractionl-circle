@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { chatJSON } from '../_shared/llm.ts';
+import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
 
 // judge-thesis: the cheap "is this enough to validate?" gate that runs before we spend a
 // live research call. A good thesis names WHO it is for, WHAT the service is, and ideally
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    const { userId } = await requireAuth(req);
+    const { userId, supabase } = await requireAuth(req);
     checkRateLimit(`judge-thesis:${userId}`, 20, 60_000);
 
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
@@ -42,8 +43,12 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Empty thesis.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    // The judge should know who is asking: a thesis that reads thin in isolation
+    // can be strong against the user's known role/verticals (and vice versa).
+    const profile = await loadProfileContext(supabase, userId);
+
     const { content } = await chatJSON({
-      system: SYSTEM,
+      system: SYSTEM + profilePromptBlock(profile),
       user: `THESIS: ${thesis}${round >= 2 ? '\n\n(This is their second attempt after a nudge. If it is still thin, be a touch warmer and more concrete.)' : ''}`,
       temperature: 0.2,
       maxTokens: 400,

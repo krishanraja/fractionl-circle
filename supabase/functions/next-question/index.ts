@@ -3,6 +3,7 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '
 import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
+import { decisionLine, type DecisionRow } from '../_shared/decisionContext.ts';
 
 // next-question: the proactive Socratic coach. Given the user's latest read, it
 // finds the weakest graded dimension (or the biggest missing input) and asks the
@@ -11,18 +12,25 @@ import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPer
 // answer (saved client-side to thesis_answers) folds into the next read, raising
 // the strength score toward 100. Resilient: a deterministic templated question per
 // dimension if the LLM is unavailable, so the coach never dead-ends.
+//
+// Memory-aware: settled decisions are never re-opened, skipped questions are never
+// re-asked. And when every dimension is strong, the coach does not go quiet - it
+// switches to the sparring partner and red-teams the strongest claim instead.
 
 const BAND_W: Record<string, number> = { weak: 0.3, mixed: 0.62, strong: 1.0, risk: 0.42 };
 const CONF_CAP: Record<string, number> = { high: 1.0, medium: 0.82, low: 0.6 };
+// Above this, a dimension counts as strong (mirrors the client's sharpness model,
+// where <70 marks a weakness worth coaching).
+const STRONG_FLOOR = 0.7;
 
 interface Row { label: string; band: string; evidence?: string; confidence: string }
+interface Ranked { row: Row; side: string; pct: number }
 
-function weakestDimension(opp: Row[], ability: Row[]): { row: Row; side: string } | null {
+function rankDimensions(opp: Row[], ability: Row[]): Ranked[] {
   const all = [...opp.map((r) => ({ row: r, side: 'opportunity' })), ...ability.map((r) => ({ row: r, side: 'ability' }))];
-  if (!all.length) return null;
   const scored = all.map((x) => ({ ...x, pct: (BAND_W[x.row.band] ?? 0.4) * (CONF_CAP[x.row.confidence] ?? 0.7) }));
   scored.sort((a, b) => a.pct - b.pct);
-  return scored[0];
+  return scored;
 }
 
 // Deterministic fallback questions per dimension - sharp, decision-shaped.
@@ -34,6 +42,14 @@ const FALLBACK: Record<string, { topic: string; question: string; options: strin
   'Fit to you': { topic: 'Your fit', question: 'What in your background makes you the obvious choice here?', options: ['Years doing exactly this in-house', 'A flagship result I can name', 'Deep relationships in the space'] },
   'Warm reach': { topic: 'Warm reach', question: 'Who in your network is closest to a buyer for this?', options: ['A former colleague now a founder', 'An investor who sees deal flow', 'A peer who refers work'] },
   'Credibility': { topic: 'Proof', question: 'What proof would make a skeptical buyer believe you fast?', options: ['A named case study', 'A strong referral', 'A sharp point of view published'] },
+};
+
+// Deterministic red-team question for the strong-across-the-board state, so the
+// sparring partner works even when the LLM is down.
+const REDTEAM_FALLBACK = {
+  topic: 'Red team',
+  question: 'A sceptical buyer says someone cheaper already does this. What is your one-line answer?',
+  options: ['My niche depth makes me the safer choice', 'I sell a fixed outcome, not hours', 'I arrive trusted through warm intros'],
 };
 
 const SYSTEM = `You are a sharp, warm strategy coach for a fractional executive. Your job: ask the ONE question that most sharpens their business thesis right now, targeting the weakest part of their validated read. The user often does not know what to do next, so do NOT ask an open essay prompt - ask a focused question and offer 2 to 4 crisp, specific, MUTUALLY DISTINCT options they can pick to make a decision (they can also type their own). The question must develop their thinking in a way they would not have alone: concrete, grounded in their thesis and the weak dimension, never generic.
@@ -67,25 +83,44 @@ Deno.serve(async (req) => {
     const result = (run?.result ?? {}) as { opportunity?: Row[]; ability?: Row[] };
     const opp = Array.isArray(result.opportunity) ? result.opportunity : [];
     const ability = Array.isArray(result.ability) ? result.ability : [];
-    const weak = weakestDimension(opp, ability);
-    const dimLabel = weak?.row.label ?? 'Your edge';
+    const ranked = rankDimensions(opp, ability);
+    const weak = ranked[0] ?? null;
+    const strongest = ranked.length ? ranked[ranked.length - 1] : null;
+    // Strong across the board: switch from coach to sparring partner (red-team the
+    // strongest claim) instead of going quiet at exactly the moment to attack the plan.
+    const redteam = !focus && !!weak && weak.pct >= STRONG_FLOOR;
+    const dimLabel = redteam ? (strongest?.row.label ?? 'Your edge') : (weak?.row.label ?? 'Your edge');
 
-    // Recently answered, so we don't repeat a topic.
+    // Recent history: never repeat a question verbatim, never re-ask one the user
+    // declined (skipped), and treat settled (applied) decisions as fixed ground.
     const { data: prior } = await supabase
       .from('thesis_answers')
-      .select('dimension, question')
+      .select('dimension, question, status')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(20);
     const asked = new Set((prior ?? []).map((p: { question: string }) => (p.question || '').toLowerCase()));
+    const declined = (prior ?? []).filter((p: { status?: string }) => p.status === 'skipped').map((p: { question: string }) => p.question || '').filter(Boolean);
 
-    const fb = FALLBACK[dimLabel] ?? FALLBACK['Your edge'];
+    const { data: settledRows } = await supabase
+      .from('thesis_answers')
+      .select('dimension, question, answer, outcome')
+      .eq('user_id', userId)
+      .eq('status', 'answered')
+      .not('applied_at', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(12);
+    const settled = ((settledRows ?? []) as DecisionRow[]).map(decisionLine);
+
+    const fb = redteam ? REDTEAM_FALLBACK : (FALLBACK[dimLabel] ?? FALLBACK['Your edge']);
     const buildFallback = () => ({
       run_id: run?.id ?? null,
       dimension: dimLabel,
       topic: fb.topic,
       question: fb.question,
-      why: `Sharpening "${dimLabel}" is what moves your score most right now.`,
+      why: redteam
+        ? 'Your read is strong; pressure-testing its strongest claim is what keeps it honest.'
+        : `Sharpening "${dimLabel}" is what moves your score most right now.`,
       options: fb.options,
       source: 'fallback' as const,
     });
@@ -97,12 +132,19 @@ Deno.serve(async (req) => {
       const focusDirective = focus
         ? `\n\nThe user is working a SPECIFIC move on their path right now: "${focus}". Make the question directly advance THAT move (concrete next decision for it). Set "dimension" to a short name for the move.`
         : '';
-      const system = SYSTEM + focusDirective + profilePromptBlock(profile) + personalitySystemSuffix(prefs?.ai_personality);
+      const redteamDirective = redteam
+        ? `\n\nEvery dimension of their read is currently strong, so do NOT ask about a weakness. RED-TEAM instead: take the strongest claim (strongest_dimension below) and pose the single objection a hard-nosed sceptical buyer or the market would actually raise against it, as a decision-shaped question. The options are crisp, credible ways they could answer that objection. Set "topic" to "Red team" and "dimension" to the strongest dimension's label.`
+        : '';
+      const memoryDirective = `\n\nsettled_decisions are decisions they already made in earlier reads: fixed ground. Never re-open or re-ask them; ask what moves them FORWARD from those decisions. declined_questions are ones they chose not to engage with: do not re-ask them or close variants of them.`;
+      const system = SYSTEM + focusDirective + redteamDirective + memoryDirective + profilePromptBlock(profile) + personalitySystemSuffix(prefs?.ai_personality);
       const user = JSON.stringify({
         thesis: run?.thesis ?? '',
         background: run?.background ?? '',
         current_move: focus,
         weakest_dimension: weak ? { label: weak.row.label, side: weak.side, band: weak.row.band, confidence: weak.row.confidence, evidence: weak.row.evidence ?? '' } : null,
+        strongest_dimension: redteam && strongest ? { label: strongest.row.label, side: strongest.side, band: strongest.row.band, confidence: strongest.row.confidence, evidence: strongest.row.evidence ?? '' } : undefined,
+        settled_decisions: settled.slice(0, 12),
+        declined_questions: declined.slice(0, 8),
         already_asked: Array.from(asked).slice(0, 8),
       });
       const { content } = await chatJSON({ system, user, temperature: 0.5, maxTokens: 500 });

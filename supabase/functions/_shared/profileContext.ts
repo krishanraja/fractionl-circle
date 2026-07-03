@@ -22,6 +22,10 @@ export interface ProfileContext {
   journey_stage?: string | null;
   offer_maturity?: string | null;
   target_buyer?: string | null;
+  // The user's own stream-of-consciousness from first-run onboarding (who they
+  // sell to, why them, their objective) - their real words, the raw voice+context
+  // sample every AI surface should hear.
+  first_run_transcript?: string | null;
 }
 
 export async function loadProfileContext(
@@ -30,7 +34,7 @@ export async function loadProfileContext(
 ): Promise<ProfileContext | null> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('full_name, role, business_type, positioning, client_stages, client_verticals, identity_statement, motivation_type, journey_stage, offer_maturity, target_buyer')
+    .select('full_name, role, business_type, positioning, client_stages, client_verticals, identity_statement, motivation_type, journey_stage, offer_maturity, target_buyer, first_run_transcript')
     .eq('id', userId)
     .maybeSingle();
   if (error) {
@@ -85,6 +89,30 @@ export function profilePromptBlock(p: ProfileContext | null): string {
   if (p.motivation_type && MOTIVATION_NOTE[p.motivation_type]) {
     lines.push(`Why they went fractional: ${MOTIVATION_NOTE[p.motivation_type]}.`);
   }
+  if (p.first_run_transcript?.trim()) {
+    lines.push(`In their own words: "${clampTranscript(p.first_run_transcript)}"`);
+  }
   if (!lines.length) return '';
   return `\n\nABOUT THIS SPECIFIC USER - anchor every suggestion to this; never produce generic, could-be-anyone output:\n- ${lines.join('\n- ')}`;
+}
+
+// Keep the transcript's opening (where the who/why/goal lives) without letting a
+// long ramble blow up every prompt that carries the envelope.
+const TRANSCRIPT_MAX = 600;
+export function clampTranscript(t: string): string {
+  const s = t.trim().replace(/\s+/g, ' ');
+  return s.length <= TRANSCRIPT_MAX ? s : s.slice(0, TRANSCRIPT_MAX).trimEnd() + '...';
+}
+
+// A one-line plain-text digest of the profile for research prompts (Perplexity),
+// where the full envelope block is too heavy. '' when we know nothing.
+export function profileFactsLine(p: ProfileContext | null): string {
+  if (!p) return '';
+  const bits: string[] = [];
+  if (p.role) bits.push(`fractional ${ROLE_LABELS[p.role] ?? humanize(p.role)}`);
+  if (p.identity_statement) bits.push(p.identity_statement);
+  if (p.target_buyer) bits.push(`sells to ${p.target_buyer}`);
+  if (p.positioning) bits.push(`positions as: ${p.positioning}`);
+  if (p.client_verticals?.length) bits.push(`knows ${p.client_verticals.map(humanize).join(', ')}`);
+  return bits.join('; ');
 }

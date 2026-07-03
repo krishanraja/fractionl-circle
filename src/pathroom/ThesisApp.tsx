@@ -23,7 +23,8 @@ import { computeSharpness } from './sharpness';
 import {
   runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
   judgeThesis, extractAdmire, saveInspiration, addContactFromImage, saveStepProgress,
-  getMarketPulse, getUnrunAnswerCount, type CircleP, type MarketPulse,
+  getMarketPulse, getUnrunAnswerCount, getDecisionLog, markDecisionOutcome,
+  type CircleP, type MarketPulse, type DecisionEntry,
 } from './thesisData';
 import ThesisCircle from './ThesisCircle';
 
@@ -71,9 +72,21 @@ export default function ThesisApp() {
   // Fresh reach evidence each time the reach step is opened.
   useEffect(() => { if (phase === 'reachout') setReachedCount(0); }, [phase]);
 
-  // Banked-but-not-yet-run sharpen answers drive the provisional score lift.
-  const refreshAnswers = () => { if (userId) getUnrunAnswerCount(userId).then(setUnrunAnswers).catch(() => {}); };
+  // Banked-but-not-yet-run sharpen answers drive the provisional score lift; the
+  // decision log is the visible memory behind Home's "Your decisions" tile.
+  const [decisions, setDecisions] = useState<DecisionEntry[]>([]);
+  const refreshAnswers = () => {
+    if (!userId) return;
+    getUnrunAnswerCount(userId).then(setUnrunAnswers).catch(() => {});
+    getDecisionLog(userId).then(setDecisions).catch(() => {});
+  };
   useEffect(refreshAnswers, [userId, data]);
+
+  // One-tap decision retrospective; the outcome feeds the memory future reads use.
+  const onMarkOutcome = (id: string, outcome: 'worked' | 'didnt_work' | null) => {
+    setDecisions((l) => l.map((d) => (d.id === id ? { ...d, outcome } : d)));
+    markDecisionOutcome(id, outcome).catch(() => refreshAnswers());
+  };
 
   // Fetch the market read with a loading flag so the Pulse drawer can show a stunning
   // loading state (the call runs an LLM synthesis, so it's a few seconds).
@@ -263,6 +276,8 @@ export default function ThesisApp() {
       <Home
         data={data} stepProgress={stepProgress} circle={circle} fuel={fuel}
         sharp={sharp}
+        decisions={decisions}
+        onMarkOutcome={onMarkOutcome}
         onStrengthen={() => openSharpen(null)}
         onOpenRead={() => setPhase('read')}
         onOpenPath={() => go('journey')}

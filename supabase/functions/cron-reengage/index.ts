@@ -174,6 +174,7 @@ Deno.serve(async (req) => {
         .from('thesis_answers')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
+        .eq('status', 'answered')
         .is('applied_at', null);
 
       const hooks: Hooks = { quiet: quietCount ?? 0, banked: bankedCount ?? 0 };
