@@ -2,10 +2,10 @@
 // one job: a segmented control splits the two intents so neither is crushed -
 //   Market - the metric rail: a big value + a colour-coded 30-day arrow down the left,
 //            the strategic "what this means for you" read on the right.
-//   Trends - the role-tailored moves you can attach to, as a swipe carousel (one full
-//            card per page + dots), so each is fully readable with no vertical scroll.
+//   Trends - the role-tailored moves you can attach to, stacked so all are visible at
+//            once, sharing the height equally, no scroll and no swipe.
 // Everything is grounded in Pulse data; the reads and trends are synthesised server-side.
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -68,19 +68,6 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
   const rv = roleVerdict(market?.role ?? null);
 
   const [seg, setSeg] = useState<'market' | 'trends'>('market');
-  const [trendIdx, setTrendIdx] = useState(0);
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  const onTrackScroll = () => {
-    const el = trackRef.current;
-    if (!el || !el.clientWidth) return;
-    setTrendIdx(Math.round(el.scrollLeft / el.clientWidth));
-  };
-  const goTrend = (i: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
-  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -145,32 +132,25 @@ export default function PulseDrawer({ open, onOpenChange, market, loading }: Pul
                     </div>
                   )
                 ) : themes && themes.length ? (
-                  <>
-                    <div className="vptrack" ref={trackRef} onScroll={onTrackScroll}>
-                      {themes.map((t, i) => (
-                        <div key={i} className="vptcard">
-                          <div className="vptcardin">
-                            <div className="vptcardhead">
-                              <span className="navhint" style={{ color: C.cool }}>Trend {i + 1} of {themes.length}</span>
-                              {t.breakout ? <span className="vptrendbadge hot">{trendBadge(true)}</span> : null}
-                            </div>
+                  // All trends stacked, sharing the height equally, no scroll and no swipe.
+                  <div className="vpstack">
+                    {themes.map((t, i) => (
+                      <div key={i} className="vptcard">
+                        <div className="vptcardin">
+                          <div className="vptcardhead">
                             <div className="vptcardtitle">{t.label}</div>
-                            {t.summary ? <div className="vptcardsum">{t.summary}</div> : null}
-                            {t.angle ? (
-                              <div className="vptrendangle"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
-                            ) : null}
+                            {t.breakout ? <span className="vptrendbadge hot">{trendBadge(true)}</span> : null}
                           </div>
+                          {t.summary ? <div className="vptcardsum">{t.summary}</div> : null}
+                          {t.angle ? (
+                            <div className="vptrendangle">
+                              <div className="vptrendanglec"><span className="vptrendanglek">Your angle</span>{t.angle}</div>
+                            </div>
+                          ) : null}
                         </div>
-                      ))}
-                    </div>
-                    {themes.length > 1 ? (
-                      <div className="vpdots">
-                        {themes.map((_, i) => (
-                          <button key={i} className={'vpdot-btn' + (i === trendIdx ? ' on' : '')} aria-label={`Trend ${i + 1}`} onClick={() => goTrend(i)} />
-                        ))}
                       </div>
-                    ) : null}
-                  </>
+                    ))}
+                  </div>
                 ) : (
                   <div className="sub" style={{ marginTop: 14 }}>No standout trends this week - check back after the next refresh.</div>
                 )}
