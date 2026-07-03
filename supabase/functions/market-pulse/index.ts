@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { chatJSON } from '../_shared/llm.ts';
+import { roleFromThesis } from '../_shared/pulseFacts.ts';
 
 // market-pulse: the live "market movement" instrument for the command-center Home, fed by
 // the sister product fractionl-pulse (public, no-auth APIs). Role-level (Pulse is not
@@ -13,20 +14,8 @@ import { chatJSON } from '../_shared/llm.ts';
 
 const PULSE = 'https://dtlcprcpvdomrehbejhw.supabase.co/functions/v1';
 
-// Map the user's plan text to one of Pulse's six tracked fractional exec roles.
-// Pulse is role-grained (not niche-grained), so we deliberately only match the six
-// it tracks; genuinely different functions stay unmatched (the client shows an
-// honest "add your role focus" state rather than a mis-mapped role.)
-function roleFromThesis(t: string): { key: string; label: string } | null {
-  const s = (t || '').toLowerCase();
-  if (/\bcfo\b|finance|financial|fundrais|accounting|controller|fp&a|treasur/.test(s)) return { key: 'cfo', label: 'CFO' };
-  if (/\bcmo\b|marketing|brand|demand gen|growth|content marketing|\bseo\b|advertising|paid media|lifecycle|social media/.test(s)) return { key: 'cmo', label: 'CMO' };
-  if (/\bcto\b|engineering|technical|technology|head of product|fractional product|software|developer|devops|platform|infrastructure|\bai\b|machine learning|\bml\b|data engineer/.test(s)) return { key: 'cto', label: 'CTO' };
-  if (/\bcoo\b|operations|\bops\b|operational|process|supply chain|chief of staff|program management/.test(s)) return { key: 'coo', label: 'COO' };
-  if (/\bcro\b|revenue|\bsales\b|go-to-market|\bgtm\b|business development|bizdev|partnerships/.test(s)) return { key: 'cro', label: 'CRO' };
-  if (/\bceo\b|interim ceo|general manager|managing director/.test(s)) return { key: 'ceo', label: 'CEO' };
-  return null;
-}
+// The role mapping lives in _shared/pulseFacts.ts, shared with the weekly
+// chief-of-staff brief so both read Pulse the same way.
 
 function toNum(v: unknown): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;

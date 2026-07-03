@@ -109,6 +109,17 @@ async function firePush(userId: string, h: Hooks): Promise<void> {
   }
 }
 
+// Best-effort observability, mirroring cron-warm-digest: one delivery_log row
+// per outbound send attempt so the sweep's behavior is auditable in-system.
+// deno-lint-ignore no-explicit-any
+async function logDelivery(admin: any, userId: string, channel: 'email' | 'push', status: 'sent' | 'failed'): Promise<void> {
+  try {
+    await admin.from('delivery_log').insert({ user_id: userId, kind: 'reengage', channel, status });
+  } catch (e) {
+    console.warn('delivery_log write failed', e instanceof Error ? e.message : e);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204 });
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
@@ -186,6 +197,7 @@ Deno.serve(async (req) => {
       if (!prefs || prefs.browser_notifications !== false) {
         await firePush(userId, hooks);
         pushed++;
+        await logDelivery(admin, userId, 'push', 'sent');
       }
 
       // Email goes out unless email is off globally OR goal_reminders is off
@@ -200,7 +212,12 @@ Deno.serve(async (req) => {
           const email = userLookup?.user?.email ?? null;
           if (email) {
             const lines = hookLines(hooks);
-            if (await sendReengageEmail(email, subjectFor(hooks), lines)) emailed++;
+            if (await sendReengageEmail(email, subjectFor(hooks), lines)) {
+              emailed++;
+              await logDelivery(admin, userId, 'email', 'sent');
+            } else {
+              await logDelivery(admin, userId, 'email', 'failed');
+            }
           }
         }
       } else {

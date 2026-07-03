@@ -4,6 +4,7 @@ import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
 import { decisionLine, type DecisionRow } from '../_shared/decisionContext.ts';
+import { FALLBACK, REDTEAM_FALLBACK } from '../_shared/coachQuestions.ts';
 
 // next-question: the proactive Socratic coach. Given the user's latest read, it
 // finds the weakest graded dimension (or the biggest missing input) and asks the
@@ -33,24 +34,9 @@ function rankDimensions(opp: Row[], ability: Row[]): Ranked[] {
   return scored;
 }
 
-// Deterministic fallback questions per dimension - sharp, decision-shaped.
-const FALLBACK: Record<string, { topic: string; question: string; options: string[] }> = {
-  'Demand': { topic: 'Demand', question: 'Who, specifically, has this problem badly enough to pay this month?', options: ['Seed founders with no senior hire yet', 'Series A teams scaling too fast', 'PE-backed ops under margin pressure'] },
-  'Burning need': { topic: 'The pain', question: 'What breaks for them if they do nothing for 90 days?', options: ['They miss their next raise', 'They burn cash on the wrong hires', 'They stall and a competitor passes them'] },
-  'Crowding': { topic: 'Your wedge', question: 'In one line, what do you do that the crowded field does not?', options: ['I go deeper in one niche', 'I ship faster / hands-on', 'I bring a network they cannot'] },
-  'Your edge': { topic: 'Your edge', question: 'What is the unfair advantage only you bring to this?', options: ['A track record in this exact niche', 'A warm network of buyers', 'A method I have proven before'] },
-  'Fit to you': { topic: 'Your fit', question: 'What in your background makes you the obvious choice here?', options: ['Years doing exactly this in-house', 'A flagship result I can name', 'Deep relationships in the space'] },
-  'Warm reach': { topic: 'Warm reach', question: 'Who in your network is closest to a buyer for this?', options: ['A former colleague now a founder', 'An investor who sees deal flow', 'A peer who refers work'] },
-  'Credibility': { topic: 'Proof', question: 'What proof would make a skeptical buyer believe you fast?', options: ['A named case study', 'A strong referral', 'A sharp point of view published'] },
-};
-
-// Deterministic red-team question for the strong-across-the-board state, so the
-// sparring partner works even when the LLM is down.
-const REDTEAM_FALLBACK = {
-  topic: 'Red team',
-  question: 'A sceptical buyer says someone cheaper already does this. What is your one-line answer?',
-  options: ['My niche depth makes me the safer choice', 'I sell a fixed outcome, not hours', 'I arrive trusted through warm intros'],
-};
+// Deterministic fallback questions live in _shared/coachQuestions.ts (shared
+// with the weekly chief-of-staff brief) so the coach and the brief ask with
+// one voice.
 
 const SYSTEM = `You are a sharp, warm strategy coach for a fractional executive. Your job: ask the ONE question that most sharpens their business thesis right now, targeting the weakest part of their validated read. The user often does not know what to do next, so do NOT ask an open essay prompt - ask a focused question and offer 2 to 4 crisp, specific, MUTUALLY DISTINCT options they can pick to make a decision (they can also type their own). The question must develop their thinking in a way they would not have alone: concrete, grounded in their thesis and the weak dimension, never generic.
 

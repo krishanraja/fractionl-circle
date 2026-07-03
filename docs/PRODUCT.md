@@ -485,21 +485,46 @@ Driven by the AI-native operator evidence corpus; full strategy + decision recor
   `validate-thesis` / `next-question` / `judge-thesis` / `cron-reengage` (they filter on
   `status`).
 
+**Second wave, same day (the chief-of-staff tranche):**
+
+- **The Monday chief-of-staff brief (the $79 tier's first bullet, now LIVE).** Executive
+  subscribers' Monday email leads with where they stand (the same 0-100 as Home, computed
+  server-side by `_shared/sharpness.ts` - a deliberate port of `src/pathroom/sharpness.ts`,
+  kept honest by a parity unit test), their market this week (deterministic Pulse numbers via
+  `_shared/pulseFacts.ts`, no LLM), and this week's one decision question
+  (`_shared/coachQuestions.ts`, shared with the coach's fallback). Composed by
+  `_shared/brief.ts`, delivered by `cron-warm-digest`; it sends even when nobody is going
+  quiet. `src/lib/tiers.ts` bullets flipped honestly (signal feeds / cross-user intel marked
+  "coming").
+- **The draft correction loop + voice.** Reach-out drafts are editable in place; acting
+  records generated-vs-final to `draft_edits`, and the digest brain few-shots the user's
+  edited finals back into every future draft (`voicePromptBlock` in `warmDigestCore.ts`) so
+  drafts converge on their real voice.
+- **Delivery observability.** Every outbound send from `cron-warm-digest` and `cron-reengage`
+  lands a `delivery_log` row (kind × channel × status), so "did Monday's email go out?" is
+  answerable in-system.
+- **Bug fix:** `thesis_answers.user_id` had no default and client inserts never passed it, so
+  banking a decision failed silently in production. `default auth.uid()` (in
+  `20260703140000_brief_and_voice.sql`) heals every client insert; owner RLS still enforces
+  authorship.
+- **Channel state verified in prod (2026-07-03):** `RESEND_API_KEY` and all `VAPID_*` secrets
+  ARE set and all cron schedules are active - the digest, brief, re-engagement email and web
+  push are genuinely live (the earlier "inert until keys are set" notes below were stale).
+
 ## Known follow-ups
 
 - Set the production Stripe Pro monthly Price object to $39 and point
   `VITE_STRIPE_PRO_MONTHLY_PRICE_ID` at it (prod Stripe mode); likewise the Chief of Staff
   ($79) Price object behind `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID`.
-- Configure Resend + VAPID to activate `cron-reengage` email/push (it is wired and scheduled,
-  but inert until the keys are set).
+- ~~Configure Resend + VAPID to activate `cron-reengage` email/push~~ Done - verified set in
+  prod 2026-07-03; the sweep is live and now writes `delivery_log` rows.
 - Extend the make-it-stronger coach to every surface (Circle, Reach out) so it is truly ambient
   on any topic. (The short history of decisions shipped 2026-07-03 as Home's "Your decisions"
   tile.)
-- The weekly chief-of-staff brief (the $79 tier's first bullet): compose the Monday email from
-  the existing brains (`warmDigestCore` + `market-pulse` + latest run + `next-question`), gate
-  to `executive`, and flip the tier copy honestly when it ships. Then the draft correction loop
-  (editable Reach-out/digest drafts persisted to a `draft_edits` table, few-shotting the user's
-  real voice back into the digest). Sequenced in `docs/VALUE_SHARPENING_2026-07-03.md`.
+- ~~The weekly chief-of-staff brief~~ ~~the draft correction loop~~ Both shipped 2026-07-03
+  (see "Second wave" above). Remaining from `docs/VALUE_SHARPENING_2026-07-03.md`: the legacy
+  schema/function cleanup migration, durable rate limits on the paid Perplexity calls, and the
+  LLM-personalised (rather than deterministic) brief question.
 - Ongoing market monitoring (the Pro "re-read over time") is a future build.
 - Network warmth (shipped, Track A): `compute-warmth` + `cron-warm-digest` are
   deployed and scheduled (warmth recompute nightly 07:30 UTC; digest Mondays

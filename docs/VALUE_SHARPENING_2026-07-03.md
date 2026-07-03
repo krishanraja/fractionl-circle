@@ -154,9 +154,26 @@ a live consumer (the read's flags). The rest should drop in a dedicated cleanup 
 
 ## Sequencing from here
 
-1. **The weekly chief-of-staff brief** (move 6) - compose from the existing brains
-   (`warmDigestCore` + `market-pulse` + latest run + `next-question`), gate to `executive`, flip
-   the tier copy honestly, configure VAPID/verify Resend, add a `delivery_log`.
-2. **The draft correction loop** (move 7) - editable drafts, `draft_edits`, voice few-shot.
-3. **Cleanup** - legacy table/function drop, durable rate limits on paid calls, the embeddings
-   billing decision.
+1. ~~**The weekly chief-of-staff brief** (move 6)~~ **Shipped same day** (second wave):
+   `_shared/brief.ts` composes score (`_shared/sharpness.ts`, parity-tested against the client
+   copy) + Pulse numbers (`_shared/pulseFacts.ts`, deterministic) + the week's decision
+   question (`_shared/coachQuestions.ts`); `cron-warm-digest` delivers it to `executive`
+   subscribers and logs every send to `delivery_log`; `tiers.ts` copy flipped honestly.
+2. ~~**The draft correction loop** (move 7)~~ **Shipped same day**: editable Reach-out drafts,
+   `draft_edits`, `voicePromptBlock` few-shot in `warmDigestCore`.
+3. **Cleanup** (remaining) - legacy table/function drop, durable rate limits on paid calls,
+   an LLM-personalised brief question.
+
+## Pre-flight findings (2026-07-03, verified in prod)
+
+- `RESEND_API_KEY` + all `VAPID_*` secrets ARE set and all cron schedules are active: the
+  channel layer was never inert - the docs were stale, now fixed (critique 5 resolved except
+  observability, which `delivery_log` now provides).
+- Embeddings are healthy: 33/33 circle people embedded, freshest 2026-07-01 - no silent
+  keyword-only degradation (critique 6 resolved).
+- Found and fixed a real production bug while building the correction loop:
+  `thesis_answers.user_id` had no default and client inserts never passed it, so **banking a
+  decision failed silently** ever since the coach shipped. `default auth.uid()` heals it;
+  owner RLS still enforces authorship.
+- Score duplication (critique 8) resolved structurally: the server port carries a parity unit
+  test importing both implementations, so drift fails CI.

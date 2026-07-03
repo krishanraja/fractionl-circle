@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 import { buildWarmDigestForUser, type DigestPerson } from '../_shared/warmDigestCore.ts';
 import { writeWarmReachHold } from '../_shared/googleCalendar.ts';
+import { buildBriefForUser, type ChiefOfStaffBrief } from '../_shared/brief.ts';
 
 // Weekly "keep your circle warm" digest. Service-role auth via CRON_SECRET.
 // For each eligible user it builds the cohort (warmDigestCore) and delivers the
@@ -13,6 +14,14 @@ import { writeWarmReachHold } from '../_shared/googleCalendar.ts';
 //   - a Web Push ping for users who keep the app installed.
 // Inert by design: if Resend is unconfigured email is skipped (push still fires);
 // if VAPID is unconfigured push is a no-op. Nothing here throws on a missing key.
+//
+// Chief of Staff tier: executive subscribers get the full Monday brief on top of
+// the people - where they stand (the same 0-100 as Home), their market this week
+// (honest Pulse numbers), and the one decision question of the week - composed by
+// _shared/brief.ts from brains that already exist. Their email sends even when
+// nobody is going quiet, because the brief carries value on its own.
+// Every send lands a delivery_log row so "did Monday's email go out?" is
+// answerable from inside the system.
 
 const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? '';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -113,19 +122,57 @@ const personCard = (p: DigestPerson): string => {
 </div>`;
 };
 
-const buildEmailHtml = (people: DigestPerson[]): string => `
+// The Chief of Staff sections, rendered above the people cards for executive
+// subscribers. Every number comes from the product's own state or Pulse - the
+// brief never invents a figure.
+const briefSections = (b: ChiefOfStaffBrief): string => {
+  const pending = b.provisional > 0 ? ` <span style="color:#9a6a16">(+${b.provisional} pending)</span>` : '';
+  const holding = b.weakestLabel
+    ? `Weakest right now: ${esc(b.weakestLabel)}.`
+    : 'Strong across the board. Lock it in with a re-read.';
+  const decisions = [
+    b.bankedCount ? `${b.bankedCount} decision${b.bankedCount === 1 ? '' : 's'} banked, folds into your next read` : null,
+    b.decidedCount ? `${b.decidedCount} locked in` : null,
+  ].filter(Boolean).join(' · ');
+  return `
+<div style="border:1px solid #eee;border-radius:12px;padding:16px;margin:0 0 14px">
+  <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#9a6a16;font-weight:700">Where you stand</div>
+  <div style="font-size:26px;font-weight:700;color:#1a1a1a;margin-top:6px">${b.score}<span style="font-size:14px;color:#666;font-weight:400">/100 strength</span>${pending}</div>
+  <div style="font-size:13px;color:#333;margin-top:4px">${holding}</div>
+  ${decisions ? `<div style="font-size:13px;color:#666;margin-top:4px">${esc(decisions)}</div>` : ''}
+  ${b.nextMove ? `<div style="font-size:13px;color:#333;margin-top:8px"><strong>Next move:</strong> ${esc(b.nextMove)}</div>` : ''}
+</div>
+${b.marketLines.length ? `
+<div style="border:1px solid #eee;border-radius:12px;padding:16px;margin:0 0 14px">
+  <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#9a6a16;font-weight:700">Your market this week</div>
+  ${b.marketLines.map((l) => `<div style="font-size:14px;color:#333;margin-top:8px">${esc(l)}</div>`).join('')}
+</div>` : ''}
+<div style="border:1px solid #eee;border-radius:12px;padding:16px;margin:0 0 14px">
+  <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#9a6a16;font-weight:700">${b.redteam ? 'This week: the case against' : "This week's decision"}</div>
+  <div style="font-size:15px;font-weight:600;color:#1a1a1a;margin-top:8px">${esc(b.question.question)}</div>
+  ${b.question.options.map((o) => `<div style="font-size:13px;color:#666;margin-top:6px">· ${esc(o)}</div>`).join('')}
+  <a href="${esc(APP_URL)}" style="display:inline-block;background:#E0982A;color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:600;margin-top:10px">Decide in Circle →</a>
+</div>`;
+};
+
+const buildEmailHtml = (people: DigestPerson[], brief: ChiefOfStaffBrief | null): string => `
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
-  <h1 style="font-size:22px;margin:0 0 4px">Keep your circle warm</h1>
+  <h1 style="font-size:22px;margin:0 0 4px">${brief ? 'Your Monday brief' : 'Keep your circle warm'}</h1>
+  ${brief ? `<p style="font-size:14px;color:#666;margin:0 0 20px">Where you stand, your market, this week's decision - and the people to keep warm.</p>${briefSections(brief)}` : ''}
+  ${people.length ? `
+  ${brief ? `<h2 style="font-size:16px;margin:18px 0 4px">Keep your circle warm</h2>` : ''}
   <p style="font-size:14px;color:#666;margin:0 0 20px">${people.length} ${people.length === 1 ? 'person is' : 'people are'} going quiet. A short touch now keeps the relationship alive. Each draft is ready to send - tap to open it in your inbox.</p>
-  ${people.map(personCard).join('')}
-  <p style="font-size:12px;color:#999;margin-top:20px">The attached calendar hold puts a recurring 20-minute warm-reach block on your calendar. <a href="${esc(APP_URL)}" style="color:#9a6a16">Open your circle</a> · manage this email in settings.</p>
+  ${people.map(personCard).join('')}` : (brief ? `<p style="font-size:14px;color:#666;margin:0 0 20px">Nobody in your circle is going quiet this week.</p>` : '')}
+  <p style="font-size:12px;color:#999;margin-top:20px">${people.length ? 'The attached calendar hold puts a recurring 20-minute warm-reach block on your calendar. ' : ''}<a href="${esc(APP_URL)}" style="color:#9a6a16">Open your circle</a> · manage this email in settings.</p>
 </div>`;
 
-async function sendDigestEmail(to: string, people: DigestPerson[], ics: string | null): Promise<boolean> {
+async function sendDigestEmail(to: string, people: DigestPerson[], ics: string | null, brief: ChiefOfStaffBrief | null): Promise<boolean> {
   if (!RESEND_API_KEY) return false;
-  const subject = people.length === 1
-    ? `1 person in your circle is going cold`
-    : `${people.length} people in your circle are going cold`;
+  const subject = brief
+    ? `Your Monday brief: ${brief.score}/100${people.length ? `, ${people.length} going quiet` : ''}`
+    : people.length === 1
+      ? `1 person in your circle is going cold`
+      : `${people.length} people in your circle are going cold`;
   const resp = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -133,7 +180,7 @@ async function sendDigestEmail(to: string, people: DigestPerson[], ics: string |
       from: FROM_EMAIL,
       to: [to],
       subject,
-      html: buildEmailHtml(people),
+      html: buildEmailHtml(people, brief),
       // Skip the .ics when the hold was written natively to the calendar.
       ...(ics ? { attachments: [{ filename: 'warm-reach.ics', content: toBase64(ics) }] } : {}),
     }),
@@ -145,20 +192,28 @@ async function sendDigestEmail(to: string, people: DigestPerson[], ics: string |
   return true;
 }
 
-async function firePush(userId: string, count: number): Promise<void> {
+async function firePush(userId: string, count: number, brief: ChiefOfStaffBrief | null): Promise<void> {
+  await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: userId,
+      title: brief ? 'Your Monday brief is ready' : 'Keep your circle warm',
+      body: brief
+        ? `You're at ${brief.score}/100${count ? ` and ${count} ${count === 1 ? 'person is' : 'people are'} going quiet` : ''}.`
+        : count === 1 ? 'Someone worth reaching is going quiet.' : `${count} people worth reaching are going quiet.`,
+      url: `${APP_URL}/`,
+    }),
+  });
+}
+
+// Best-effort observability: one row per outbound send attempt. Never blocks
+// delivery - a failed log write is a warning, not an error.
+async function logDelivery(admin: any, userId: string, kind: 'warm_digest' | 'brief', channel: 'email' | 'push', status: 'sent' | 'failed', detail?: string): Promise<void> {
   try {
-    await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        title: 'Keep your circle warm',
-        body: count === 1 ? 'Someone worth reaching is going quiet.' : `${count} people worth reaching are going quiet.`,
-        url: `${APP_URL}/`,
-      }),
-    });
+    await admin.from('delivery_log').insert({ user_id: userId, kind, channel, status, detail: detail ?? null });
   } catch (e) {
-    console.warn('warm-digest push failed', e instanceof Error ? e.message : e);
+    console.warn('delivery_log write failed', e instanceof Error ? e.message : e);
   }
 }
 
@@ -189,9 +244,23 @@ Deno.serve(async (req) => {
     new Set((circleUsers ?? []).map((r: { user_id: string }) => r.user_id)),
   ).slice(0, MAX_USERS_PER_RUN);
 
+  // Chief of Staff (executive) subscribers get the full Monday brief.
+  const executiveIds = new Set<string>();
+  try {
+    const { data: subs } = await admin
+      .from('subscriptions')
+      .select('user_id, tier, status')
+      .eq('tier', 'executive')
+      .in('status', ['active', 'trialing']);
+    for (const s of (subs ?? []) as Array<{ user_id: string }>) executiveIds.add(s.user_id);
+  } catch (e) {
+    console.warn('subscriptions lookup failed; briefs skipped this run', e instanceof Error ? e.message : e);
+  }
+
   const now = new Date();
   let emailed = 0;
   let pushed = 0;
+  let briefs = 0;
   let skippedEmpty = 0;
   let optedOut = 0;
   let emailSuppressed = 0;
@@ -211,12 +280,24 @@ Deno.serve(async (req) => {
       if (prefs && prefs.warm_digest === false) { optedOut++; continue; }
 
       const digest = await buildWarmDigestForUser(userId, admin, now.getTime());
-      if (!digest.people.length) { skippedEmpty++; continue; }
+
+      // Executive subscribers get the chief-of-staff brief (null when they have
+      // no read yet, which falls back to the people-only digest).
+      let brief: ChiefOfStaffBrief | null = null;
+      if (executiveIds.has(userId)) {
+        try { brief = await buildBriefForUser(userId, admin); } catch { /* people-only */ }
+      }
+      if (brief) briefs++;
+
+      // Nothing to say at all: no brief and nobody going quiet. Never send empty.
+      if (!digest.people.length && !brief) { skippedEmpty++; continue; }
+
+      const kind: 'warm_digest' | 'brief' = brief ? 'brief' : 'warm_digest';
 
       // Native calendar hold (flagged). On success the email drops the .ics so
       // the user does not get a duplicate. Any failure falls back to the .ics.
       let nativeCal = false;
-      if (NATIVE_CALENDAR) {
+      if (NATIVE_CALENDAR && digest.people.length) {
         try {
           nativeCal = await writeWarmReachHold(admin, userId, digest.people, now, APP_URL);
           if (nativeCal) calendarWritten++;
@@ -226,8 +307,14 @@ Deno.serve(async (req) => {
       // Push reaches app users who have no inbox set; naturally gated by having a
       // subscription, plus the browser_notifications preference.
       if (!prefs || prefs.browser_notifications !== false) {
-        await firePush(userId, digest.people.length);
-        pushed++;
+        try {
+          await firePush(userId, digest.people.length, brief);
+          pushed++;
+          await logDelivery(admin, userId, kind, 'push', 'sent');
+        } catch (e) {
+          console.warn('warm-digest push failed', e instanceof Error ? e.message : e);
+          await logDelivery(admin, userId, kind, 'push', 'failed', e instanceof Error ? e.message : String(e));
+        }
       }
 
       // Email goes out unless the user has turned off email globally.
@@ -235,8 +322,13 @@ Deno.serve(async (req) => {
         const { data: userLookup } = await admin.auth.admin.getUserById(userId);
         const email = userLookup?.user?.email ?? null;
         if (email) {
-          const ics = nativeCal ? null : buildIcs(digest.people, now, `${userId}`);
-          if (await sendDigestEmail(email, digest.people, ics)) emailed++;
+          const ics = !nativeCal && digest.people.length ? buildIcs(digest.people, now, `${userId}`) : null;
+          if (await sendDigestEmail(email, digest.people, ics, brief)) {
+            emailed++;
+            await logDelivery(admin, userId, kind, 'email', 'sent');
+          } else {
+            await logDelivery(admin, userId, kind, 'email', 'failed');
+          }
         }
       } else {
         emailSuppressed++;
@@ -250,6 +342,7 @@ Deno.serve(async (req) => {
     target_users: targetUsers.length,
     emailed,
     pushed,
+    briefs,
     skipped_empty: skippedEmpty,
     opted_out: optedOut,
     email_suppressed: emailSuppressed,

@@ -327,6 +327,19 @@ export async function markDecisionOutcome(id: string, outcome: 'worked' | 'didnt
   if (error) throw error;
 }
 
+// The correction loop on drafts: record what the AI drafted vs what the user
+// actually sent. Edited finals become the voice few-shot the digest brain learns
+// from, so drafts converge on the user's real voice. Best-effort: losing one
+// sample never blocks the send.
+export async function recordDraftEdit(a: { person_id: string | null; channel: 'email' | 'linkedin' | 'copy'; generated: string; final: string }): Promise<void> {
+  try {
+    await supabase.from('draft_edits').insert({
+      person_id: a.person_id, channel: a.channel, generated: a.generated, final: a.final,
+      edited: a.generated.trim() !== a.final.trim(),
+    });
+  } catch { /* non-fatal */ }
+}
+
 // Record that the user reached out: stamp last_interaction_at = now so warmth
 // recovers and the person stops surfacing as cold. RLS scopes to the owner.
 export async function markReachedOut(personId: string): Promise<void> {

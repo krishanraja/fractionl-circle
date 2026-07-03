@@ -3,6 +3,13 @@
 *Verified accurate against `supabase/functions/cron-reengage/index.ts`,
 `supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29.*
 
+> **Status update (2026-07-03): BOTH CHANNELS ARE LIVE.** `RESEND_API_KEY` and
+> all `VAPID_*` secrets were verified set in the production project and every
+> cron schedule is active - the sweep emails and pushes for real. Every send
+> attempt now lands a row in `delivery_log` (kind `reengage`, channel, status),
+> so "did Monday's sweep go out?" is answerable with one query. The
+> inert-by-default description below remains true for fresh environments.
+
 How the "come back - here's what's waiting" sweep works, and how to turn on the
 two delivery channels (email + web push) it shares with the warm digest. Both
 channels are **inert by default**: the feature ships and the cron job runs with

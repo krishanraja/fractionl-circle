@@ -143,6 +143,36 @@ Use each person's exact id. Plain language, no jargon, no em dashes.`;
 // Relevance floor: below this cosine similarity a match is too weak to call a fit.
 const FIT_FLOOR = 0.15;
 
+// The voice correction loop: the drafts the user actually EDITED before sending
+// (recorded by ReachOut into draft_edits) are the truest sample of how they
+// write. A few of those, few-shotted into the drafting call, pull every future
+// draft toward their real voice instead of a generic one. Day one (no edits yet)
+// the profile envelope's "in their own words" transcript carries the voice.
+const VOICE_SAMPLES = 6;
+const VOICE_SAMPLE_MAX = 500;
+
+async function loadVoiceSamples(supabase: any, userId: string): Promise<string[]> {
+  try {
+    const { data } = await supabase
+      .from('draft_edits')
+      .select('final')
+      .eq('user_id', userId)
+      .eq('edited', true)
+      .order('created_at', { ascending: false })
+      .limit(VOICE_SAMPLES);
+    return ((data ?? []) as Array<{ final: string }>)
+      .map((r) => clamp(r.final, VOICE_SAMPLE_MAX))
+      .filter(Boolean);
+  } catch (_e) {
+    return [];
+  }
+}
+
+export function voicePromptBlock(samples: string[]): string {
+  if (!samples.length) return '';
+  return `\n\nHOW THIS USER ACTUALLY WRITES - real messages they edited and sent. Match this voice (length, warmth, phrasing, sign-off), never a generic one:\n${samples.map((s, i) => `${i + 1}) ${s}`).join('\n')}`;
+}
+
 interface Ranked { p: CircleRow; recency: number | null; s: number; similarity?: number }
 
 // Pick the people who best FIT a specific idea/move via the semantic embedding
@@ -265,8 +295,9 @@ export async function buildWarmDigestForUser(
   try {
     const profileBlock = profilePromptBlock(await loadProfileContext(supabase, userId));
     const prefs = await loadUserAiPreferences(supabase, userId);
+    const voiceBlock = voicePromptBlock(await loadVoiceSamples(supabase, userId));
     const baseSystem = focused ? CONTEXT_SYSTEM : SYSTEM;
-    const system = baseSystem + profileBlock + personalitySystemSuffix(prefs?.ai_personality);
+    const system = baseSystem + profileBlock + voiceBlock + personalitySystemSuffix(prefs?.ai_personality);
     const user = JSON.stringify({
       idea: focused ? context?.thesis ?? '' : undefined,
       move: focused ? context?.move ?? null : undefined,
