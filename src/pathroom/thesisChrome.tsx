@@ -9,7 +9,7 @@ import { ProfileSettingsSheet } from '@/components/profile/ProfileSettingsSheet'
 import { haptics } from '@/utils/haptics';
 import PulseDrawer from './PulseDrawer';
 import type { MarketPulse } from './thesisData';
-import { C, MONO } from './tokens';
+import { C, FONT, MONO } from './tokens';
 
 export interface FuelRow { k: string; on: boolean; hint?: string }
 
