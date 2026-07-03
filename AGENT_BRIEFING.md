@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo (2026-06-29):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx.
+**Last verified against repo (2026-07-03):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
 
 > **Important - the product changed.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter). That whole model was removed. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it.
 
@@ -83,7 +83,7 @@ Always confirm live prices and the current offer from https://circle.fractionl.a
 |---|---|---|---|
 | **Freemium** | $0 | Try the magic. | One full read of where you stand; your plan and next moves; build your circle by screenshot or CSV. |
 | **Pro** | $39/mo | Build the whole portfolio. | Unlimited reads as your plan evolves; real warm reach from your full network; specific, named next moves; ongoing market monitoring. |
-| **Chief of Staff** (`executive`) | $79/mo | Help me scale. | Unlimited reads and warm reach; a weekly brief on your network and market; external signal feeds (RFPs, job changes, trends); cross-user market intelligence; priority compute and white-glove concierge onboarding. |
+| **Chief of Staff** (`executive`) | $79/mo | Help me scale. | Unlimited reads and warm reach; the Monday chief-of-staff brief (where you stand, your market this week, the week's decision, plus the people going quiet); priority compute and white-glove concierge onboarding. External signal feeds and cross-user market intelligence are COMING - never pitch them as live. |
 
 - **Pro is the highlighted / primary CTA tier.** Free gives one full read with no paywall on first value; the deepening tools (re-reads, the path, warm reach, ongoing monitoring) are Pro.
 - **Stripe account:** fractionl_ai (three subscription tiers plus checkout are live).
@@ -209,7 +209,7 @@ How the loop works (per the locked plan; parts are ROADMAP, see Section 9):
 
 ## 9. LIVE vs ROADMAP (the fleet must never overclaim)
 
-The single hard rule: pitch the grounded read, the plan, and the living warm network as they are. Do NOT claim automatic/while-you-sleep delivery, phone push notifications, or native one-tap sending as live.
+The single hard rule: pitch the grounded read, the plan, and the living warm network as they are. Weekly email + web-push delivery IS live as of 2026-07-03 (the Monday digest/brief and the re-engagement sweep); native one-tap SEND (Gmail/Outlook draft injection) and native calendar writes are still NOT - do not claim them.
 
 | Capability | Status | What the fleet may say |
 |---|---|---|
@@ -225,7 +225,9 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 | Intelligent people-search over your whole network: semantic (meaning-based) + keyword retrieval returns real people, each with the actual fact that matched and a confidence - plus evidence-backed "warm route" (second-degree) inferences grounded in a person's OWN history (e.g. "was at Accel, a warm way into that fund"), never an invented relationship. | LIVE | Claim freely, including the honesty (nothing invented; every match cites a real fact). |
 | "Drop a contact" pinned in the top nav + a warm-reach bell/drawer (people going quiet, one-tap reach) | LIVE | Claim freely. |
 | Credit packs (one-time top-ups, on top of the subscription) that fund max-effort "10/10" enrichment - live open-web research synthesised into the contact's dossier - spent per deep dive; every match stays honest and cited. | LIVE | Claim freely. Credits are optional top-ups; the core search works on already-connected data without them. |
-| Weekly re-engagement EMAIL + WEB PUSH sweep (`cron-reengage`) | ROADMAP (coded + scheduled, INERT until Resend/VAPID keys are set) | Do NOT claim push or automatic re-engagement email as live. The in-app return surface IS live and is the safe thing to cite. |
+| Weekly re-engagement EMAIL + WEB PUSH sweep (`cron-reengage`) | LIVE (2026-07-03: Resend + VAPID keys verified set, cron active Mondays 15:00 UTC; every send lands a `delivery_log` row) | Claim carefully: a drifted user (5-21 days quiet) with something genuinely waiting gets a short email/push. Never claim real-time or per-event push. |
+| The Monday chief-of-staff brief for the $79 tier: where you stand (the same 0-100 as Home), your market this week (honest Pulse numbers), this week's one decision question, plus the people going quiet | LIVE | Claim freely for the Chief of Staff tier. It is composed only from the product's own state - never invented figures. |
+| Editable reach-out drafts + the voice loop (edits are remembered and future drafts converge on the user's own voice) | LIVE | Claim freely, plainly: "edit the draft before sending; it learns how you write." |
 | Native one-tap SEND (Gmail/Outlook draft injected, or LinkedIn composer) | ROADMAP | Do not claim; today it is a pre-filled draft + the user sends. |
 | Native calendar-write holds (vs the `.ics` attachment) | ROADMAP (behind off-by-default flags, pending sensitive-scope verification) | Do not claim; today the digest ships an `.ics` hold. |
 | External signal feeds (RFPs, job changes, trends) and cross-user market intelligence | ROADMAP (appears in Chief of Staff tier copy as the vision) | Do not claim as live behavior. |

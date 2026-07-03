@@ -385,6 +385,11 @@ export const chromeCss = `
 .thx .rband { font-family:${MONO}; font-size:8.5px; letter-spacing:0.08em; text-transform:uppercase; border:1px solid; border-radius:4px; padding:2px 6px; flex:0 0 auto; line-height:1; }
 .thx .rwhy { font-size:12.5px; color:${C.accent}; line-height:1.45; margin-top:10px; }
 .thx .rdraft { font-size:13px; color:${C.hi}; line-height:1.5; white-space:pre-wrap; background:${C.panel}; border:1px solid ${C.line}; border-radius:8px; padding:11px 12px; margin-top:8px; }
+/* The editable draft: the same visual register as .rdraft, but a real textarea so
+   the user makes it theirs BEFORE sending - every edit teaches the voice loop. */
+.thx textarea.rdraft { width:100%; display:block; resize:none; font-family:${FONT}; min-height:0; }
+.thx textarea.rdraft:focus { outline:none; border-color:${C.accentEdge}; }
+.thx .redited { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.accent}; margin-top:4px; }
 .thx .ractions { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
 .thx .rbtn { font-size:12.5px; font-weight:600; border-radius:7px; padding:9px 13px; cursor:pointer; border:1px solid ${C.line2}; background:${C.panel}; color:${C.hi}; }
 .thx .rbtn.primary { background:${C.accent}; border-color:${C.accent}; color:#1A1206; }

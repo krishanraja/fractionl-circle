@@ -59,9 +59,9 @@ export const TIERS: TierDisplay[] = [
     highlighted: false,
     features: [
       'Unlimited reads and warm reach',
-      'A weekly brief on your network and market',
-      'External signal feeds (RFPs, job changes, trends)',
-      'Cross-user market intelligence',
+      'Your Monday chief-of-staff brief: where you stand, your market, the week\'s decision',
+      'External signal feeds (RFPs, job changes, trends) - coming',
+      'Cross-user market intelligence - coming',
       'Priority compute, white-glove concierge onboarding',
     ],
     ctaLabel: 'Upgrade to Chief of Staff',
