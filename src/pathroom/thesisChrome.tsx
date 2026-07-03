@@ -248,17 +248,13 @@ export const chromeCss = `
 .thx .vpseg button.on { background:${C.panel3}; color:${C.hi}; box-shadow:0 1px 2px rgba(0,0,0,0.25); }
 /* the active view - the single flex region; never scrolls vertically */
 .thx .vpview { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; margin-top:12px; animation:thxfade .22s ease both; }
-/* trends carousel - one full card per page, swipe + dots, no vertical scroll */
-.thx .vptrack { flex:1 1 auto; min-height:0; display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
-.thx .vptrack::-webkit-scrollbar { display:none; }
-.thx .vptcard { flex:0 0 100%; scroll-snap-align:center; min-width:0; display:flex; flex-direction:column; justify-content:center; }
-.thx .vptcardin { background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:14px; padding:16px 15px; }
-.thx .vptcardhead { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.thx .vptcardtitle { font-size:18px; font-weight:600; color:${C.hi}; line-height:1.3; margin-top:9px; letter-spacing:-0.01em; }
-.thx .vptcardsum { font-size:13.5px; color:${C.mid}; line-height:1.5; margin-top:9px; }
-.thx .vpdots { flex:0 0 auto; display:flex; gap:7px; justify-content:center; padding:14px 0 2px; }
-.thx .vpdot-btn { width:7px; height:7px; border-radius:50%; border:0; padding:0; cursor:pointer; background:${C.line2}; transition:background .2s ease, transform .2s ease; }
-.thx .vpdot-btn.on { background:${C.accent}; transform:scale(1.25); }
+/* trends - all cards stacked, sharing the view height equally, no scroll and no swipe */
+.thx .vpstack { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:9px; }
+.thx .vptcard { flex:1 1 0; min-height:0; display:flex; }
+.thx .vptcardin { flex:1 1 auto; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:13px; padding:11px 13px; }
+.thx .vptcardhead { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.thx .vptcardtitle { flex:1 1 auto; min-width:0; font-size:15.5px; font-weight:600; color:${C.hi}; line-height:1.25; letter-spacing:-0.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.thx .vptcardsum { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 /* A. the plain market verdict hero + calm sentiment dot */
 .thx .vpverdict { display:flex; gap:9px; align-items:flex-start; }
 .thx .vpdot { width:9px; height:9px; border-radius:50%; flex:0 0 auto; margin-top:6px; box-shadow:0 0 0 3px rgba(255,255,255,0.04); }
@@ -267,11 +263,12 @@ export const chromeCss = `
 /* B. the plain role read */
 .thx .vprole { font-size:14.5px; font-weight:600; color:${C.hi}; line-height:1.35; }
 .thx .vpmeaning { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:6px; }
-/* trend badge + "your angle" (shared by the carousel card) */
-.thx .vptrendbadge { flex:0 0 auto; font-family:${MONO}; font-size:8px; letter-spacing:0.08em; text-transform:uppercase; color:${C.cool}; border:1px solid ${C.line2}; border-radius:4px; padding:2px 5px; line-height:1; }
+/* trend badge + "your angle" (shared by the stacked trend card) */
+.thx .vptrendbadge { flex:0 0 auto; margin-top:1px; font-family:${MONO}; font-size:8px; letter-spacing:0.08em; text-transform:uppercase; color:${C.cool}; border:1px solid ${C.line2}; border-radius:4px; padding:2px 5px; line-height:1; }
 .thx .vptrendbadge.hot { color:${C.accent}; border-color:${C.accentEdge}; background:rgba(224,162,60,0.08); }
-.thx .vptrendangle { font-size:13px; color:${C.hi}; line-height:1.45; margin-top:12px; background:rgba(224,162,60,0.08); border:1px solid ${C.accentEdge}; border-radius:9px; padding:10px 12px; }
-.thx .vptrendanglek { display:block; font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; margin-bottom:4px; }
+.thx .vptrendangle { flex:0 1 auto; min-height:0; margin-top:8px; background:rgba(224,162,60,0.08); border:1px solid ${C.accentEdge}; border-radius:9px; padding:7px 10px; overflow:hidden; }
+.thx .vptrendanglec { font-size:12px; color:${C.hi}; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.thx .vptrendanglek { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; margin-right:6px; }
 /* the metric rail: eye-catching value + colour-coded 30-day arrow down the left,
    the strategic read on the right - all vertically aligned. */
 .thx .vpmetrics { flex:0 0 auto; margin-top:6px; }
