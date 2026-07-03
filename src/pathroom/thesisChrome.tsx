@@ -252,6 +252,10 @@ export const chromeCss = `
 .thx .vpstack { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; gap:9px; }
 .thx .vptcard { flex:1 1 0; min-height:0; display:flex; }
 .thx .vptcardin { flex:1 1 auto; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; background:linear-gradient(180deg, rgba(143,184,201,0.05), ${C.panel}); border:1px solid ${C.line2}; border-radius:13px; padding:11px 13px; }
+/* the card is a button now (tap for the full read): reset + press feedback */
+.thx button.vptcardin { appearance:none; font:inherit; color:inherit; text-align:left; cursor:pointer; width:100%; transition:border-color .2s ease, transform .12s ease; -webkit-tap-highlight-color:transparent; }
+.thx button.vptcardin:hover { border-color:${C.accentEdge}; }
+.thx button.vptcardin:active { transform:translateY(1px); }
 .thx .vptcardhead { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
 .thx .vptcardtitle { flex:1 1 auto; min-width:0; font-size:15.5px; font-weight:600; color:${C.hi}; line-height:1.25; letter-spacing:-0.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .thx .vptcardsum { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
