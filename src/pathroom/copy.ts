@@ -65,7 +65,9 @@ export const dimLabel = (label: string): string => DIMENSION_LABEL[label] ?? lab
 // person - you're looking for (and we search your whole network for a real fit).
 export const BOX = {
   label: 'What are you working on - or who are you looking for?',
-  placeholder: 'A goal, or the kind of person you need…',
+  // Invite meaning-based search, not just a literal name filter (the semantic engine
+  // reaches "Partner at Sequoia" from "a venture fund" by meaning).
+  placeholder: 'A goal, or who you need - try "a VC who could intro me to founders"',
   voiceHint: 'Tap to talk',
   /** Heading above results when the box was read as a people-search. */
   foundLabel: 'Who can help',

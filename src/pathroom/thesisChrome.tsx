@@ -463,7 +463,9 @@ export const chromeCss = `
 /* desktop baseline: every surface centers into a console instead of a narrow left column */
 @media (min-width:900px) {
   .thx .topnav { padding-left:max(20px, calc((100% - 760px) / 2)); padding-right:max(20px, calc((100% - 760px) / 2)); }
-  .thx .thxbody { display:flex; flex-direction:column; justify-content:center; }
+  /* "safe center" so a surface taller than the viewport (e.g. the Circle people list)
+     falls back to top-aligned instead of centering and clipping its header under the nav. */
+  .thx .thxbody { display:flex; flex-direction:column; justify-content:safe center; }
   .thx .thxbody > .wrap { max-width:680px; width:100%; margin:0 auto; padding-top:24px; padding-bottom:24px; }
   .thx .thxfoot { padding-left:0; padding-right:0; }
   .thx .thxfoot .cta, .thx .thxfoot .foothint { max-width:680px; margin-left:auto; margin-right:auto; }
