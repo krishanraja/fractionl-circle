@@ -132,16 +132,15 @@ Deno.serve(async (req) => {
       });
       customerId = customer.id;
 
-      if (subscription) {
-        await supabase
-          .from('subscriptions')
-          .update({ stripe_customer_id: customerId })
-          .eq('user_id', user.id);
-      } else {
-        // tier + status carry their column defaults ('free' / 'active').
-        await supabase
-          .from('subscriptions')
-          .insert({ user_id: user.id, stripe_customer_id: customerId });
+      // Race-safe persist: upsert on the unique user_id. On conflict this sets only
+      // stripe_customer_id (tier/status are left untouched); on a fresh row tier +
+      // status take their column defaults ('free' / 'active'). A bare insert here
+      // would 23505 under a concurrent first checkout and drop the id.
+      const { error: persistError } = await supabase
+        .from('subscriptions')
+        .upsert({ user_id: user.id, stripe_customer_id: customerId }, { onConflict: 'user_id' });
+      if (persistError) {
+        console.error('Failed to persist stripe_customer_id:', persistError.code);
       }
     }
 

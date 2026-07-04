@@ -125,27 +125,29 @@ Deno.serve(async (req) => {
     const event = JSON.parse(body);
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Idempotency: Stripe delivers at-least-once. CHECK-then-process-then-MARK.
-    // The old code marked the event processed BEFORE doing the work, so a transient
-    // failure mid-processing (e.g. a Stripe fetch or DB upsert throwing) returned 500,
-    // Stripe retried, the retry saw the marker and returned "deduped" 200, and the
-    // entitlement was silently dropped. Now the marker is written only AFTER the
-    // handler succeeds, so a failed attempt reprocesses on retry. The handlers are
-    // all idempotent (credit grants keyed on event.id, subscription upserts on
-    // user_id), so a concurrent redelivery reprocessing is safe.
-    const { data: already } = await supabase
+    // Idempotency: Stripe delivers at-least-once. INSERT the marker FIRST (atomic,
+    // so a concurrent redelivery is deduped by the unique(event_id) constraint), then
+    // process, and DELETE the marker if processing throws so Stripe's retry can
+    // reprocess. The old code marked-then-processed but never rolled back on failure,
+    // so a transient error left the marker in place and the retry was deduped, silently
+    // dropping the entitlement. This insert-first-with-rollback pattern gives BOTH
+    // concurrent-dedup and retry-on-failure.
+    const { error: dedupeError } = await supabase
       .from('processed_stripe_events')
-      .select('event_id')
-      .eq('event_id', event.id)
-      .maybeSingle();
-    if (already) {
-      return new Response(JSON.stringify({ received: true, deduped: true }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      .insert({ event_id: event.id, event_type: event.type });
+    if (dedupeError) {
+      if (dedupeError.code === '23505') {
+        return new Response(JSON.stringify({ received: true, deduped: true }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      // Unexpected DB error: fail-open (process anyway) so a real event is never dropped.
+      console.error('processed_stripe_events insert error:', dedupeError.code);
     }
 
     console.log('Stripe webhook event:', event.type);
 
+    try {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
@@ -305,13 +307,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Mark processed only now that the handler has succeeded. A 23505 here (a
-    // concurrent redelivery that also just finished) is fine - the work is idempotent.
-    const { error: markError } = await supabase
-      .from('processed_stripe_events')
-      .insert({ event_id: event.id, event_type: event.type });
-    if (markError && markError.code !== '23505') {
-      console.error('processed_stripe_events mark error:', markError.code);
+    } catch (handlerError) {
+      // Processing failed after we claimed the idempotency marker. Roll it back so
+      // Stripe's automatic retry reprocesses this event instead of being deduped.
+      await supabase.from('processed_stripe_events').delete().eq('event_id', event.id);
+      throw handlerError;
     }
 
     return new Response(JSON.stringify({ received: true }), {
