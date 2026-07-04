@@ -612,7 +612,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     clearMessages();
     
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -622,6 +622,11 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
 
       if (error) {
         setError({ title: 'Sign up failed', message: error.message });
+      } else if (data.session) {
+        // Frictionless signup: email auto-confirm is on, so signUp returns a live
+        // session and the auth listener drops the user straight into the app. No
+        // email wall (which previously stranded ~45% of signups). If auto-confirm
+        // is ever turned back off, data.session is null and we fall back below.
       } else {
         setSuccessMessage('Check your email to confirm your account. Once you\'re in, we\'ll turn who you know into a plan for your next clients.');
       }
