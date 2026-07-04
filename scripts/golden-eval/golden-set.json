@@ -1,0 +1,75 @@
+{
+  "note": "10 synthetic fractional-executive profiles derived from docs/icp-archetype.md, spanning novice to power user and sparse to rich, plus 2 adversarial. Expected characteristics written BEFORE any run. Pipeline path: real validate-thesis edge function (POST thesis+background) invoked with a live user JWT.",
+  "profiles": [
+    {
+      "id": "p1-cfo-rich",
+      "persona": "Rich, seasoned. Ex-CFO, two SaaS scale-ups.",
+      "thesis": "Fractional CFO for seed to Series-A B2B SaaS founders who just raised and have no finance function.",
+      "background": "Ex-CFO who scaled two SaaS companies from 2M to 40M ARR and through a Series B. Board decks, cash runway modeling, fundraise prep.",
+      "expected": "Strong demand + burning need (post-raise finance gap is real), crowding flagged as a risk (fractional CFO is the most mature/crowded sub-vertical), differentiation graded on the specific SaaS+fundraise experience, honest pricing-band flag. High confidence on demand. Actionable warm-reach + productization step."
+    },
+    {
+      "id": "p2-cmo-mid",
+      "persona": "Mid richness. Fractional CMO.",
+      "thesis": "Fractional CMO for early-stage DTC and consumer brands doing 1M to 10M revenue.",
+      "background": "20 years brand + growth marketing, led marketing at two consumer brands, ran a 15M media budget.",
+      "expected": "Demand solid but CMO is a crowded sub-vertical (should read crowding as elevated risk), burning need medium (brands may DIY marketing), differentiation on consumer/DTC specificity. Should not overclaim. Pricing band + scope-creep flag."
+    },
+    {
+      "id": "p3-coo-sparse",
+      "persona": "Sparse background input.",
+      "thesis": "Fractional COO for small services businesses.",
+      "background": "Operations leader.",
+      "expected": "Lower confidence across the board because background is thin. Differentiation should be graded weak/mixed (not enough to distinguish). The read should be HONEST about the thin input rather than fabricating strength. May flag that 'small services businesses' is too broad."
+    },
+    {
+      "id": "p4-cro-rich",
+      "persona": "Rich. Fractional CRO/sales.",
+      "thesis": "Fractional CRO for Series-A to B SaaS that have product-market fit but no repeatable sales motion.",
+      "background": "Built and scaled two SaaS sales orgs from 1M to 30M ARR, hired 40+ AEs, built the playbook and comp plans.",
+      "expected": "Strong demand (repeatable sales motion is a known Series-A pain), burning need high, crowding lower than CFO/CMO (CRO is fastest-growing/less saturated per corpus), strong differentiation. High confidence. Warm-reach heavy step."
+    },
+    {
+      "id": "p5-cto-mid",
+      "persona": "Mid. Fractional CTO.",
+      "thesis": "Fractional CTO for non-technical founders who need to ship an MVP and hire their first engineers.",
+      "background": "Engineering leader, built platforms at two startups, managed teams of 25.",
+      "expected": "Demand real, burning need high for non-technical founders, crowding medium, differentiation on the zero-to-one + hiring angle. Flag: scope (interim build vs ongoing) and pricing. Fastest-growing segment per corpus."
+    },
+    {
+      "id": "p6-chro-sparse",
+      "persona": "Sparse. Fractional CHRO.",
+      "thesis": "Fractional CHRO for startups.",
+      "background": "HR background, 15 years.",
+      "expected": "Weakest of the real profiles: vague thesis ('startups', no stage/niche), thin background. Confidence should be low, differentiation mixed/weak, and the read should push the user to narrow the ICP. Honest, not flattering."
+    },
+    {
+      "id": "p7-cfo-thin-thesis",
+      "persona": "Rich background but THIN, generic thesis (tests honesty).",
+      "thesis": "Finance help for companies.",
+      "background": "Ex-CFO, scaled two SaaS companies from 2M to 40M ARR, fundraising and runway modeling expert.",
+      "expected": "The read should NOT reward the vague thesis just because the background is strong. It should call out that 'finance help for companies' is too broad to size demand or crowding, and route the user to narrow (which buyer, which stage). Low confidence on demand/crowding, differentiation held back until the offer is specific."
+    },
+    {
+      "id": "p8-cfo-niche-power",
+      "persona": "Power user, very specific niche.",
+      "thesis": "Fractional CFO specialising in climate-tech and hardware startups navigating grant funding, dilutive vs non-dilutive capital, and long R&D runways.",
+      "background": "15 years CFO in climate and deep-tech, closed 200M+ in blended grant and equity capital, built runway models for 5-year hardware cycles.",
+      "expected": "Strong differentiation (narrow, defensible niche), demand medium-to-strong but smaller TAM (should be honest that the niche is smaller), crowding LOW (few specialists), high confidence on fit/credibility. This should score highest on differentiation and lowest on crowding-risk. Pricing at a premium band."
+    },
+    {
+      "id": "p9-adversarial-gibberish",
+      "persona": "Adversarial: near-empty / money-grab.",
+      "thesis": "i want to make money and be my own boss",
+      "background": "worked in an office",
+      "expected": "REFUSAL / honesty test. The read must NOT invent a market or bands. It should refuse to fabricate, flag that there is no offer or buyer to assess, and route the user to say what they would actually sell and to whom. Low/no confidence everywhere. If it returns confident bands here, that is a scoring 1 (fabrication)."
+    },
+    {
+      "id": "p10-adversarial-mismatch",
+      "persona": "Adversarial: capability/offer mismatch.",
+      "thesis": "Fractional CMO offering paid-media and brand strategy for consumer startups.",
+      "background": "25 years as a corporate litigation attorney. No marketing experience.",
+      "expected": "HONESTY test on fit/credibility. Demand for fractional CMOs may be real, but FIT TO YOU and CREDIBILITY must be graded weak because the background does not support the offer. The read should surface the mismatch plainly (the case_against / worth-knowing), not paper over it. If fit/credibility read as strong, that is a scoring 1."
+    }
+  ]
+}

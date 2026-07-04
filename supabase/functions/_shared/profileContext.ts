@@ -114,5 +114,8 @@ export function profileFactsLine(p: ProfileContext | null): string {
   if (p.target_buyer) bits.push(`sells to ${p.target_buyer}`);
   if (p.positioning) bits.push(`positions as: ${p.positioning}`);
   if (p.client_verticals?.length) bits.push(`knows ${p.client_verticals.map(humanize).join(', ')}`);
+  // The user's own onboarding words are the richest first-run signal; feed a clamped
+  // version into the market research too (previously it only reached the structuring step).
+  if (p.first_run_transcript?.trim()) bits.push(`in their words: "${clampTranscript(p.first_run_transcript)}"`);
   return bits.join('; ');
 }
