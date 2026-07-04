@@ -18,7 +18,17 @@ async function stripeRequest(endpoint: string, body: Record<string, string>) {
     },
     body: new URLSearchParams(body).toString(),
   });
-  return response.json();
+  const json = await response.json();
+  // A Stripe 4xx/5xx must NOT be swallowed. Without this check a bad price id or
+  // customer error returns an object with no `url`, and the function used to reply
+  // HTTP 200 with `{}` - a dead Upgrade button with no diagnostics. Throw so the
+  // caller's catch returns a real 500 with the Stripe message, and log the cause.
+  if (!response.ok) {
+    const message = json?.error?.message || `Stripe API error (${response.status})`;
+    console.error('Stripe API error:', endpoint, response.status, json?.error?.type ?? '', message);
+    throw new Error(message);
+  }
+  return json;
 }
 
 Deno.serve(async (req) => {
@@ -101,16 +111,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Check for existing Stripe customer
+    // Check for existing Stripe customer. maybeSingle (not single): a user with no
+    // subscriptions row must not error here.
     const { data: subscription } = await supabase
       .from('subscriptions')
       .select('stripe_customer_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     let customerId = subscription?.stripe_customer_id;
 
-    // Create Stripe customer if needed
+    // Create Stripe customer if needed, then PERSIST the id. Previously this did a
+    // bare UPDATE, which is a no-op when the row is missing, so every checkout by a
+    // user with no subscriptions row minted a fresh duplicate Stripe customer.
     if (!customerId) {
       const customer = await stripeRequest('/customers', {
         email: user.email || '',
@@ -119,10 +132,16 @@ Deno.serve(async (req) => {
       });
       customerId = customer.id;
 
-      await supabase
+      // Race-safe persist: upsert on the unique user_id. On conflict this sets only
+      // stripe_customer_id (tier/status are left untouched); on a fresh row tier +
+      // status take their column defaults ('free' / 'active'). A bare insert here
+      // would 23505 under a concurrent first checkout and drop the id.
+      const { error: persistError } = await supabase
         .from('subscriptions')
-        .update({ stripe_customer_id: customerId })
-        .eq('user_id', user.id);
+        .upsert({ user_id: user.id, stripe_customer_id: customerId }, { onConflict: 'user_id' });
+      if (persistError) {
+        console.error('Failed to persist stripe_customer_id:', persistError.code);
+      }
     }
 
     // Create Checkout Session - a one-time payment for a credit pack, or the

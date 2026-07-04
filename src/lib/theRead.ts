@@ -73,10 +73,25 @@ export interface BoxResult {
   intent: BoxIntent;
   working?: RankedPerson[];
   found?: NetworkMatch[];
+  // Set when the whole-network find path is Pro-gated for this (free) user.
+  upgrade?: boolean;
 }
 
 export async function runBoxQuery(text: string): Promise<BoxResult> {
-  const { data } = await supabase.functions.invoke('search-network', { body: { query: text } });
+  const { data, error } = await supabase.functions.invoke('search-network', { body: { query: text } });
+  if (error) {
+    // Full-network search is Pro. The server replies 402 with code
+    // 'upgrade_required'; supabase-js surfaces that as an invoke error whose body
+    // is on error.context. Detect it and let the box render an upgrade prompt
+    // instead of throwing or mis-routing to the working_on path.
+    try {
+      const body = await (error as { context?: { json?: () => Promise<{ code?: string }> } }).context?.json?.();
+      if (body?.code === 'upgrade_required') {
+        return { intent: 'find_people', found: [], upgrade: true };
+      }
+    } catch { /* fall through to throw */ }
+    throw error;
+  }
   const intent = (data as { intent?: string } | null)?.intent;
   if (intent === 'find_people') {
     const people = (data as { people?: unknown })?.people;

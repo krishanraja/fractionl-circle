@@ -91,6 +91,14 @@ export default function WorkingOnInput() {
     setBusy(true); setErr(null);
     try {
       const res = await runBoxQuery(t);
+      if (res.upgrade) {
+        // Whole-network search is Pro. Show an honest prompt rather than an empty
+        // "no results" (the full upgrade CTA lives in the paywall pass). Keep
+        // results null so the empty-state block does not render under the message.
+        setResults(null);
+        setErr('Searching your whole network is a Pro feature. Upgrade to Pro to find the right people by meaning.');
+        return;
+      }
       setIntent(res.intent);
       let people: DisplayPerson[];
       if (res.intent === 'working_on') {
