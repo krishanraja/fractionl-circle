@@ -4,7 +4,7 @@ import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
 import { decisionLine, type DecisionRow } from '../_shared/decisionContext.ts';
-import { FALLBACK, REDTEAM_FALLBACK } from '../_shared/coachQuestions.ts';
+import { FALLBACK, REDTEAM_FALLBACK, EDGE_LABEL, normalizeDimension } from '../_shared/coachQuestions.ts';
 
 // next-question: the proactive Socratic coach. Given the user's latest read, it
 // finds the weakest graded dimension (or the biggest missing input) and asks the
@@ -75,7 +75,9 @@ Deno.serve(async (req) => {
     // Strong across the board: switch from coach to sparring partner (red-team the
     // strongest claim) instead of going quiet at exactly the moment to attack the plan.
     const redteam = !focus && !!weak && weak.pct >= STRONG_FLOOR;
-    const dimLabel = redteam ? (strongest?.row.label ?? 'Your edge') : (weak?.row.label ?? 'Your edge');
+    // Normalize so legacy runs (stored "Your edge") and new runs ("What makes you
+    // different") both resolve to the current canonical label everywhere downstream.
+    const dimLabel = normalizeDimension(redteam ? strongest?.row.label : weak?.row.label);
 
     // Recent history: never repeat a question verbatim, never re-ask one the user
     // declined (skipped), and treat settled (applied) decisions as fixed ground.
@@ -98,7 +100,7 @@ Deno.serve(async (req) => {
       .limit(12);
     const settled = ((settledRows ?? []) as DecisionRow[]).map(decisionLine);
 
-    const fb = redteam ? REDTEAM_FALLBACK : (FALLBACK[dimLabel] ?? FALLBACK['Your edge']);
+    const fb = redteam ? REDTEAM_FALLBACK : (FALLBACK[dimLabel] ?? FALLBACK[EDGE_LABEL]);
     const buildFallback = () => ({
       run_id: run?.id ?? null,
       dimension: dimLabel,

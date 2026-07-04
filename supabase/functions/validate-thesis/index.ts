@@ -58,7 +58,7 @@ Return ONLY JSON:
 }
 
 Rules:
-- "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "Your edge". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics. For "Your edge": if BUSINESSES THEY ADMIRE are given, use what they want to take from those models to articulate a sharper, more specific edge, and reference it plainly; never copy a competitor, treat any flagged competitor as the bar to beat.
+- "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "What makes you different". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics. For "What makes you different": if BUSINESSES THEY ADMIRE are given, use what they want to take from those models to articulate a sharper, more specific edge, and reference it plainly; never copy a competitor, treat any flagged competitor as the bar to beat.
 - "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from the person's assessed background in the research and any stated background; if little public background was found, keep them at medium or low confidence and say plainly that connecting more detail would sharpen it. For "Warm reach": you are given THEIR CIRCLE. If the circle is empty, band "mixed", confidence "low", evidence telling them to connect their network. If it has people, judge how many plausibly fit the thesis's buyer (founders or leaders at the target kind of company): several clear fits = band "strong", a few = "mixed", and state how many fit. Confidence "high" only with a real circle. Never invent people not in the circle. This is the honesty rule, follow it.
 - "read": one or two plain sentences, the honest overall call. No jargon, no hype.
 - "from": one plain sentence on where they are now, drawn from their background. "to": one plain sentence on where this thesis takes them, their goal. Both short and concrete.
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     const circle = (circleRows ?? []).map((p: { display_name: string; title: string | null; company: string | null }) =>
       `${p.display_name}${p.title ? ', ' + p.title : ''}${p.company ? ' at ' + p.company : ''}`);
 
-    // Businesses the user admires (from the after-read fuel panel) sharpen "Your edge".
+    // Businesses the user admires (from the after-read fuel panel) sharpen "What makes you different".
     const { data: inspRows } = await supabase.from('thesis_inspiration').select('name, positioning, kind, field, why').eq('user_id', userId).order('created_at', { ascending: false }).limit(8);
     const inspiration = (inspRows ?? []).map((r: { name: string | null; positioning: string | null; kind: string | null; field: string | null; why: string | null }) =>
       `${r.name}${r.kind === 'competitor' ? ' (a direct competitor, treat as the bar to beat, not a template)' : ''}${r.field ? ' (different field: ' + r.field + ', keep only the transferable part)' : ''}: positions as ${r.positioning || 'unknown'}. The user admires their ${r.why || 'approach'}.`);

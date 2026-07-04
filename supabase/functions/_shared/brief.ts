@@ -9,7 +9,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { computeSharpness, type ScoreRowT } from './sharpness.ts';
 import { fetchPulseFacts, pulseFactLines } from './pulseFacts.ts';
-import { questionForDimension, REDTEAM_FALLBACK, type CoachQuestion } from './coachQuestions.ts';
+import { questionForDimension, REDTEAM_FALLBACK, normalizeDimension, type CoachQuestion } from './coachQuestions.ts';
 
 export interface ChiefOfStaffBrief {
   score: number;          // the same 0-100 the user sees on Home
@@ -76,7 +76,7 @@ export async function buildBriefForUser(
   return {
     score: sharp.score,
     provisional: sharp.provisional,
-    weakestLabel: weakest?.label ?? null,
+    weakestLabel: weakest ? normalizeDimension(weakest.label) : null,
     bankedCount: bankedCount ?? 0,
     decidedCount: decidedCount ?? 0,
     nextMove,

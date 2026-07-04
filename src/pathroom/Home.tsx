@@ -7,7 +7,7 @@
 // Renders inside .thxbody.
 import { useState } from 'react';
 import { C } from './tokens';
-import { PLAN } from './copy';
+import { PLAN, dimLabel } from './copy';
 import type { DecisionEntry } from './thesisData';
 import { holdingBack, type Sharpness } from './sharpness';
 
@@ -48,7 +48,7 @@ function DecisionSheet({ decisions, onMarkOutcome, onClose }: {
             {d.question ? <div style={{ fontSize: 12, color: C.mid, lineHeight: 1.4, marginTop: 4 }}>{d.question}</div> : null}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
               <span className="mono" style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.lo }}>
-                {fmt(d.created_at)}{d.dimension ? ` · ${d.dimension}` : ''}
+                {fmt(d.created_at)}{d.dimension ? ` · ${dimLabel(d.dimension)}` : ''}
               </span>
               <span className="mono" style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: d.applied_at ? C.good : C.accent }}>
                 {d.applied_at ? 'in your read' : 'banked, folds into your next read'}

@@ -17,7 +17,7 @@ const READ = {
     { label: 'Demand', band: 'strong', evidence: '', confidence: 'high' },
     { label: 'Burning need', band: 'mixed', evidence: '', confidence: 'medium' },
     { label: 'Crowding', band: 'risk', evidence: '', confidence: 'high' },
-    { label: 'Your edge', band: 'weak', evidence: '', confidence: 'low' },
+    { label: 'What makes you different', band: 'weak', evidence: '', confidence: 'low' },
   ],
   ability: [
     { label: 'Fit to you', band: 'strong', evidence: '', confidence: 'medium' },
@@ -68,7 +68,9 @@ describe('brief building blocks', () => {
 
   it('picks the coach question for the weakest dimension, red-team when strong', () => {
     expect(questionForDimension('Warm reach').question).toContain('network');
-    expect(questionForDimension('Nonexistent').topic).toBe('Your edge');
+    expect(questionForDimension('Nonexistent').topic).toBe('What makes you different');
+    // Legacy runs stored "Your edge"; it must still resolve to the same coach question.
+    expect(questionForDimension('Your edge').question).toContain('unfair advantage');
     expect(REDTEAM_FALLBACK.topic).toBe('Red team');
   });
 
