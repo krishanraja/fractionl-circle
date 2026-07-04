@@ -4,7 +4,7 @@ import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock, profileFactsLine } from '../_shared/profileContext.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
 import { settledDecisionsBlock, newDecisionsBlock, priorReadBlock, corpusFactsBlock, type DecisionRow, type BenchmarkRow, type LandmineRow } from '../_shared/decisionContext.ts';
-import { freeReadCapReached } from '../_shared/tiers.ts';
+import { getUserTier, countThesisRuns, FREE_READ_LIMIT } from '../_shared/tiers.ts';
 
 // validate-thesis: the real research harness behind the hero. Takes a fractional exec's
 // thesis (+ background), runs live web research via Perplexity (sourced), then structures
@@ -90,12 +90,16 @@ Deno.serve(async (req) => {
     // Server-side entitlement. The client gates deep phases for free users, but the
     // server must enforce it too or a free JWT can run unlimited paid reads via the
     // API. Free (post-trial) users get one read; then 402. Trial + Pro + Executive
-    // are unlimited (getUserTier treats an active trial as pro).
-    if (await freeReadCapReached(supabase, userId)) {
-      return new Response(
-        JSON.stringify({ error: 'Your free plan includes one read. Upgrade to Pro for unlimited reads as your plan evolves.', code: 'upgrade_required' }),
-        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // are unlimited (getUserTier treats an active trial as pro). Resolved once here
+    // and reused for the atomic persist gate below; both fail closed on a DB error.
+    const tier = await getUserTier(supabase, userId);
+    const upgradeResponse = () => new Response(
+      JSON.stringify({ error: 'Your free plan includes one read. Upgrade to Pro for unlimited reads as your plan evolves.', code: 'upgrade_required' }),
+      { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+    // Fast path: a free user who has already read is stopped before any paid work.
+    if (tier === 'free' && (await countThesisRuns(supabase, userId)) >= FREE_READ_LIMIT) {
+      return upgradeResponse();
     }
 
     // The user model: the shared envelope every other AI surface already loads.
@@ -163,7 +167,21 @@ Deno.serve(async (req) => {
     if (typeof parsed.case_against !== 'string' || !(parsed.case_against as string).trim()) delete parsed.case_against;
 
     const result = { ...parsed, citations: research.citations };
-    await supabase.from('thesis_runs').insert({ user_id: userId, thesis, background: background || null, result });
+    // Atomic persist + free-cap enforcement. The RPC takes a per-user advisory lock
+    // and re-checks the count inside it, so concurrent free reads cannot all slip
+    // past the fast-path check above and each persist a run. Returns null when a free
+    // user is at their cap (a lost concurrency race): entitlement holds, we return 402.
+    const { data: gatedRunId, error: gateError } = await supabase.rpc('insert_thesis_run_gated', {
+      p_thesis: thesis,
+      p_background: background || null,
+      p_result: result,
+      p_is_free: tier === 'free',
+      p_limit: FREE_READ_LIMIT,
+    });
+    if (gateError) throw gateError;
+    if (!gatedRunId) {
+      return upgradeResponse();
+    }
     // Mark the clarifications this read folded in, so they stop adding provisional
     // lift and the next question moves on.
     if (answerRows?.length) {

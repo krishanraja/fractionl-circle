@@ -52,11 +52,15 @@ export const QUOTAS: Record<Tier, TierQuotas> = {
 // Pulls the user's current tier. Honours trial periods (trialing counts as
 // pro). Falls back to 'free' if no subscription row.
 export async function getUserTier(supabase: any, userId: string): Promise<Tier> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
     .select('tier, status, trial_ends_at')
     .eq('user_id', userId)
     .maybeSingle();
+  // Fail CLOSED: a real read error must NOT be silently treated as 'free' (that
+  // would 402 a paying customer) - propagate so the caller returns 5xx and the
+  // user retries. A genuine no-row (new user, RLS-empty) is not an error and is free.
+  if (error) throw new Error(`getUserTier read failed: ${error.message || error.code}`);
   if (!data) return 'free';
   const trialing = data.status === 'trialing'
     && data.trial_ends_at
@@ -81,10 +85,13 @@ export const FREE_READ_LIMIT = 1;
 // How many reads this user has already run. The paid work (Perplexity + structuring
 // LLM) is what the free cap protects, so every persisted run counts.
 export async function countThesisRuns(supabase: any, userId: string): Promise<number> {
-  const { count } = await supabase
+  const { count, error } = await supabase
     .from('thesis_runs')
     .select('id', { head: true, count: 'exact' })
     .eq('user_id', userId);
+  // Fail CLOSED: an errored count must not read as 0 (that would let a free user
+  // past their cap). Propagate so the caller 5xxs instead of leaking a paid read.
+  if (error) throw new Error(`countThesisRuns failed: ${error.message || error.code}`);
   return count ?? 0;
 }
 
