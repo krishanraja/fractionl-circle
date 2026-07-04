@@ -4,6 +4,7 @@
 // read does not pretend, it pivots to sharpening. Renders BODY only inside ThesisApp's
 // .thxbody; the single primary action is pinned in the frame footer (see journeyState).
 import { C } from './tokens';
+import { PLAN } from './copy';
 import type { Scorecard } from './thesisViews';
 import type { CircleP } from './thesisData';
 
@@ -37,7 +38,7 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
   if (st.weak) {
     return (
       <>
-        <div className="ovl">Where you stand</div>
+        <div className="ovl">{PLAN.pathTitle}</div>
         <div className="h" style={{ marginTop: 10 }}>This one is too thin to map yet.</div>
         <div className="sub">Your idea is still too broad for the market to answer clearly, so a path would be guesswork. Make it clearer - who it's for and why you - and the map writes itself.</div>
         <div className="panel" style={{ marginTop: 16 }}>
@@ -55,7 +56,7 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
 
   return (
     <>
-      <div className="ovl">Your path</div>
+      <div className="ovl">{PLAN.pathTitle}</div>
       <div className="h" style={{ marginTop: 8, fontSize: 20 }}>From where you are to your first retained client.</div>
       <div style={{ marginTop: 16 }}>
         {steps.map((s, i) => {

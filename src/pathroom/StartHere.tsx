@@ -221,7 +221,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
             </span>
             <span style={{ flex: 1 }}>
               <span className="fueltitle2" style={{ display: 'block' }}>A business you admire</span>
-              <span className="fuelfor">Someone whose work you'd love to build toward. It helps us learn your taste and shape your edge.</span>
+              <span className="fuelfor">Someone whose work you'd love to build toward. It helps us learn your taste and shape what makes you different.</span>
             </span>
             <span className="navhint" style={{ color: inspDone ? C.good : C.accent }}>{inspDone ? 'done' : `${inspCount}/1`}</span>
           </button>
@@ -244,7 +244,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
         </div>
 
         <div className="mono" style={{ fontSize: 10.5, color: C.lo, marginTop: 16, lineHeight: 1.6 }}>
-          Everything you add stays yours and keeps working after today - your people become your circle, your inspiration shapes your edge.
+          Everything you add stays yours and keeps working after today - your people become your circle, your inspiration shapes what makes you different.
         </div>
       </div></div>
 

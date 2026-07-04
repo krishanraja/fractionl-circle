@@ -10,7 +10,9 @@
 //   "Deep dive" tab         ->  "Plan"
 //   "thesis"                ->  "your idea" / "what you want to offer"
 //   "validate / run it"     ->  "see how it lands"
-//   "the read" / scorecard  ->  "where you stand"
+//   "the read" / scorecard  ->  "Value Prop"      (was "where you stand")
+//   "your path" / journey   ->  "Next Action"     (was "your path")
+//   "your edge" (dimension) ->  "What makes you different"
 //   "sharpen"               ->  "make it stronger"
 
 export const PLAN = {
@@ -29,10 +31,17 @@ export const PLAN = {
   /** Rerunning with banked answers waiting. Callers append " (+N)". */
   rerunAgain: 'See how it lands again',
 
-  /** The result of a run. */
-  result: 'where you stand',
-  resultTitle: 'Where you stand',
-  openResult: 'See where you stand',
+  /** Fork 1 - the result of a run: understand + strengthen the opportunity. */
+  result: 'value prop',
+  resultTitle: 'Value Prop',
+  openResult: 'See your value prop',
+  fork1Sub: 'Is it a real opportunity? Strengthen what makes you different.',
+
+  /** Fork 2 - the action: the next step toward the goal. */
+  path: 'next action',
+  pathTitle: 'Next Action',
+  openPath: 'See your next action',
+  fork2Sub: 'The next step toward your first retained client.',
 
   /** Deepening an existing idea. */
   strengthen: 'Make it stronger',
@@ -41,6 +50,15 @@ export const PLAN = {
   /** The charge/fuel metaphor (the brand mark brightens as inputs go in). */
   charge: "What's powering this",
 } as const;
+
+// Plain-English display labels for the server-generated scorecard dimensions.
+// The canonical keys stay stable everywhere it matters - they're stored in the DB
+// and pinned by the edge functions and tests - so only what the user READS changes.
+// One place for the vocabulary; apply dimLabel() at every render site.
+export const DIMENSION_LABEL: Record<string, string> = {
+  'Your edge': 'What makes you different',
+};
+export const dimLabel = (label: string): string => DIMENSION_LABEL[label] ?? label;
 
 // The one box at the top of Circle. It does double duty: say what you're working
 // on (and we surface your inner circle for it), or name who - or the kind of

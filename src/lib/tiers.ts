@@ -27,8 +27,8 @@ export const TIERS: TierDisplay[] = [
     priceIdEnv: null,
     highlighted: false,
     features: [
-      'One full read of where you stand',
-      'Your plan and next moves',
+      'One full read of your value prop',
+      'Your plan and next actions',
       'Build your circle by screenshot or CSV',
     ],
     ctaLabel: 'Current plan',
@@ -59,7 +59,7 @@ export const TIERS: TierDisplay[] = [
     highlighted: false,
     features: [
       'Unlimited reads and warm reach',
-      'Your Monday chief-of-staff brief: where you stand, your market, the week\'s decision',
+      'Your Monday chief-of-staff brief: your value prop, your market, the week\'s decision',
       'External signal feeds (RFPs, job changes, trends) - coming',
       'Cross-user market intelligence - coming',
       'Priority compute, white-glove concierge onboarding',

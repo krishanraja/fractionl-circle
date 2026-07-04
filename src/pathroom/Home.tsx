@@ -1,8 +1,9 @@
 // The command-center Home for your one venture, laser-focused: a living, TAPPABLE
-// ember orb (tap it to see where you stand), the strength score, and a quiet row
-// of secondary links (where you stand / your path / your decisions). The ONE
-// orange action lives in the frame's pinned footer, picked contextually by
-// primaryAction.ts - one journey, one door. People are owned by the Circle tab.
+// ember orb (tap it to open your Value Prop), the strength score, and the Plan
+// tab's two clear forks - Value Prop (understand + strengthen the opportunity) and
+// Next Action (take the next step) - with a quiet "Your decisions" memory link
+// beneath. The ONE orange action lives in the frame's pinned footer, picked
+// contextually by primaryAction.ts. People are owned by the Circle tab.
 // Renders inside .thxbody.
 import { useState } from 'react';
 import { C } from './tokens';
@@ -100,17 +101,31 @@ export default function Home({ fuel, sharp, decisions, onMarkOutcome, onOpenRead
         </button>
       </div>
 
-      <div className="homelinks">
-        <button className="homelink" onClick={onOpenRead}>{PLAN.resultTitle}</button>
-        <span className="homelinksep">·</span>
-        <button className="homelink" onClick={onOpenPath}>Your path</button>
-        {decisions.length > 0 ? (
-          <>
-            <span className="homelinksep">·</span>
-            <button className="homelink" onClick={() => setLogOpen(true)}>Your decisions</button>
-          </>
-        ) : null}
+      {/* The Plan tab is two clear forks: understand + strengthen the opportunity
+          (Value Prop), or take the next step (Next Action). Each is one tappable
+          row with a plain-English one-liner - not a scatter of tiny links. */}
+      <div className="forks">
+        <button className="forkrow" onClick={onOpenRead}>
+          <span className="forkrow-t">
+            <span className="forkrow-title">{PLAN.resultTitle}</span>
+            <span className="forkrow-sub">{PLAN.fork1Sub}</span>
+          </span>
+          <span className="htarrow">→</span>
+        </button>
+        <button className="forkrow" onClick={onOpenPath}>
+          <span className="forkrow-t">
+            <span className="forkrow-title">{PLAN.pathTitle}</span>
+            <span className="forkrow-sub">{PLAN.fork2Sub}</span>
+          </span>
+          <span className="htarrow">→</span>
+        </button>
       </div>
+
+      {decisions.length > 0 ? (
+        <div className="homelinks">
+          <button className="homelink" onClick={() => setLogOpen(true)}>Your decisions</button>
+        </div>
+      ) : null}
 
       {logOpen ? <DecisionSheet decisions={decisions} onMarkOutcome={onMarkOutcome} onClose={() => setLogOpen(false)} /> : null}
     </div>

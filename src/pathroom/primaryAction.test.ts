@@ -4,6 +4,7 @@
 // band goes to the path, not to polishing), and every movePrimary branch.
 import { describe, expect, it } from 'vitest';
 import { ACTION_BIAS_FLOOR, movePrimary, pickHomeAction } from './primaryAction';
+import { PLAN } from './copy';
 import type { JourneyState } from './JourneyMap';
 import type { StepT } from './thesisViews';
 
@@ -68,8 +69,8 @@ describe('pickHomeAction', () => {
   });
 
   it('all done or no steps sends you to the path itself', () => {
-    expect(pickHomeAction({ ...base, js: js({ allDone: true, current: 1 }) }).label).toBe('See your path');
-    expect(pickHomeAction({ ...base, steps: [] }).label).toBe('See your path');
+    expect(pickHomeAction({ ...base, js: js({ allDone: true, current: 1 }) }).label).toBe(PLAN.openPath);
+    expect(pickHomeAction({ ...base, steps: [] }).label).toBe(PLAN.openPath);
   });
 
   it('warm-blocked with strong dims mirrors the journey wording', () => {

@@ -95,7 +95,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     if (t) push([{ role: 'you', text: t, kicker: 'your background' }]);
     setStep('ready'); setInput('');
     setHead(thin ? 'Ready when you are.' : 'Good. That gives us something real to test.');
-    setSub(thin ? 'The read will be a sketch until you sharpen the thesis.' : 'Next we check it against live demand, your buyers, the crowding, and your edge.');
+    setSub(thin ? 'The read will be a sketch until you sharpen the thesis.' : 'Next we check it against live demand, your buyers, the crowding, and what makes you different.');
     setBgFinal(t); // complete is triggered by the CTA on the ready step
   }
 

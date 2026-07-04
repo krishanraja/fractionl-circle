@@ -5,6 +5,7 @@
 // computation surfaces the weakest dimension(s) - exactly what the question engine
 // asks about next.
 import type { Scorecard, ScoreRowT, Band } from './thesisViews';
+import { dimLabel } from './copy';
 
 export interface SharpnessInputs {
   hasBackground: boolean;
@@ -93,5 +94,5 @@ export function holdingBack(s: Sharpness): string {
   if (!s.byDimension.length) return 'Run your read to start scoring this.';
   if (!s.weakest.length) return 'Strong across the board. Lock it in with a re-run.';
   const w = s.weakest[0];
-  return `Weakest right now: ${w.label}.`;
+  return `Weakest right now: ${dimLabel(w.label)}.`;
 }

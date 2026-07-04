@@ -3,6 +3,7 @@
 // register, plain language. Types match the validate-thesis edge function output.
 import { useState } from 'react';
 import { C, FONT, MONO } from './tokens';
+import { PLAN, dimLabel } from './copy';
 
 export type Band = 'weak' | 'mixed' | 'strong' | 'risk';
 export interface ScoreRowT { label: string; band: Band; evidence: string; confidence: 'high' | 'medium' | 'low' }
@@ -23,7 +24,7 @@ export const CANONICAL_JOURNEY: JourneyT[] = [
   { label: 'Scanning where your buyers complain' },
   { label: 'Checking who else offers this' },
   { label: 'Mapping your network to the buyers' },
-  { label: 'Weighing your edge and pricing' },
+  { label: 'Weighing what makes you different, and pricing' },
 ];
 
 const BANDVAL: Record<Band, number> = { weak: 1, mixed: 2, strong: 3, risk: 3 };
@@ -100,7 +101,7 @@ function ScoreRow({ r }: { r: ScoreRowT }) {
   return (
     <div className="row" onClick={() => setOpen((o) => !o)} style={{ cursor: 'pointer' }}>
       <div className="rtop">
-        <span className="rlabel">{r.label}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
+        <span className="rlabel">{dimLabel(r.label)}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
         <Pips band={r.band} />
         <span className="conf">{r.confidence}</span>
       </div>
@@ -152,7 +153,7 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
           <img src="/brand/fractionl-icon.png" alt="" style={{ width: 26, height: 26, filter: 'var(--thx-glow-core)', animation: done ? 'none' : 'ldrbreath 2.4s ease-in-out infinite' }} />
         </div>
       </div>
-      <div className="sub" style={{ marginTop: 4, textAlign: 'center' }}>Reading the market, your buyers, and your edge.</div>
+      <div className="sub" style={{ marginTop: 4, textAlign: 'center' }}>Reading the market, your buyers, and what makes you different.</div>
       <div style={{ marginTop: 16 }}>
         {steps.map((s, i) => (
           <div key={i} className={'step' + (i < shown ? ' on' : '')}>
@@ -176,7 +177,7 @@ export function ReadView({ data }: { data: Scorecard }) {
   const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
   return (
     <>
-      <div className="ovl">Where you stand</div>
+      <div className="ovl">{PLAN.resultTitle}</div>
       <div className="h" onClick={() => setReadOpen((o) => !o)} style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32, cursor: 'pointer', ...clamp }}>{data.read}</div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
         <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
@@ -222,7 +223,7 @@ export function ReadView({ data }: { data: Scorecard }) {
 export function StepsView({ data, onStart }: { data: Scorecard; onStart: () => void }) {
   return (
     <>
-      <div className="ovl">Your path</div>
+      <div className="ovl">{PLAN.pathTitle}</div>
       <div className="h" style={{ marginTop: 10 }}>Here is how you get there.</div>
       <div className="sub">{data.steps.length} moves from where you are to your first retained clients. Small, in order, and each one earns its place.</div>
       {data.from || data.to ? (

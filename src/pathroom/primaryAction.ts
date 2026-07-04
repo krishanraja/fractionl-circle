@@ -56,7 +56,7 @@ export function pickHomeAction(a: {
     return { kind: 'rerun', label: `${PLAN.rerunAgain} (+${a.provisional})` };
   }
   if (a.js.allDone || a.steps.length === 0) {
-    return { kind: 'journey', label: 'See your path' };
+    return { kind: 'journey', label: PLAN.openPath };
   }
   return { kind: 'journey', label: movePrimary(a.js, a.steps).label };
 }

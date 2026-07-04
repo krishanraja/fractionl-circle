@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getPriceId } from '@/lib/tiers';
 import { C } from './tokens';
-import { COPY } from './copy';
+import { COPY, PLAN } from './copy';
 import { thesisCss, ThinkingView, ReadView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
 import { chromeCss, EmberNav, Loader, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
@@ -208,7 +208,7 @@ export default function ThesisApp() {
     <div style={{ maxWidth: 360 }}>
       <div className="ovl">Pro</div>
       <div className="h" style={{ marginTop: 10 }}>Your plan is free - going deeper is Pro.</div>
-      <div className="sub">You've seen where you stand. Pro opens the rest: make your plan stronger and re-read as it evolves, your living path, your network's warm reach, and ongoing market monitoring. $39 a month.</div>
+      <div className="sub">You've seen your value prop. Pro opens the rest: make your plan stronger and re-read as it evolves, your next actions, your network's warm reach, and ongoing market monitoring. $39 a month.</div>
       <button className="cta" style={{ marginTop: 18 }} onClick={async () => { const pid = getPriceId('pro'); if (pid) await openCheckout(pid); }}><span>Upgrade to Pro</span><span className="mono">→</span></button>
       <button className="foothint" style={{ marginTop: 14 }} onClick={() => setPhase(data ? 'read' : 'capture')}>back</button>
     </div>
@@ -305,7 +305,7 @@ export default function ThesisApp() {
     const steps: JourneyT[] = (done && data?.journey?.length) ? data.journey : CANONICAL_JOURNEY;
     return frame(
       <ThinkingView steps={steps} shown={shown} done={done} />,
-      done ? <button className="cta" onClick={() => setPhase('read')}><span>See where you stand</span><span className="mono">→</span></button> : null,
+      done ? <button className="cta" onClick={() => setPhase('read')}><span>{PLAN.openResult}</span><span className="mono">→</span></button> : null,
     );
   }
 
@@ -313,7 +313,7 @@ export default function ThesisApp() {
     const readFooter = locked ? (
       <>
         <button className="cta" onClick={() => setPhase('gate')}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Lock size={14} strokeWidth={2.5} /> See your path</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Lock size={14} strokeWidth={2.5} /> {PLAN.openPath}</span>
           <span className="mono">→</span>
         </button>
         <button className="foothint" onClick={() => setPhase('gate')}>
@@ -322,28 +322,28 @@ export default function ThesisApp() {
       </>
     ) : (
       <>
-        <button className="cta" onClick={() => setPhase('journey')}><span>See your path</span><span className="mono">→</span></button>
+        <button className="cta" onClick={() => setPhase('journey')}><span>{PLAN.openPath}</span><span className="mono">→</span></button>
         <button className="foothint" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => openSharpen(null)}>
           {busyRerun ? 'reading...' : unrunAnswers > 0 ? `see how it lands again to lock in your gains (+${sharp.provisional})` : 'add a bit more to make it stronger first'}
         </button>
       </>
     );
+    // One door: the "Make stronger" question lives only on the strengthen surface
+    // (reached via the footer hint / the ember), never inline at the bottom of the
+    // Value Prop read.
     return frame(
-      <>
-        <ReadView data={data} />
-        {!locked ? <div style={{ marginTop: 18 }}><SharpenPrompt onAnswered={refreshAnswers} /></div> : null}
-      </>,
+      <ReadView data={data} />,
       readFooter,
     );
   }
 
   if (phase === 'sharpen' && data) {
-    // One strengthen surface, both ways in: the decision-shaped question (multiple-
-    // choice pills) up top, then the "make it stronger" fuel cards. Reached from the
-    // single door - press-and-hold the ember mark.
+    // The single home of "Make it stronger". Signal buttons anchored at the top in
+    // one panel (the clearest, most concrete moves), then the decision-shaped coach
+    // question loaded underneath. This is the ONLY place the question lives - it no
+    // longer pops up at the bottom of the Value Prop read or the Next Action map.
     return frame(
       <>
-        <SharpenPrompt onAnswered={refreshAnswers} focus topic={sharpenFocus || undefined} />
         <SharpenPanel
           thesis={thesisText}
           onAdmire={(d) => extractAdmire(d, thesisText)}
@@ -355,12 +355,12 @@ export default function ThesisApp() {
           edges={edges}
           compact
         />
+        <SharpenPrompt onAnswered={refreshAnswers} focus topic={sharpenFocus || undefined} />
       </>,
       <>
-        <button className="cta" onClick={() => go('journey')}><span>See your path</span><span className="mono">→</span></button>
+        <button className="cta" onClick={() => go('journey')}><span>{PLAN.openPath}</span><span className="mono">→</span></button>
         <button className="foothint" disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 'see how it lands now'}</button>
       </>,
-      'tap the mark',
     );
   }
 
@@ -369,7 +369,9 @@ export default function ThesisApp() {
     const steps = data.steps || [];
     let footer: React.ReactNode;
     if (js.weak) {
-      footer = <button className="cta" onClick={startAnother}><span>Make your plan stronger</span><span className="mono">→</span></button>;
+      // Too thin to map: send them to the strengthen surface (signals + the coach
+      // question) to make it clearer, then re-read - not back to a blank capture.
+      footer = <button className="cta" onClick={() => openSharpen(null)}><span>{PLAN.strengthen}</span><span className="mono">→</span></button>;
     } else if (js.allDone) {
       footer = <button className="foothint" onClick={startAnother}>+ start another plan</button>;
     } else {
@@ -387,14 +389,12 @@ export default function ThesisApp() {
         </>
       );
     }
+    // When the read is too thin to map, the footer sends the user to the single
+    // strengthen surface (Make it stronger) rather than inlining a second copy of
+    // the coach question here - one door to the question.
     return frame(
-      <>
-        <JourneyMap data={data} circle={circle} progress={stepProgress} />
-        {/* When the read is too thin to map, asking the right question beats
-            guessing at steps - surface the coach right here. */}
-        {js.weak ? <div style={{ marginTop: 18 }}><SharpenPrompt onAnswered={refreshAnswers} /></div> : null}
-      </>,
-      footer, 'your path, charged',
+      <JourneyMap data={data} circle={circle} progress={stepProgress} />,
+      footer, 'your next action, charged',
     );
   }
 

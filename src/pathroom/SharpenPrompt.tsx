@@ -13,6 +13,7 @@
 //    below it (the quick-input rows) never gets shoved around as things load.
 import { useEffect, useState } from 'react';
 import { getNextQuestion, saveThesisAnswer, saveSkippedQuestion, type NextQuestion } from './thesisData';
+import { dimLabel } from './copy';
 
 export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
   onAnswered?: () => void;
@@ -110,7 +111,7 @@ export default function SharpenPrompt({ onAnswered, topic, focus = false }: {
   return (
     <div className={shellClass}>
       <div className="spk-head">
-        <span className="spk-tag">Make stronger · {q.dimension}</span>
+        <span className="spk-tag">Make stronger · {dimLabel(q.dimension)}</span>
         <span className="spk-ctrls">
           <button className="spk-icon" title="Another question" disabled={busy} onClick={() => { recordSkip(); void load(); }}>↻</button>
           {/* On the focus screen the question is the centrepiece and you leave via

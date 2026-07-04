@@ -60,7 +60,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
     <div style={{ marginTop: compact ? 10 : 18 }}>
       {edges.length ? (
         <div className="edgerow">
-          <div className="navhint" style={{ color: C.accent }}>Your edge, sharper</div>
+          <div className="navhint" style={{ color: C.accent }}>What makes you different, sharper</div>
           {edges.map((e, i) => <div key={i} style={{ fontSize: 13, color: C.hi, marginTop: 6, lineHeight: 1.4 }}>You want {e.why.toLowerCase()} like {e.name}, aimed at your buyers.</div>)}
           <div className="mono" style={{ fontSize: 10, color: C.lo, marginTop: 9 }}>See how it lands again to fold this into your plan.</div>
         </div>
@@ -73,7 +73,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
           <button className="fuelrowc" onClick={() => admireInput.current?.click()}>
             <span className="fuelicon">◎</span>
             <span className="fuelrowc-t">Screenshot a business you admire</span>
-            <span className="fueltag thesis">edge</span>
+            <span className="fueltag thesis">difference</span>
             <span className="htarrow">→</span>
           </button>
           <input ref={admireInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAdmireFile(f); }} />
@@ -112,7 +112,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
             <span style={{ flex: 1 }}>
               <span className="fueltitle2">Screenshot a business you admire</span>
               <div className="fuelfor">A LinkedIn, an Instagram, or a site doing something you would love to build. We read what they do, then ask why, to clarify what makes you different.</div>
-              <span className="fueltag thesis">feeds your edge</span>
+              <span className="fueltag thesis">sharpens your difference</span>
             </span>
           </button>
           <input ref={admireInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onAdmireFile(f); }} />
@@ -176,7 +176,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
         <div className="extracted">
           <div className="navhint">Why them</div>
           <div className="h" style={{ marginTop: 8, fontSize: 18 }}>What do you want to take from {res.name}?</div>
-          <div className="sub">{res.field ? 'Pick the part that transfers to your offer.' : 'This clarifies your edge. It does not copy them.'}</div>
+          <div className="sub">{res.field ? 'Pick the part that transfers to your offer.' : 'This clarifies what makes you different. It does not copy them.'}</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
             {WHY_CHIPS.map((w) => <button key={w} className="whychip" onClick={() => chooseWhy(w)}>{w}</button>)}
           </div>
@@ -186,7 +186,7 @@ export default function SharpenPanel({ thesis, onAdmire, onSaveInspiration, onCa
 
       {admire === 'done' ? (
         <div className="extracted">
-          <div className="navhint" style={{ color: C.good }}>✓ Folded into your edge</div>
+          <div className="navhint" style={{ color: C.good }}>✓ Folded into what makes you different</div>
           <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.5 }}>Got it. The mark just brightened. Add more, or see how it lands again from below to fold it into your plan.</div>
           <button className="cta" style={{ marginTop: 14 }} onClick={reset}><span>Add more</span><span className="mono">→</span></button>
         </div>

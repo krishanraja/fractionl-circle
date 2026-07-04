@@ -1,10 +1,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { auditLogger } from '@/utils/auditLogger';
+import { getRememberMe } from '@/lib/rememberMe';
 
 /**
  * Session Manager - handles:
- * - Auto-logout after inactivity (SOC2 CC6.1, HIPAA §164.312(a)(2)(iii))
+ * - Auto-logout after inactivity (SOC2 CC6.1, HIPAA §164.312(a)(2)(iii)),
+ *   UNLESS the user opted into "Remember me on this device" at sign-in - then
+ *   they stay signed in until they sign out or clear their site data.
  * - Session activity tracking
  * - Audit logging of auth events
  */
@@ -46,6 +49,11 @@ export function SessionManager() {
       details: { user_id: user.id },
       framework: 'SOC2',
     });
+
+    // "Remember me on this device" opts out of the inactivity auto-logout: the user
+    // stays signed in until they sign out or clear their site data. We still keep the
+    // audit trail; we just never arm the idle timer or activity listeners.
+    if (getRememberMe()) return;
 
     // Set up activity listeners
     resetTimer();

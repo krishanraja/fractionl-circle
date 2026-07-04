@@ -210,9 +210,18 @@ export const chromeCss = `
 .thx .vorbsvg { position:absolute; inset:0; animation:vorbbreath 4.5s ease-in-out infinite; }
 .thx .vorbcore { position:absolute; top:50%; left:50%; width:30px; height:30px; transform:translate(-50%,-50%); filter:var(--thx-glow-core); }
 .thx .vorbcap { text-align:center; font-family:${MONO}; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:${C.mid}; margin-top:6px; }
-/* the quiet secondary links row under the hero: read / path / decisions. Small
-   mono, deliberately not tiles - the one orange action lives in the footer. */
-.thx .homelinks { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
+/* The two forks under the hero: Value Prop / Next Action. Each is a clear tappable
+   row (title + plain one-liner + arrow), so the Plan tab reads as two obvious
+   choices. The one orange primary action still lives in the pinned footer. */
+.thx .forks { display:flex; flex-direction:column; gap:9px; margin-top:20px; width:100%; max-width:340px; margin-left:auto; margin-right:auto; }
+.thx .forkrow { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:13px 15px; cursor:pointer; transition:border-color .2s ease, transform .12s ease; }
+.thx .forkrow:hover { border-color:${C.accentEdge}; }
+.thx .forkrow:active { transform:translateY(1px); }
+.thx .forkrow-t { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.thx .forkrow-title { font-size:15px; font-weight:600; color:${C.hi}; letter-spacing:-0.01em; }
+.thx .forkrow-sub { font-size:12px; color:${C.mid}; line-height:1.4; }
+/* the quiet tertiary link under the forks (your decisions - memory, not a fork). */
+.thx .homelinks { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:14px; flex-wrap:wrap; }
 .thx .homelink { background:none; border:0; padding:6px 2px; cursor:pointer; font-family:${MONO}; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.mid}; }
 .thx .homelink:hover { color:${C.accent}; }
 .thx .homelinksep { color:${C.lo}; }
