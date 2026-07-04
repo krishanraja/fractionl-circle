@@ -174,7 +174,10 @@ export function ReadView({ data }: { data: Scorecard }) {
   const [flagsOpen, setFlagsOpen] = useState(false);
   const [againstOpen, setAgainstOpen] = useState(false);
   const [readOpen, setReadOpen] = useState(false);
-  const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
+  // The read is the verdict - the payoff of the whole screen. Clamp generously (was 3
+  // lines, which sliced the second sentence mid-clause) so the honest call reads in
+  // full at a glance; tap still expands anything longer.
+  const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
   return (
     <>
       <div className="ovl">{PLAN.resultTitle}</div>
