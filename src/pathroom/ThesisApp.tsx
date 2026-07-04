@@ -9,6 +9,7 @@ import { Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { getPriceId } from '@/lib/tiers';
+import { readEdgeError } from '@/lib/functionError';
 import { C } from './tokens';
 import { COPY, PLAN } from './copy';
 import { thesisCss, ThinkingView, ReadView, CANONICAL_JOURNEY, type Scorecard, type JourneyT } from './thesisViews';
@@ -126,8 +127,16 @@ export default function ThesisApp() {
       setRunCount((c) => c + 1);
       loadMarket(thesis);
       if (userId) { const full = await getLatestRunFull(userId); if (full) { setRunId(full.id); setStepProgress(full.stepProgress); } }
-    } catch {
+    } catch (e) {
       timers.current.forEach(clearTimeout);
+      // A 402 upgrade_required (free user past their one read, e.g. a trial that
+      // lapsed since the client cached its tier) must open the Pro gate, not a false
+      // "something went wrong". The gate carries the real Upgrade CTA.
+      const body = await readEdgeError(e);
+      if (body.error === 'upgrade_required' || body.status === 402) {
+        setPhase('gate');
+        return;
+      }
       setErr('Something went wrong reaching the research. Give it another try in a moment.');
       setPhase('capture');
     }
