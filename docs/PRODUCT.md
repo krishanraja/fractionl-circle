@@ -4,6 +4,16 @@
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
+## North Star (the one outcome, and the one metric that proves it)
+
+**The outcome:** a recently independent senior operator turns a scary "can I sell this?" idea into a
+grounded, honest read plus named warm-network moves they actually take toward their first retained client.
+
+**The moat metric:** weekly returning operators who complete a read AND act on at least one warm-reach move
+(a `thesis_runs` row whose `step_progress` advanced AND a `circle_person.last_interaction_at` stamped in the
+same week). Reads without moves are curiosity; moves without reads are noise; the two together, repeated
+weekly, are the product working. Everything in this doc is graded against that outcome and that number.
+
 ## What changed (2026-07-04) and why
 
 An information-architecture + language pass on the Plan tab: the features were right,

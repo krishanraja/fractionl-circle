@@ -69,6 +69,38 @@ export async function getUserTier(supabase: any, userId: string): Promise<Tier> 
   return tier;
 }
 
+// ── Current-product entitlements (the read + the plan) ─────────────────────────
+// The pricing ladder today is: Free = one read then a Pro gate; Pro/Executive =
+// unlimited reads + full-network warm-reach search. `getUserTier` already treats an
+// active trial as pro, so these gates only bite a genuinely free (post-trial) user.
+
+// Free plan: one full read, then upgrade. Mirrors the client gate in ThesisApp
+// (locked && runCount >= 1 -> Pro gate).
+export const FREE_READ_LIMIT = 1;
+
+// How many reads this user has already run. The paid work (Perplexity + structuring
+// LLM) is what the free cap protects, so every persisted run counts.
+export async function countThesisRuns(supabase: any, userId: string): Promise<number> {
+  const { count } = await supabase
+    .from('thesis_runs')
+    .select('id', { head: true, count: 'exact' })
+    .eq('user_id', userId);
+  return count ?? 0;
+}
+
+// A free (post-trial) user has spent their read allowance once they have >= 1 run.
+export async function freeReadCapReached(supabase: any, userId: string): Promise<boolean> {
+  const tier = await getUserTier(supabase, userId);
+  if (tier !== 'free') return false;
+  return (await countThesisRuns(supabase, userId)) >= FREE_READ_LIMIT;
+}
+
+// Full-network people search ("find_people") is a Pro capability. The free
+// "working_on" path (rewrite my own profile) stays open to everyone.
+export async function networkSearchIsPro(supabase: any, userId: string): Promise<boolean> {
+  return (await getUserTier(supabase, userId)) === 'free';
+}
+
 // Count active-or-archived matches created in the trailing window.
 // Idempotency skips + declines all count against the cap intentionally:
 // the LLM call is what costs money, not the approval state.

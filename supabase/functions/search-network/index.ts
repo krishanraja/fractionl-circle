@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { chatJSON, embed } from '../_shared/llm.ts';
 import { backfillEmbeddings, vecToStr } from '../_shared/circleEmbed.ts';
+import { networkSearchIsPro } from '../_shared/tiers.ts';
 
 // search-network (v2): the "who can help me with X" half of the Circle box.
 //
@@ -138,6 +139,17 @@ Deno.serve(async (req) => {
     }
     if (intent === 'working_on') {
       return new Response(JSON.stringify({ intent }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Server-side entitlement. Full-network people search is a Pro capability. The
+    // free "working_on" path above stays open to everyone; only the find path is
+    // gated. Enforced here (not just in the client) so a free JWT cannot search the
+    // whole network via the API. Trial + Pro + Executive pass (getUserTier).
+    if (await networkSearchIsPro(supabase, userId)) {
+      return new Response(
+        JSON.stringify({ intent, people: [], error: 'Searching your whole network is a Pro feature. Upgrade to find the right people by meaning.', code: 'upgrade_required' }),
+        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // ── Keep the relevant slice embedded (best-effort, bounded, no-op w/o a key) ─

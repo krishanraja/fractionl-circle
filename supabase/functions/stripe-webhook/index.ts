@@ -65,16 +65,24 @@ function tierFromPriceId(priceId: string): 'free' | 'pro' | 'executive' {
   return 'free';
 }
 
-// Simple signature verification using Web Crypto API
+// Constant-time hex-string compare (avoid leaking the signature via early-exit).
+function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+// Signature verification using Web Crypto API. Checks EVERY v1= signature (Stripe
+// sends more than one during a webhook-secret rotation) with a constant-time compare.
 async function verifyStripeSignature(payload: string, signature: string, secret: string): Promise<boolean> {
   try {
     const parts = signature.split(',');
     const timestampPart = parts.find(p => p.startsWith('t='));
-    const sigPart = parts.find(p => p.startsWith('v1='));
-    if (!timestampPart || !sigPart) return false;
+    const v1Sigs = parts.filter(p => p.startsWith('v1=')).map(p => p.slice(3));
+    if (!timestampPart || v1Sigs.length === 0) return false;
 
     const timestamp = timestampPart.split('=')[1];
-    const expectedSig = sigPart.split('=')[1];
 
     // Replay protection: reject signatures older than 5 minutes
     const timestampAge = Math.abs(Date.now() / 1000 - parseInt(timestamp));
@@ -89,7 +97,7 @@ async function verifyStripeSignature(payload: string, signature: string, secret:
     const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
     const computedSig = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    return computedSig === expectedSig;
+    return v1Sigs.some(s => timingSafeEqualHex(computedSig, s));
   } catch {
     return false;
   }
@@ -117,20 +125,23 @@ Deno.serve(async (req) => {
     const event = JSON.parse(body);
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Idempotency: Stripe delivers at-least-once. Record each verified event.id
-    // and short-circuit on a redelivery so we never reprocess (Phase 2 hardening,
-    // 5d foundation). Fail-open on unexpected DB errors so real events are never
-    // silently dropped.
-    const { error: dedupeError } = await supabase
+    // Idempotency: Stripe delivers at-least-once. CHECK-then-process-then-MARK.
+    // The old code marked the event processed BEFORE doing the work, so a transient
+    // failure mid-processing (e.g. a Stripe fetch or DB upsert throwing) returned 500,
+    // Stripe retried, the retry saw the marker and returned "deduped" 200, and the
+    // entitlement was silently dropped. Now the marker is written only AFTER the
+    // handler succeeds, so a failed attempt reprocesses on retry. The handlers are
+    // all idempotent (credit grants keyed on event.id, subscription upserts on
+    // user_id), so a concurrent redelivery reprocessing is safe.
+    const { data: already } = await supabase
       .from('processed_stripe_events')
-      .insert({ event_id: event.id, event_type: event.type });
-    if (dedupeError) {
-      if (dedupeError.code === '23505') {
-        return new Response(JSON.stringify({ received: true, deduped: true }), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-      console.error('processed_stripe_events insert error:', dedupeError.code);
+      .select('event_id')
+      .eq('event_id', event.id)
+      .maybeSingle();
+    if (already) {
+      return new Response(JSON.stringify({ received: true, deduped: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Stripe webhook event:', event.type);
@@ -292,6 +303,15 @@ Deno.serve(async (req) => {
         }, `circle:refunded:${charge.id}:${charge.amount_refunded}`);
         break;
       }
+    }
+
+    // Mark processed only now that the handler has succeeded. A 23505 here (a
+    // concurrent redelivery that also just finished) is fine - the work is idempotent.
+    const { error: markError } = await supabase
+      .from('processed_stripe_events')
+      .insert({ event_id: event.id, event_type: event.type });
+    if (markError && markError.code !== '23505') {
+      console.error('processed_stripe_events mark error:', markError.code);
     }
 
     return new Response(JSON.stringify({ received: true }), {

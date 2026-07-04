@@ -210,9 +210,18 @@ export function useSubscription() {
     const { data, error } = await supabase.functions.invoke('stripe-checkout', {
       body: { price_id: priceId },
     });
-    if (error) throw error;
+    if (error) {
+      // Surface the real Stripe/server message (on error.context for non-2xx) so a
+      // misconfigured price is diagnosable instead of a silent dead button.
+      let msg = 'Could not start checkout. Please try again in a moment.';
+      try {
+        const body = await (error as { context?: { json?: () => Promise<{ error?: string }> } }).context?.json?.();
+        if (body?.error) msg = body.error;
+      } catch { /* keep the friendly default */ }
+      throw new Error(msg);
+    }
     if (!data?.url) {
-      throw new Error('No checkout URL returned');
+      throw new Error('Could not start checkout. Please try again in a moment.');
     }
     window.location.href = data.url;
   }, []);

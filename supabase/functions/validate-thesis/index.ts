@@ -4,6 +4,7 @@ import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock, profileFactsLine } from '../_shared/profileContext.ts';
 import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
 import { settledDecisionsBlock, newDecisionsBlock, priorReadBlock, corpusFactsBlock, type DecisionRow, type BenchmarkRow, type LandmineRow } from '../_shared/decisionContext.ts';
+import { freeReadCapReached } from '../_shared/tiers.ts';
 
 // validate-thesis: the real research harness behind the hero. Takes a fractional exec's
 // thesis (+ background), runs live web research via Perplexity (sourced), then structures
@@ -84,6 +85,17 @@ Deno.serve(async (req) => {
     if (!thesis.trim()) {
       return new Response(JSON.stringify({ error: 'Tell me your thesis: what you want to offer, and to whom.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Server-side entitlement. The client gates deep phases for free users, but the
+    // server must enforce it too or a free JWT can run unlimited paid reads via the
+    // API. Free (post-trial) users get one read; then 402. Trial + Pro + Executive
+    // are unlimited (getUserTier treats an active trial as pro).
+    if (await freeReadCapReached(supabase, userId)) {
+      return new Response(
+        JSON.stringify({ error: 'Your free plan includes one read. Upgrade to Pro for unlimited reads as your plan evolves.', code: 'upgrade_required' }),
+        { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // The user model: the shared envelope every other AI surface already loads.
