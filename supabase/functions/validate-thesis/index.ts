@@ -201,6 +201,10 @@ Deno.serve(async (req) => {
     if (answerRows?.length) {
       const ids = (answerRows as Array<{ id: string }>).map((a) => a.id);
       await supabase.from('thesis_answers').update({ applied_at: new Date().toISOString() }).in('id', ids);
+      // Observability for the moat loop: record that this read compounded on prior
+      // banked decisions, so "how often does a read build on a decision?" is
+      // answerable in production. Best-effort; never fail the read on a log write.
+      await supabase.from('compounding_events').insert({ run_id: gatedRunId, answers_folded: ids.length });
     }
     return new Response(JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
