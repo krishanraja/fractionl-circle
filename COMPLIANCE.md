@@ -25,6 +25,7 @@
 - Row-Level Security enabled on **all** public tables. Service-only tables (`oauth_tokens`, `oauth_states`, `processed_stripe_events`, `rate_limits`) are deny-all to clients by design.
 - Supabase Auth with TOTP MFA available, refresh-token rotation on, HIBP leaked-password protection on.
 - Edge functions take user identity from the verified JWT, never the request body.
+- Session hygiene: a 30-minute inactivity auto-logout (`SessionManager.tsx`) is the default. Users may opt into "Keep me signed in on this device" at sign-in (`src/lib/rememberMe.ts`), which disables the idle logout on that device only; the default (auto-logout on) stands for anyone who does not opt in.
 
 ### Data subject rights (GDPR Art. 15 / 17 / 20)
 - `export_user_data(uuid)` - complete JSON export across the full user-owned surface + profile. Self-only.

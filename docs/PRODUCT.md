@@ -1,8 +1,48 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-06-29. This is the source of truth for what
+*Canonical product doc. Last updated 2026-07-04. This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
+
+## What changed (2026-07-04) and why
+
+An information-architecture + language pass on the Plan tab: the features were right,
+but the naming read as jargon and the flow was fragmented. Four changes, each with its WHY:
+
+1. **The Plan tab is now two clear forks.** The Home hub presents exactly two tappable
+   choices instead of a scatter of tiny links (`src/pathroom/Home.tsx`, `.forkrow` in
+   `thesisChrome.tsx`):
+   - **Value Prop** - understand + strengthen the opportunity (the read + make-it-stronger).
+   - **Next Action** - take the next step toward the first retained client (the journey).
+   *Why:* a returning user should see two obvious jobs - "is this worth it / make it
+   sharper" vs "what do I do next" - not overlapping surfaces they have to decode.
+2. **Plain-language renames** (single source of truth `src/pathroom/copy.ts`). User-facing
+   only; canonical data keys and code symbols are unchanged:
+   - **where you stand** → **Value Prop** (`PLAN.resultTitle`).
+   - **your path** → **Next Action** (`PLAN.pathTitle`).
+   - **Your edge** → **What makes you different**. This is a *display* rename via
+     `dimLabel()` / `DIMENSION_LABEL` in `copy.ts`: the stored scorecard key stays
+     `"Your edge"` (pinned by the edge functions and tests), only what the user reads
+     changes - no data migration. Applied at every render site (score rows, the
+     "weakest right now" line in `sharpness.ts`, the coach tag in `SharpenPrompt.tsx`),
+     and the incidental "your edge" prose across onboarding/loading/billing copy.
+   *Why:* "edge / where you stand / your path" tested as jargon a time-poor operator
+   would not parse; "what does my edge even mean / how do I improve it" was a real question.
+3. **One door per component.** The "Make stronger" coach question (`SharpenPrompt`)
+   previously rendered in three places (the read, the strengthen screen, and the weak
+   journey). It now lives **only** on the make-it-stronger surface. That surface is also
+   reordered: the three signal buttons (screenshot a business / snap a card / connect
+   LinkedIn) anchor at the **top** in one panel, with the question loaded **underneath**.
+   *Why:* one concept, one home - a component that pops up in multiple places reads as
+   fragmented and makes the flow feel illogical.
+4. **"Remember me" / stop the surprise logout.** Session persistence was already correct
+   (`persistSession` + `localStorage`); the real cause of "I get logged out every time I
+   leave" was the 30-min inactivity auto-logout in `SessionManager.tsx` (a SOC2/HIPAA
+   control) wiping the session. A new opt-in **"Keep me signed in on this device"** control
+   on the welcome and sign-in screens (`AuthPage.tsx`, backed by `src/lib/rememberMe.ts`)
+   disables the idle logout when checked - the user stays signed in until they sign out or
+   clear their site data. *Why:* the compliant default stands for everyone who doesn't opt
+   in, but a returning operator gets to stay signed in.
 
 ## What changed (2026-06-29) and why
 
@@ -98,19 +138,23 @@ orchestrator; the **Plan** tab hosts it.)
    Perplexity: reading your background, sizing demand against supply, scanning where buyers
    complain, checking competition, mapping your network, weighing pricing. Low-confidence
    findings are flagged, not faked.
-4. **Where you stand (the read).** A corpus-grounded scorecard, as bands with evidence and a
-   confidence mark, never fake numbers:
-   - **Is it a real opportunity?** Demand, Burning need, Crowding (scored as risk), Your edge.
+4. **Value Prop (the read).** A corpus-grounded scorecard, as bands with evidence and a
+   confidence mark, never fake numbers (labelled **Value Prop** in the UI; still the read):
+   - **Is it a real opportunity?** Demand, Burning need, Crowding (scored as risk), What
+     makes you different (the stored key is `"Your edge"`; displayed via `dimLabel()`).
    - **Can you win it, fast?** Fit to you, Warm reach, Credibility.
    Plus honest "worth knowing before you commit" flags (income ramp, scope, pricing band,
    productization).
-5. **Make it stronger (its own separate screen, after the read).** The additive things
-   live on their own focused screen (`SharpenPanel.tsx`), not crammed onto the read. Three
-   distinct intents:
+5. **Make it stronger (its own separate screen - the one door).** The additive things live
+   on their own focused screen, never crammed onto the read. The three signal buttons
+   (`SharpenPanel.tsx`) anchor at the **top** in one panel; the "Make stronger" coach
+   question (`SharpenPrompt.tsx`) loads **underneath** them. This is the *only* place the
+   coach question renders - it no longer appears at the bottom of the Value Prop read or in
+   the weak Next-Action state. Three distinct intents:
    - **A business you admire** feeds **what you want to offer**. Screenshot a LinkedIn, an
      Instagram, or a site you would love to build something like; `extract-admire` (Gemini
      vision) reads how they position, then asks *why* you admire them. The answer (saved to
-     `thesis_inspiration`) sharpens "Your edge" on the next read. Honest about the messy cases:
+     `thesis_inspiration`) sharpens **what makes you different** on the next read. Honest about the messy cases:
      a blurry shot, a person with no business, a direct competitor (held as a benchmark to beat,
      not a template), a different field (keep only the transferable part).
    - **A business card** feeds your **circle** (warm reach), via `extract-contact`.
@@ -135,17 +179,19 @@ orchestrator; the **Plan** tab hosts it.)
    you upload the file when it lands). The circle powers the real warm-reach score and the
    named steps, and is reached in-context from the journey map ("add people to light up your
    warm reach"), not as a dead-end.
-9. **Home (the command center), laser-focused (2026-07-03).** A returning user with a saved
+9. **Home (the command center), two forks (2026-07-04).** A returning user with a saved
    plan lands here inside the Plan tab, not back in the linear flow. It is the living state of
    your one venture, with exactly ONE orange action: the **tappable strength-score orb** (the
-   0–100 number with the "what's holding you back" line; tap it to open **Where you stand**),
+   0–100 number with the "what's holding you back" line; tap it to open **Value Prop**),
    ONE **contextual primary action** pinned in the footer (picked by `primaryAction.ts`:
    genuinely weak - weakest dimension under 60 or a too-thin read - leads to "Make it
    stronger"; banked decisions waiting lead to "See how it lands again (+N)"; otherwise the
    current path move with its action-first label, the same words the journey footer repeats,
-   so the action reads continuous across screens), and a **quiet mono links row** (Where you
-   stand · Your path · Your decisions - the decisions link appears once the first decision is
-   banked and opens the decision-log sheet). The market instrument lives behind the nav Pulse
+   so the action reads continuous across screens), and the **two forks** as clear tappable
+   rows - **Value Prop** (is it a real opportunity? strengthen what makes you different) and
+   **Next Action** (the next step toward your first retained client) - with a **quiet "Your
+   decisions"** link beneath (appears once the first decision is banked; opens the decision-log
+   sheet). The market instrument lives behind the nav Pulse
    pill. People are owned by the Circle tab: the old "Your network" tile is gone, and the
    in-plan add-people surface remains only as the journey's contextual "add people to light up
    your warm reach" detour. One evolving plan, one door. Same centered column on desktop,
@@ -325,8 +371,10 @@ locked user reaches a deep phase.
 - `CircleApp.tsx` - the authed app shell. Owns the locked no-scroll frame; gates first-run on
   `getRunCount === 0` (StartHere vs the two-tab shell); hosts the **Circle** and **Plan** tabs.
 - `copy.ts` - **the single source of truth for the plain-language vocabulary** (`PLAN.*`,
-  `COPY.*`): Plan / your idea / see how it lands / where you stand / make it stronger. Keep all
-  user-facing naming of these core concepts here so the voice never drifts back.
+  `COPY.*`): Plan / your idea / see how it lands / **Value Prop** / **Next Action** / make it
+  stronger. Also `DIMENSION_LABEL` + `dimLabel()`, the display map that renders the stored
+  scorecard key `"Your edge"` as **"What makes you different"** without touching the data.
+  Keep all user-facing naming of these core concepts here so the voice never drifts back.
 - `StartHere.tsx` - the gated first-run onboarding (about-you + ≥10 people + ≥1 admired business
   → one live read; persists about-you to `localStorage` and `user_profiles`).
 - `CircleHome.tsx` - the Circle tab landing (the warm-network home / daily habit); mounts the

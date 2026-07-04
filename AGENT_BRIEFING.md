@@ -214,7 +214,7 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 | Capability | Status | What the fleet may say |
 |---|---|---|
 | Gated, grounded first-run onboarding (≥10 people + ≥1 admired business + goal → one live read) | LIVE | Claim freely. This is the magic moment. |
-| The Plan read: live market research → "where you stand" (0–100 strength score + banded, evidence-backed signals with confidence) | LIVE | Claim freely, including the honesty (low confidence shown, never fake numbers). |
+| The Plan read: live market research → your **Value Prop** (labelled "Value Prop" in-app; 0–100 strength score + banded, evidence-backed signals with confidence) | LIVE | Claim freely, including the honesty (low confidence shown, never fake numbers). The prose "shows you where you stand" is still fine as positioning. |
 | Make-it-stronger coach (one decision-shaped question on the weakest signal; banked decisions lift the score on the next read) | LIVE | Claim freely. |
 | Living, action-first path of next moves, with the warm-reach step using real named people + pre-written drafts | LIVE | Claim freely. Reaching out is one tap to your own email/LinkedIn (you send), not automated send. |
 | Circle warm network + weekly "keep your circle warm" digest (email with one-tap `mailto:` drafts + an `.ics` calendar hold) | LIVE | Claim freely. |
