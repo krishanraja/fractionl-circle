@@ -76,14 +76,18 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
   const aboutDone = !!(objective.trim() && sellTo.trim() && why.trim());
   const peopleDone = circleCount >= MIN_PEOPLE;
   const inspDone = inspCount >= 1;
-  const ready = aboutDone && peopleDone && inspDone;
+  // Read-first (hybrid): the first read runs on about-you alone - that is uniquely
+  // theirs and enough to ground an honest read (an empty circle just reads warm-reach
+  // as LOW, which is honest and becomes the earned reason to add people afterwards).
+  // People + an admired business are optional sharpeners, offered here and again after.
+  const ready = aboutDone;
 
   const aboutFrac = aboutDone ? 1 : (objective || sellTo || why ? 0.4 : 0);
   const fuel = Math.min(1, 0.1 + 0.3 * aboutFrac + 0.32 * Math.min(circleCount / MIN_PEOPLE, 1) + 0.28 * Math.min(inspCount, 1));
   const fuels: FuelRow[] = [
-    { k: 'About you', on: aboutDone, hint: 'tell us' },
-    { k: 'Your people', on: peopleDone, hint: `${circleCount}/${MIN_PEOPLE}` },
-    { k: 'An inspiration', on: inspDone, hint: `${inspCount}/1` },
+    { k: 'About you', on: aboutDone, hint: 'needed' },
+    { k: 'Your people', on: peopleDone, hint: circleCount > 0 ? `${circleCount}` : 'optional' },
+    { k: 'An inspiration', on: inspDone, hint: inspCount > 0 ? 'added' : 'optional' },
   ];
 
   async function addInspiration() {
@@ -179,7 +183,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
       <div className="thxbody"><div className="wrap">
         <div className="ovl">Start here</div>
         <div className="h" style={{ marginTop: 8 }}>Let's build your plan from what you actually know.</div>
-        <div className="sub">No generic advice. We start with your people, your taste, and your goal - then read the market against all three. Three quick things and you're set.</div>
+        <div className="sub">No generic advice. Tell us who you want to sell to and why you - that is all we need to read the market for you. Add your people and a business you admire to make it sharper, now or after your read.</div>
         {err ? <div className="mono" style={{ color: C.risk, fontSize: 11, marginTop: 12 }}>{err}</div> : null}
 
         {/* 1 - About you */}
@@ -206,10 +210,10 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
         {/* 2 - Your people */}
         <GateCard
           icon={Users}
-          title="Add your people"
-          sub={`At least ${MIN_PEOPLE} people who could help you sell - clients, peers, anyone warm. Snap a screenshot, paste a list, or import your contacts in one go.`}
+          title="Add your people (optional, the biggest lever)"
+          sub={`The people who could help you sell power your real warm reach. Add a few now to light it up, or after your read. Snap a screenshot, paste a list, or import your contacts in one go.`}
           done={peopleDone}
-          badge={`${circleCount}/${MIN_PEOPLE}`}
+          badge={circleCount > 0 ? `${circleCount} added` : 'optional'}
           onClick={() => setAddOpen(true)}
         />
 
@@ -220,10 +224,10 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
               {inspDone ? <Check size={15} strokeWidth={2.5} /> : <Sparkles size={15} strokeWidth={2} />}
             </span>
             <span style={{ flex: 1 }}>
-              <span className="fueltitle2" style={{ display: 'block' }}>A business you admire</span>
+              <span className="fueltitle2" style={{ display: 'block' }}>A business you admire (optional)</span>
               <span className="fuelfor">Someone whose work you'd love to build toward. It helps us learn your taste and shape what makes you different.</span>
             </span>
-            <span className="navhint" style={{ color: inspDone ? C.good : C.accent }}>{inspDone ? 'done' : `${inspCount}/1`}</span>
+            <span className="navhint" style={{ color: inspDone ? C.good : C.accent }}>{inspDone ? 'added' : 'optional'}</span>
           </button>
           {inspOpen ? (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -253,9 +257,7 @@ export default function StartHere({ onComplete }: { onComplete: () => void }) {
           <span>{PLAN.run}</span><span className="mono">→</span>
         </button>
         {!ready ? (
-          <div className="foothint" style={{ pointerEvents: 'none' }}>
-            {!aboutDone ? 'tell us a bit about you' : !peopleDone ? `add ${MIN_PEOPLE - circleCount} more ${MIN_PEOPLE - circleCount === 1 ? 'person' : 'people'}` : 'add a business you admire'}
-          </div>
+          <div className="foothint" style={{ pointerEvents: 'none' }}>tell us a bit about you</div>
         ) : null}
       </div>
 

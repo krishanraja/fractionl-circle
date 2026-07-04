@@ -150,9 +150,9 @@ const WelcomeContent = ({
         alt="Fractionl"
         className="h-12 mx-auto mb-6"
       />
-      <h1 className="text-title-1 text-foreground mb-2">Your circle, warmed up</h1>
+      <h1 className="text-title-1 text-foreground mb-2">Is your idea worth selling?</h1>
       <p className="text-body text-foreground-secondary">
-        Drop in anyone you meet - we'll remember who they are and surface the right people when you need them
+        An honest read on whether your idea sells, grounded in the live market and your real network - plus the warm moves to land your first client.
       </p>
     </div>
 
