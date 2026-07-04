@@ -23,7 +23,8 @@ async function perplexity(thesis: string, background: string, linkedin: string, 
   if (!key) throw new Error('PERPLEXITY_API_KEY not set');
   const prompt = `You are validating a fractional executive's business thesis using current, real sources.
 THESIS: ${thesis}
-${background ? `THEIR STATED BACKGROUND: ${background}` : identity ? `WHO THEY ARE (from their profile): ${identity}` : ''}
+${background ? `THEIR STATED BACKGROUND: ${background}` : ''}
+${identity ? `WHO THEY ARE (from their profile): ${identity}` : ''}
 ${linkedin ? `THEIR LINKEDIN PROFILE: ${linkedin} (look up any public information about this person to assess their fit and credibility for this thesis)` : ''}
 Assess concisely, with evidence and inline source numbers:
 1. Demand versus supply for this SPECIFIC niche (not the broad category).
@@ -59,6 +60,11 @@ Return ONLY JSON:
 }
 
 Rules:
+- BAND CALIBRATION (the honesty floor - this overrides any instinct to be encouraging):
+  - A band of "strong" requires SPECIFIC, cited evidence in the research for THIS exact niche. If the research is generic, thin, or does not actually evidence real demand for this specific offer and buyer, the band is "mixed" or "weak" and the confidence is "low" - never "strong".
+  - If the THESIS itself is vague, generic, or not a real offer to a real buyer (e.g. "finance help for companies", "I want to make money", a bare role with no niche), you MUST NOT score Demand or Burning need "strong". Score them "weak" or "mixed" at "low" confidence, and the "read" must say plainly that there is not enough of a specific offer yet to size the opportunity, and name exactly what to specify (which buyer, which niche, which problem). Do not invent a market the thesis did not describe.
+  - Confidence "high" requires several concrete, cited data points for this specific niche. One vague claim is "low"; a couple of soft signals are "medium".
+  - Never let a strong background paper over a vague thesis: a rich background lifts "Fit to you" and "Credibility", it does NOT lift "Demand" or "Burning need". Those are about the market, not the person.
 - "opportunity" MUST have exactly these four labels in order: "Demand", "Burning need", "Crowding", "What makes you different". Crowding is scored as a risk: high saturation = band "risk". Ground each in the research; do not invent statistics. For "What makes you different": if BUSINESSES THEY ADMIRE are given, use what they want to take from those models to articulate a sharper, more specific edge, and reference it plainly; never copy a competitor, treat any flagged competitor as the bar to beat.
 - "ability" MUST have exactly these three labels in order: "Fit to you", "Warm reach", "Credibility". Score Fit and Credibility from the person's assessed background in the research and any stated background; if little public background was found, keep them at medium or low confidence and say plainly that connecting more detail would sharpen it. For "Warm reach": you are given THEIR CIRCLE. If the circle is empty, band "mixed", confidence "low", evidence telling them to connect their network. If it has people, judge how many plausibly fit the thesis's buyer (founders or leaders at the target kind of company): several clear fits = band "strong", a few = "mixed", and state how many fit. Confidence "high" only with a real circle. Never invent people not in the circle. This is the honesty rule, follow it.
 - "read": one or two plain sentences, the honest overall call. No jargon, no hype.
@@ -129,7 +135,15 @@ Deno.serve(async (req) => {
 
     // Seeded corpus reference facts (shared, read-only tables): pricing/ramp bands
     // with honest provenance tiers, plus the named failure modes for this path.
-    const roleToFn: Record<string, string> = { cmo: 'marketing', cfo: 'finance', cro: 'revenue' };
+    // Maps the whole ICP, not just the three mature sub-verticals. NOTE: the
+    // benchmarks table currently only seeds 'finance' and 'marketing' rows, so the
+    // other functions still fall back to the generic (null-function) benchmarks until
+    // a benchmark-data pass seeds operations/revenue/technology/product/people. The
+    // map is correct for when that data lands; extending it now is harmless.
+    const roleToFn: Record<string, string> = {
+      cmo: 'marketing', cfo: 'finance', cro: 'revenue', coo: 'operations',
+      cto: 'technology', cpo: 'product', chro: 'people', ciso: 'security',
+    };
     const fn = profile?.role ? roleToFn[profile.role] ?? null : null;
     let benchQuery = supabase.from('benchmarks').select('metric, value_low, value_mid, value_high, unit, source_tier').limit(20);
     benchQuery = fn ? benchQuery.or(`function.is.null,function.eq.${fn}`) : benchQuery.is('function', null);
