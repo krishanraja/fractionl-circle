@@ -1,5 +1,10 @@
 # Security Policy - Circle
 
+*Controls list re-verified against code 2026-07-05 (RLS, JWT-derived identity, headers in
+`vercel.json`, Stripe webhook signature verification, DSAR functions all confirmed in source).
+TOTP MFA availability is a Supabase Auth dashboard setting, not represented in this repo's code -
+confirm it is actually enabled in the Supabase project before relying on this claim.*
+
 ## Reporting a vulnerability
 Email **security@fractionl.ai**. Please include steps to reproduce and impact. We aim to acknowledge within 2 business days. Do not publicly disclose before we've had a chance to remediate. See also `/.well-known/security.txt`.
 

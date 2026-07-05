@@ -52,8 +52,12 @@ The OS `attribution.events` table should carry at least: id, occurred_at, receiv
 ## Stripe metadata keys Circle stamps (on customer + subscription)
 `supabase_user_id`, `anonymous_id`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `campaign_id`, `agent`. Stripe account: fractionl_ai (rk_live_51TELoi...). The OS can read these directly off the Stripe objects as a fallback.
 
-## Events that are PENDING (not yet emitted by Circle)
-- `landed`, `signed_up`, `activated` require a server-side emit path (the SSG marketing edge layer / a server helper) so the shared secret is never exposed in the browser bundle. That edge layer is the locked-but-unbuilt 5a SSG surface, so these three events are ROADMAP. The revenue half (purchased/refunded/churned) is wired now.
+## Events that are PENDING (update: partially built since this handoff)
+- **`signed_up` / `activated` now have a server-side emit path**: the `emit-lifecycle` edge
+  function (auth'd via JWT, inert until `ATTRIBUTION_INGEST_SECRET` is set) - built after this
+  2026-05-30 handoff. `landed` still has no emit path anywhere in the codebase; it still needs
+  the unbuilt SSG marketing edge layer (a pre-auth visitor has no JWT to auth an emit call
+  against). The revenue half (purchased/refunded/churned) has been wired since this handoff.
 
 ## Circle-side production state (DONE this session, 2026-05-30)
 - APPLIED to Circle Supabase `ksyuwacuigshvcyptlhe` (verified): `public.processed_stripe_events` (RLS on, deny-all) and `public.user_attribution` (RLS on, owner select/insert).

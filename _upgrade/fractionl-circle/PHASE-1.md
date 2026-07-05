@@ -1,5 +1,10 @@
 # Circle by Fractionl, Phase 1: Locked product + 5X vision + commerce (no code changes)
 
+> **Historical, superseded vision (2026-05-30).** Written for the "talk 90 seconds -> Ideas ->
+> Moves" generation, which shipped and was then fully removed (2026-06-29, see
+> `docs/_archive/`). The ICP/pitch language below predates the current warm-Circle + Plan
+> product. Current source of truth: `docs/PRODUCT.md`, `AGENT_BRIEFING.md`.
+
 Date: 2026-05-30. No code changes. Built on the verified PHASE-0 recon plus an 8-agent first-principles 5X pass (7 surface visionaries + 1 commerce-contract spec). This is the unbounded vision. Scope is chosen at the gate, not here.
 
 ## 1. Locked product

@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo (2026-07-03):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
+**Last verified against repo (2026-07-05):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md, and the 2026-07-04 Waves 1-6 audit-fix commits (server-side entitlement, the read-first onboarding change, no-email-wall signup).
 
 > **Important - the product changed.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter). That whole model was removed. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it.
 
@@ -52,7 +52,7 @@ Their circle is their business. They are time-starved and need tools that work i
 ## 3. The single magic moment and the core outcomes
 
 ### The magic moment
-You give Circle the three things only you have - at least 10 people who could help you sell, at least one business you admire, and a few plain words about who you want to sell to and why you - and it reads the live market against all three and shows you **where you stand**: a strength score, the honest signals behind it, and your next moves. It is the opposite of a one-box AI answer: grounded in your real world, so the output is about you.
+You tell Circle a few plain words about who you want to sell to and why you - that alone unlocks the first read. Circle then reads the live market against it and shows you **where you stand**: a strength score, the honest signals behind it, and your next moves. Adding your people (target 10) and a business you admire are offered right there as optional sharpeners, now or after the read - an empty circle just reads warm-reach as low, which is the honest, earned reason to build it next. It is the opposite of a one-box AI answer: still grounded in your real world, just without a hard wall in front of the first value.
 
 ### Core outcomes (quotable)
 - **An honest read, not a hype answer.** Banded signals with evidence and a confidence mark. Low confidence is shown, not faked. You learn whether the opportunity is real and whether you can win it, fast.
@@ -69,7 +69,7 @@ You give Circle the three things only you have - at least 10 people who could he
 ### Numbers anchor (use in copy)
 - 2 to 7 concurrent engagements is the modal portfolio-operator load.
 - A strength score is **0 to 100** - the number you push toward 100.
-- First-run asks for **10 people**, **1 admired business**, and a few plain words.
+- First-run asks for a few plain words to unlock the first read; **10 people** and **1 admired business** are offered as optional sharpeners, not a requirement.
 - People going quiet are flagged at **30+ days** since you last spoke.
 - $39/mo for unlimited reads and your network's warm reach.
 
@@ -103,7 +103,7 @@ We are not "another CRM" and not "a generic AI assistant." We help a single oper
 - One seat is $39/mo, not $50 to $150/mo locked behind seats.
 
 ### Why Circle is not a generic AI chatbot (ChatGPT / Claude)
-A generic LLM does not have your network, your taste, or your goal, so a one-box prompt gives a generic answer. Circle deliberately requires a small amount of uniquely-yours input - at least 10 of your people, a business you admire, and your goal in plain words - and reads the live market against all three. The output is grounded in your real world, with honest confidence, not a confident guess.
+A generic LLM does not have your network, your taste, or your goal, so a one-box prompt gives a generic answer. Circle asks for a small amount of uniquely-yours input - your goal in plain words unlocks the first read, and your people and a business you admire sharpen it further, now or after - and reads the live market against whatever you've given it. The output is grounded in your real world, with honest confidence, not a confident guess.
 
 ### Why Circle is not LinkedIn / Sales Navigator
 LinkedIn is the graph; Sales Nav is built for SDRs running prospecting. Circle sits on top of the operator's own warm network and answers "where do I stand and who do I reach," then keeps that network warm.
@@ -123,7 +123,7 @@ All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be per
 ### LinkedIn post 1 (the grounded-read hook)
 > Most "AI for your business" is a box: type an idea, get a confident answer that has never met your network.
 >
-> I wanted the opposite. So before Circle says a word, it asks for the three things only I have: a few of the people who could actually help me sell, one business I admire, and a couple of plain sentences about who I want to sell to and why me.
+> I wanted the opposite. So before Circle says a word, it asks for the thing only I have: a couple of plain sentences about who I want to sell to and why me (adding a few people who could help me sell and a business I admire sharpens it further, whenever I get to it).
 >
 > Then it reads the live market against all three and tells me where I stand - an honest score, the signals behind it, what is holding me back, and my next moves. Grounded in my real world, not the internet's.
 >
@@ -185,7 +185,7 @@ All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be per
 | **"I do not want my contacts in someone else's database / privacy of my network."** | Every row is RLS-isolated and scoped to your own account. The service-role key never appears in the client. OAuth tokens are encrypted. We do not sell data and we do not train models on your contacts. There is account deletion in Settings. |
 | **"Is this just another CRM?"** | No. CRMs are built for sales teams of 10+; Circle is built for one operator. It answers "is my offer real, where do I stand, and who do I reach," and keeps your network warm - not 20 deal stages. Keep your CRM if your clients use one; Circle replaces the spreadsheet you keep on the side. |
 | **"Is this just ChatGPT with a wrapper?"** | The opposite by design. Circle refuses the one-box prompt: it requires a few of your real people, a business you admire, and your goal, then reads the live market against all three. The answer is grounded in your world, with honest confidence - not a generic guess. |
-| **"Why do I have to add 10 people before I get value?"** | Because that is what makes the read about you and not the internet. The warm-reach part of your plan is your real network; without it the read is generic. We make it fast - screenshot, paste a list, LinkedIn CSV, or a one-click Google/Microsoft contacts sync. |
+| **"Do I have to add 10 people before I get value?"** | No - the first read only needs a few plain words about who you want to sell to and why you. Adding your people is offered as an optional next step because it is what makes the warm-reach part of your plan real instead of generic; we make it fast - screenshot, paste a list, LinkedIn CSV, or a one-click Google/Microsoft contacts sync. |
 | **"Will the read just tell me what I want to hear?"** | No. Signals are bands with evidence and a confidence mark; low confidence is shown, not hidden. It will tell you what is holding you back. That honesty is the point. |
 | **"$39 is fine but I want to try it first."** | The free tier gives one full read of where you stand, your plan, and your circle - no paywall on first value. Pro ($39/mo) adds unlimited reads as your plan evolves, your full network's warm reach, and ongoing monitoring. |
 
@@ -213,14 +213,15 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 
 | Capability | Status | What the fleet may say |
 |---|---|---|
-| Gated, grounded first-run onboarding (≥10 people + ≥1 admired business + goal → one live read) | LIVE | Claim freely. This is the magic moment. |
+| Read-first onboarding: a goal in plain words alone unlocks one live read; ≥10 people and ≥1 admired business are optional sharpeners offered alongside it (since 2026-07-04) | LIVE | Claim freely. This is the magic moment - do not claim people/admired-business as required. |
+| Signup with no email-confirmation wall (auto-confirmed session on signup, since 2026-07-04) | LIVE | Claim freely: signing up gets you straight into the product. |
 | The Plan read: live market research → your **Value Prop** (labelled "Value Prop" in-app; 0–100 strength score + banded, evidence-backed signals with confidence) | LIVE | Claim freely, including the honesty (low confidence shown, never fake numbers). The prose "shows you where you stand" is still fine as positioning. |
 | Make-it-stronger coach (one decision-shaped question on the weakest signal; banked decisions lift the score on the next read) | LIVE | Claim freely. |
 | Living, action-first path of next moves, with the warm-reach step using real named people + pre-written drafts | LIVE | Claim freely. Reaching out is one tap to your own email/LinkedIn (you send), not automated send. |
 | Circle warm network + weekly "keep your circle warm" digest (email with one-tap `mailto:` drafts + an `.ics` calendar hold) | LIVE | Claim freely. |
 | In-app return surface ("what's waiting": people going quiet, decisions to fold in) | LIVE | Claim freely. |
 | Circle capture: LinkedIn CSV, CRM/sheet, Google/Microsoft contacts sync, screenshot-to-contact (vision) | LIVE | Claim freely. |
-| Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
+| Three Stripe tiers + checkout (account fractionl_ai), server-enforced entitlement (free tier's one-read cap and Pro's whole-network search gate are both checked server-side, not just in the client) | LIVE | Claim freely. |
 | One box on the Circle home: say what you're working on (surfaces your inner circle) OR who - or the kind of person - you're looking for (searches your whole network). Type it or voice-note it. | LIVE | Claim freely. |
 | Intelligent people-search over your whole network: semantic (meaning-based) + keyword retrieval returns real people, each with the actual fact that matched and a confidence - plus evidence-backed "warm route" (second-degree) inferences grounded in a person's OWN history (e.g. "was at Accel, a warm way into that fund"), never an invented relationship. | LIVE | Claim freely, including the honesty (nothing invented; every match cites a real fact). |
 | "Drop a contact" pinned in the top nav + a warm-reach bell/drawer (people going quiet, one-tap reach) | LIVE | Claim freely. |
@@ -248,7 +249,8 @@ Circle is emit-only. The central warehouse is the Mindmaker OS Supabase project 
 **How attribution flows:**
 - A first-touch AttributionContext (utm_*, campaign_id, agent, referrer, landing_path, anonymous_id) is captured on the public surface and survives the OAuth round-trip, then is written once to the per-user row.
 - Stripe checkout stamps metadata[supabase_user_id] plus the utm_* / campaign_id / agent fields onto both the customer and the subscription.
-- landed / signed_up / activated fire server-side; purchased / refunded / churned fire from the signature-verified Stripe webhook off the subscription metadata.
+- `signed_up` / `activated` fire server-side via the `emit-lifecycle` edge function (auth'd, so user_id/email come from the verified JWT); `purchased` / `refunded` / `churned` fire from the signature-verified Stripe webhook off the subscription metadata. **`landed` has no emit path in the codebase today** - do not claim it as implemented.
+- Both emit paths are **inert until `ATTRIBUTION_INGEST_SECRET` is configured** (return `{skipped: 'unconfigured'}` / no-op otherwise) - whether that secret is set in production is an ops fact this repo can't verify; confirm with the OS side before claiming attribution is actively flowing.
 - Every logical event carries a deterministic dedupe_key; the OS does INSERT ON CONFLICT DO NOTHING, so duplicate emits are safe.
 
 **What this means for the fleet:** to get credit for a sale, always set utm_source / utm_medium / utm_campaign / utm_content / utm_term plus campaign_id and agent on every link you ship. Those fields ride the whole way from landing through Stripe into the warehouse, so revenue can be attributed back to the exact campaign and agent.

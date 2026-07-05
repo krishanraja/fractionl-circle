@@ -1,8 +1,22 @@
 # Screenshot → Contact
 
-One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
+One-gesture contact capture, sharing a screenshot into Circle from outside the app (distinct
+from the in-app "add by screenshot" upload on the Circle/Start-here screens, which is live and
+uses `extract-contact`/`extract-admire` on Gemini). The user takes a screenshot of a profile
+(LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person
+flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV,
+Google Contacts, browser extension.
 
-Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.
+Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl
+path for testing.
+
+**Status (verified 2026-07-05): the capture side is wired; the confirm page is not built yet.**
+`public/site.webmanifest` + `public/sw.js` correctly capture the shared image and redirect to
+`/share-contact`, and `ingestSharedContact` exists in `src/lib/circleIngest.ts` - but
+`src/pages/ShareContact.tsx` does not exist and no `/share-contact` route is registered in
+`src/App.tsx` (routes are `/`, `/auth`, `/privacy`, `/terms`, the `/preview/*` fixtures, and a
+catch-all `NotFound`). Today a share lands on `NotFound`. This doc describes the intended,
+partially-built flow - do not claim it as live until `ShareContact.tsx` and the route ship.
 
 ---
 
@@ -25,11 +39,13 @@ No copying. No pasting. No typing unless correction is needed.
 
 ## Android / PWA (Web Share Target)
 
-Already wired up - nothing further to ship.
+The capture half is wired; the confirm page still needs to be built (see Status above).
 
 - `public/site.webmanifest` declares `share_target` with `action: "/share-contact"` and accepts image files.
 - `public/sw.js` intercepts the POST, stashes the file in the Cache API, and redirects to `/share-contact?pending=1`.
-- `src/pages/ShareContact.tsx` reads from the cache via `readSharedScreenshot()`, calls `parse-screenshot`, shows the confirm card, and on save calls `ingestSharedContact()`.
+- **To ship:** a `/share-contact` route + `src/pages/ShareContact.tsx` that reads from the cache
+  (a `readSharedScreenshot()` helper, not yet written), calls `parse-screenshot`, shows the
+  confirm card, and on save calls the existing `ingestSharedContact()`.
 - Requires the PWA to be installed (Add to Home Screen). Not installed → Circle does not appear in the OS share sheet.
 
 **Test flow:**
@@ -108,7 +124,7 @@ Set one of the following on the Supabase project (Edge Functions → Secrets):
 | Secret | Purpose |
 |---|---|
 | `ANTHROPIC_API_KEY` | **Preferred.** Claude Haiku 4.5 vision (`claude-haiku-4-5-20251001`). |
-| `OPENAI_API_KEY` | Fallback. GPT-4o vision. |
+| `OPENAI_API_KEY` | Fallback. `gpt-4o-mini` vision. |
 
 If neither is set, `/share-contact` shows a clean error state ("No vision model API key configured"). The rest of the app is unaffected.
 
@@ -128,7 +144,7 @@ Existing secrets used by `contact-enrich` (Apollo / Clearbit / Twilio) and `link
 
 ## Reliability
 
-- All three vision call sites (`parse-screenshot:109` Claude, `parse-screenshot:142` GPT-4o fallback, `parse-contact-image:56` GPT-4o) wrap their fetch with explicit `AbortSignal.timeout(20_000)` since PR #46.
+- The vision call sites (`parse-screenshot` Claude + `gpt-4o-mini` fallback, `parse-contact-image` GPT-4o) wrap their fetch with explicit `AbortSignal.timeout(30_000)`.
 - Per-user rate limits enforced via the durable `rate_limits` table (`_shared/compliance.ts`).
 
 ---

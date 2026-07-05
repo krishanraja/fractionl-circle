@@ -1,5 +1,10 @@
 # Non-Functional Audit - fractionl-circle
 
+> **Historical, point-in-time.** Snapshot of workspace commit `e788ac4`, well before the
+> 2026-07-03/07-04 product and audit-fix cycles described in `docs/PRODUCT.md`. Findings below
+> reflect that older state; do not use it to describe the live product. Current source of
+> truth: `docs/PRODUCT.md`, `AGENT_BRIEFING.md`.
+
 **Repository:** `krishanraja/fractionl-circle`  
 **Workspace commit tested:** `e788ac4` (`main`)  
 **Browser targets:** `https://circle.fractionl.ai` (production), `http://localhost:8080` (local dev after `.env` bootstrap)  

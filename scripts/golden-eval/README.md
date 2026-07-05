@@ -18,15 +18,20 @@ node scripts/golden-eval/run.mjs
 ```
 It creates a throwaway confirmed user (its 14-day trial reads as pro, so the free-read cap
 never bites), runs every profile, prints the opportunity/ability bands, deletes the user, and
-exits non-zero if a honesty regression is detected.
+exits non-zero **only** if `p9` fabricates a strong market - that is the one automated,
+hard-failing check (`run.mjs`'s `flagged` counter).
 
-## The honesty floor (what a good run looks like)
-- **p7** (vague thesis "finance help for companies"): Demand must NOT be `strong/high`; the
-  read should say the offer is too vague to size and name what to specify.
-- **p9** (gibberish "i want to make money"): must NOT fabricate a strong market; bands weak/low.
-- **p10** (a litigator selling CMO services): "Fit to you" must read weak; the mismatch surfaced.
-- Across the real profiles, the opportunity bands should actually move with the specificity and
-  evidence of each thesis, not sit pinned at strong.
+## Reading the output (one hard gate, one soft signal, one eyeball check)
+- **p9** (gibberish "i want to make money") is the **hard gate**: exits non-zero if Demand comes
+  back `strong`.
+- **p7** (vague thesis "finance help for companies") is a **soft, informational note only** - the
+  script prints a note if Demand scores `strong/high`, but does not fail the run on it, because a
+  strong background can reasonably let the model infer a niche.
+- **p10** (a litigator selling CMO services, "Fit to you" should read weak) has **no automated
+  check today** - `run.mjs` does not evaluate it. Read the printed ABILITY line for `p10-*`
+  by eye until an automated check is added.
+- Across the real profiles, eyeball that the opportunity bands actually move with the specificity
+  and evidence of each thesis, not sit pinned at strong.
 
 `golden-set.json` holds the profiles and the expected characteristics (written before running).
 Add profiles as new failure modes are found.

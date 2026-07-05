@@ -1,6 +1,6 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-04. This is the source of truth for what
+*Canonical product doc. Last updated 2026-07-05. This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -54,6 +54,37 @@ but the naming read as jargon and the flow was fragmented. Four changes, each wi
    clear their site data. *Why:* the compliant default stands for everyone who doesn't opt
    in, but a returning operator gets to stay signed in.
 
+## What changed (2026-07-04, Waves 1-6: closing the audit's revenue/onboarding gaps)
+
+A six-wave pass fixing what a P0 revenue/onboarding audit found, same day as the IA pass above.
+
+1. **Wave 1 - the money is now real.** Checkout was silently broken: a failed Stripe request
+   came back as an empty `{}` at HTTP 200, so the Upgrade button did nothing. Fixed, plus
+   server-side tier enforcement that previously existed only in the client (a P0 leak):
+   `validate-thesis` now 402s a free user past their one read, `search-network` gates the
+   whole-network find to Pro. A follow-up round closed a check-then-act race on the free-read
+   cap (`insert_thesis_run_gated`, migration `20260704180000_thesis_read_gate.sql`, advisory-locked
+   so concurrent reads can't all slip through) and made tier checks fail closed on DB errors
+   instead of silently defaulting to free/allowed.
+2. **Wave 2 - no more email wall.** ~45% of signups were never confirming and getting locked
+   out. `mailer_autoconfirm` is now on in Supabase Auth (new signups get a live session
+   immediately); the "check your email" dead-end only shows if confirmation is ever re-enabled.
+3. **Wave 3 - read-first hybrid onboarding (see "First-run onboarding" below).** The gate that
+   used to require 10 people + 1 admired business now only requires "a bit about you"; people
+   and the admired business are optional sharpeners offered alongside it. The public landing
+   (`index.html`, `AuthPage.tsx` hero) now leads with the read ("Is your idea worth selling?"),
+   not the circle/CRM pitch.
+4. **Wave 4 - the read got more honest.** A band-calibration floor in `validate-thesis`'s prompt
+   stops a vague or absent idea from scoring Demand/Burning-need as strong - genuinely strong
+   profiles are unaffected. A committed pre-release eval gate (`scripts/golden-eval/`) hard-fails
+   on true-gibberish fabrication.
+5. **Wave 5 - the compounding loop is instrumented.** `compounding_events` (migration
+   `20260704200000`) logs every read that folds in >=1 banked decision, so the retention loop's
+   real usage is finally measurable in production.
+6. **Wave 6 - craft fixes.** The read's verdict no longer clips mid-sentence (5-line clamp, was
+   3); the people-finder placeholder now invites semantic ("meaning-based") search instead of
+   reading as a literal name filter; a desktop list-clipping bug under the nav was fixed.
+
 ## What changed (2026-06-29) and why
 
 This cycle retired the older "Circle CRM" generation (Ideas → Matches → Moves → Streams →
@@ -101,23 +132,32 @@ tap - pushing a **strength score toward 100**; (2) the **Circle** that turns the
 Live at `circle.fractionl.ai`. Signed in, a returning user lands in the two-tab shell
 (**Circle** and **Plan**); a brand-new user lands in the gated **Start here** onboarding.
 
-## First-run onboarding (the Start here gate)
+## First-run onboarding (the Start here gate, read-first hybrid since 2026-07-04 Wave 3)
 
 `src/pathroom/StartHere.tsx`. First-run is gated on "has no saved run":
 `CircleApp` calls `getRunCount(userId)` and, when it is `0`, renders `StartHere` instead of the
-two-tab shell. The gate holds the user until they supply all three of:
+two-tab shell. The gate requires only:
 
 - **A bit about you** - who you want to sell to, why you, and your objective/ideas (plain words;
-  a stream of consciousness is fine).
-- **Your people** - at least **10** in your circle (`MIN_PEOPLE = 10`), reachable fast via the
-  Add-to-Circle / Add-source sheets: screenshot, paste a list, LinkedIn CSV, CRM/sheet, or an
-  instant Google/Microsoft contacts sync - so the 10-person gate is never a wall.
-- **A business you admire** - at least **1**, typed or read from a screenshot (`extract-admire`).
+  a stream of consciousness is fine). `ready = aboutDone` (`StartHere.tsx:76,83`) - this alone
+  unlocks **See how it lands**.
 
-The brand mark (`EmberNav`) brightens as each input goes in; **See how it lands** is disabled
-until all three are done. *Why the friction:* these three are exactly the inputs the read is
-grounded in, so the friction buys real, non-generic value instead of reading as a thin LLM
-wrapper. On unlock it runs the live read once and hands off to the **Plan** tab.
+Two more inputs are offered on the same screen as **optional** sharpeners, now or after the
+first read:
+
+- **Your people** - target **10** in your circle (`MIN_PEOPLE = 10`), reachable fast via the
+  Add-to-Circle / Add-source sheets: screenshot, paste a list, LinkedIn CSV, CRM/sheet, or an
+  instant Google/Microsoft contacts sync. An empty circle just reads warm-reach as low on the
+  first pass - honest, and the earned reason to add people next.
+- **A business you admire** - typed or read from a screenshot (`extract-admire`).
+
+The brand mark (`EmberNav`) brightens as each input goes in. *Why the change:* the original
+all-three gate walled off first value; the read only strictly needs the "about you" words to be
+grounded and non-generic, so people + admired business became earned sharpeners instead of a
+wall. On unlock it runs the live read once and hands off to the **Plan** tab.
+
+**Signup itself has no email-confirmation wall** (2026-07-04 Wave 2): `mailer_autoconfirm` is on,
+so a new signup gets a live session immediately instead of a "check your email" step.
 
 **Persistence (no migration).** The typed about-you is mirrored to `localStorage`
 (`fr_about_<userId>`) so connecting Google/Microsoft contacts - which leaves and returns to the
@@ -334,12 +374,16 @@ Source of truth: `src/lib/tiers.ts` (price labels, feature bullets, Stripe price
 The DB-level tier enum is `free | pro | executive`. Three tiers:
 
 - **Free (Freemium), $0:** one full read of where you stand, your plan and next moves, build
-  your circle by screenshot or CSV. No paywall on first value.
-- **Pro, $39/mo:** unlimited reads as your plan evolves, real warm reach from your full network,
-  specific named next moves, ongoing market monitoring. Gated through Stripe checkout. (The
-  Stripe Price object must be set to $39 in the production Stripe mode; the app reads
-  `VITE_STRIPE_PRO_MONTHLY_PRICE_ID`.) Pro is the highlighted CTA tier; the in-app gate copy
-  quotes "$39 a month".
+  your circle by screenshot or CSV. No paywall on first value. Server-enforced since 2026-07-04
+  Wave 1: `validate-thesis` 402s a free account past its one stored `thesis_runs` row
+  (`FREE_READ_LIMIT = 1` in `_shared/tiers.ts`), race-closed by the advisory-locked
+  `insert_thesis_run_gated` DB function - it is not a client-trust gate.
+- **Pro, $39/mo:** unlimited reads as your plan evolves, real warm reach from your full network
+  (`search-network`'s whole-network find is Pro-gated server-side; the "what are you working
+  on" inner-circle surface stays free), specific named next moves, ongoing market monitoring.
+  Gated through Stripe checkout. (The Stripe Price object must be set to $39 in the production
+  Stripe mode; the app reads `VITE_STRIPE_PRO_MONTHLY_PRICE_ID`.) Pro is the highlighted CTA
+  tier; the in-app gate copy quotes "$39 a month".
 - **Chief of Staff (`executive`), $79/mo:** unlimited reads and warm reach, a weekly brief on
   your network and market, external signal feeds (RFPs, job changes, trends), cross-user market
   intelligence, priority compute + white-glove concierge onboarding. Reads
@@ -586,6 +630,11 @@ Driven by the AI-native operator evidence corpus; full strategy + decision recor
 - Set the production Stripe Pro monthly Price object to $39 and point
   `VITE_STRIPE_PRO_MONTHLY_PRICE_ID` at it (prod Stripe mode); likewise the Chief of Staff
   ($79) Price object behind `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID`.
+- ~~Checkout silently no-op'd on a Stripe error, and tier enforcement was client-only~~ Fixed
+  2026-07-04 Wave 1 - see "What changed (2026-07-04, Waves 1-6)" above.
+- `scripts/golden-eval` (the pre-release honesty eval, added Wave 4) is not wired into any CI
+  workflow yet - the only workflow in `.github/workflows/` is the `browser-audit` smoke test;
+  running the golden set is still a manual step before a release that touches `validate-thesis`.
 - ~~Configure Resend + VAPID to activate `cron-reengage` email/push~~ Done - verified set in
   prod 2026-07-03; the sweep is live and now writes `delivery_log` rows.
 - Extend the make-it-stronger coach to every surface (Circle, Reach out) so it is truly ambient

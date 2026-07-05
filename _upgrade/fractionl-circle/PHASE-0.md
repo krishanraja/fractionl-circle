@@ -1,5 +1,9 @@
 # Circle by Fractionl, Phase 0: Sync + Recon (verified)
 
+> **Historical, point-in-time recon (2026-05-30).** Predates the Path Room pivot, the
+> thesis-validation-engine pivot, and the 2026-07 audit-fix waves. The build/lint/schema
+> state described below is stale. Current source of truth: `docs/PRODUCT.md`.
+
 Date: 2026-05-30. No code changes. Read-only recon per Master Prompt Section 7.
 Verification: multi-agent deep-read of the repo at HEAD `ffda624` (PR #52), cross-checked against the LIVE Supabase project `ksyuwacuigshvcyptlhe` (Management API, read-only SQL) and the LIVE Vercel project `prj_UGoTFYAQ3CL1NBctWYIvSY4LETnh`, plus 5 adversarial verifiers tasked with refuting the load-bearing claims. This supersedes the earlier draft of this file and corrects several of its statements.
 
