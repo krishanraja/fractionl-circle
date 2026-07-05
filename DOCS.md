@@ -28,14 +28,15 @@
 > - "sharpen" → **make it stronger**
 > - The **Circle** tab keeps its name.
 >
-> **Real first-run (replaces the voice→Ideas onboarding below).** A brand-new user (no saved
-> plan; gated on `getRunCount === 0`) is held in a warm, gated **Start here**
-> (`src/pathroom/StartHere.tsx`) that unlocks **See how it lands** only after they give the
-> inputs uniquely theirs: **≥10 people** who could help them sell, **≥1 business they admire**,
-> and a few plain words about who they want to sell to / why them / their objective. *Why:* a
-> one-box "type an idea → AI report" reads as a generic LLM wrapper; this small amount of
-> uniquely-theirs input is healthy friction that grounds the read in the user's real network,
-> taste, and goal. About-you persists to `localStorage` (survives the OAuth contacts-sync
+> **Real first-run (read-first, 2026-07-05).** A brand-new user (no saved plan; gated on
+> `getRunCount === 0`) lands in a warm **Start here** (`src/pathroom/StartHere.tsx`) that unlocks
+> **See how it lands** as soon as they give a few plain words about who they want to sell to,
+> why them, and their objective. **Your people** (who could help you sell) and **a business you
+> admire** are optional sharpeners, offered here and again after the read, not a wall in front of
+> it. *Why:* a one-box "type an idea → AI report" reads as a generic LLM wrapper, but burying the
+> read behind a 10-person contact tax inverted trust; the uniquely-theirs about-you is enough to
+> ground the read, and an empty circle honestly reads warm-reach as LOW, the earned reason to
+> build it next. About-you persists to `localStorage` (survives the OAuth contacts-sync
 > redirect) and into existing `user_profiles` columns (`target_buyer`, `first_run_transcript`,
 > `onboarding_completed`, `first_run_completed_at`) - **no migration**.
 >
@@ -403,9 +404,10 @@ The voice-first command surface. Currently a placeholder UI; voice capture lands
 
 ## 9. Onboarding
 
-> **SUPERSEDED (2026-06-29).** The voice→Ideas onboarding below is **gone**. The live first-run
-> is the gated **Start here** (`src/pathroom/StartHere.tsx`): ≥10 people who can help you sell,
-> ≥1 business you admire, and a plain about-you, which unlocks one live market read. *Why:*
+> **SUPERSEDED (2026-06-29; read-first since 2026-07-05).** The voice→Ideas onboarding below is
+> **gone**. The live first-run is **Start here** (`src/pathroom/StartHere.tsx`): a plain about-you
+> (who you sell to, why you, your objective) unlocks one live market read; your people and a
+> business you admire are optional sharpeners, offered before and after the read. *Why:*
 > requiring a small amount of uniquely-yours input grounds the read in your real network, taste,
 > and goal instead of reading as a generic LLM wrapper. See `docs/PRODUCT.md` → "First-run
 > onboarding (the Start here gate)". The rest of this section is historical.

@@ -1,6 +1,6 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-04. This is the source of truth for what
+*Canonical product doc. Last updated 2026-07-05 (audit remediation). This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -13,6 +13,37 @@ grounded, honest read plus named warm-network moves they actually take toward th
 (a `thesis_runs` row whose `step_progress` advanced AND a `circle_person.last_interaction_at` stamped in the
 same week). Reads without moves are curiosity; moves without reads are noise; the two together, repeated
 weekly, are the product working. Everything in this doc is graded against that outcome and that number.
+
+## What changed (2026-07-05): the audit remediation (7 waves, all live)
+
+A full evidence-gated audit found the product was technically live but commercially and
+functionally broken in specific ways. Seven waves shipped and were live-verified. Each is
+detailed in its own section; the summary:
+
+1. **Money is real.** The real reason revenue was $0: the production `STRIPE_SECRET_KEY` was an
+   invalid value, so every checkout failed and the old `stripe-checkout` swallowed the error as
+   an empty `{}` at HTTP 200 (a dead Upgrade button). Fixed: `stripeRequest` checks `response.ok`
+   and surfaces the real Stripe error; the valid live key (acct_1TELoi) + a fresh webhook endpoint
+   + the `$39`/`$79` price allowlists are set; prod checkout returns a live session again.
+2. **Server-side entitlement** (was client-only, a P0 leak). `validate-thesis` returns 402 for a
+   free user past their one read; `search-network` gates the whole-network find path to Pro (the
+   free `working_on` path stays open). The one-free-read cap is race-safe via the
+   `insert_thesis_run_gated` advisory-locked RPC (concurrent reads can no longer all slip the cap).
+   The tier gate fails **closed** on a DB error (never misclassifies a paying user as free).
+3. **Frictionless signup (confirm-later).** Email auto-confirm is on, so signup returns a live
+   session immediately - no "check your email" wall (it previously stranded ~45% of signups).
+4. **Read-first onboarding + landing.** The first read runs on **about-you alone**; the circle and
+   an admired business are optional sharpeners, offered before and after. The landing leads with
+   the read ("Is your idea worth selling?"), not the circle/CRM.
+5. **Honest read.** A band-calibration floor in the structuring prompt means a vague or gibberish
+   thesis can no longer score Demand/Burning-need "strong" (it stopped fabricating a market from
+   "I want to make money"); the market-research call now combines the stated background, the
+   profile facts, and the user's own onboarding words. The golden set is committed at
+   `scripts/golden-eval/` as a pre-release eval gate.
+6. **The moat loop is instrumented.** Every read that folds a banked coach decision logs a
+   `compounding_events` row (migration `20260704200000`), so the retention spine is measurable.
+7. **Craft.** The read verdict no longer truncates mid-clause; the people-finder box invites
+   semantic search; the desktop Circle header no longer clips under the nav.
 
 ## What changed (2026-07-04) and why
 
@@ -105,18 +136,24 @@ Live at `circle.fractionl.ai`. Signed in, a returning user lands in the two-tab 
 
 `src/pathroom/StartHere.tsx`. First-run is gated on "has no saved run":
 `CircleApp` calls `getRunCount(userId)` and, when it is `0`, renders `StartHere` instead of the
-two-tab shell. The gate holds the user until they supply all three of:
+two-tab shell. **Read-first (2026-07-05):** the first read runs on **about-you alone**
+(`ready = aboutDone`). The people and admired-business inputs are optional sharpeners, offered
+here and again after the read, not a wall in front of the magic:
 
-- **A bit about you** - who you want to sell to, why you, and your objective/ideas (plain words;
-  a stream of consciousness is fine).
-- **Your people** - at least **10** in your circle (`MIN_PEOPLE = 10`), reachable fast via the
-  Add-to-Circle / Add-source sheets: screenshot, paste a list, LinkedIn CSV, CRM/sheet, or an
-  instant Google/Microsoft contacts sync - so the 10-person gate is never a wall.
-- **A business you admire** - at least **1**, typed or read from a screenshot (`extract-admire`).
+- **A bit about you** (required) - who you want to sell to, why you, and your objective/ideas
+  (plain words; a stream of consciousness is fine). This is uniquely theirs and is enough to
+  ground an honest read.
+- **Your people** (optional, the biggest lever) - the circle powers real warm reach; add a few
+  now or after the read via the Add-to-Circle / Add-source sheets (screenshot, type a name,
+  paste, LinkedIn CSV, CRM/sheet, or an instant Google/Microsoft contacts sync). An empty circle
+  honestly reads warm-reach as LOW, which becomes the earned reason to build it next.
+- **A business you admire** (optional) - typed or read from a screenshot (`extract-admire`); it
+  sharpens what makes you different.
 
-The brand mark (`EmberNav`) brightens as each input goes in; **See how it lands** is disabled
-until all three are done. *Why the friction:* these three are exactly the inputs the read is
-grounded in, so the friction buys real, non-generic value instead of reading as a thin LLM
+The brand mark (`EmberNav`) brightens as each input goes in; **See how it lands** unlocks once
+about-you is done. *Why read-first:* burying the read (the magic) behind a 10-person contact tax
+inverted trust; a new operator now gets the honest read first, then builds the circle. The
+uniquely-theirs about-you still keeps the read from reading as a thin LLM
 wrapper. On unlock it runs the live read once and hands off to the **Plan** tab.
 
 **Persistence (no migration).** The typed about-you is mirrored to `localStorage`
@@ -385,8 +422,9 @@ locked user reaches a deep phase.
   stronger. Also `DIMENSION_LABEL` + `dimLabel()`, the display map that renders the stored
   scorecard key `"Your edge"` as **"What makes you different"** without touching the data.
   Keep all user-facing naming of these core concepts here so the voice never drifts back.
-- `StartHere.tsx` - the gated first-run onboarding (about-you + ≥10 people + ≥1 admired business
-  → one live read; persists about-you to `localStorage` and `user_profiles`).
+- `StartHere.tsx` - the first-run onboarding, read-first: about-you alone unlocks the first live
+  read (people + an admired business are optional sharpeners); persists about-you to
+  `localStorage` and `user_profiles`.
 - `CircleHome.tsx` - the Circle tab landing (the warm-network home / daily habit); mounts the
   return surface.
 - `ReturnSurface.tsx` - the in-app "what's waiting for you" (people going quiet + banked
@@ -473,7 +511,13 @@ and `goal_reminders` opt-outs), `user_profiles` (incl. the first-run identity co
 `target_buyer`, `positioning`, `first_run_transcript`, `onboarding_completed`,
 `onboarding_completed_at`, `first_run_completed_at`, `last_active_at`). The first-run onboarding
 reuses these existing columns - **no migration was added**. Warmth is recomputed by the
-`recompute_circle_warmth()` SQL fn.
+`recompute_circle_warmth()` SQL fn. Added in the 2026-07-05 remediation: `compounding_events`
+(migration `20260704200000`, one row per read that folds >= 1 banked decision - the moat-loop
+signal) and the `insert_thesis_run_gated` SECURITY DEFINER RPC (migration `20260704180000`, an
+advisory-locked atomic count-and-insert that makes the free one-read cap race-safe). Server-side
+tier enforcement lives in `validate-thesis` (free = one read to 402) and `search-network`
+(whole-network find = Pro), both reusing `_shared/tiers.ts` `getUserTier` (which fails closed on a
+read error). Email auto-confirm is on at the Supabase Auth level (signup returns a live session).
 
 **Secrets** (Supabase function secrets): `PERPLEXITY_API_KEY`, `GOOGLE_API_KEY`,
 `LOVABLE_API_KEY` (LLM), `RESEND_API_KEY` (digest email), `VAPID_*` (web push), `CRON_SECRET`
@@ -500,9 +544,9 @@ are set). The legacy `cron-match-engine` and `cron-sunday-letter` schedules were
 
 - **Plain-language vocabulary** - single source of truth `copy.ts`; the Plan tab + the
   see-how-it-lands / where-you-stand / make-it-stronger naming throughout.
-- **Gated, grounded first-run onboarding** - `StartHere.tsx` (about-you + ≥10 people + ≥1
-  admired business → one live read), persisting into existing `user_profiles` columns with no
-  migration; `localStorage` survival across the OAuth contacts-sync redirect.
+- **Grounded first-run onboarding** - `StartHere.tsx` (read-first: about-you alone unlocks the
+  live read; people + an admired business optional), persisting into existing `user_profiles`
+  columns with no migration; `localStorage` survival across the OAuth contacts-sync redirect.
 - **Re-engagement** - the in-app `ReturnSurface` on the Circle landing (people going quiet +
   banked decisions, gated by `goal_reminders`) and the dormant weekly `cron-reengage` email +
   web-push sweep (see `docs/reengagement-and-push.md`).
@@ -583,9 +627,16 @@ Driven by the AI-native operator evidence corpus; full strategy + decision recor
 
 ## Known follow-ups
 
-- Set the production Stripe Pro monthly Price object to $39 and point
-  `VITE_STRIPE_PRO_MONTHLY_PRICE_ID` at it (prod Stripe mode); likewise the Chief of Staff
-  ($79) Price object behind `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID`.
+- ~~Set the production Stripe Pro monthly Price object to $39~~ Done - the prod
+  `STRIPE_SECRET_KEY` (which had been an invalid value, silently breaking every checkout) was
+  replaced with a valid live key for acct_1TELoi (2026-07-05); the `$39` Pro (`price_1Tk7LS`) and
+  `$79` Chief of Staff (`price_1TO2AM`) prices are wired via `STRIPE_PRO_PRICE_IDS` /
+  `STRIPE_EXEC_PRICE_IDS` and a fresh webhook endpoint; prod checkout returns a live session.
+- **Open (from the 2026-07-05 remediation):** complete one live paid round-trip (a real card,
+  then auto-verify webhook to entitlement, then refund + cancel) to close the last billing
+  verification; **rotate the live `sk_live` key** that was pasted during the fix. Deferred craft
+  polish: the desktop console-shell treatment and streaming the "watch it think" research steps.
+  Data: seed `benchmarks` rows for the non-finance/marketing roles so `roleToFn` lights up.
 - ~~Configure Resend + VAPID to activate `cron-reengage` email/push~~ Done - verified set in
   prod 2026-07-03; the sweep is live and now writes `delivery_log` rows.
 - Extend the make-it-stronger coach to every surface (Circle, Reach out) so it is truly ambient
