@@ -17,14 +17,14 @@ Full product, architecture, and run/deploy: **[docs/PRODUCT.md](docs/PRODUCT.md)
 ## What it does (60 seconds)
 
 1. **Start here (first run).** A brand-new user (no plan yet) is held in a warm, gated
-   onboarding (`src/pathroom/StartHere.tsx`). It unlocks **See how it lands** only after you
-   give the three things that are uniquely yours: at least **10 people** who could help you
-   sell, at least **1 business you admire**, and a few plain words about who you want to sell
-   to, why you, and your current objective. Why the friction: a one-box "type an idea → AI
-   report" reads as a generic LLM wrapper; grounding the read in your real network, taste, and
-   goal makes the output non-generic. A fast bulk-import path (LinkedIn CSV, CRM/sheet, instant
-   Google/Microsoft contacts sync) keeps the 10-person gate from being a wall, and your typed
-   words persist locally so an OAuth contacts-sync redirect never loses them.
+   onboarding (`src/pathroom/StartHere.tsx`), read-first: it unlocks **See how it lands** as soon
+   as you give a few plain words about who you want to sell to, why you, and your current
+   objective. Your people (who could help you sell) and a business you admire are optional
+   sharpeners, offered here and again after the read, not a wall in front of it. Why: a one-box
+   "type an idea → AI report" reads as a generic LLM wrapper, so the read is grounded in the
+   uniquely-yours about-you; an empty circle honestly reads warm-reach as LOW, the earned reason
+   to add your people next (fast via LinkedIn CSV, CRM/sheet, or instant Google/Microsoft contacts
+   sync). Your typed words persist locally so an OAuth contacts-sync redirect never loses them.
 2. **Plan.** The read runs live market research and returns **where you stand**: a strength
    score (0–100) and honest, banded signals with evidence (never fake numbers), plus a
    **make it stronger** coach that asks the single highest-leverage decision next, and a

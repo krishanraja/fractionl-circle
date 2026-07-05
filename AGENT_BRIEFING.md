@@ -52,7 +52,7 @@ Their circle is their business. They are time-starved and need tools that work i
 ## 3. The single magic moment and the core outcomes
 
 ### The magic moment
-You give Circle the three things only you have - at least 10 people who could help you sell, at least one business you admire, and a few plain words about who you want to sell to and why you - and it reads the live market against all three and shows you **where you stand**: a strength score, the honest signals behind it, and your next moves. It is the opposite of a one-box AI answer: grounded in your real world, so the output is about you.
+You tell Circle who you want to sell to and why you, in a few plain words, and it reads the live market against that and shows you **where you stand**: a strength score, the honest signals behind it, and your next moves. Then you add the two things that only you have - your people (who could help you sell) and a business you admire - to sharpen the read and light up real warm reach. It is the opposite of a one-box AI answer: grounded in your real world, so the output is about you.
 
 ### Core outcomes (quotable)
 - **An honest read, not a hype answer.** Banded signals with evidence and a confidence mark. Low confidence is shown, not faked. You learn whether the opportunity is real and whether you can win it, fast.
@@ -103,7 +103,7 @@ We are not "another CRM" and not "a generic AI assistant." We help a single oper
 - One seat is $39/mo, not $50 to $150/mo locked behind seats.
 
 ### Why Circle is not a generic AI chatbot (ChatGPT / Claude)
-A generic LLM does not have your network, your taste, or your goal, so a one-box prompt gives a generic answer. Circle deliberately requires a small amount of uniquely-yours input - at least 10 of your people, a business you admire, and your goal in plain words - and reads the live market against all three. The output is grounded in your real world, with honest confidence, not a confident guess.
+A generic LLM does not have your network, your taste, or your goal, so a one-box prompt gives a generic answer. Circle grounds the read in a small amount of uniquely-yours input - your goal and who you sell to in plain words to start, then your people and a business you admire to sharpen it - and reads the live market against that. The output is grounded in your real world, with honest confidence, not a confident guess.
 
 ### Why Circle is not LinkedIn / Sales Navigator
 LinkedIn is the graph; Sales Nav is built for SDRs running prospecting. Circle sits on top of the operator's own warm network and answers "where do I stand and who do I reach," then keeps that network warm.
@@ -123,9 +123,9 @@ All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be per
 ### LinkedIn post 1 (the grounded-read hook)
 > Most "AI for your business" is a box: type an idea, get a confident answer that has never met your network.
 >
-> I wanted the opposite. So before Circle says a word, it asks for the three things only I have: a few of the people who could actually help me sell, one business I admire, and a couple of plain sentences about who I want to sell to and why me.
+> I wanted the opposite. So before Circle says a word, it asks for the thing only I have: a couple of plain sentences about who I want to sell to and why me. Then it gets sharper as I add the people who could actually help me sell and a business I admire.
 >
-> Then it reads the live market against all three and tells me where I stand - an honest score, the signals behind it, what is holding me back, and my next moves. Grounded in my real world, not the internet's.
+> It reads the live market against that and tells me where I stand - an honest score, the signals behind it, what is holding me back, and my next moves. Grounded in my real world, not the internet's.
 >
 > circle.fractionl.ai
 
@@ -184,7 +184,7 @@ All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be per
 |---|---|
 | **"I do not want my contacts in someone else's database / privacy of my network."** | Every row is RLS-isolated and scoped to your own account. The service-role key never appears in the client. OAuth tokens are encrypted. We do not sell data and we do not train models on your contacts. There is account deletion in Settings. |
 | **"Is this just another CRM?"** | No. CRMs are built for sales teams of 10+; Circle is built for one operator. It answers "is my offer real, where do I stand, and who do I reach," and keeps your network warm - not 20 deal stages. Keep your CRM if your clients use one; Circle replaces the spreadsheet you keep on the side. |
-| **"Is this just ChatGPT with a wrapper?"** | The opposite by design. Circle refuses the one-box prompt: it requires a few of your real people, a business you admire, and your goal, then reads the live market against all three. The answer is grounded in your world, with honest confidence - not a generic guess. |
+| **"Is this just ChatGPT with a wrapper?"** | The opposite by design. Circle grounds the read in your goal and who you sell to (in your words), then gets sharper as you add your real people and a business you admire - and it reads the live market against that. The answer is grounded in your world, with honest confidence - not a generic guess. |
 | **"Why do I have to add 10 people before I get value?"** | Because that is what makes the read about you and not the internet. The warm-reach part of your plan is your real network; without it the read is generic. We make it fast - screenshot, paste a list, LinkedIn CSV, or a one-click Google/Microsoft contacts sync. |
 | **"Will the read just tell me what I want to hear?"** | No. Signals are bands with evidence and a confidence mark; low confidence is shown, not hidden. It will tell you what is holding you back. That honesty is the point. |
 | **"$39 is fine but I want to try it first."** | The free tier gives one full read of where you stand, your plan, and your circle - no paywall on first value. Pro ($39/mo) adds unlimited reads as your plan evolves, your full network's warm reach, and ongoing monitoring. |
@@ -213,7 +213,7 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 
 | Capability | Status | What the fleet may say |
 |---|---|---|
-| Gated, grounded first-run onboarding (≥10 people + ≥1 admired business + goal → one live read) | LIVE | Claim freely. This is the magic moment. |
+| Read-first grounded onboarding (your goal + who you sell to → one live read; people + an admired business optional, to sharpen it) | LIVE | Claim freely. This is the magic moment. |
 | The Plan read: live market research → your **Value Prop** (labelled "Value Prop" in-app; 0–100 strength score + banded, evidence-backed signals with confidence) | LIVE | Claim freely, including the honesty (low confidence shown, never fake numbers). The prose "shows you where you stand" is still fine as positioning. |
 | Make-it-stronger coach (one decision-shaped question on the weakest signal; banked decisions lift the score on the next read) | LIVE | Claim freely. |
 | Living, action-first path of next moves, with the warm-reach step using real named people + pre-written drafts | LIVE | Claim freely. Reaching out is one tap to your own email/LinkedIn (you send), not automated send. |
