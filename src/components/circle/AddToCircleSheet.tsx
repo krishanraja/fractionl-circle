@@ -23,10 +23,9 @@ const looksLikeContact = (raw: string): boolean => {
   return false;
 };
 
-const shortPreview = (raw: string): string => {
-  const t = raw.trim().split('\n')[0];
-  return t.length > 48 ? `${t.slice(0, 45)}…` : t;
-};
+// The first line of what was pasted, shown in full (it wraps where it renders) -
+// no ellipsis. The complete paste is always captured regardless of this preview.
+const shortPreview = (raw: string): string => raw.trim().split('\n')[0];
 
 type Mode = 'image' | 'paste' | 'voice' | 'typed';
 
@@ -76,7 +75,7 @@ const SheetBody = ({
       {clipboardHint && (
         <button className="modetile" style={{ minHeight: 0, flexDirection: 'row', alignItems: 'center', gap: 9 }} onClick={onUseClipboard}>
           <Sparkles size={16} style={{ color: 'var(--thx-accent)', flex: '0 0 auto' }} />
-          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--thx-hi)' }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--thx-hi)', lineHeight: 1.35 }}>
             Use clipboard - <span style={{ color: 'var(--thx-mid)' }}>{clipboardHint}</span>
           </span>
           <span

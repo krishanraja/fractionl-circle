@@ -233,6 +233,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   const [nameValue, setNameValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [positioning, setPositioning] = useState('');
+  const [linkedin, setLinkedin] = useState('');
   const [pushBusy, setPushBusy] = useState(false);
 
   const showPushOptIn = PUSH_ENABLED && pushSupported;
@@ -254,7 +255,8 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   useEffect(() => {
     if (!open) return;
     setPositioning(profile?.positioning ?? '');
-  }, [open, profile?.positioning]);
+    setLinkedin(profile?.linkedin_url ?? '');
+  }, [open, profile?.positioning, profile?.linkedin_url]);
 
   const role = profile?.role ?? null;
   const engagementModel = profile?.business_type ?? null;
@@ -295,6 +297,18 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
       /* toast from updateProfile */
     }
   }, [positioning, profile?.positioning, updateProfile]);
+
+  const saveLinkedin = useCallback(async () => {
+    const trimmed = linkedin.trim();
+    const prev = (profile?.linkedin_url ?? '').trim();
+    if (trimmed === prev) return;
+    try {
+      await updateProfile({ linkedin_url: trimmed || null });
+      toast.success('Saved');
+    } catch {
+      /* toast from updateProfile */
+    }
+  }, [linkedin, profile?.linkedin_url, updateProfile]);
 
   const handleSelectRole = useCallback(
     async (value: string) => {
@@ -447,7 +461,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
                   <p className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
                     {profile?.full_name || 'Set your name'}
                   </p>
-                  <p className="text-xs text-foreground-muted truncate">
+                  <p className="text-xs text-foreground-muted break-all">
                     {user?.email || 'No email'}
                   </p>
                 </button>
@@ -500,6 +514,22 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
             />
             <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
               Optional. Your LinkedIn headline, in one line - we use it to flavor AI suggestions.
+            </p>
+          </div>
+
+          <div className="py-2">
+            <label className="text-xs font-medium text-foreground-muted mb-1 block">
+              Your LinkedIn
+            </label>
+            <Input
+              value={linkedin}
+              onChange={(e) => setLinkedin(e.target.value)}
+              placeholder="linkedin.com/in/your-profile"
+              className="h-9 text-sm"
+              onBlur={() => void saveLinkedin()}
+            />
+            <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
+              Optional. Your own profile - it sharpens your plan's fit and credibility. This is you, not a contact.
             </p>
           </div>
 

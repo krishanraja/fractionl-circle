@@ -60,7 +60,7 @@ export const ContactButton = ({ person, raws, className }: ContactButtonProps) =
         title={primary.label}
       >
         <PrimaryIcon size={14} />
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '10rem' }}>{primary.label}</span>
+        <span>{primary.label}</span>
       </button>
       {hasAlts && (
         <DropdownMenu>

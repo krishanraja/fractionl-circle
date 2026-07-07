@@ -57,7 +57,7 @@ You tell Circle who you want to sell to and why you, in a few plain words, and i
 ### Core outcomes (quotable)
 - **An honest read, not a hype answer.** Banded signals with evidence and a confidence mark. Low confidence is shown, not faked. You learn whether the opportunity is real and whether you can win it, fast.
 - **A plan, not a verdict.** A living, action-first path of next moves to your first clients, with your own network woven into the warm-reach step.
-- **Make it stronger over time.** A coach asks the single highest-leverage decision to raise your weakest signal; each decision lifts your strength score on the next read.
+- **Make it stronger over time.** The Plan tab gives you exactly two moves: work on your plan, or take your next action. On "make it stronger" you can screenshot a business you admire, **voice a concern and have it researched**, or **voice an idea and have the AI fold it in** - plus a coach that asks the single highest-leverage decision to raise your weakest signal. Each one lifts your strength score on the next read.
 - **Keep your circle warm.** A weekly nudge on who is going quiet, each with a grounded, pre-written hello and one tap to send.
 - **A reason to come back.** When you return, Circle shows what is waiting - people going quiet, decisions to fold into your plan - computed from your own data.
 

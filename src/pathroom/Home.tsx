@@ -64,16 +64,29 @@ function DecisionSheet({ decisions, onMarkOutcome, onClose }: {
   );
 }
 
-export default function Home({ fuel, sharp, decisions, onMarkOutcome, onOpenRead, onOpenPath }: {
+export default function Home({ fuel, sharp, decisions, onMarkOutcome, onOpenRead, onOpenStrengthen, onOpenPath, onRerun, recommend, unrunAnswers, busyRerun }: {
   fuel: number;
   sharp: Sharpness;
   decisions: DecisionEntry[];
   onMarkOutcome: (id: string, outcome: 'worked' | 'didnt_work' | null) => void;
   onOpenRead: () => void;
+  onOpenStrengthen: () => void;
   onOpenPath: () => void;
+  onRerun: () => void;
+  recommend: 'strengthen' | 'act';
+  unrunAnswers: number;
+  busyRerun: boolean;
 }) {
   const [logOpen, setLogOpen] = useState(false);
   const r = 44, circ = 2 * Math.PI * r;
+
+  // The "work on your plan" door. When answers are banked but not yet re-read, it
+  // becomes the one-tap "lock in your gains" re-read; otherwise it opens the
+  // strengthen surface. Either way it is the SAME door - working on the plan.
+  const banked = unrunAnswers > 0;
+  const strengthenTitle = busyRerun ? 'reading…' : banked ? `${PLAN.lockIn} (+${sharp.provisional})` : PLAN.strengthenTitle;
+  const strengthenSub = banked ? PLAN.lockInSub : PLAN.strengthenSub;
+  const onStrengthenTap = banked ? onRerun : onOpenStrengthen;
 
   return (
     <div className="vhome">
@@ -101,21 +114,22 @@ export default function Home({ fuel, sharp, decisions, onMarkOutcome, onOpenRead
         </button>
       </div>
 
-      {/* The Plan tab is two clear forks: understand + strengthen the opportunity
-          (Value Prop), or take the next step (Next Action). Each is one tappable
-          row with a plain-English one-liner - not a scatter of tiny links. */}
+      {/* The Plan tab is exactly two doors, never three competing buttons: work on
+          your plan (understand where you stand + strengthen it), or push it forward
+          (your next action). The app highlights the one it recommends; the other
+          stays available. The orb above is the quiet door into the full Value Prop. */}
       <div className="forks">
-        <button className="forkrow" onClick={onOpenRead}>
+        <button className={'forkrow' + (recommend === 'strengthen' ? ' primary' : '')} disabled={busyRerun} onClick={onStrengthenTap}>
           <span className="forkrow-t">
-            <span className="forkrow-title">{PLAN.resultTitle}</span>
-            <span className="forkrow-sub">{PLAN.fork1Sub}</span>
+            <span className="forkrow-title">{strengthenTitle}</span>
+            <span className="forkrow-sub">{strengthenSub}</span>
           </span>
           <span className="htarrow">→</span>
         </button>
-        <button className="forkrow" onClick={onOpenPath}>
+        <button className={'forkrow' + (recommend === 'act' ? ' primary' : '')} onClick={onOpenPath}>
           <span className="forkrow-t">
-            <span className="forkrow-title">{PLAN.pathTitle}</span>
-            <span className="forkrow-sub">{PLAN.fork2Sub}</span>
+            <span className="forkrow-title">{PLAN.actionTitle}</span>
+            <span className="forkrow-sub">{PLAN.actionSub}</span>
           </span>
           <span className="htarrow">→</span>
         </button>

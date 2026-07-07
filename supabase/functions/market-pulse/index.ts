@@ -186,15 +186,17 @@ The three themes must cover: (1) which roles are fractionalising fastest and wha
       const { content } = await chatJSON({ system: sys, user: usr, temperature: 0.5, maxTokens: 900 });
       const parsed = JSON.parse(content);
       if (parsed?.insights && typeof parsed.insights === 'object') {
+        // Generous caps: guard against a runaway model, never clip a real insight
+        // mid-sentence (the Pulse cards wrap now - no ellipsis truncation).
         for (const k of ['demand', 'role', 'competition', 'buzz']) {
-          if (typeof parsed.insights[k] === 'string' && parsed.insights[k].trim()) metricInsights[k] = parsed.insights[k].trim().slice(0, 200);
+          if (typeof parsed.insights[k] === 'string' && parsed.insights[k].trim()) metricInsights[k] = parsed.insights[k].trim().slice(0, 400);
         }
       }
       if (Array.isArray(parsed?.themes)) {
         strategicThemes = parsed.themes.slice(0, 3).map((t: any) => ({
-          label: typeof t?.label === 'string' ? t.label.trim().slice(0, 80) : '',
-          summary: typeof t?.summary === 'string' ? t.summary.trim().slice(0, 240) : '',
-          angle: typeof t?.angle === 'string' ? t.angle.trim().slice(0, 160) : '',
+          label: typeof t?.label === 'string' ? t.label.trim().slice(0, 140) : '',
+          summary: typeof t?.summary === 'string' ? t.summary.trim().slice(0, 400) : '',
+          angle: typeof t?.angle === 'string' ? t.angle.trim().slice(0, 300) : '',
           breakout: !!t?.breakout,
         })).filter((t: any) => t.label && t.summary);
       }

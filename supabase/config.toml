@@ -61,6 +61,10 @@ verify_jwt = true
 [functions.next-question]
 verify_jwt = true
 
+# Voiced plan strengtheners: research a concern / fold in an idea (user JWT).
+[functions.strengthen-plan]
+verify_jwt = true
+
 # Nightly warmth recompute (service-role, x-cron-secret).
 [functions.compute-warmth]
 verify_jwt = false

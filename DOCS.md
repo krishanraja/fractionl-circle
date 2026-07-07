@@ -56,7 +56,7 @@
 > `use{Matches,Streams,Ideas,SundayLetter,Concierge}` hooks were deleted too.
 >
 > **Live edge functions (canonical):** `validate-thesis`, `judge-thesis`, `next-question`,
-> `market-pulse`, `extract-admire`, `extract-contact`, `enrich-linkedin`, `suggest-tags`,
+> `strengthen-plan`, `market-pulse`, `extract-admire`, `extract-contact`, `enrich-linkedin`, `suggest-tags`,
 > `generate-signals`, `rank-inner-circle`, `warm-digest`, `compute-warmth`, `cron-reengage`,
 > `send-push`, `emit-lifecycle`, the `sync-*`/`oauth-*`/`stripe-*` sets, `dedupe-circle`,
 > `merge-persons`, `contact-enrich`, `delete-account`, `audit-log`, `transcribe`.
@@ -728,7 +728,7 @@ src/
 > `cron-sunday-letter`, `generate-sunday-letter`, `sunday-letter-feed`, `decision-engine`,
 > `extract-ideas`, `log-move-sent`, `log-win`, `parse-onboarding`) and the `_shared`
 > match/sunday-letter cores were **removed**. The live canonical set is: `validate-thesis`,
-> `judge-thesis`, `next-question`, `market-pulse`, `extract-admire`, `extract-contact`,
+> `judge-thesis`, `next-question`, `strengthen-plan`, `market-pulse`, `extract-admire`, `extract-contact`,
 > `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`, `warm-digest`,
 > `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
 > `sync-*`/`oauth-*`/`stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
