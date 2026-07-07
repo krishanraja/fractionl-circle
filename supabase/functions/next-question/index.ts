@@ -142,9 +142,11 @@ Deno.serve(async (req) => {
           run_id: run?.id ?? null,
           dimension: typeof parsed.dimension === 'string' ? parsed.dimension : dimLabel,
           topic: typeof parsed.topic === 'string' ? parsed.topic : fb.topic,
-          question: String(parsed.question).slice(0, 240),
-          why: typeof parsed.why === 'string' ? parsed.why.slice(0, 200) : '',
-          options: parsed.options.slice(0, 4).map((o: unknown) => String(o).slice(0, 80)),
+          // Generous caps that only guard against a runaway model, never clip a real
+          // question/option (the UI wraps now - nothing is truncated with an ellipsis).
+          question: String(parsed.question).slice(0, 500),
+          why: typeof parsed.why === 'string' ? parsed.why.slice(0, 400) : '',
+          options: parsed.options.slice(0, 4).map((o: unknown) => String(o).slice(0, 200)),
           source: 'llm',
         };
       }

@@ -11,8 +11,9 @@ const MULTIPLE_ROLES = ['cmo', 'cfo', 'coo', 'cto', 'cpo', 'cro', 'cgo', 'chief 
 const AUDIENCE_WORDS = ['founder', 'startup', 'start-up', 'b2b', 'b2c', 'saas', 'seed', 'series', 'pre-seed', 'dtc', 'd2c', 'ecommerce', 'e-commerce', 'smb', 'enterprise', 'agency', 'agencies', 'scaleup', 'scale-up', 'fintech', 'healthtech', 'climate', 'marketplace', 'company', 'companies', 'team', 'teams'];
 
 function distil(t: string): string {
-  const first = t.split(/[.\n]/)[0].trim();
-  return first.length > 90 ? first.slice(0, 88).trim() + '...' : first;
+  // The user's own first sentence, in full - it wraps where it's shown, never cut
+  // with an ellipsis.
+  return t.split(/[.\n]/)[0].trim();
 }
 
 const THIN_1 = 'That is the what, but not the who, or why you. Who is it for, and what makes you the one they pick? For example: "Fractional CMO for seed B2B SaaS founders who hired too senior too early."';

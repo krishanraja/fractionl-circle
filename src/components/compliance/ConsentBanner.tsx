@@ -80,7 +80,7 @@ export function ConsentBanner() {
                   <div className="flex-1 min-w-0">
                     <span className="text-xs font-medium">{opt.label}</span>
                     {opt.required && <span className="text-[10px] text-muted-foreground ml-1">(required)</span>}
-                    <p className="text-[10px] text-muted-foreground truncate">{opt.description}</p>
+                    <p className="text-[10px] text-muted-foreground">{opt.description}</p>
                   </div>
                   <Switch
                     checked={selections[opt.type]}

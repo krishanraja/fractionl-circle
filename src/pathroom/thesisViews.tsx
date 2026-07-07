@@ -58,7 +58,7 @@ export const thesisCss = `
 .thx .dot.spin { border-top-color:${C.accent}; animation:thxspin 0.8s linear infinite; }
 @keyframes thxspin { to { transform:rotate(360deg); } }
 .thx .slabel { font-size:13.5px; color:${C.hi}; font-weight:500; }
-.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; }
 .thx .ssrc { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; margin-top:5px; }
 .thx .panel { background:${C.panel2}; border:1px solid ${C.line}; border-radius:11px; padding:16px; }
 .thx .grp { font-family:${MONO}; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:${C.accent}; }
@@ -173,15 +173,12 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
 export function ReadView({ data }: { data: Scorecard }) {
   const [flagsOpen, setFlagsOpen] = useState(false);
   const [againstOpen, setAgainstOpen] = useState(false);
-  const [readOpen, setReadOpen] = useState(false);
-  // The read is the verdict - the payoff of the whole screen. Clamp generously (was 3
-  // lines, which sliced the second sentence mid-clause) so the honest call reads in
-  // full at a glance; tap still expands anything longer.
-  const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
+  // The read is the verdict - the payoff of the whole screen. It always shows in
+  // full: no line-clamp, no ellipsis. The honest call is never cut mid-sentence.
   return (
     <>
       <div className="ovl">{PLAN.resultTitle}</div>
-      <div className="h" onClick={() => setReadOpen((o) => !o)} style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32, cursor: 'pointer', ...clamp }}>{data.read}</div>
+      <div className="h" style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32 }}>{data.read}</div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
         <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
           <div className="grp">Is it a real opportunity?</div>

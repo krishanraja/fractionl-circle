@@ -60,3 +60,12 @@ export function pickHomeAction(a: {
   }
   return { kind: 'journey', label: movePrimary(a.js, a.steps).label };
 }
+
+// The Plan home offers EXACTLY two doors - work on the plan (strengthen), or push
+// it forward (act) - never a third competing button. This collapses the contextual
+// pick into which of the two the app recommends: a hole in the plan or banked-but-
+// unread gains lean "strengthen"; a plan that's ready to move leans "act".
+export type HomeDoor = 'strengthen' | 'act';
+export function homeRecommend(a: Parameters<typeof pickHomeAction>[0]): HomeDoor {
+  return pickHomeAction(a).kind === 'journey' ? 'act' : 'strengthen';
+}

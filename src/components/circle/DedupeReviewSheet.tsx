@@ -43,8 +43,8 @@ const Confidence = ({ value }: { value: number }) => {
 
 const Row = ({ p }: { p: DedupePerson }) => (
   <div className="flex-1 rounded-xl border border-border/60 bg-card/60 backdrop-blur p-3">
-    <p className="text-sm font-semibold text-foreground truncate">{p.display_name}</p>
-    <p className="text-xs text-foreground-secondary truncate">{line(p)}</p>
+    <p className="text-sm font-semibold text-foreground break-words">{p.display_name}</p>
+    <p className="text-xs text-foreground-secondary break-words">{line(p)}</p>
   </div>
 );
 
@@ -141,7 +141,7 @@ const SheetBody = ({
                 <div className="flex items-center justify-between mb-3">
                   <Confidence value={s.confidence} />
                   {s.rationale && (
-                    <p className="text-[11px] text-foreground-muted truncate max-w-[220px]">
+                    <p className="text-[11px] text-foreground-muted max-w-[220px] text-right">
                       {s.rationale}
                     </p>
                   )}

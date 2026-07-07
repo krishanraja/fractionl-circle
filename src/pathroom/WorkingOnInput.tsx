@@ -230,8 +230,8 @@ export default function WorkingOnInput() {
                   <div className="crowbtn" style={{ cursor: 'default', alignItems: 'flex-start' }}>
                     <div className="cav">{initials(p.name)}</div>
                     <div className="cmeta">
-                      <div className="cname" style={{ overflow: 'visible' }}>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
+                      <div className="cname">
+                        <span>{p.name}</span>
                         {p.role && <span className={cn('rolebadge', p.role === 'RISK' && 'risk')}>{ROLE_LABEL[p.role] ?? p.role}</span>}
                         {p.degree === 'second' && <span className="rolebadge inferred">Inferred</span>}
                       </div>

@@ -141,8 +141,9 @@ export const circleCss = `
 .thx .crowbtn { display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:none; border:0; padding:12px 14px; cursor:pointer; }
 .thx .cav { width:38px; height:38px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-family:${MONO}; font-size:12.5px; font-weight:600; color:${C.accent}; background:${C.accentDim}; border:1px solid ${C.accentEdge}; }
 .thx .cmeta { flex:1; min-width:0; }
-.thx .cname { font-size:14.5px; font-weight:600; color:${C.hi}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:8px; }
-.thx .csub { font-size:12.5px; color:${C.mid}; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Names and titles show in full - they wrap, they never truncate with an ellipsis. */
+.thx .cname { font-size:14.5px; font-weight:600; color:${C.hi}; line-height:1.3; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.thx .csub { font-size:12.5px; color:${C.mid}; margin-top:2px; line-height:1.35; }
 .thx .cwhy { font-size:12.5px; color:${C.mid}; line-height:1.45; margin-top:5px; }
 .thx .cchev { color:${C.lo}; flex:0 0 auto; transition:transform .2s ease; }
 .thx .cchev.open { transform:rotate(180deg); }

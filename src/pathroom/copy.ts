@@ -47,6 +47,16 @@ export const PLAN = {
   strengthen: 'Make it stronger',
   strengthenLower: 'make it stronger',
 
+  /** The two doors on the Plan home. Exactly two intents, never three:
+   *  work on the plan (understand + strengthen), or push it forward (act). */
+  strengthenTitle: 'Make it stronger',
+  strengthenSub: 'See where you stand, then sharpen what makes you different.',
+  actionTitle: 'Your next action',
+  actionSub: 'The next step toward your first retained client.',
+  /** The rerun door label when banked answers are waiting (callers append " (+N)"). */
+  lockIn: 'See how it lands again',
+  lockInSub: 'Lock in the gains you have already banked.',
+
   /** The charge/fuel metaphor (the brand mark brightens as inputs go in). */
   charge: "What's powering this",
 } as const;

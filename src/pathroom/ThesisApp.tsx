@@ -17,15 +17,15 @@ import { chromeCss, EmberNav, Loader, type FuelRow } from './thesisChrome';
 import CaptureDialogue from './CaptureDialogue';
 import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
-import { pickHomeAction, movePrimary } from './primaryAction';
+import { homeRecommend, movePrimary } from './primaryAction';
 import ReachOut from './ReachOut';
 import SharpenPrompt from './SharpenPrompt';
 import Home from './Home';
-import { computeSharpness } from './sharpness';
+import { computeSharpness, holdingBack } from './sharpness';
 import {
   runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
-  judgeThesis, extractAdmire, saveInspiration, addContactFromImage, saveStepProgress,
-  getMarketPulse, getUnrunAnswerCount, getDecisionLog, markDecisionOutcome,
+  judgeThesis, extractAdmire, saveInspiration, saveStepProgress,
+  getMarketPulse, getUnrunAnswerCount, getDecisionLog, markDecisionOutcome, getProfileLinkedin,
   type CircleP, type MarketPulse, type DecisionEntry,
 } from './thesisData';
 import ThesisCircle from './ThesisCircle';
@@ -49,7 +49,6 @@ export default function ThesisApp() {
   const [linkedin, setLinkedin] = useState('');
   const [linkedinDone, setLinkedinDone] = useState(false);
   const [circle, setCircle] = useState<CircleP[]>([]);
-  const [cardCount, setCardCount] = useState(0);
   const [edges, setEdges] = useState<{ name: string; why: string }[]>([]);
   const [inspCount, setInspCount] = useState(0);
   const [shown, setShown] = useState(0);
@@ -102,6 +101,9 @@ export default function ThesisApp() {
     getRunCount(userId).then(setRunCount).catch(() => {});
     getCircle(userId).then(setCircle).catch(() => {});
     getInspirationCount(userId).then(setInspCount).catch(() => {});
+    // The user's own LinkedIn now lives in Profile & Settings (persisted), so load
+    // it here and thread it into every run for the fit/credibility read.
+    getProfileLinkedin(userId).then((li) => { if (li) { setLinkedin(li); setLinkedinDone(true); } }).catch(() => {});
     getLatestRunFull(userId)
       .then((r) => {
         if (r) {
@@ -144,8 +146,9 @@ export default function ThesisApp() {
 
   function onComplete(thesis: string, bg: string) {
     setThesisText(thesis); setBackground(bg);
-    setEdges([]); setCardCount(0); setLinkedinDone(false); setLinkedin('');
-    runResearch(thesis, bg, '');
+    // Keep the persisted profile LinkedIn (it's the user's identity, not per-run).
+    setEdges([]);
+    runResearch(thesis, bg, linkedin);
   }
 
   async function onRerun() {
@@ -171,10 +174,6 @@ export default function ThesisApp() {
   const [sharpenFocus, setSharpenFocus] = useState<string | null>(null);
   const openSharpen = (focus?: string | null) => { setSharpenFocus(focus ?? null); go('sharpen'); };
 
-  async function onCard(dataUrl: string) {
-    const person = await addContactFromImage(dataUrl);
-    setCircle((l) => [person, ...l]); setCardCount((c) => c + 1);
-  }
   async function onSaveInsp(insp: { name: string; positioning?: string | null; kind?: string; field?: string | null; why: string }) {
     if (!userId) return;
     await saveInspiration(userId, insp);
@@ -282,31 +281,29 @@ export default function ThesisApp() {
   }
 
   if (phase === 'home' && data) {
-    // One evolving thesis, one door: the pinned footer carries the single
-    // contextual primary action the chief of staff picked (primaryAction.ts).
-    // When it's a path move, the journey footer repeats the identical words, so
-    // the action reads continuous across the two screens.
+    // Exactly two doors, never three: work on your plan (strengthen) or push it
+    // forward (your next action). The doors ARE the actions - no separately-pinned
+    // third CTA - and the app highlights the one it recommends (primaryAction.ts).
     const js = journeyState(data, circle, stepProgress);
-    const act = pickHomeAction({
+    const recommend = homeRecommend({
       weakestPct: sharp.weakest[0]?.pct ?? null,
       unrunAnswers, provisional: sharp.provisional,
       js, steps: data.steps || [],
     });
-    const onAct = act.kind === 'sharpen' ? () => openSharpen(null)
-      : act.kind === 'rerun' ? onRerun
-      : () => go('journey');
     return frame(
       <Home
         fuel={fuel} sharp={sharp}
         decisions={decisions}
         onMarkOutcome={onMarkOutcome}
         onOpenRead={() => setPhase('read')}
+        onOpenStrengthen={() => openSharpen(null)}
         onOpenPath={() => go('journey')}
+        onRerun={onRerun}
+        recommend={recommend}
+        unrunAnswers={unrunAnswers}
+        busyRerun={busyRerun}
       />,
-      <button className="cta" disabled={act.kind === 'rerun' && busyRerun} onClick={onAct}>
-        <span>{act.kind === 'rerun' && busyRerun ? 'reading...' : act.label}</span>
-        <span className="mono">→</span>
-      </button>,
+      null,
     );
   }
 
@@ -330,11 +327,16 @@ export default function ThesisApp() {
         </button>
       </>
     ) : (
+      // The Value Prop read is the "understand" half of working on your plan, so its
+      // primary action stays in that intent: make it stronger (or, if answers are
+      // banked, re-read to lock them in) - never "see your next action", which would
+      // yank the user into the other door. The next action stays one quiet tap away.
       <>
-        <button className="cta" onClick={() => setPhase('journey')}><span>{PLAN.openPath}</span><span className="mono">→</span></button>
-        <button className="foothint" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => openSharpen(null)}>
-          {busyRerun ? 'reading...' : unrunAnswers > 0 ? `see how it lands again to lock in your gains (+${sharp.provisional})` : 'add a bit more to make it stronger first'}
+        <button className="cta" disabled={busyRerun} onClick={unrunAnswers > 0 ? onRerun : () => openSharpen(null)}>
+          <span>{busyRerun ? 'reading…' : unrunAnswers > 0 ? `${PLAN.lockIn} (+${sharp.provisional})` : PLAN.strengthen}</span>
+          <span className="mono">→</span>
         </button>
+        <button className="foothint" onClick={() => setPhase('journey')}>{PLAN.openPath}</button>
       </>
     );
     // One door: the "Make stronger" question lives only on the strengthen surface
@@ -347,28 +349,40 @@ export default function ThesisApp() {
   }
 
   if (phase === 'sharpen' && data) {
-    // The single home of "Make it stronger". Signal buttons anchored at the top in
-    // one panel (the clearest, most concrete moves), then the decision-shaped coach
-    // question loaded underneath. This is the ONLY place the question lives - it no
-    // longer pops up at the bottom of the Value Prop read or the Next Action map.
+    // "Make it stronger": one surface, all about strengthening the PLAN. It opens
+    // with where you stand (the Value Prop, in brief, one tap from the full read),
+    // then the plan-only strengtheners (admire a business, voice a concern to
+    // research, voice an idea to fold in), then the decision-shaped coach question.
+    // Contact actions live in the Circle tab now - none of them appear here. The
+    // footer stays inside this intent: re-read to lock in gains, never "next action".
     return frame(
       <>
+        <button className="wystand" onClick={() => setPhase('read')} aria-label={PLAN.openResult}>
+          <span className="ovl">Where you stand</span>
+          <div className="scorewrap" style={{ marginTop: 6 }}>
+            <span className="scorenum">{sharp.score}</span>
+            <span className="scoremax">/100 strength</span>
+            {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
+            <span style={{ flex: 1 }} />
+            <span className="htarrow">→</span>
+          </div>
+          <div className="scorehold">{holdingBack(sharp)}</div>
+          <span className="wystand-link">See your full Value Prop</span>
+        </button>
         <SharpenPanel
           thesis={thesisText}
+          runId={runId}
           onAdmire={(d) => extractAdmire(d, thesisText)}
           onSaveInspiration={onSaveInsp}
-          onCard={onCard}
-          onLinkedin={(url) => { setLinkedin(url); setLinkedinDone(true); }}
-          cardCount={cardCount}
-          linkedinDone={linkedinDone}
+          onBanked={refreshAnswers}
           edges={edges}
           compact
         />
         <SharpenPrompt onAnswered={refreshAnswers} focus topic={sharpenFocus || undefined} />
       </>,
       <>
-        <button className="cta" onClick={() => go('journey')}><span>{PLAN.openPath}</span><span className="mono">→</span></button>
-        <button className="foothint" disabled={busyRerun} onClick={onRerun}>{busyRerun ? 'reading...' : 'see how it lands now'}</button>
+        <button className="cta" disabled={busyRerun} onClick={onRerun}><span>{busyRerun ? 'reading…' : 'See how it lands now'}</span><span className="mono">→</span></button>
+        <button className="foothint" onClick={() => go('journey')}>{PLAN.openPath}</button>
       </>,
     );
   }

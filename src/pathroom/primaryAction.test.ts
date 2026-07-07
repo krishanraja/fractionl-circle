@@ -3,7 +3,7 @@
 // (genuinely-weak beats banked beats path), the ACTION_BIAS_FLOOR boundary (60-70
 // band goes to the path, not to polishing), and every movePrimary branch.
 import { describe, expect, it } from 'vitest';
-import { ACTION_BIAS_FLOOR, movePrimary, pickHomeAction } from './primaryAction';
+import { ACTION_BIAS_FLOOR, movePrimary, pickHomeAction, homeRecommend } from './primaryAction';
 import { PLAN } from './copy';
 import type { JourneyState } from './JourneyMap';
 import type { StepT } from './thesisViews';
@@ -76,5 +76,25 @@ describe('pickHomeAction', () => {
   it('warm-blocked with strong dims mirrors the journey wording', () => {
     const act = pickHomeAction({ ...base, js: js({ warmBlocked: true }) });
     expect(act).toEqual({ kind: 'journey', label: 'Add people to light up your warm reach' });
+  });
+});
+
+describe('homeRecommend (exactly two doors)', () => {
+  const steps = [step('Reach your buyers', { big: true })];
+  const base = { weakestPct: null, unrunAnswers: 0, provisional: 0, js: js(), steps };
+
+  it('a genuine hole recommends the strengthen door', () => {
+    expect(homeRecommend({ ...base, weakestPct: ACTION_BIAS_FLOOR - 1 })).toBe('strengthen');
+    expect(homeRecommend({ ...base, js: js({ weak: true }) })).toBe('strengthen');
+  });
+
+  it('banked-but-unread answers recommend the strengthen door (lock in the gains)', () => {
+    expect(homeRecommend({ ...base, unrunAnswers: 2, provisional: 6 })).toBe('strengthen');
+  });
+
+  it('a plan ready to move recommends the act door', () => {
+    expect(homeRecommend({ ...base, weakestPct: ACTION_BIAS_FLOOR })).toBe('act');
+    expect(homeRecommend({ ...base, js: js({ allDone: true, current: 1 }) })).toBe('act');
+    expect(homeRecommend({ ...base, steps: [] })).toBe('act');
   });
 });

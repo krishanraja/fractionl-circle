@@ -182,6 +182,14 @@ export async function getLatestRun(userId: string): Promise<Scorecard | null> {
   return full?.result ?? null;
 }
 
+// The user's OWN LinkedIn, set once in Profile & Settings (not a contact). It feeds
+// the plan's fit + credibility read, so runs pass it through. Persisted, so it now
+// survives a reload - unlike the old ad-hoc capture that was lost every session.
+export async function getProfileLinkedin(userId: string): Promise<string> {
+  const { data } = await supabase.from('user_profiles').select('linkedin_url').eq('id', userId).maybeSingle();
+  return (data as { linkedin_url: string | null } | null)?.linkedin_url || '';
+}
+
 export async function getRunCount(userId: string): Promise<number> {
   const { count } = await supabase.from('thesis_runs').select('id', { count: 'exact', head: true }).eq('user_id', userId);
   return count ?? 0;
@@ -397,6 +405,49 @@ export async function importConnectionsCsv(userId: string, text: string): Promis
     if (error) throw error;
   }
   return rows.length;
+}
+
+// Voice -> text, via the transcribe edge fn. Base64-encodes the recorded blob the
+// same way the Circle voice box does. Returns '' on anything unusable.
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onloadend = () => res((r.result as string).split(',')[1] || '');
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+export async function transcribeAudio(blob: Blob): Promise<string> {
+  const base64 = await blobToBase64(blob);
+  const { data, error } = await supabase.functions.invoke('transcribe', { body: { audio: base64, format: 'webm' } });
+  if (error) throw new Error(error.message || 'Transcription failed');
+  return (data as { transcript?: string } | null)?.transcript?.trim() ?? '';
+}
+
+// A voiced concern or idea/evolution -> the strengthen-plan edge fn. 'concern' runs
+// live research on the worry; 'evolution' folds an idea into what makes you
+// different. Returns a grounded finding + how it changes the plan + which read
+// dimension it maps to, so the answer can be banked into the next read.
+export interface StrengthenResult {
+  mode: 'concern' | 'evolution';
+  dimension: string;
+  topic: string;
+  finding: string; // the grounded conclusion / strengthened angle
+  impact: string;  // one line: how this changes the plan
+  sources?: string[];
+}
+
+export async function strengthenPlan(mode: 'concern' | 'evolution', input: string, thesis: string): Promise<StrengthenResult> {
+  const { data, error } = await supabase.functions.invoke('strengthen-plan', { body: { mode, input, thesis } });
+  if (error) {
+    const ctx = (error as { context?: { body?: string } })?.context?.body;
+    let msg = 'Could not work that through just now. Try again in a moment.';
+    try { if (ctx) msg = JSON.parse(ctx).error || msg; } catch { /* keep default */ }
+    throw new Error(msg);
+  }
+  if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+  return stripEmDash(data as StrengthenResult);
 }
 
 export async function runValidation(thesis: string, linkedin: string, background: string): Promise<Scorecard> {
