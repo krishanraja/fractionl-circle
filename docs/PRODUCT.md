@@ -1,6 +1,6 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-05 (audit remediation). This is the source of truth for what
+*Canonical product doc. Last updated 2026-07-07 (Plan/Circle intent split). This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -13,6 +13,61 @@ grounded, honest read plus named warm-network moves they actually take toward th
 (a `thesis_runs` row whose `step_progress` advanced AND a `circle_person.last_interaction_at` stamped in the
 same week). Reads without moves are curiosity; moves without reads are noise; the two together, repeated
 weekly, are the product working. Everything in this doc is graded against that outcome and that number.
+
+## What changed (2026-07-07): Plan/Circle intent split + voiced strengtheners
+
+A UX pass that gives each tab one job and each screen one clear next step. It supersedes
+the 2026-07-04 "two forks" framing below. All live-verified against the real backend.
+
+1. **The Plan home is two doors, not three buttons** (`src/pathroom/Home.tsx`,
+   `.forkrow.primary` in `thesisChrome.tsx`). A returning user had three competing calls to
+   action (a **Value Prop** fork, a **Next Action** fork, and a separately-pinned "Make it
+   stronger" CTA). It is now exactly two mutually-exclusive doors: **Make it stronger**
+   (understand + strengthen the plan) and **Your next action** (act). The app highlights the
+   one it recommends via `primaryAction.homeRecommend()` (strengthen when the plan has a hole
+   or banked-but-unread gains, act otherwise); there is no third pinned CTA. The strength orb
+   is still the quiet door into the full Value Prop. *Why:* "work on my plan" vs "push it
+   forward" are the only two things a user wants here; a third peer button muddied the choice.
+
+2. **Intent never leaks across the two doors.** Opening the **Value Prop** read now leads to
+   **Make it stronger** (was "See your next action", which yanked an understanding/strengthening
+   session into the act door); the next action stays one quiet tap away (`ThesisApp.tsx`, read
+   phase). The make-it-stronger surface's primary CTA stays "See how it lands now" (re-read),
+   never "next action".
+
+3. **"Make it stronger" is plan-only** (`SharpenPanel.tsx`). It opens with a **Where you
+   stand** head (the Value Prop in brief - score + weakest dimension - one tap to the full
+   read), then plan strengtheners only: screenshot a business you admire (`extract-admire`),
+   plus two **voiced** strengtheners - **Voice a concern** (the tool researches it) and
+   **Voice an idea or evolution** (the AI folds it into what makes you different). Both bank
+   into `thesis_answers` and fold into the next read. The two contact actions that used to
+   live here - **snap a business card** (fed the circle) and **connect your LinkedIn** (fed
+   fit) - are **removed**: the circle is the Circle tab's job, and your own LinkedIn is a
+   profile field. *Why:* every action on the Plan tab must strengthen the *plan*; contact
+   actions belonged to a different job and made the tab feel like the Circle tab.
+
+4. **Voiced strengtheners → the `strengthen-plan` edge function**
+   (`supabase/functions/strengthen-plan`). `mode: 'concern'` runs live Perplexity research on
+   the worry and returns a grounded finding + how it changes the plan; `mode: 'evolution'`
+   folds an idea into what makes you different (LLM, no external research). Reuses the shared
+   `compliance` / `llm` / `tiers` scaffolding; Pro-gated server-side. Client path:
+   `thesisData.transcribeAudio` (voice → text via `transcribe`) → `thesisData.strengthenPlan`
+   → `saveThesisAnswer`.
+
+5. **Your own LinkedIn moved to Profile & Settings, and now persists.** It feeds the plan's
+   fit/credibility read, so it is your identity, not a make-it-stronger action. New
+   `user_profiles.linkedin_url` column (migration `20260707120000_profile_linkedin.sql`) +
+   a field in `ProfileSettingsSheet.tsx`; the run reads it via `thesisData.getProfileLinkedin`
+   and threads it into `validate-thesis`. *Why:* it was captured ad-hoc on the strengthen
+   screen and **lost on every reload** - persisting it fixes a latent bug and puts it where
+   identity belongs.
+
+6. **No truncation on the Plan or Circle surfaces.** Every lossy ellipsis / `line-clamp` was
+   removed (contact names + subtitles in `circleChrome.tsx`, the read verdict and research
+   findings in `thesisViews.tsx`, the Value-Prop trend cards + make-stronger rows in
+   `thesisChrome.tsx`, reach labels, paste previews), and the server-side `.slice()` caps in
+   `next-question` and `market-pulse` that clipped text before it reached the UI were raised
+   so questions/insights arrive whole. Text wraps; nothing is cut with "...".
 
 ## What changed (2026-07-05): the audit remediation (7 waves, all live)
 
@@ -50,7 +105,9 @@ detailed in its own section; the summary:
 An information-architecture + language pass on the Plan tab: the features were right,
 but the naming read as jargon and the flow was fragmented. Four changes, each with its WHY:
 
-1. **The Plan tab is now two clear forks.** The Home hub presents exactly two tappable
+1. **The Plan tab is now two clear forks.** *(Superseded 2026-07-07: the two doors are now
+   **Make it stronger** and **Your next action**, with the recommended one highlighted and no
+   third pinned CTA - see the top section.)* The Home hub presents exactly two tappable
    choices instead of a scatter of tiny links (`src/pathroom/Home.tsx`, `.forkrow` in
    `thesisChrome.tsx`):
    - **Value Prop** - understand + strengthen the opportunity (the read + make-it-stronger).
@@ -72,8 +129,10 @@ but the naming read as jargon and the flow was fragmented. Four changes, each wi
 3. **One door per component.** The "Make stronger" coach question (`SharpenPrompt`)
    previously rendered in three places (the read, the strengthen screen, and the weak
    journey). It now lives **only** on the make-it-stronger surface. That surface is also
-   reordered: the three signal buttons (screenshot a business / snap a card / connect
-   LinkedIn) anchor at the **top** in one panel, with the question loaded **underneath**.
+   reordered: the signal buttons anchor at the **top** in one panel, with the question loaded
+   **underneath**. *(Superseded 2026-07-07: the plan-only signal buttons are now screenshot a
+   business you admire / voice a concern / voice an idea; snap-a-card and connect-LinkedIn were
+   removed to Circle and Profile.)*
    *Why:* one concept, one home - a component that pops up in multiple places reads as
    fragmented and makes the flow feel illogical.
 4. **"Remember me" / stop the surprise logout.** Session persistence was already correct
@@ -192,20 +251,23 @@ orchestrator; the **Plan** tab hosts it.)
    - **Can you win it, fast?** Fit to you, Warm reach, Credibility.
    Plus honest "worth knowing before you commit" flags (income ramp, scope, pricing band,
    productization).
-5. **Make it stronger (its own separate screen - the one door).** The additive things live
-   on their own focused screen, never crammed onto the read. The three signal buttons
-   (`SharpenPanel.tsx`) anchor at the **top** in one panel; the "Make stronger" coach
-   question (`SharpenPrompt.tsx`) loads **underneath** them. This is the *only* place the
-   coach question renders - it no longer appears at the bottom of the Value Prop read or in
-   the weak Next-Action state. Three distinct intents:
+5. **Make it stronger (its own separate screen - the one door).** *(Updated 2026-07-07: this
+   surface is now plan-only and opens with a "Where you stand" head; the business-card and
+   your-LinkedIn signal buttons were removed and two voiced strengtheners - concern / idea -
+   were added. See the top section.)* The additive things live on their own focused screen,
+   never crammed onto the read. The signal buttons (`SharpenPanel.tsx`) anchor at the **top**
+   in one panel; the "Make stronger" coach question (`SharpenPrompt.tsx`) loads **underneath**
+   them. This is the *only* place the coach question renders - it no longer appears at the
+   bottom of the Value Prop read or in the weak Next-Action state. Plan-only intents:
    - **A business you admire** feeds **what you want to offer**. Screenshot a LinkedIn, an
      Instagram, or a site you would love to build something like; `extract-admire` (Gemini
      vision) reads how they position, then asks *why* you admire them. The answer (saved to
      `thesis_inspiration`) sharpens **what makes you different** on the next read. Honest about the messy cases:
      a blurry shot, a person with no business, a direct competitor (held as a benchmark to beat,
      not a template), a different field (keep only the transferable part).
-   - **A business card** feeds your **circle** (warm reach), via `extract-contact`.
-   - **LinkedIn** feeds **fit + credibility**.
+   - **Voice a concern** - the tool researches the worry live (`strengthen-plan`, Perplexity)
+     and tells you what it means for the plan.
+   - **Voice an idea or evolution** - the AI folds it into what makes you different.
    Re-reading ("see how it lands now") is an explicit choice, since it spends a live research call.
 6. **The living journey map (action-first).** The path to first retained client as a timeline,
    with the circle woven in: the warm-network move (the biggest lever) shows the real faces it
@@ -226,7 +288,9 @@ orchestrator; the **Plan** tab hosts it.)
    you upload the file when it lands). The circle powers the real warm-reach score and the
    named steps, and is reached in-context from the journey map ("add people to light up your
    warm reach"), not as a dead-end.
-9. **Home (the command center), two forks (2026-07-04).** A returning user with a saved
+9. **Home (the command center), two forks (2026-07-04).** *(Superseded 2026-07-07: two doors -
+   Make it stronger / Your next action - with the recommended one highlighted and no separate
+   pinned CTA; see the top section.)* A returning user with a saved
    plan lands here inside the Plan tab, not back in the linear flow. It is the living state of
    your one venture, with exactly ONE orange action: the **tappable strength-score orb** (the
    0–100 number with the "what's holding you back" line; tap it to open **Value Prop**),
@@ -438,7 +502,9 @@ locked user reaches a deep phase.
   through it), with the ACTION_BIAS_FLOOR calibration (60): sell before you polish.
 - `CaptureDialogue.tsx` - the guided, gated capture dialogue (returning users / a new idea).
 - `thesisJudge.ts` - the deterministic client fallback for the sufficiency judge (+ types).
-- `SharpenPanel.tsx` - the after-read "make it stronger" panel (admire / card / LinkedIn + re-read).
+- `SharpenPanel.tsx` - the plan-only "make it stronger" panel: screenshot a business you admire,
+  voice a concern (researched via `strengthen-plan`), voice an idea/evolution (folded in). The
+  old contact rows (business card, your LinkedIn) were removed - they belong to Circle / Profile.
 - `SharpenPrompt.tsx` - the make-it-stronger coach card (one decision-shaped question at a
   time); droppable on any surface, mounted on Home / Read / Path-weak.
 - `sharpness.ts` - the pure 0–100 strength score + weakest-dimension finder.
@@ -457,7 +523,7 @@ locked user reaches a deep phase.
   unlinked lazy design fixtures.
 
 **Edge functions** (`supabase/functions/`). Canonical live set for the Plan + Circle product:
-`validate-thesis`, `judge-thesis`, `next-question`, `market-pulse`, `extract-admire`,
+`validate-thesis`, `judge-thesis`, `next-question`, `strengthen-plan`, `market-pulse`, `extract-admire`,
 `extract-contact`, `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`,
 `warm-digest`, `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
 `sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
@@ -474,6 +540,11 @@ Key ones:
 - `next-question` - the make-it-stronger coach. Finds the weakest read dimension and returns
   one decision-shaped question (2–4 options + why), grounded in idea + profile; deterministic
   per-dimension fallback. Answers persist to `thesis_answers` and feed the next `validate-thesis` run.
+- `strengthen-plan` - the voiced strengtheners on the make-it-stronger surface. `mode:'concern'`
+  runs live Perplexity research on a worry and returns a grounded finding + how it changes the
+  plan; `mode:'evolution'` folds an idea into "what makes you different" (LLM, no research). Maps
+  to a read dimension so the answer banks into `thesis_answers`. Pro-gated. Reuses `_shared`
+  `compliance`/`llm`/`tiers`.
 - `extract-admire` - Gemini vision reads how an admired business positions (writes nothing to
   the circle); honest about reject / person / competitor / different field.
 - `extract-contact` - Gemini vision reads a profile/card screenshot into the circle.
@@ -509,8 +580,10 @@ return surface + re-engagement), `circle_person` (with `warmth`, `last_interacti
 `response_rate`, `source`/`note`), `push_subscriptions`, `user_preferences` (incl. `warm_digest`
 and `goal_reminders` opt-outs), `user_profiles` (incl. the first-run identity columns
 `target_buyer`, `positioning`, `first_run_transcript`, `onboarding_completed`,
-`onboarding_completed_at`, `first_run_completed_at`, `last_active_at`). The first-run onboarding
-reuses these existing columns - **no migration was added**. Warmth is recomputed by the
+`onboarding_completed_at`, `first_run_completed_at`, `last_active_at`, and `linkedin_url` -
+the user's own LinkedIn, set in Profile & Settings, feeding the plan's fit/credibility read;
+added 2026-07-07 in migration `20260707120000_profile_linkedin.sql`). The first-run onboarding
+reuses the existing identity columns - **no migration was added for it**. Warmth is recomputed by the
 `recompute_circle_warmth()` SQL fn. Added in the 2026-07-05 remediation: `compounding_events`
 (migration `20260704200000`, one row per read that folds >= 1 banked decision - the moat-loop
 signal) and the `insert_thesis_run_gated` SECURITY DEFINER RPC (migration `20260704180000`, an
