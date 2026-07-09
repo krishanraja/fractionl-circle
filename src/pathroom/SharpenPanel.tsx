@@ -207,16 +207,17 @@ function VoiceBody({ mode, thesis, runId, onBanked }: {
   );
 }
 
-// One clean trigger row: title + personified subtitle + tag + arrow. No decorative icon.
+// One clean, compact trigger row: title + one-line personified subtitle on the left,
+// tag + arrow on the right. No decorative icon - the personification is the name.
 function Row({ s, onClick }: { s: { title: string; sub: string; tag: string }; onClick: () => void }) {
   return (
-    <button className="fuelcard" onClick={onClick}>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span className="fueltitle2">{s.title}</span>
-        <div className="fuelfor">{s.sub}</div>
-        <span className="fueltag thesis">{s.tag}</span>
+    <button className="strow" onClick={onClick}>
+      <span className="strow-t">
+        <span className="strow-title">{s.title}</span>
+        <span className="strow-sub">{s.sub}</span>
       </span>
-      <span className="htarrow" style={{ alignSelf: 'center' }}>→</span>
+      <span className="strow-tag">{s.tag}</span>
+      <span className="htarrow">→</span>
     </button>
   );
 }

@@ -75,22 +75,22 @@ export const ASSISTANT = {
 export const STRENGTHENERS = {
   admire: {
     title: 'Screenshot a business you admire',
-    sub: `${ASSISTANT.name} reads how they position, to sharpen what makes you different.`,
+    sub: `${ASSISTANT.name} sharpens what makes you different.`,
     tag: 'difference',
   },
   concern: {
     title: 'Voice a concern',
-    sub: `Say the worry. ${ASSISTANT.name} researches it and tells you what it means for your plan.`,
+    sub: `Say a worry. ${ASSISTANT.name} researches it.`,
     tag: 'research',
   },
   idea: {
     title: 'Voice an idea',
-    sub: `Say a new angle. ${ASSISTANT.name} folds it into what makes you different.`,
+    sub: `Say an angle. ${ASSISTANT.name} folds it in.`,
     tag: 'evolve',
   },
   question: {
     title: 'Answer a question',
-    sub: `${ASSISTANT.name} asks the one thing that sharpens your plan fastest.`,
+    sub: `${ASSISTANT.name} asks the one thing that matters.`,
     tag: 'sharpen',
   },
 } as const;
