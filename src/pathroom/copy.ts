@@ -61,6 +61,40 @@ export const PLAN = {
   charge: "What's powering this",
 } as const;
 
+// The personified assistant. Single source of truth for the name so it never drifts
+// (used in the UI copy below AND in the edge-function persona line). She is the sharp,
+// warm strategy partner the user talks to on the "make it stronger" surface. No magic
+// sparkles or icons - the personification is the name and the voice, nothing decorative.
+export const ASSISTANT = {
+  name: 'Freya',
+} as const;
+
+// The four "make it stronger" strengtheners. Each is a clean tappable row that opens the
+// same focused overlay; the AI-driven three are voiced as Freya, so it reads like talking
+// to someone. `tag` is the small mono label on the right of each row.
+export const STRENGTHENERS = {
+  admire: {
+    title: 'Screenshot a business you admire',
+    sub: `${ASSISTANT.name} reads how they position, to sharpen what makes you different.`,
+    tag: 'difference',
+  },
+  concern: {
+    title: 'Voice a concern',
+    sub: `Say the worry. ${ASSISTANT.name} researches it and tells you what it means for your plan.`,
+    tag: 'research',
+  },
+  idea: {
+    title: 'Voice an idea',
+    sub: `Say a new angle. ${ASSISTANT.name} folds it into what makes you different.`,
+    tag: 'evolve',
+  },
+  question: {
+    title: 'Answer a question',
+    sub: `${ASSISTANT.name} asks the one thing that sharpens your plan fastest.`,
+    tag: 'sharpen',
+  },
+} as const;
+
 // Plain-English display labels for the server-generated scorecard dimensions.
 // The canonical keys stay stable everywhere it matters - they're stored in the DB
 // and pinned by the edge functions and tests - so only what the user READS changes.

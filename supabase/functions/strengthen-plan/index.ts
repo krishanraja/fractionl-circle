@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock, profileFactsLine } from '../_shared/profileContext.ts';
-import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
+import { loadUserAiPreferences, personalitySystemSuffix, assistantPersona } from '../_shared/aiPersonality.ts';
 import { getUserTier } from '../_shared/tiers.ts';
 
 // strengthen-plan: the voiced strengtheners on the "Make it stronger" surface. Two modes,
@@ -40,7 +40,7 @@ Be specific and honest. If the concern is a genuine risk, say so plainly.`;
   return { text, citations };
 }
 
-const CONCERN_SYSTEM = `You turn live research on a fractional executive's CONCERN about their plan into an honest, grounded answer they can act on.
+const CONCERN_SYSTEM = `${assistantPersona()} You turn live research on the user's CONCERN about their plan into an honest, grounded answer they can act on.
 Return ONLY JSON: { "dimension": string, "topic": string, "finding": string, "impact": string }
 - "dimension": which part of their plan this concern bears on most. MUST be exactly one of: ${DIMENSIONS.join(', ')}.
 - "topic": 2 to 4 words naming the concern.
@@ -48,7 +48,7 @@ Return ONLY JSON: { "dimension": string, "topic": string, "finding": string, "im
 - "impact": one plain sentence: the concrete thing to change or decide in the plan because of this. Actionable, specific.
 - Plain, humanized language. No em dashes. No exclamation marks. No invented precise numbers - use bands.`;
 
-const EVOLUTION_SYSTEM = `You help a fractional executive evolve their plan. They have voiced a new idea, angle, or offer tweak. Fold it into what makes them different and say how it strengthens the plan.
+const EVOLUTION_SYSTEM = `${assistantPersona()} You help the user evolve their plan. They have voiced a new idea, angle, or offer tweak. Fold it into what makes them different and say how it strengthens the plan.
 Return ONLY JSON: { "dimension": string, "topic": string, "finding": string, "impact": string }
 - "dimension": which part of the plan this idea sharpens most. MUST be exactly one of: ${DIMENSIONS.join(', ')}. For a positioning/offer/edge idea, use "What makes you different".
 - "topic": 2 to 4 words naming the idea.

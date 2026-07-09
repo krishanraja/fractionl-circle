@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '../_shared/compliance.ts';
 import { chatJSON } from '../_shared/llm.ts';
 import { loadProfileContext, profilePromptBlock } from '../_shared/profileContext.ts';
-import { loadUserAiPreferences, personalitySystemSuffix } from '../_shared/aiPersonality.ts';
+import { loadUserAiPreferences, personalitySystemSuffix, assistantPersona } from '../_shared/aiPersonality.ts';
 import { decisionLine, type DecisionRow } from '../_shared/decisionContext.ts';
 import { FALLBACK, REDTEAM_FALLBACK, EDGE_LABEL, normalizeDimension } from '../_shared/coachQuestions.ts';
 
@@ -38,13 +38,26 @@ function rankDimensions(opp: Row[], ability: Row[]): Ranked[] {
 // with the weekly chief-of-staff brief) so the coach and the brief ask with
 // one voice.
 
-const SYSTEM = `You are a sharp, warm strategy coach for a fractional executive. Your job: ask the ONE question that most sharpens their business thesis right now, targeting the weakest part of their validated read. The user often does not know what to do next, so do NOT ask an open essay prompt - ask a focused question and offer 2 to 4 crisp, specific, MUTUALLY DISTINCT options they can pick to make a decision (they can also type their own). The question must develop their thinking in a way they would not have alone: concrete, grounded in their thesis and the weak dimension, never generic.
+const SYSTEM = `${assistantPersona()} You are coaching a fractional executive on their plan. Ask the ONE question that most sharpens the weakest part of their read - and make it something a busy person can understand and answer in a few seconds.
 
-Return ONLY JSON: { "topic": string, "dimension": string, "question": string, "why": string, "options": [string, string, string] }
+This is the whole point, so get it right - keep it human, short, and instantly answerable:
+- "question": ONE short, plain-English question. Aim for 12 words or fewer. No nested clauses, no jargon, no buzzwords, no em dashes. It should sound like a smart friend asking, not a survey. BAD (too abstract and long): "What specific attributes of admired seed-stage B2B SaaS companies can you leverage to define your unique edge?" GOOD: "What is the one thing you do better than the others?"
+- "options": 2 to 4 SHORT answers the user can just tap - each a few words, aim for 8 words or fewer, concrete and specific to THEIR plan, and clearly DIFFERENT from one another. They are complete answers, not sentence-starters, and each must read as a whole thought (never a fragment that would get cut off). No "other" option.
+- "why": one short, plain sentence on why answering this helps.
 - "dimension": echo the weak dimension you are sharpening.
-- "question": one tight sentence. Plain language, no jargon, no em dashes.
-- "why": one short sentence on why answering this raises their score.
-- "options": 2 to 4 short, concrete, decision-shaped choices specific to THEIR thesis (not abstract). No "other" option.`;
+- Ground everything in their specific plan and the weak dimension; never generic.
+
+Return ONLY JSON: { "topic": string, "dimension": string, "question": string, "why": string, "options": [string, string, string] }`;
+
+// Trim to a ceiling at a WORD boundary, so a value is never cut mid-word ("...adapt them f").
+// The prompt already asks for short values; this is a belt-and-suspenders guard, not a clamp.
+function trimWords(s: string, max: number): string {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const sp = cut.lastIndexOf(' ');
+  return (sp > max * 0.6 ? cut.slice(0, sp) : cut).trim();
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -142,11 +155,11 @@ Deno.serve(async (req) => {
           run_id: run?.id ?? null,
           dimension: typeof parsed.dimension === 'string' ? parsed.dimension : dimLabel,
           topic: typeof parsed.topic === 'string' ? parsed.topic : fb.topic,
-          // Generous caps that only guard against a runaway model, never clip a real
-          // question/option (the UI wraps now - nothing is truncated with an ellipsis).
-          question: String(parsed.question).slice(0, 500),
-          why: typeof parsed.why === 'string' ? parsed.why.slice(0, 400) : '',
-          options: parsed.options.slice(0, 4).map((o: unknown) => String(o).slice(0, 200)),
+          // Word-boundary trims that only guard against a runaway model, never clip a real
+          // question/option mid-word (the UI wraps; nothing is truncated with an ellipsis).
+          question: trimWords(String(parsed.question), 500),
+          why: typeof parsed.why === 'string' ? trimWords(parsed.why, 400) : '',
+          options: parsed.options.slice(0, 4).map((o: unknown) => trimWords(String(o), 140)),
           source: 'llm',
         };
       }

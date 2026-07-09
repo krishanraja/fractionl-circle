@@ -1,6 +1,6 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-07 (Plan/Circle intent split). This is the source of truth for what
+*Canonical product doc. Last updated 2026-07-09 (Freya + the strengthener overlay). This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -13,6 +13,35 @@ grounded, honest read plus named warm-network moves they actually take toward th
 (a `thesis_runs` row whose `step_progress` advanced AND a `circle_person.last_interaction_at` stamped in the
 same week). Reads without moves are curiosity; moves without reads are noise; the two together, repeated
 weekly, are the product working. Everything in this doc is graded against that outcome and that number.
+
+## What changed (2026-07-09): Freya + the "make it stronger" overlay
+
+The strengthener surface was normalised into four consistent rows that each open the **same
+focused bottom-sheet overlay**, and the AI on it is personified as **Freya**. Live-verified.
+
+1. **Four rows, one overlay** (`src/pathroom/SharpenPanel.tsx`). The coach question no longer
+   renders inline (a tall `.spk-focus` slot that pushed the panel past the fold and clipped).
+   It is now the **fourth strengthener row, "Answer a question"**, a peer of the other three.
+   Every row (admire / voice a concern / voice an idea / answer a question) is a clean tappable
+   card - **no decorative icons or sparkles** - that opens one hand-rolled bottom-sheet overlay
+   (the `DecisionSheet`/`TrendSheet` pattern, **portaled to `document.body`** with the `.thx`
+   scope re-added so it is viewport-anchored over the pinned footer, not confined to the
+   animated `.wrap`). Nothing expands inline or clips.
+2. **Personified as Freya** (`ASSISTANT` in `src/pathroom/copy.ts`, single source of truth).
+   The three AI-driven rows read like talking to her ("Say the worry. **Freya** researches it
+   and tells you what it means"), the coach card is tagged **"Freya · <dimension>"**, and
+   server-side she signs her own generated text via `assistantPersona()` in
+   `supabase/functions/_shared/aiPersonality.ts` (prepended to the `next-question` and
+   `strengthen-plan` system prompts). No avatar/icon - the name and voice are the persona.
+   Keep the name in sync between `copy.ts` (`ASSISTANT.name`) and `aiPersonality.ts`
+   (`ASSISTANT_NAME`) - client and edge cannot share a module.
+3. **The coach question is now intelligible and answerable in seconds**
+   (`supabase/functions/next-question/index.ts`). The `SYSTEM` prompt was rewritten to demand
+   a short, plain-English question (≤ ~12 words, no nested clauses/jargon) and 2–4 **short,
+   whole** options (≤ ~8 words). Option/question caps are now **word-boundary trims**
+   (`trimWords`), never a mid-word `.slice` (the old "…adapt them f" cut). `next-question` and
+   `strengthen-plan` were **redeployed** to `ksyuwacuigshvcyptlhe` (the raised caps from
+   2026-07-07 had never been deployed, so prod was still clipping options at 80 chars).
 
 ## What changed (2026-07-07): Plan/Circle intent split + voiced strengtheners
 
@@ -502,9 +531,11 @@ locked user reaches a deep phase.
   through it), with the ACTION_BIAS_FLOOR calibration (60): sell before you polish.
 - `CaptureDialogue.tsx` - the guided, gated capture dialogue (returning users / a new idea).
 - `thesisJudge.ts` - the deterministic client fallback for the sufficiency judge (+ types).
-- `SharpenPanel.tsx` - the plan-only "make it stronger" panel: screenshot a business you admire,
-  voice a concern (researched via `strengthen-plan`), voice an idea/evolution (folded in). The
-  old contact rows (business card, your LinkedIn) were removed - they belong to Circle / Profile.
+- `SharpenPanel.tsx` - the plan-only "make it stronger" panel: four consistent rows (screenshot
+  a business you admire, voice a concern, voice an idea, answer a question) that each open the
+  same portaled bottom-sheet overlay; the AI on it is personified as Freya. The coach question
+  (`SharpenPrompt`) lives in the "answer a question" sheet, not inline. The old contact rows
+  (business card, your LinkedIn) were removed - they belong to Circle / Profile.
 - `SharpenPrompt.tsx` - the make-it-stronger coach card (one decision-shaped question at a
   time); droppable on any surface, mounted on Home / Read / Path-weak.
 - `sharpness.ts` - the pure 0–100 strength score + weakest-dimension finder.

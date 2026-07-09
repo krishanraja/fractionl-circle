@@ -19,7 +19,6 @@ import SharpenPanel from './SharpenPanel';
 import JourneyMap, { journeyState } from './JourneyMap';
 import { homeRecommend, movePrimary } from './primaryAction';
 import ReachOut from './ReachOut';
-import SharpenPrompt from './SharpenPrompt';
 import Home from './Home';
 import { computeSharpness, holdingBack } from './sharpness';
 import {
@@ -376,9 +375,8 @@ export default function ThesisApp() {
           onSaveInspiration={onSaveInsp}
           onBanked={refreshAnswers}
           edges={edges}
-          compact
+          sharpenFocus={sharpenFocus}
         />
-        <SharpenPrompt onAnswered={refreshAnswers} focus topic={sharpenFocus || undefined} />
       </>,
       <>
         <button className="cta" disabled={busyRerun} onClick={onRerun}><span>{busyRerun ? 'reading…' : 'See how it lands now'}</span><span className="mono">→</span></button>
