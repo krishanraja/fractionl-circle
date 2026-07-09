@@ -345,6 +345,16 @@ export const chromeCss = `
 .thx .fuelcard:hover { border-color:${C.accentEdge}; }
 .thx .fuelcard.done { border-color:rgba(127,185,150,0.4); }
 .thx .fuelcard:disabled { cursor:default; }
+/* the four "make it stronger" strengthener rows: compact so the head + all four rows +
+   the pinned footer fit one no-scroll viewport. Title + one-line subtitle on the left,
+   tag + arrow on the right, vertically centred (the tag never takes its own line). */
+.thx .strow { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:11px 14px; cursor:pointer; margin-top:8px; transition:border-color .2s ease, transform .12s ease; }
+.thx .strow:hover { border-color:${C.accentEdge}; }
+.thx .strow:active { transform:translateY(1px); }
+.thx .strow-t { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.thx .strow-title { font-size:14.5px; font-weight:600; color:${C.hi}; letter-spacing:-0.01em; line-height:1.25; }
+.thx .strow-sub { font-size:12px; color:${C.mid}; line-height:1.35; }
+.thx .strow-tag { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; flex:0 0 auto; }
 /* compact one-line variant for the focused "Make it stronger" screen */
 .thx .fuelrowc { display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:10px; padding:10px 13px; cursor:pointer; margin-top:8px; transition:border-color .2s ease, transform .12s ease; }
 .thx .fuelrowc:hover { border-color:${C.accentEdge}; }
