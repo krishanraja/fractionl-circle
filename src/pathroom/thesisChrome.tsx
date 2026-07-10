@@ -348,12 +348,12 @@ export const chromeCss = `
 /* the four "make it stronger" strengthener rows: compact so the head + all four rows +
    the pinned footer fit one no-scroll viewport. Title + one-line subtitle on the left,
    tag + arrow on the right, vertically centred (the tag never takes its own line). */
-.thx .strow { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:11px 14px; cursor:pointer; margin-top:8px; transition:border-color .2s ease, transform .12s ease; }
+.thx .strow { display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:11px; padding:9px 13px; cursor:pointer; margin-top:5px; transition:border-color .2s ease, transform .12s ease; }
 .thx .strow:hover { border-color:${C.accentEdge}; }
 .thx .strow:active { transform:translateY(1px); }
-.thx .strow-t { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
-.thx .strow-title { font-size:14.5px; font-weight:600; color:${C.hi}; letter-spacing:-0.01em; line-height:1.25; }
-.thx .strow-sub { font-size:12px; color:${C.mid}; line-height:1.35; }
+.thx .strow-t { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.thx .strow-title { font-size:14.5px; font-weight:600; color:${C.hi}; letter-spacing:-0.01em; line-height:1.2; }
+.thx .strow-sub { font-size:11.5px; color:${C.mid}; line-height:1.3; }
 .thx .strow-tag { font-family:${MONO}; font-size:8.5px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; flex:0 0 auto; }
 /* compact one-line variant for the focused "Make it stronger" screen */
 .thx .fuelrowc { display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:${C.panel}; border:1px solid ${C.line2}; border-radius:10px; padding:10px 13px; cursor:pointer; margin-top:8px; transition:border-color .2s ease, transform .12s ease; }
@@ -465,11 +465,14 @@ export const chromeCss = `
 .thx .secondary { background:none; border:0; color:${C.lo}; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
 /* "Where you stand" head on the Make-it-stronger surface: the Value Prop in brief,
    one tap to the full read. Keeps understanding and strengthening on one surface. */
-.thx .wystand { display:block; width:100%; text-align:left; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:14px 15px; cursor:pointer; transition:border-color .2s ease, transform .12s ease; }
+.thx .wystand { display:block; width:100%; text-align:left; background:${C.panel2}; border:1px solid ${C.line2}; border-radius:12px; padding:11px 14px; cursor:pointer; transition:border-color .2s ease, transform .12s ease; }
 .thx .wystand:hover { border-color:${C.accentEdge}; }
 .thx .wystand:active { transform:translateY(1px); }
 .thx .wystand .scorewrap { align-items:baseline; }
-.thx .wystand-link { display:inline-block; margin-top:10px; font-family:${MONO}; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:${C.accent}; }
+/* a touch smaller than the Home orb's score, so the head stays compact and the whole
+   make-stronger surface fits one viewport without a scroll (even with browser chrome). */
+.thx .wystand .scorenum { font-size:24px; }
+.thx .wystand .scorehold { margin-top:2px; }
 /* living + breathing motion, restrained for the quiet-instrument register */
 @keyframes thxrise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:none; } }
 @keyframes thxfade { from { opacity:0; } to { opacity:1; } }

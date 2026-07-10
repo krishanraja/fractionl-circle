@@ -358,7 +358,7 @@ export default function ThesisApp() {
       <>
         <button className="wystand" onClick={() => setPhase('read')} aria-label={PLAN.openResult}>
           <span className="ovl">Where you stand</span>
-          <div className="scorewrap" style={{ marginTop: 6 }}>
+          <div className="scorewrap" style={{ marginTop: 3 }}>
             <span className="scorenum">{sharp.score}</span>
             <span className="scoremax">/100 strength</span>
             {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
@@ -366,7 +366,6 @@ export default function ThesisApp() {
             <span className="htarrow">→</span>
           </div>
           <div className="scorehold">{holdingBack(sharp)}</div>
-          <span className="wystand-link">See your full Value Prop</span>
         </button>
         <SharpenPanel
           thesis={thesisText}
