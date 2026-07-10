@@ -235,7 +235,7 @@ export default function SharpenPanel({ thesis, runId, onAdmire, onSaveInspiratio
   const title = (k: Kind) => STRENGTHENERS[k].title;
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 4 }}>
       {edges.length ? (
         <div className="edgerow">
           <div className="navhint" style={{ color: C.accent }}>What makes you different, sharper</div>
@@ -244,7 +244,7 @@ export default function SharpenPanel({ thesis, runId, onAdmire, onSaveInspiratio
         </div>
       ) : null}
 
-      <div className="ovl" style={{ marginTop: 20 }}>Make your plan stronger</div>
+      <div className="ovl" style={{ marginTop: 10 }}>Make your plan stronger</div>
       <Row s={STRENGTHENERS.admire} onClick={() => setActive('admire')} />
       <Row s={STRENGTHENERS.concern} onClick={() => setActive('concern')} />
       <Row s={STRENGTHENERS.idea} onClick={() => setActive('idea')} />
