@@ -1,8 +1,9 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-09 (Freya + the strengthener overlay). This is the source of truth for what
-the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
-room) are superseded and live in `docs/_archive/`.*
+*Canonical product doc. Last updated 2026-07-12 (edge-function inventory reconciled: people-finder/embedding/credit
+set folded into the canonical list; pricing section's "coming" caveats aligned with `src/lib/tiers.ts`).
+This is the source of truth for what the product is today. Earlier strategy docs (the Circle CRM and the Path Room
+decision room) are superseded and live in `docs/_archive/`.*
 
 ## North Star (the one outcome, and the one metric that proves it)
 
@@ -466,14 +467,15 @@ The DB-level tier enum is `free | pro | executive`. Three tiers:
 - **Free (Freemium), $0:** one full read of where you stand, your plan and next moves, build
   your circle by screenshot or CSV. No paywall on first value.
 - **Pro, $39/mo:** unlimited reads as your plan evolves, real warm reach from your full network,
-  specific named next moves, ongoing market monitoring. Gated through Stripe checkout. (The
-  Stripe Price object must be set to $39 in the production Stripe mode; the app reads
-  `VITE_STRIPE_PRO_MONTHLY_PRICE_ID`.) Pro is the highlighted CTA tier; the in-app gate copy
-  quotes "$39 a month".
+  specific named next moves, ongoing market monitoring (today: the live `market-pulse` numbers on
+  Home; full evolving-trend tracking over time is a follow-up, see "Known follow-ups" below).
+  Gated through Stripe checkout. (The Stripe Price object must be set to $39 in the production
+  Stripe mode; the app reads `VITE_STRIPE_PRO_MONTHLY_PRICE_ID`.) Pro is the highlighted CTA tier;
+  the in-app gate copy quotes "$39 a month".
 - **Chief of Staff (`executive`), $79/mo:** unlimited reads and warm reach, a weekly brief on
-  your network and market, external signal feeds (RFPs, job changes, trends), cross-user market
-  intelligence, priority compute + white-glove concierge onboarding. Reads
-  `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID`.
+  your network and market, priority compute + white-glove concierge onboarding. External signal
+  feeds (RFPs, job changes, trends) and cross-user market intelligence are listed in-app as
+  "coming" (`src/lib/tiers.ts`) - not yet shipped. Reads `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID`.
 
 In the product flow, free users get one full pass and the read; the deepening tools (re-reads,
 the path, warm reach, ongoing monitoring) are Pro. `ThesisApp.tsx` opens the Pro gate when a
@@ -558,10 +560,21 @@ locked user reaches a deep phase.
 `extract-contact`, `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`,
 `warm-digest`, `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
 `sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
-`delete-account`, `audit-log`, `transcribe`. The legacy match/sunday-letter functions
+`delete-account`, `audit-log`, `transcribe`, plus the people-finder/embedding/credit set:
+`search-network`, `embed-circle`, `cron-embed-circle`, `enrich-max`, `extract-read` (see
+"The people-finder box + credit-gated enrichment" above). The legacy match/sunday-letter functions
 (`cron-match-engine`, `run-match-engine`, `cron-sunday-letter`, `generate-sunday-letter`,
 `sunday-letter-feed`, `decision-engine`, `extract-ideas`, `log-move-sent`, `log-win`,
 `parse-onboarding`) and the `_shared` match/sunday-letter cores were **removed** this cycle.
+
+**Housekeeping (status unverified, needs an engineering pass - not claimed as live or dead):**
+`extract-identity` and `demo-extract` are fully implemented in source but have no caller anywhere
+in `src/` - either shipped ahead of their UI or built-and-shelved. `generate-user-insights` has a
+client hook (`useUserInsights.ts`) that itself has no importers - dead end-to-end. `extension-ingest`,
+`notify-concierge-event`, `resolve-contact`, `linkedin-search`, `parse-contact-image`,
+`parse-screenshot`, `parse-voice-contact`, `parse-voice-seed`, and `test-google-secret` are deployed
+but undocumented here; some read as leftovers from the retired Circle-CRM/concierge generation. None
+of these are part of the canonical live set above until confirmed and wired to a live surface.
 Key ones:
 - `validate-thesis` - live Perplexity research, then provider-fallback LLM structuring into
   the scorecard + steps; reads the circle for warm reach AND `thesis_inspiration` to sharpen

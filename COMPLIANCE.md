@@ -1,6 +1,6 @@
 # Circle - Compliance Posture
 
-**Last reviewed:** 2026-06-02
+**Last reviewed:** 2026-07-12
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
 ---
@@ -9,7 +9,7 @@
 
 | Framework | Honest status | What it would take to claim more |
 |---|---|---|
-| **GDPR** | Technical data-subject rights (access, export, erasure) implemented and complete; consent + audit logging in place. Legal docs (privacy policy, DPA, RoPA) are **drafts pending counsel**. | Counsel-reviewed published privacy policy, signed DPAs with subprocessors, appointed contact, breach-notification process. |
+| **GDPR** | Technical data-subject rights (access, export, erasure) implemented; consent + audit logging in place. **Known coverage gap:** the DSAR table list has not been updated since 2026-06-02 - see below. Legal docs (privacy policy, DPA, RoPA) are **drafts pending counsel**. | Counsel-reviewed published privacy policy, signed DPAs with subprocessors, appointed contact, breach-notification process, and closing the DSAR coverage gap below. |
 | **CCPA/CPRA** | Same technical rights satisfy access/deletion/opt-out. | Published "Do Not Sell/Share" notice + privacy policy (Circle does not sell data). |
 | **SOC 2 (Type II)** | A subset of Trust Services Criteria controls are implemented (access control, encryption in transit, audit logging, change management via PRs). **Not audited. Not certified.** | An independent CPA audit over a 6–12 month observation window, written policies, security training, evidence collection (Vanta/Drata/Secureframe). |
 | **ISO 27001** | Several Annex A controls map to existing practice. **No ISMS. Not certified.** | A documented ISMS + Stage 1/2 audit by an accredited certification body. |
@@ -31,7 +31,8 @@
 - `export_user_data(uuid)` - complete JSON export across the full user-owned surface + profile. Self-only.
 - `erase_user_data(uuid)` - deletes every user-owned row across the full surface, anonymises the profile, retains only the three legal-obligation records (`data_subject_requests`, `security_audit_log`, `user_consents`).
 - `delete-account` edge function - runs erasure **and** removes the auth identity, server-side.
-- Coverage is driven by `_dsar_user_tables()` so it stays correct as tables are added. See `docs/RoPA.md`.
+- Coverage is driven by `_dsar_user_tables()` (`supabase/migrations/20260602000002_compliance_hardening.sql`), a static array that must be updated by hand as new user-owned tables are added. See `docs/RoPA.md`.
+- **Known gap (found 2026-07-12):** the array was last updated 2026-06-02 and has not tracked seven user-owned tables added since: `thesis_runs`, `thesis_answers` (the Plan tab's core read/coaching data), `credit_balance`, `credit_ledger` (paid-enrichment spend history), `draft_edits`, `delivery_log`, `compounding_events`. Export and erasure do not currently reach these tables. This is a code fix (add the table names to `_dsar_user_tables()`), not a documentation fix - tracked here as an open item, not yet resolved.
 
 ### Encryption
 - In transit: TLS enforced (HSTS preload header). At rest: Supabase/AWS volume encryption.

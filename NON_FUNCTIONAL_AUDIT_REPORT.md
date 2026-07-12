@@ -1,5 +1,12 @@
 # Non-Functional Audit - fractionl-circle
 
+> **Historical snapshot, orphaned.** Every finding in this report targets UI/features from the
+> Ideas/Matches/Moves/Streams/Sunday-Letter generation removed on 2026-06-29 (`StreamsScreen`,
+> `MatchCard`, `FirstVoice` voice onboarding, `generate-sunday-letter`) - none of that code exists
+> in the current tree. No other doc in the repo links to this file as of 2026-07-12. It has no
+> ongoing utility beyond a historical QA record; recommend moving to `docs/_archive/` or deleting -
+> not done without confirmation.
+
 **Repository:** `krishanraja/fractionl-circle`  
 **Workspace commit tested:** `e788ac4` (`main`)  
 **Browser targets:** `https://circle.fractionl.ai` (production), `http://localhost:8080` (local dev after `.env` bootstrap)  

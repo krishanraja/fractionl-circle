@@ -2,7 +2,9 @@
 
 > A grounded profile of the recently independent senior leader who has decided to test fractional executive work. This is the canonical "who is the buyer, deeply" reference behind the concise operational ICP in [DOCS.md § 3](../DOCS.md#3-icp--who-circle-is-for) and the fleet pitch brief in [AGENT_BRIEFING.md § 2](../AGENT_BRIEFING.md). Those two are the quick-reference; this is the depth - motivations, psychology, the buying-trigger window, and the market data underneath.
 
-Built for Circle/Pulse positioning, outbound targeting, and product-wedge decisions. Compiled from 2025–2026 published research (see [Sources](#sources--further-reading)).
+Built for Circle/Plan positioning, outbound targeting, and product-wedge decisions. Compiled from 2025–2026 published research (see [Sources](#sources--further-reading)).
+
+**Last updated:** 2026-07-12 (verified against `src/lib/tiers.ts`, `AGENT_BRIEFING.md`, and the current Circle/Plan product shape).
 
 ---
 
@@ -40,6 +42,7 @@ Use these to filter leads and shape prospecting.
 | **Tenure** | 15+ years total, usually 2 to 4 employers across the career, often long tenures. The opposite of a job-hopper. |
 | **Age band** | Typically **40 to 58**. Old enough for real scar tissue and a network, young enough not to be coasting to retirement. |
 | **Recency of transition** | **0 to 18 months independent.** This is the danger zone *and* the buying window. After ~18 months they have either built a system or quit back to corporate. |
+| **Revenue** | $150K–$1.5M annually across 2 to 7 concurrent retainers (the modal portfolio-operator load cited in AGENT_BRIEFING.md). |
 | **Geography** | North America heavy, UK a strong second. |
 | **Legal / financial status** | Just set up an LLC or sole-prop, newly on 1099 income, often still mentally anchored to a salary they no longer have. |
 
@@ -62,7 +65,7 @@ The ex-CMO who was unhappy, frustrated, and burnt out, and wanted to be in the d
 - Context: post-pandemic reflection altered how senior leaders think about time, value, and agency - many found the nine-to-five model deeply unsatisfying. Many also describe a career ceiling: years of being the most experienced person in the room without the authority to match.
 
 ### 3. The Lifestyle-driven - portfolio life, post-COVID flexibility
-Wants autonomy and variety after a long corporate career, enabled by normalized remote and flexible work. Targets a sustainable 2 to 3 client portfolio, not an empire. Often the "post-achievement" leader who found enough success early to stop playing the corporate game on someone else's terms - still working, but on their own, frequently driven by purpose and legacy rather than income alone.
+Wants autonomy and variety after a long corporate career, enabled by normalized remote and flexible work. Targets a sustainable 2 to 3 client portfolio (narrower than the overall 2–7 modal range above), not an empire. Often the "post-achievement" leader who found enough success early to stop playing the corporate game on someone else's terms - still working, but on their own, frequently driven by purpose and legacy rather than income alone.
 - Steady, lower urgency, price-sensitive but loyal.
 
 **Commercial read:** The Pulled and Lifestyle segments are the retention base. The Pushed convert fastest but churn hardest. Messaging should lead with **conviction-building** for the first two and **speed-to-pipeline** for the third - not the reverse.
@@ -189,7 +192,8 @@ An ICP for a fractional is not a company profile. It is the intersection of: the
 This is the exact wound Circle sits in. The fractional is a product with deep capability and no distribution; Circle is the operating system for the business-of-one they did not know they had to build.
 
 - **Circle (relationship moves)** answers *"your network is your only channel and you are not working it systematically."*
-- **Pulse (attribution)** answers *"you have no idea which of your scattered efforts produced the last client, so you cannot repeat it."*
+- **Plan** answers *"you don't know if this offer is real, where you stand, or what to do next."* It reads the live market against what the user wants to offer and returns a 0–100 strength score with banded, evidence-backed signals, plus next moves.
+- **Pulse** (pulse.fractionl.ai) is a separate, free public product - the Fractional Working Index. It feeds Plan's live market read and is the top-of-funnel/credibility asset that drives traffic to Circle; it is not an in-app attribution feature.
 
 We are not selling a CRM. We are selling the operating system for the business-of-one.
 
@@ -197,7 +201,7 @@ We are not selling a CRM. We are selling the operating system for the business-o
 
 **Two counterpoints to hold honestly:**
 1. The Pushed segment, despite higher churn, holds the **volume and urgency**, and urgency closes deals. If the priority is early revenue and logos over LTV, targeting the desperate-but-paying may be the right cold-start move. Don't let "best LTV" override "fastest first 50 customers."
-2. There's a real risk of solving the *articulate* version of the problem rather than the *felt* one. Research says the problem is pipeline; what they say they want is "more clients"; what they will actually pay for might be reassurance and identity ("I am a real business now"), not analytics. Pulse's attribution story may be too rational for an emotionally driven buyer. Pressure-test in interviews before assuming it lands.
+2. There's a real risk of solving the *articulate* version of the problem rather than the *felt* one. Research says the problem is pipeline; what they say they want is "more clients"; what they will actually pay for might be reassurance and identity ("I am a real business now"), not analytics. A purely rational, scored read may be too rational for an emotionally driven buyer. Pressure-test in interviews before assuming it lands.
 
 **Durable validation move.** Run live 20-minute interviews with leads who are 0–18 months independent and clearly functional leaders (CMO/CRO/CFO), built around one core question: **"Walk me through exactly how you got your last client."** If the answer is "a referral I could not have predicted or repeated," the wound is confirmed - and you can quote them verbatim in positioning.
 
