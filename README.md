@@ -55,11 +55,14 @@ Stripe, Vercel.
 - [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and architecture (source of truth).
 - [AGENT_BRIEFING.md](AGENT_BRIEFING.md) - the sales/marketing brief, with a LIVE-vs-ROADMAP discipline.
 - [docs/icp-archetype.md](docs/icp-archetype.md) - the ICP.
-- [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the vision capture.
+- [docs/VALUE_SHARPENING_2026-07-03.md](docs/VALUE_SHARPENING_2026-07-03.md) - the make-it-stronger/decision-log strategy record (partially superseded by the Freya redesign - see the note at its top).
+- [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the in-app photo capture that's actually live, plus the not-yet-wired-up share-sheet/Shortcut design.
 - `docs/google-oauth-setup.md`, `docs/microsoft-oauth-setup.md`, `docs/supabase-custom-domain.md` - ops setup.
 - [docs/reengagement-and-push.md](docs/reengagement-and-push.md) - the re-engagement sweep + email/web-push setup.
 - `docs/google-oauth-verification.md` - the calendar-write sensitive-scope submission pack (native warm-reach holds).
-- `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance.
+- `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance (drafts, pending counsel).
+- [COMPLIANCE.md](COMPLIANCE.md), [SECURITY.md](SECURITY.md), [SUBPROCESSORS.md](SUBPROCESSORS.md) - current technical compliance/security posture and third-party data processors.
+- `AUDIT_2026-04-24.md`, `NON_FUNCTIONAL_AUDIT_REPORT.md` - historical point-in-time audits of the pre-rework product, kept for the record.
 - `docs/_archive/` - superseded strategy (the earlier Circle CRM and the Path Room decision room), kept for history.
 
 > Plain-language vocabulary (Plan / your idea / see how it lands / where you stand / make it

@@ -1,5 +1,11 @@
 # Circle by Fractionl - legacy reference
 
+> **Reconciliation pass, 2026-07-12:** confirmed this file is still correctly superseded -
+> `docs/PRODUCT.md` remains the canonical source of truth and is current as of 2026-07-12.
+> No content below this changelog was updated; it documents the pre-rework product and is kept
+> for engineering history only. Recommend moving this file into `docs/_archive/` alongside the
+> other superseded strategy docs it predates - not moved without confirmation.
+
 > ## Changelog - 2026-06-29: what changed and why (READ FIRST)
 >
 > **This document is largely SUPERSEDED.** The product it describes - the "Circle CRM"
