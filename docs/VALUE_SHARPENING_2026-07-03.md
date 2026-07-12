@@ -6,6 +6,13 @@
 > current UX - toward being the chief of staff to a business leader becoming an AI-forward
 > fractional operator? First tranches shipped alongside this doc; the rest is sequenced below.
 
+> **Partially superseded 2026-07-12.** The decision-log/skip-recording mechanics below are still
+> current. The UI they describe (`SharpenPrompt.tsx` as the primary inline surface) was reworked
+> on 2026-07-07/09/10 into a four-row `SharpenPanel` (admire / voice a concern / voice an idea /
+> answer a question), each opening one shared bottom-sheet overlay, with the AI coach personified
+> as **Freya** (`src/pathroom/copy.ts`, `supabase/functions/_shared/aiPersonality.ts`). See
+> `docs/PRODUCT.md`'s "Freya + the strengthener overlay" entry for the current surface.
+
 ---
 
 ## The verdict in one paragraph
