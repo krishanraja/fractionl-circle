@@ -1,7 +1,9 @@
 # Re-engagement & web push - ops guide
 
 *Verified accurate against `supabase/functions/cron-reengage/index.ts`,
-`supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29.*
+`supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29,
+re-verified 2026-07-12 (windows, caps, opt-out logic, and JSON summary shape all
+still match code exactly).*
 
 > **Status update (2026-07-03): BOTH CHANNELS ARE LIVE.** `RESEND_API_KEY` and
 > all `VAPID_*` secrets were verified set in the production project and every

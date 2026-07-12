@@ -15,8 +15,9 @@ pages you actively visit.
 - The edge function upserts a `linkedin_extension` source row for your
   account and runs the same fingerprint dedupe as the other ingestion paths
   (LinkedIn CSV, Google Contacts, Microsoft Contacts).
-- On re-visit, `last_interaction_at` is refreshed so the Match Engine's
-  recency ranker favours people you're actively looking at.
+- On re-visit, `last_interaction_at` is refreshed so the circle's warmth score
+  (`recompute_circle_warmth()`) and network search ranking favour people you're
+  actively looking at.
 
 ## What it does **not** do
 

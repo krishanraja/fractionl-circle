@@ -1,5 +1,8 @@
 # Google OAuth verification - calendar write (warm-reach holds)
 
+**Verified against code:** 2026-07-12 (`GOOGLE_CALENDAR_WRITE_ENABLED` and
+`WARM_DIGEST_NATIVE_CALENDAR` flags confirmed present and off-by-default).
+
 Goal: let the weekly warm-reach digest write a recurring hold **straight onto the
 user's Google Calendar** instead of attaching an `.ics` file. That needs the
 `calendar.events` (write) scope, which is a **sensitive** scope - it requires

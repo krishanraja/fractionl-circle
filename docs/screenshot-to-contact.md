@@ -1,52 +1,65 @@
 # Screenshot → Contact
 
-One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
+**Last updated:** 2026-07-12 - corrected to describe what's actually shipped; see "Status" below.
 
-Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.
+## Status (read this first)
+
+**Live today:** in-app photo capture. From **Circle → Add a source → Add from photo**,
+`QuickAddImage.tsx` opens a file picker, sends the image to the `parse-contact-image`
+edge function (OpenAI vision, no Claude fallback), shows a confirm card, and on save
+runs it through `ingestQuickAdd` (`src/lib/circleIngest.ts`) - the same fingerprint-dedupe
+pipeline every Circle ingest path uses. No OS share sheet, no PWA-install requirement, no
+Apple Shortcut - it's a manual "pick a photo" flow inside the app.
+
+**Not live - backend built, frontend never wired up:** the one-gesture OS-share-sheet /
+Apple-Shortcut flow described in the rest of this document. `public/site.webmanifest`'s
+`share_target` and `public/sw.js`'s intercept logic still point at `/share-contact`, and
+the `parse-screenshot` edge function (Claude Haiku 4.5 → GPT-4o vision fallback) still
+exists and works - but **`src/pages/ShareContact.tsx` does not exist, no `/share-contact`
+route is registered in `src/App.tsx`, and nothing in `src/` calls `parse-screenshot`,
+`readSharedScreenshot()`, or `ingestSharedContact()`.** A user who shares a screenshot into
+the installed PWA today lands on a 404. Sections below describe the intended design for
+this - useful if it's picked back up, but do not claim it as live.
 
 ---
 
-## How it works
+## How the live flow works (in-app photo picker)
 
-1. User takes a screenshot of a profile on their phone.
-2. Screenshot is shared into Circle via the OS share sheet (Android) or an Apple Shortcut (iOS).
-3. `parse-screenshot` edge function runs vision LLM on the image (Claude Haiku 4.5 → GPT-4o fallback) and extracts name / headline / company / title / location / handle / profile_url / email / phone.
-4. Parsed payload is handed to `ingestSharedContact` in `src/lib/circleIngest.ts` - the same function every Circle ingest path uses. A `person_raw` row is written; fingerprint dedupe collapses it into a canonical `circle_person` row (or merges into an existing one).
-5. User lands on `/share-contact` (`src/pages/ShareContact.tsx`), confirms / edits, taps Save.
+1. User taps **Add from photo** in the Circle "Add a source" sheet.
+2. `QuickAddImage.tsx` opens the device file picker (no OS share integration required).
+3. The image is sent to `parse-contact-image` (vision LLM, OpenAI) which extracts name /
+   headline / company / title / location / handle / profile_url / email / phone.
+4. Parsed payload goes through `ingestQuickAdd` → the standard fingerprint-dedupe pipeline,
+   same as every other Circle ingest source.
+5. User reviews the parsed fields in a confirm card and taps Save.
 
-No copying. No pasting. No typing unless correction is needed.
-
-**Source kind on the resulting `sources` row:**
-- Android share-target captures → `source_kind = 'share_sheet'`
-- iOS Shortcut captures → `source_kind = 'ios_shortcut'`
-- Business-card photos via the same vision pipeline → `source_kind = 'business_card_photo'`
+No copying, no pasting, no typing unless correction is needed - just no OS share-sheet
+gesture (that part is the unshipped design below).
 
 ---
 
-## Android / PWA (Web Share Target)
+## Planned / not wired up: Android Web Share Target
 
-Already wired up - nothing further to ship.
+The plumbing exists but the destination page doesn't:
 
 - `public/site.webmanifest` declares `share_target` with `action: "/share-contact"` and accepts image files.
 - `public/sw.js` intercepts the POST, stashes the file in the Cache API, and redirects to `/share-contact?pending=1`.
-- `src/pages/ShareContact.tsx` reads from the cache via `readSharedScreenshot()`, calls `parse-screenshot`, shows the confirm card, and on save calls `ingestSharedContact()`.
-- Requires the PWA to be installed (Add to Home Screen). Not installed → Circle does not appear in the OS share sheet.
+- **Missing:** a `/share-contact` route and page that reads the cached file via `readSharedScreenshot()`, calls `parse-screenshot`, shows a confirm card, and calls `ingestSharedContact()` on save. None of this exists in `src/` today.
 
-**Test flow:**
-1. On Android Chrome, install Circle as a PWA.
-2. Take a screenshot of a LinkedIn profile.
-3. Open the screenshot → Share → Circle.
-4. You should land on `/share-contact` with the parsed fields pre-filled.
+**To ship this:** add the route to `src/App.tsx`, build the page (`readSharedScreenshot()` and `ingestSharedContact()` are already written and ready to call), and wire it to `parse-screenshot`.
 
 ---
 
-## iOS (Apple Shortcut)
+## Planned / not wired up: iOS Apple Shortcut
 
-iOS Safari does not honor `share_target` reliably, so iOS ships a one-tap Apple Shortcut.
+iOS Safari does not honor `share_target` reliably, so the design calls for a one-tap
+Apple Shortcut instead. Nothing in this section is built - there is no "Set up iOS
+Shortcut" button anywhere in `ProfileSettingsSheet.tsx` today, and no `.shortcut` file
+in the repo.
 
 ### Shortcut actions (install once, run forever)
 
-Users add the Shortcut from a setup button inside Circle's Profile & Settings drawer (gated on iOS by `useInstallPrompt` / userAgent check).
+Design: users would add the Shortcut from a setup button inside Circle's Profile & Settings drawer (gated on iOS by `useInstallPrompt` / userAgent check) - not yet built.
 
 The Shortcut performs:
 

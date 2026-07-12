@@ -1,5 +1,8 @@
 # Google OAuth setup (Phase 5)
 
+**Last updated:** 2026-07-12 (scopes corrected to match `_shared/googleOauth.ts`; added the
+`cron-sync-google` deploy step).
+
 One-time Google Cloud Console setup for the `Connect Google` source.
 
 ## 1. Create or pick a project
@@ -27,7 +30,8 @@ In **APIs & Services → Library**, enable:
   live - see `supabase-custom-domain.md` - `fractionl.ai` alone is correct.)
 - Save.
 
-On the **Scopes** step, add these and nothing else (non-restricted only):
+On the **Scopes** step, add these (`_shared/googleOauth.ts` `GOOGLE_BASE_SCOPES` is the
+source of truth - verify against it if this list and the code ever disagree):
 
 ```
 openid
@@ -35,12 +39,15 @@ email
 profile
 https://www.googleapis.com/auth/contacts.readonly
 https://www.googleapis.com/auth/contacts.other.readonly
+https://www.googleapis.com/auth/gmail.readonly
+https://www.googleapis.com/auth/gmail.send
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
 
-Do **not** add `gmail.readonly` or any other restricted scope - that triggers
-Google's annual CASA audit (~$15k, 4–8 weeks). We do not currently use any
-restricted scopes.
+**`gmail.readonly` and `gmail.send` ARE requested today** - these are restricted scopes.
+The app stays in Testing mode (test users only) specifically to use them without
+Google's CASA audit (~$15k, 4-8 weeks). Going to Production/public with these scopes
+requires that audit - see `docs/google-oauth-verification.md`.
 
 Add test users (any Gmail accounts you'll sign in with) until the app is
 published.
@@ -79,13 +86,17 @@ be set. If not:
 supabase secrets set APP_URL=https://circle.fractionl.ai
 ```
 
-## 6. Deploy the three Phase 5 functions
+## 6. Deploy the four Phase 5 functions
 
 ```
 supabase functions deploy oauth-google-start
 supabase functions deploy oauth-google-callback --no-verify-jwt
 supabase functions deploy sync-google
+supabase functions deploy cron-sync-google --no-verify-jwt
 ```
+
+`cron-sync-google` ships `--no-verify-jwt` so pg_net can call it with only the
+`x-cron-secret` header - it runs nightly per `supabase/cron_setup.sql`.
 
 `oauth-google-callback` must deploy with `--no-verify-jwt` - Google calls it
 directly with no user token. State validation in the callback covers auth.
@@ -117,6 +128,7 @@ directly with no user token. State validation in the callback covers auth.
 ## Publishing (later)
 
 To let non-test-users connect, submit the OAuth consent screen for
-verification. Since we only use non-restricted + sensitive scopes, this is
-Google's lighter-weight "brand verification" - a few screenshots and a demo
-video, typically a few days' turnaround.
+verification. Because the app requests the restricted `gmail.readonly` and
+`gmail.send` scopes, this requires Google's full CASA security assessment
+(~$15k, 4-8 weeks), not the lighter-weight brand-verification path - see
+`docs/google-oauth-verification.md` for the current submission status.

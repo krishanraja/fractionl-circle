@@ -1,5 +1,9 @@
 # Supabase custom auth domain - branding the Google sign-in screen
 
+**Verified against code:** 2026-07-12 (`client.ts`, `_shared/googleOauth.ts`, `supabase/config.toml`
+all confirmed consistent with this doc; the manual DNS/dashboard cutover steps could not be
+verified from the repo - confirm current cutover status directly in the Supabase dashboard).
+
 ## Why
 
 When a user taps **Sign in with Google**, Google's consent screen reads:

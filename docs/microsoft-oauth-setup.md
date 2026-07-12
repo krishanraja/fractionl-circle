@@ -1,5 +1,8 @@
 # Microsoft Graph OAuth setup (Phase 5b)
 
+**Last updated:** 2026-07-12 (permissions corrected to match `_shared/microsoftOauth.ts`;
+added the custom-auth-domain redirect URI note).
+
 One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the
 Google setup; same token storage, same callback shape, same user UX.
 
@@ -12,11 +15,13 @@ Google setup; same token storage, same callback shape, same user UX.
   personal Microsoft accounts** (so both `@outlook.com` users and Azure AD
   work accounts can sign in). This corresponds to `MS_TENANT=common` in our
   edge functions.
-- Redirect URI: **Web** →
+- Redirect URI: **Web** → the callback on your active auth host. Once the Supabase
+  custom auth domain is live (see `docs/supabase-custom-domain.md`), this is:
   ```
-  https://<PROJECT_REF>.supabase.co/functions/v1/oauth-microsoft-callback
+  https://auth.circle.fractionl.ai/functions/v1/oauth-microsoft-callback
   ```
-  For you: `https://ksyuwacuigshvcyptlhe.supabase.co/functions/v1/oauth-microsoft-callback`.
+  Until cut over, the raw host also works:
+  `https://ksyuwacuigshvcyptlhe.supabase.co/functions/v1/oauth-microsoft-callback`.
 - Register.
 
 Copy the **Application (client) ID**.
@@ -31,7 +36,8 @@ Copy the **Application (client) ID**.
 ## 3. API permissions
 
 **API permissions** → **Add a permission** → **Microsoft Graph** →
-**Delegated permissions** → add **only**:
+**Delegated permissions** → add (`_shared/microsoftOauth.ts` `MS_SCOPES` is the
+source of truth - verify against it if this list and the code ever disagree):
 
 ```
 openid
@@ -41,10 +47,15 @@ offline_access
 User.Read
 Contacts.Read
 Calendars.Read
+Mail.Read
+Mail.Send
 ```
 
-Do **not** add `Mail.Read` or any `Mail.*` scope. We deliberately stay out
-of mail bodies (parallel to Google's restricted Gmail scope).
+**`Mail.Read` and `Mail.Send` ARE requested today** - parallel to Google's restricted
+Gmail scopes above. These are user-consent scopes (no admin consent required, no
+Microsoft audit gate the way Google's CASA review is), but they do mean the app reads
+and can send mail on the user's behalf once connected - disclose this clearly wherever
+the Microsoft connection is offered in-app.
 
 You typically don't need admin consent for these - they're standard user
 scopes.
