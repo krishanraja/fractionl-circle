@@ -1,8 +1,9 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-09 (Freya + the strengthener overlay). This is the source of truth for what
-the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
-room) are superseded and live in `docs/_archive/`.*
+*Canonical product doc. Last updated 2026-07-19 (doc reconciliation pass: boot-recovery/fail-soft
+config note added; verified against code, no other drift found since 2026-07-09/10). This is the
+source of truth for what the product is today. Earlier strategy docs (the Circle CRM and the Path
+Room decision room) are superseded and live in `docs/_archive/`.*
 
 ## North Star (the one outcome, and the one metric that proves it)
 
@@ -42,6 +43,27 @@ focused bottom-sheet overlay**, and the AI on it is personified as **Freya**. Li
    (`trimWords`), never a mid-word `.slice` (the old "…adapt them f" cut). `next-question` and
    `strengthen-plan` were **redeployed** to `ksyuwacuigshvcyptlhe` (the raised caps from
    2026-07-07 had never been deployed, so prod was still clipping options at 80 chars).
+4. **Compacted to fit one no-scroll mobile viewport** (2026-07-09/10, `SharpenPanel.tsx`,
+   `thesisChrome.tsx`, `ThesisApp.tsx`): tighter row padding/margins, one-line subtitles, a
+   smaller "where you stand" score head, and a redundant "See your full Value Prop" text link
+   removed. Layout polish only, verified down to a 390×680 viewport; no new copy or concepts.
+
+## What changed (2026-07-07): boot resilience (fail-soft config + stale-bundle recovery)
+
+Two reliability fixes so a broken environment or a stale deploy never shows a blank page.
+
+1. **Missing/misconfigured Supabase env vars no longer crash the bundle.**
+   `src/integrations/supabase/client.ts` exports `isSupabaseConfigured` and no longer throws at
+   module load if `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are absent (it falls back
+   to a placeholder client and logs a diagnostic instead). `src/main.tsx` checks the flag first:
+   if false, it renders `src/components/ConfigError.tsx` ("We can't start right now" + a reload
+   button) and skips wiring Supabase auth entirely, instead of crashing the whole app.
+2. **Stale-bundle recovery.** `public/theme-init.js` (render-blocking, runs before the React
+   bundle) now also watches for a failed `/assets/*.js` load (a stale cached `index.html`
+   pointing at a deleted deploy hash) or a 20s mount timeout, and if `#root` never mounts, clears
+   the service worker + caches and shows a branded "A new version is available - Reload" panel
+   with a cache-busting reload. Previously a blank page was possible after the splash faded; now
+   the app always resolves to either the product, the config-error screen, or the recovery panel.
 
 ## What changed (2026-07-07): Plan/Circle intent split + voiced strengtheners
 
@@ -552,6 +574,10 @@ locked user reaches a deep phase.
 - `tokens.ts` - the quiet-instrument design tokens.
 - `App.tsx` - routes: `/` (auth gate -> the product), `/auth`, `/privacy`, `/terms`, and the
   unlinked lazy design fixtures.
+- `main.tsx` / `ConfigError.tsx` - boots the app only if `isSupabaseConfigured`; otherwise renders
+  a fail-soft config-error screen instead of crashing. `public/theme-init.js` independently
+  recovers from a stale/failed bundle load (cache-busting reload panel). See "What changed
+  (2026-07-07): boot resilience" above.
 
 **Edge functions** (`supabase/functions/`). Canonical live set for the Plan + Circle product:
 `validate-thesis`, `judge-thesis`, `next-question`, `strengthen-plan`, `market-pulse`, `extract-admire`,

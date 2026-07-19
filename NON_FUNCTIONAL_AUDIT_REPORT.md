@@ -1,5 +1,10 @@
 # Non-Functional Audit - fractionl-circle
 
+> **2026-07-19 note:** this audit tested the product generation retired on 2026-06-29 (Today /
+> Streams / Ask tabs, Match Engine, Sunday Letter - none of these exist in the current codebase).
+> Kept for engineering history only; do not use it to assess the current product. Recommend
+> archiving to `docs/_archive/` - see the doc-reconciliation drift report.
+
 **Repository:** `krishanraja/fractionl-circle`  
 **Workspace commit tested:** `e788ac4` (`main`)  
 **Browser targets:** `https://circle.fractionl.ai` (production), `http://localhost:8080` (local dev after `.env` bootstrap)  

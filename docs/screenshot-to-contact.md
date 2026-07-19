@@ -1,6 +1,6 @@
 # Screenshot → Contact
 
-One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
+One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
 
 Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.
 

@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo (2026-07-03):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
+**Last verified against repo (2026-07-19):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface,SharpenPanel}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
 
 > **Important - the product changed.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter). That whole model was removed. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it.
 
@@ -57,7 +57,7 @@ You tell Circle who you want to sell to and why you, in a few plain words, and i
 ### Core outcomes (quotable)
 - **An honest read, not a hype answer.** Banded signals with evidence and a confidence mark. Low confidence is shown, not faked. You learn whether the opportunity is real and whether you can win it, fast.
 - **A plan, not a verdict.** A living, action-first path of next moves to your first clients, with your own network woven into the warm-reach step.
-- **Make it stronger over time.** The Plan tab gives you exactly two moves: work on your plan, or take your next action. On "make it stronger" you can screenshot a business you admire, **voice a concern and have it researched**, or **voice an idea and have the AI fold it in** - plus a coach that asks the single highest-leverage decision to raise your weakest signal. Each one lifts your strength score on the next read.
+- **Make it stronger over time.** The Plan tab gives you exactly two moves: work on your plan, or take your next action. On "make it stronger" you can screenshot a business you admire, **voice a concern and have it researched**, **voice an idea and have the AI fold it in**, or answer a coach question - four consistent rows, each opening one focused overlay. The AI on this surface is personified as **Freya** (name and voice only, no avatar) - it asks the single highest-leverage decision to raise your weakest signal. Each one lifts your strength score on the next read.
 - **Keep your circle warm.** A weekly nudge on who is going quiet, each with a grounded, pre-written hello and one tap to send.
 - **A reason to come back.** When you return, Circle shows what is waiting - people going quiet, decisions to fold into your plan - computed from your own data.
 
@@ -215,7 +215,7 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 |---|---|---|
 | Read-first grounded onboarding (your goal + who you sell to → one live read; people + an admired business optional, to sharpen it) | LIVE | Claim freely. This is the magic moment. |
 | The Plan read: live market research → your **Value Prop** (labelled "Value Prop" in-app; 0–100 strength score + banded, evidence-backed signals with confidence) | LIVE | Claim freely, including the honesty (low confidence shown, never fake numbers). The prose "shows you where you stand" is still fine as positioning. |
-| Make-it-stronger coach (one decision-shaped question on the weakest signal; banked decisions lift the score on the next read) | LIVE | Claim freely. |
+| Make-it-stronger coach (one decision-shaped question on the weakest signal; banked decisions lift the score on the next read; the AI is personified as **Freya**, name and voice only) | LIVE | Claim freely. "Freya" may be used by name in product-feature copy; do not invent an avatar/visual for her - none exists. |
 | Living, action-first path of next moves, with the warm-reach step using real named people + pre-written drafts | LIVE | Claim freely. Reaching out is one tap to your own email/LinkedIn (you send), not automated send. |
 | Circle warm network + weekly "keep your circle warm" digest (email with one-tap `mailto:` drafts + an `.ics` calendar hold) | LIVE | Claim freely. |
 | In-app return surface ("what's waiting": people going quiet, decisions to fold in) | LIVE | Claim freely. |

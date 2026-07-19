@@ -78,6 +78,14 @@ truth use `docs/PRODUCT.md` and `AGENT_BRIEFING.md`.
 **Last verified against repo:** 2026-05-30 (Phase 2 security-hardening pass) - superseded
 2026-06-29 by the changelog above.
 
+> **Documentation reconciliation pass (2026-07-19):** re-checked against the current codebase.
+> Confirms this file describes a product that no longer exists in any way (routes, edge
+> functions, pricing, tier names below are all retired). Recommend archiving this file to
+> `docs/_archive/` in full (it is 1,100+ lines of confident, specific GTM/pricing copy for a
+> retired product sitting in the repo root, which risks being read as current by an agent that
+> greps the root instead of `docs/`). Not moved without explicit confirmation - see the drift
+> report. Everything below this line is unchanged historical content.
+
 ---
 
 ## Rebuild status (2026-05-30)
