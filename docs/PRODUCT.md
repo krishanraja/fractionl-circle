@@ -1,8 +1,9 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-09 (Freya + the strengthener overlay). This is the source of truth for what
-the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
-room) are superseded and live in `docs/_archive/`.*
+*Canonical product doc. Last updated 2026-07-26 (doc reconciliation pass; product itself last
+changed 2026-07-10, viewport compaction on the make-it-stronger surface). This is the source of
+truth for what the product is today. Earlier strategy docs (the Circle CRM and the Path Room
+decision room) are superseded and live in `docs/_archive/`.*
 
 ## North Star (the one outcome, and the one metric that proves it)
 
@@ -13,6 +14,21 @@ grounded, honest read plus named warm-network moves they actually take toward th
 (a `thesis_runs` row whose `step_progress` advanced AND a `circle_person.last_interaction_at` stamped in the
 same week). Reads without moves are curiosity; moves without reads are noise; the two together, repeated
 weekly, are the product working. Everything in this doc is graded against that outcome and that number.
+
+## What changed (2026-07-10): compact the make-it-stronger surface to one no-scroll viewport
+
+The four strengthener rows plus the "where you stand" head overflowed the fold on smaller
+viewports (browser chrome showing), so the fourth row ("Answer a question") needed a scroll.
+Live-verified down to a 390x680 body.
+- `.strow` rows (`SharpenPanel.tsx`, `thesisChrome.tsx`) are now compact: title + one-line
+  subtitle on the left, tag + arrow inline on the right, tighter padding/margins. Subtitles were
+  shortened to one line each.
+- The "where you stand" head (`ThesisApp.tsx`) is more compact too: a smaller scoped score
+  number, tighter padding, and the redundant **"See your full Value Prop" text link was
+  removed** - the head is already a full-width tappable card with a right-arrow affordance, so
+  the link was a second door to the same place.
+- Net effect: the head, all four rows, and the pinned footer fit one mobile viewport with room
+  to spare, no scroll.
 
 ## What changed (2026-07-09): Freya + the "make it stronger" overlay
 
@@ -556,7 +572,8 @@ locked user reaches a deep phase.
 **Edge functions** (`supabase/functions/`). Canonical live set for the Plan + Circle product:
 `validate-thesis`, `judge-thesis`, `next-question`, `strengthen-plan`, `market-pulse`, `extract-admire`,
 `extract-contact`, `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`,
-`warm-digest`, `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
+`warm-digest`, `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, `search-network`,
+`embed-circle`, `cron-embed-circle`, `extract-read`, the
 `sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
 `delete-account`, `audit-log`, `transcribe`. The legacy match/sunday-letter functions
 (`cron-match-engine`, `run-match-engine`, `cron-sunday-letter`, `generate-sunday-letter`,
@@ -765,3 +782,13 @@ Driven by the AI-native operator evidence corpus; full strategy + decision recor
   fallback; enabling it needs the `calendar.events` sensitive-scope verification
   (no CASA). See `docs/google-oauth-verification.md`. Gmail native drafts
   (`gmail.compose`, restricted/CASA ~$15k) are deliberately deferred.
+- **Deployed edge functions not reachable from any current UI or cron path (2026-07-26 doc
+  audit):** `demo-extract`, `extract-identity`, `linkedin-search`, `notify-concierge-event`,
+  `parse-voice-log`, `resolve-contact`, `send-sms`, and `generate-user-insights` (its only
+  caller, `src/hooks/useUserInsights.ts`, is itself never imported). `resolve-contact` reads a
+  `talent_contact` table that does not appear elsewhere in this doc's Data section, which
+  suggests it may belong to a different, unshipped feature line rather than Circle/Plan.
+  `test-google-secret` is an intentionally-disabled stub (see its own file header) kept only to
+  avoid 404s. None of these are documented as live because none are wired to a path a user can
+  reach - confirm with the repo owner whether each is WIP, dead, or scoped for a different
+  product before either documenting it as a feature or deleting it.

@@ -20,10 +20,10 @@ Contract (running the service), consent (connected accounts, certain analytics),
 Circle stores information about third parties in your professional network so you can manage those relationships. We do not market to your contacts. You can export or delete this data at any time.
 
 ## 5. Sharing - subprocessors
-We use the processors listed in `SUBPROCESSORS.md` (Supabase, Vercel, OpenAI, Stripe, Resend, and Google/Microsoft if you connect them). **We do not sell your personal data** or share it for cross-context behavioural advertising.
+We use the processors listed in `SUBPROCESSORS.md` (Supabase, Vercel, OpenAI, Anthropic, Google, Lovable, Perplexity, Stripe, Resend, and Google/Microsoft if you connect them). **We do not sell your personal data** or share it for cross-context behavioural advertising.
 
 ## 6. AI processing
-Voice transcripts and Idea/contact text are sent to OpenAI's API to extract Ideas and draft messages. This data is not used to train their models. [Confirm zero-retention configuration.]
+Your plan/idea text, contact and screenshot data, and voice transcripts are sent to our AI providers to generate your read, extract contacts, and draft messages: OpenAI, Anthropic, and Google (Gemini), used in a fallback order so the product stays up if one provider is unavailable; and Perplexity, for the live market research behind your read. See `SUBPROCESSORS.md` for the current list and which feature uses which provider. This data is not used to train their models. [Confirm zero-retention configuration for each provider.]
 
 ## 7. International transfers
 Data is stored in the United States (AWS us-east-1). For users in the EU/UK, transfers rely on Standard Contractual Clauses. [Confirm.]

@@ -1,6 +1,6 @@
 # Circle - Compliance Posture
 
-**Last reviewed:** 2026-06-02
+**Last reviewed:** 2026-07-26 (verified against migrations, `vercel.json`, `SessionManager.tsx`, `rememberMe.ts` - no drift found)
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
 ---
@@ -31,7 +31,7 @@
 - `export_user_data(uuid)` - complete JSON export across the full user-owned surface + profile. Self-only.
 - `erase_user_data(uuid)` - deletes every user-owned row across the full surface, anonymises the profile, retains only the three legal-obligation records (`data_subject_requests`, `security_audit_log`, `user_consents`).
 - `delete-account` edge function - runs erasure **and** removes the auth identity, server-side.
-- Coverage is driven by `_dsar_user_tables()` so it stays correct as tables are added. See `docs/RoPA.md`.
+- Coverage is a **hardcoded table list** (`_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`), not something that grows automatically with the schema - it must be updated by hand whenever a new user-data table ships. **Open gap (found 2026-07-26):** the array was last edited 2026-06-02 and does not include eight user-data tables added since - `thesis_runs`, `thesis_inspiration`, `thesis_answers`, `credit_balance`, `credit_ledger`, `draft_edits`, `delivery_log`, `compounding_events` - which today hold a user's actual plan reads, decisions, admired businesses, credit history, and draft edits. `export_user_data` and `erase_user_data` currently **do not export or erase these tables**. This needs a migration adding them to the array before Art. 15/17/20 claims above are accurate for the current product. See `docs/RoPA.md`.
 
 ### Encryption
 - In transit: TLS enforced (HSTS preload header). At rest: Supabase/AWS volume encryption.

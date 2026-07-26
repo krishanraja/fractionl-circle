@@ -1,5 +1,15 @@
 # Screenshot → Contact
 
+> **STATUS (verified 2026-07-26): NOT SHIPPED.** The Web Share Target infrastructure this doc
+> describes exists in the codebase - `public/site.webmanifest`'s `share_target`, `public/sw.js`'s
+> POST interception, the `parse-screenshot` edge function, and `ingestSharedContact()` in
+> `src/lib/circleIngest.ts` - but it has no consumer: `src/pages/ShareContact.tsx` and the
+> `/share-contact` route it would need do not exist anywhere in the repo, and `parse-screenshot`
+> is never invoked from `src/`. The in-app screenshot-add flow that actually ships today is
+> `QuickAddImage.tsx` → `parse-contact-image` (a different edge function, different prompt), part
+> of the `AddToCircleSheet` flow described in `docs/PRODUCT.md`. Treat everything below as the
+> **designed, not current**, flow until `ShareContact.tsx` ships.
+
 One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
 
 Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.
@@ -128,7 +138,7 @@ Existing secrets used by `contact-enrich` (Apollo / Clearbit / Twilio) and `link
 
 ## Reliability
 
-- All three vision call sites (`parse-screenshot:109` Claude, `parse-screenshot:142` GPT-4o fallback, `parse-contact-image:56` GPT-4o) wrap their fetch with explicit `AbortSignal.timeout(20_000)` since PR #46.
+- All three vision call sites (`parse-screenshot` Claude + GPT-4o fallback, `parse-contact-image` GPT-4o) wrap their fetch with an explicit `AbortSignal.timeout(30_000)`.
 - Per-user rate limits enforced via the durable `rate_limits` table (`_shared/compliance.ts`).
 
 ---

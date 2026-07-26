@@ -5,7 +5,7 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo (2026-07-03):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
+**Last verified against repo (2026-07-26):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/lib/creditPacks.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md, SUBPROCESSORS.md. No pitch, pricing, or LIVE/ROADMAP changes found since 2026-07-03; code changes in that window (2026-07-09/10) were UI-layout only (compacting the make-it-stronger surface to fit one viewport) and don't affect anything claimed here.
 
 > **Important - the product changed.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter). That whole model was removed. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it.
 
@@ -219,7 +219,7 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 | Living, action-first path of next moves, with the warm-reach step using real named people + pre-written drafts | LIVE | Claim freely. Reaching out is one tap to your own email/LinkedIn (you send), not automated send. |
 | Circle warm network + weekly "keep your circle warm" digest (email with one-tap `mailto:` drafts + an `.ics` calendar hold) | LIVE | Claim freely. |
 | In-app return surface ("what's waiting": people going quiet, decisions to fold in) | LIVE | Claim freely. |
-| Circle capture: LinkedIn CSV, CRM/sheet, Google/Microsoft contacts sync, screenshot-to-contact (vision) | LIVE | Claim freely. |
+| Circle capture: LinkedIn CSV, CRM/sheet, Google/Microsoft contacts sync, add-by-screenshot (vision, uploaded from inside the app) | LIVE | Claim freely. Do NOT claim OS-level share-sheet capture (share a screenshot from Photos straight into Circle) - that specific mechanism is designed (`docs/screenshot-to-contact.md`) but not shipped. |
 | Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
 | One box on the Circle home: say what you're working on (surfaces your inner circle) OR who - or the kind of person - you're looking for (searches your whole network). Type it or voice-note it. | LIVE | Claim freely. |
 | Intelligent people-search over your whole network: semantic (meaning-based) + keyword retrieval returns real people, each with the actual fact that matched and a confidence - plus evidence-backed "warm route" (second-degree) inferences grounded in a person's OWN history (e.g. "was at Accel, a warm way into that fund"), never an invented relationship. | LIVE | Claim freely, including the honesty (nothing invented; every match cites a real fact). |

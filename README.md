@@ -35,6 +35,8 @@ Full product, architecture, and run/deploy: **[docs/PRODUCT.md](docs/PRODUCT.md)
 
 Free gives one full read with no paywall on first value. Pro ($39/mo) is unlimited reads,
 real warm reach from your full network, named next moves, and ongoing market monitoring.
+Chief of Staff ($79/mo) adds a weekly chief-of-staff brief, priority compute, and white-glove
+concierge onboarding (external signal feeds and cross-user intelligence are roadmap, not live).
 
 ## Quick start
 
@@ -55,11 +57,14 @@ Stripe, Vercel.
 - [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and architecture (source of truth).
 - [AGENT_BRIEFING.md](AGENT_BRIEFING.md) - the sales/marketing brief, with a LIVE-vs-ROADMAP discipline.
 - [docs/icp-archetype.md](docs/icp-archetype.md) - the ICP.
-- [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the vision capture.
+- [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the designed Web Share Target
+  capture flow; **not shipped yet** (see the status banner in the file). The screenshot-add path
+  that actually ships is `QuickAddImage.tsx` in the Circle tab.
 - `docs/google-oauth-setup.md`, `docs/microsoft-oauth-setup.md`, `docs/supabase-custom-domain.md` - ops setup.
 - [docs/reengagement-and-push.md](docs/reengagement-and-push.md) - the re-engagement sweep + email/web-push setup.
 - `docs/google-oauth-verification.md` - the calendar-write sensitive-scope submission pack (native warm-reach holds).
 - `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance.
+- [SECURITY.md](SECURITY.md), [COMPLIANCE.md](COMPLIANCE.md), [SUBPROCESSORS.md](SUBPROCESSORS.md) - security posture, compliance posture, and third-party data processors.
 - `docs/_archive/` - superseded strategy (the earlier Circle CRM and the Path Room decision room), kept for history.
 
 > Plain-language vocabulary (Plan / your idea / see how it lands / where you stand / make it
