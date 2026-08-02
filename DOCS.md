@@ -1,5 +1,10 @@
 # Circle by Fractionl - legacy reference
 
+*Last doc-drift reconciliation pass: 2026-08-02 (fixed 3 dead `docs/roadmap.md` links, re-flagged
+the "Rebuild status" section below as doubly obsolete, added the ROADMAP caveat to the Chief of
+Staff tier line). This file remains superseded per the banner below - use `docs/PRODUCT.md` and
+`AGENT_BRIEFING.md` for current truth.*
+
 > ## Changelog - 2026-06-29: what changed and why (READ FIRST)
 >
 > **This document is largely SUPERSEDED.** The product it describes - the "Circle CRM"
@@ -68,8 +73,9 @@
 > **Tiers (source: `src/lib/tiers.ts`).** Freemium **$0** (one full read of where you stand +
 > your plan/next moves + build your circle) · Pro **$39/mo** (unlimited reads, real warm reach,
 > named next moves, ongoing monitoring) · Chief of Staff **$79/mo** (everything + weekly brief +
-> external signal feeds + cross-user intelligence + concierge). The "Operator $30 / 1-Match-a-week"
-> tier in the tables below is **stale** - ignore it.
+> concierge; external signal feeds and cross-user intelligence are still **COMING, not live** -
+> see `AGENT_BRIEFING.md` section 9). The "Operator $30 / 1-Match-a-week" tier in the tables below
+> is **stale** - ignore it.
 
 This (historical) document was the canonical source for product, architecture, pricing, and
 go-to-market language for the retired generation. It is kept for engineering history; for current
@@ -80,7 +86,17 @@ truth use `docs/PRODUCT.md` and `AGENT_BRIEFING.md`.
 
 ---
 
-## Rebuild status (2026-05-30)
+## Rebuild status (2026-05-30) - SUPERSEDED, doubly obsolete
+
+> **Do not use this section for current status (flagged 2026-08-02).** It predates the 2026-06-29
+> product pivot and describes a rebuild plan (Phase 1's "5X vision," `_upgrade/fractionl-circle/`)
+> built entirely on the Ideas -> Matches -> Moves -> Streams -> Sunday Letter ontology that was
+> removed from the product. It is obsolete in both directions: as a "roadmap, not yet shipped"
+> tracker (the base product it was meant to build on top of no longer exists) and as a LIVE-vs-ROADMAP
+> table (it still lists the voice-onboarding/Match-Engine/Sunday-Letter model as "LIVE NOW," which is
+> now false). For current LIVE-vs-ROADMAP status, use `AGENT_BRIEFING.md` section 9. Kept below only
+> for engineering history; `_upgrade/fractionl-circle/{PHASE-0,PHASE-1,OS-HANDOFF}.md` are recommended
+> for archiving to `docs/_archive/` pending confirmation.
 
 Where Circle is in the rebuild, so the fleet never overclaims.
 
@@ -514,7 +530,7 @@ Output:
 
 Pairing flow: Circle web app → Circle tab → Add a source → Connect browser extension → copy pairing token → paste into the extension popup. Tokens carry an access token (~1 hour life) plus a refresh token; the extension rotates them as needed.
 
-Chrome Web Store submission is a follow-up - see [docs/roadmap.md](./docs/roadmap.md).
+Chrome Web Store submission is a follow-up - see [docs/_archive/roadmap.md](./docs/_archive/roadmap.md).
 
 ---
 
@@ -550,7 +566,7 @@ Chief of Staff tier ships with a real human concierge - the relationship manager
 | **Frontend** | React 18 + TypeScript (strict: true) + Vite | Mobile-first PWA. SPA with React Router. |
 | **UI** | Tailwind + shadcn/ui + Radix primitives | Custom design tokens. |
 | **Animation** | Framer Motion | 153 `motion.*` instances; all have `initial` + `animate` to avoid first-render flash. |
-| **Forms** | (currently raw `useState`) | `react-hook-form` + Zod scaffolding present (`src/components/ui/form.tsx`) but not yet adopted on most call sites - see audit H3 in [docs/roadmap.md](./docs/roadmap.md). |
+| **Forms** | (currently raw `useState`) | `react-hook-form` + Zod scaffolding present (`src/components/ui/form.tsx`) but not yet adopted on most call sites - see audit H3 in [docs/_archive/roadmap.md](./docs/_archive/roadmap.md). |
 | **Data fetching** | TanStack React Query (provider mounted, partial adoption) | Direct `supabase.functions.invoke` is still common; full migration is a deferred audit item. |
 | **Charts** | Recharts | Used in admin/analytics surfaces. |
 | **Backend** | Supabase (Postgres + Auth + Edge Functions / Deno) | Project: `ksyuwacuigshvcyptlhe`. |
@@ -1109,7 +1125,7 @@ supabase gen types typescript --project-id ksyuwacuigshvcyptlhe > src/integratio
 | **2026-04-26 (PR #46)** | Audit remediation - 13 of 14 findings shipped. C1, C2, C3, C4, H1, H2, H4, H5, M1, M2, M3, M5, M8 resolved. TypeScript strict mode on. Durable rate limits in. LLM timeouts on every call site. |
 | **2026-04-26** | Premium typography (Source Serif 4 + Satoshi). Profile/settings drawer. |
 
-**Open audit follow-ups** (deferred from PR #46, tracked in [docs/roadmap.md](./docs/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
+**Open audit follow-ups** (deferred from PR #46, tracked in [docs/_archive/roadmap.md](./docs/_archive/roadmap.md)): H3 (react-hook-form / TanStack Query adoption), H6 (OAuth PKCE), M4 (resolve-contact N+1), M6 / M7 / M9 / M10, L1–L6. H7 (parse-screenshot error-body leak) is now closed: fixed 2026-05-30 in Phase 2 (status code only, no upstream body).
 
 ---
 

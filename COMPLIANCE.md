@@ -1,6 +1,6 @@
 # Circle - Compliance Posture
 
-**Last reviewed:** 2026-06-02
+**Last reviewed:** 2026-08-02 (re-verified against `supabase/migrations/` and `_shared/compliance.ts`: RLS/deny-all posture, OAuth-token encryption gap, and the audit-log retention scheme all still match code; no changes needed)
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
 ---

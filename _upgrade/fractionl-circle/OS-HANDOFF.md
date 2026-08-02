@@ -1,5 +1,10 @@
 # Circle to Mindmaker OS: attribution + fleet-commerce wiring handoff
 
+> **SUPERSEDED (flagged 2026-08-02).** The attribution wiring described below is still live and is
+> now documented in the current, actively-maintained docs: `README.md`'s "Fleet attribution wiring"
+> section and `AGENT_BRIEFING.md` section 10. Nothing here is lost by archiving this file -
+> recommended for archiving to `docs/_archive/` pending confirmation.
+
 Date: 2026-05-30. For a Mindmaker OS session to verify the warehouse side is wired correctly. Circle ONLY emits; it never holds the warehouse service-role key. Everything below is the contract Circle now speaks.
 
 ## What Circle ships (live in source, on main)

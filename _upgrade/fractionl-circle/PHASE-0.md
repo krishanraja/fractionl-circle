@@ -1,5 +1,10 @@
 # Circle by Fractionl, Phase 0: Sync + Recon (verified)
 
+> **SUPERSEDED (flagged 2026-08-02).** This recon predates the 2026-06-29 product pivot (the Ideas
+> -> Matches -> Moves -> Streams -> Sunday Letter generation it verified was removed from the
+> product). Recommended for archiving to `docs/_archive/` pending confirmation - do not use for
+> current repo state; see `docs/PRODUCT.md`.
+
 Date: 2026-05-30. No code changes. Read-only recon per Master Prompt Section 7.
 Verification: multi-agent deep-read of the repo at HEAD `ffda624` (PR #52), cross-checked against the LIVE Supabase project `ksyuwacuigshvcyptlhe` (Management API, read-only SQL) and the LIVE Vercel project `prj_UGoTFYAQ3CL1NBctWYIvSY4LETnh`, plus 5 adversarial verifiers tasked with refuting the load-bearing claims. This supersedes the earlier draft of this file and corrects several of its statements.
 

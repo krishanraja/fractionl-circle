@@ -1,5 +1,11 @@
 # Circle by Fractionl, Phase 1: Locked product + 5X vision + commerce (no code changes)
 
+> **SUPERSEDED (flagged 2026-08-02).** This "5X vision" is built entirely on the Ideas -> Matches ->
+> Moves -> Streams -> Sunday Letter ontology removed from the product on 2026-06-29; the shipped
+> product (Circle warm-network + Plan market-read, read-first onboarding, Freya) does not follow
+> this plan. Recommended for archiving to `docs/_archive/` pending confirmation - do not use for
+> current roadmap; see `docs/PRODUCT.md`.
+
 Date: 2026-05-30. No code changes. Built on the verified PHASE-0 recon plus an 8-agent first-principles 5X pass (7 surface visionaries + 1 commerce-contract spec). This is the unbounded vision. Scope is chosen at the gate, not here.
 
 ## 1. Locked product

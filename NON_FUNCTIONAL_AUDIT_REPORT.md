@@ -1,5 +1,10 @@
 # Non-Functional Audit - fractionl-circle
 
+> **Historical snapshot - 2026-05-15. Do not treat as current state (flagged 2026-08-02).** This
+> audit covers UI (Sunday Letter card, MatchCard, StreamsScreen, FirstVoice) that no longer exists -
+> the Circle CRM generation it describes was removed from the product on 2026-06-29. Kept for
+> engineering history only; for current product and architecture status see `docs/PRODUCT.md`.
+
 **Repository:** `krishanraja/fractionl-circle`  
 **Workspace commit tested:** `e788ac4` (`main`)  
 **Browser targets:** `https://circle.fractionl.ai` (production), `http://localhost:8080` (local dev after `.env` bootstrap)  

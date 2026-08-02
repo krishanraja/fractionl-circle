@@ -1,6 +1,7 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-09 (Freya + the strengthener overlay). This is the source of truth for what
+*Canonical product doc. Last updated 2026-08-02 (doc reconciliation pass: added the boot-resilience
+section below, corrected the edge-function inventory). This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -42,6 +43,32 @@ focused bottom-sheet overlay**, and the AI on it is personified as **Freya**. Li
    (`trimWords`), never a mid-word `.slice` (the old "…adapt them f" cut). `next-question` and
    `strengthen-plan` were **redeployed** to `ksyuwacuigshvcyptlhe` (the raised caps from
    2026-07-07 had never been deployed, so prod was still clipping options at 80 chars).
+
+## What changed (2026-07-07): boot resilience - fail-soft config + self-healing bundle recovery
+
+Two defenses against the app loading to a permanently blank screen, previously undocumented here.
+
+1. **Fail-soft on missing Supabase config** (`src/integrations/supabase/client.ts`, `src/main.tsx`,
+   `src/components/ConfigError.tsx`). `client.ts` used to throw at module-evaluation time when
+   `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` were absent. Because that module is
+   imported by nearly every screen (and by `main.tsx` itself), the throw crashed the whole bundle
+   before React ever mounted - the in-React `ErrorBoundary` never saw it, and the boot splash's
+   4s safety-net just faded to a blank, undiagnosable page. Now `client.ts` exports
+   `isSupabaseConfigured` and falls back to a syntactically valid placeholder so `createClient()`
+   itself never throws; `main.tsx` renders a self-contained, dependency-free `ConfigError` screen
+   instead of booting an app that can only fail.
+2. **Self-healing boot-recovery net** (`public/theme-init.js`). A different failure mode: a stale
+   cached `index.html` requests an `/assets/index-<hash>.js` that a later deploy already deleted
+   (404), so React never mounts even though config is fine. The render-blocking, bundle-independent
+   `theme-init.js` now keeps the loading orb visible (instead of blanking) until the app has
+   actually mounted; listens capture-phase for a failed `/assets/*.js` script load and, if the app
+   still hasn't mounted about a second later, clears the service worker + caches and shows a
+   branded "A new version is available - Reload" panel with a cache-busting reload; and keeps a
+   20s timeout as a backstop for a hang/throw with no resource-load error.
+
+Both were verified in a headless browser: a healthy build mounts normally and never shows either
+panel; a build with a 404'd main chunk keeps the orb, then shows the recovery panel and reloads
+cache-busted.
 
 ## What changed (2026-07-07): Plan/Circle intent split + voiced strengtheners
 
@@ -555,13 +582,25 @@ locked user reaches a deep phase.
 
 **Edge functions** (`supabase/functions/`). Canonical live set for the Plan + Circle product:
 `validate-thesis`, `judge-thesis`, `next-question`, `strengthen-plan`, `market-pulse`, `extract-admire`,
-`extract-contact`, `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`,
-`warm-digest`, `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
-`sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
-`delete-account`, `audit-log`, `transcribe`. The legacy match/sunday-letter functions
-(`cron-match-engine`, `run-match-engine`, `cron-sunday-letter`, `generate-sunday-letter`,
-`sunday-letter-feed`, `decision-engine`, `extract-ideas`, `log-move-sent`, `log-win`,
-`parse-onboarding`) and the `_shared` match/sunday-letter cores were **removed** this cycle.
+`extract-contact`, `extract-read`, `enrich-linkedin`, `enrich-max`, `suggest-tags`, `generate-signals`,
+`generate-user-insights`, `rank-inner-circle`, `search-network`, `embed-circle`, `warm-digest`,
+`compute-warmth`, `cron-reengage`, `cron-embed-circle`, `send-push`, `send-sms`, `emit-lifecycle`,
+`extension-ingest`, `resolve-contact`, `linkedin-search`, `notify-concierge-event`,
+`parse-voice-contact`, `parse-voice-seed`, `parse-contact-image`, `parse-screenshot`, `transcribe`,
+the `sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
+`delete-account`, `audit-log`. The legacy match/sunday-letter functions (`cron-match-engine`,
+`run-match-engine`, `cron-sunday-letter`, `generate-sunday-letter`, `sunday-letter-feed`,
+`decision-engine`, `extract-ideas`, `log-move-sent`, `log-win`, `parse-onboarding`) and the
+`_shared` match/sunday-letter cores were **removed** this cycle.
+
+**Two functions of uncertain status, unverified from the code alone:** `demo-extract` (an
+unauthenticated, IP-rate-limited "anonymous live-mic demo" endpoint reusing the Whisper +
+gpt-4o-mini pipeline for logged-out visitors - live in source, but no caller was found anywhere in
+this repo's frontend, so it may be called only from a separate marketing-site surface); `test-google-secret`
+(its own source comment marks it "DISABLED... kept as a stub to prevent 404s if referenced
+elsewhere" - effectively inert). Confirm both against the deployed function list before treating
+either as active product surface.
+
 Key ones:
 - `validate-thesis` - live Perplexity research, then provider-fallback LLM structuring into
   the scorecard + steps; reads the circle for warm reach AND `thesis_inspiration` to sharpen

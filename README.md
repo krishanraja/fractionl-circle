@@ -59,8 +59,11 @@ Stripe, Vercel.
 - `docs/google-oauth-setup.md`, `docs/microsoft-oauth-setup.md`, `docs/supabase-custom-domain.md` - ops setup.
 - [docs/reengagement-and-push.md](docs/reengagement-and-push.md) - the re-engagement sweep + email/web-push setup.
 - `docs/google-oauth-verification.md` - the calendar-write sensitive-scope submission pack (native warm-reach holds).
-- `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance.
+- `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance (drafts, pending counsel).
+- `COMPLIANCE.md`, `SECURITY.md`, `SUBPROCESSORS.md` - honest current-state compliance posture, security policy, and the GDPR Art. 28 subprocessor list.
+- `AUDIT_2026-04-24.md`, `NON_FUNCTIONAL_AUDIT_REPORT.md` - point-in-time audit snapshots, kept for history (both predate the 2026-06-29 product pivot; do not read as current status).
 - `docs/_archive/` - superseded strategy (the earlier Circle CRM and the Path Room decision room), kept for history.
+- `_upgrade/fractionl-circle/` - a pre-pivot rebuild plan, now superseded end to end; flagged for archiving (see the banner at the top of each file).
 
 > Plain-language vocabulary (Plan / your idea / see how it lands / where you stand / make it
 > stronger) has a single source of truth: `src/pathroom/copy.ts`. Code symbols may still say
