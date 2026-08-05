@@ -97,6 +97,60 @@ export function getAttribution(): AttributionContext | null {
 }
 
 const SIGNED_UP_GUARD_KEY = 'circle.lifecycle.signed_up';
+const LANDED_GUARD_KEY = 'circle.lifecycle.landed';
+const SESSION_ID_KEY = 'circle.session_id';
+
+/**
+ * An opaque per-tab session id, so the warehouse can dedupe a landing per
+ * browser session (a reload inside the same session is the same landing) while
+ * a genuine return visit tomorrow still counts. Never leaves sessionStorage.
+ */
+function sessionId(): string | null {
+  try {
+    let id = sessionStorage.getItem(SESSION_ID_KEY);
+    if (!id) {
+      id = newId();
+      sessionStorage.setItem(SESSION_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Emit the anonymous top-of-funnel 'landed' event, server-side, via the public
+ * `track-event` edge function (which holds the warehouse secret; the browser
+ * never does). This is the only acquisition signal an anonymous visitor can
+ * produce: emit-lifecycle is JWT-gated, so without this there is no top of
+ * funnel and no channel is measurable.
+ *
+ * Guarded to at most once per browser session (sessionStorage) and deduped
+ * again server-side on anonymous_id + session id. Fire and forget: it never
+ * blocks first paint, never throws, and a failure is silently ignored.
+ */
+export function emitLanded(): void {
+  try {
+    if (sessionStorage.getItem(LANDED_GUARD_KEY)) return;
+    sessionStorage.setItem(LANDED_GUARD_KEY, '1');
+  } catch {
+    // sessionStorage unavailable (private mode etc.): do not emit rather than
+    // risk emitting on every page load.
+    return;
+  }
+  try {
+    const ctx = getAttribution();
+    void supabase.functions
+      .invoke('track-event', {
+        body: { event: 'landed', session_id: sessionId(), ...(ctx ?? {}) },
+      })
+      .catch(() => {
+        // Non-fatal: attribution must never affect the app.
+      });
+  } catch {
+    // Never let a telemetry call break the page.
+  }
+}
 
 /**
  * Emit a canonical lifecycle event to the central warehouse, server-side (the
