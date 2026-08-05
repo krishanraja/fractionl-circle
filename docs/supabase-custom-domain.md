@@ -1,4 +1,4 @@
-# Supabase custom auth domain — branding the Google sign-in screen
+# Supabase custom auth domain - branding the Google sign-in screen
 
 ## Why
 
@@ -26,7 +26,7 @@ domain**. Once live, the screen reads *"to continue to auth.circle.fractionl.ai"
 - The Supabase client (`src/integrations/supabase/client.ts`) and the
   edge-function `getRedirectUri()` (`supabase/functions/_shared/googleOauth.ts`)
   both read `VITE_SUPABASE_URL` / `SUPABASE_URL`, so they follow automatically
-  once the env var points at the custom domain — no further code change.
+  once the env var points at the custom domain - no further code change.
 
 ## Manual steps (need Supabase / DNS / Google Cloud access)
 
@@ -55,7 +55,7 @@ Authentication → Providers → Google):
     contact, and the Privacy Policy / Terms URLs
     (`https://circle.fractionl.ai/privacy`, `/terms`).
   - **Authorized domains**: `fractionl.ai` (remove `supabase.co` once cut over).
-  - Submit for verification if still in testing — this is what removes the
+  - Submit for verification if still in testing - this is what removes the
     "unverified app" warning and finishes the branded look.
 
 Do the same redirect-URI swap for the **edge-function** OAuth client in

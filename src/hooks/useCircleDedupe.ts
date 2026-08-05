@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-// Phase 3: LLM-powered Circle dedupe review. Ephemeral — suggestions live in
+// Phase 3: LLM-powered Circle dedupe review. Ephemeral - suggestions live in
 // memory until the user acts on them. Next `scan()` re-generates fresh.
 
 export interface DedupePerson {

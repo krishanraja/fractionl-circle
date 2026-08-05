@@ -32,50 +32,12 @@ create extension if not exists pg_net;
 -- ---------------------------------------------------------------------------
 -- Remove any prior versions of these jobs before re-scheduling.
 -- ---------------------------------------------------------------------------
-select cron.unschedule('cron-match-engine')     where exists (select 1 from cron.job where jobname = 'cron-match-engine');
-select cron.unschedule('cron-sunday-letter')    where exists (select 1 from cron.job where jobname = 'cron-sunday-letter');
 select cron.unschedule('cron-sync-google')      where exists (select 1 from cron.job where jobname = 'cron-sync-google');
 select cron.unschedule('cron-sync-microsoft')   where exists (select 1 from cron.job where jobname = 'cron-sync-microsoft');
-
--- ---------------------------------------------------------------------------
--- Phase 6: overnight Match Engine. Runs daily at 08:00 UTC (~midnight PT /
--- ~03:00 ET / 08:00 GMT). Adjust the cron expression to taste.
--- ---------------------------------------------------------------------------
-select cron.schedule(
-  'cron-match-engine',
-  '0 8 * * *',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-match-engine',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 600000
-  );
-  $$
-);
-
--- ---------------------------------------------------------------------------
--- Phase 8b: weekly Sunday Letter. Runs every Sunday at 19:00 UTC. That's the
--- "smart friend who paid attention" artifact.
--- ---------------------------------------------------------------------------
-select cron.schedule(
-  'cron-sunday-letter',
-  '0 19 * * 0',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-sunday-letter',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 900000
-  );
-  $$
-);
+select cron.unschedule('compute-warmth')        where exists (select 1 from cron.job where jobname = 'compute-warmth');
+select cron.unschedule('cron-warm-digest')      where exists (select 1 from cron.job where jobname = 'cron-warm-digest');
+select cron.unschedule('cron-reengage')         where exists (select 1 from cron.job where jobname = 'cron-reengage');
+select cron.unschedule('cron-embed-circle')     where exists (select 1 from cron.job where jobname = 'cron-embed-circle');
 
 -- ---------------------------------------------------------------------------
 -- Phase 5c: nightly Google contacts + calendar re-sync. 06:00 UTC daily.
@@ -117,9 +79,95 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Sanity check. Expected: four rows.
+-- Warm network: nightly warmth recompute. 07:30 UTC, i.e. AFTER the Google
+-- (06:00) and Microsoft (07:00) syncs refresh last_interaction_at, so the
+-- warmth the digest reads is current.
 -- ---------------------------------------------------------------------------
--- select jobname, schedule, active from cron.job where jobname like 'cron-%';
+select cron.schedule(
+  'compute-warmth',
+  '30 7 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/compute-warmth',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 600000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Warm network: weekly "keep your circle warm" digest. Mondays at 13:00 UTC
+-- (~6am PT / ~9am ET) - a start-of-week nudge that lands in the inbox and on
+-- the calendar where senior leaders actually plan.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-warm-digest',
+  '0 13 * * 1',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-warm-digest',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Re-engagement: weekly "come back - here's what's waiting" sweep. Mondays at
+-- 15:00 UTC, i.e. AFTER the warm digest (13:00) so a drifted user gets the
+-- warm-circle nudge first and this only reaches those who still have something
+-- genuinely waiting. Inert until Resend/VAPID keys are set.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-reengage',
+  '0 15 * * 1',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-reengage',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Semantic search: nightly embedding backfill for the "who can help me" search.
+-- 07:45 UTC, i.e. AFTER compute-warmth (07:30) so the sweep is ordered by fresh
+-- warmth. Inert (embeds nothing) until OPENAI_API_KEY is set; keyword search still
+-- works in the meantime.
+-- ---------------------------------------------------------------------------
+select cron.schedule(
+  'cron-embed-circle',
+  '45 7 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-embed-circle',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 900000
+  );
+  $$
+);
+
+-- ---------------------------------------------------------------------------
+-- Sanity check. Expected: six rows.
+-- ---------------------------------------------------------------------------
+-- select jobname, schedule, active from cron.job where jobname like 'cron-%' or jobname = 'compute-warmth';
 
 -- ---------------------------------------------------------------------------
 -- Inspect recent runs (status, return_message).

@@ -9,8 +9,8 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit, enforce
  * detect the platform and extract fields.
  *
  * Modes:
- *   - { image, mime } — one-shot parse (synchronous response).
- *   - { parse_id } — fetch a previously-stored parse (used by the iOS Shortcut
+ *   - { image, mime } - one-shot parse (synchronous response).
+ *   - { parse_id } - fetch a previously-stored parse (used by the iOS Shortcut
  *                    flow that POSTs the image separately then opens the app).
  *
  * Required secrets:
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
 
     if (body.parse_id) {
-      // Retrieve a previously-stored parse. Currently returns empty — wire up
+      // Retrieve a previously-stored parse. Currently returns empty - wire up
       // a `screenshot_parses` table when iOS Shortcut flow graduates.
       return json({ parsed: {} }, corsHeaders);
     }

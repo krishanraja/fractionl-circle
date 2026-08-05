@@ -4,6 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Scorecard } from './thesisViews';
 import { judgeLocal, type Verdict, type JudgeKind } from './thesisJudge';
 
+// Belt-and-suspenders: strip any em dash the model slips into user-facing text
+// (the prompts already ask for none), so the product never shows one. Deep-cleans
+// every string in the object in one pass.
+const EM_DASH = new RegExp(String.fromCharCode(0x2014), 'g');
+function stripEmDash<T>(v: T): T {
+  try { return JSON.parse(JSON.stringify(v).replace(EM_DASH, '-')); } catch { return v; }
+}
+
 export interface RunFull { id: string; result: Scorecard; stepProgress: number[]; thesis: string; background: string }
 
 // The latest saved run, with its id, the thesis/background that produced it, and step
@@ -65,10 +73,25 @@ export async function saveInspiration(userId: string, insp: { name: string; posi
 }
 
 export interface MarketPulse {
-  market: { score: number; label: string; delta: number | null } | null;
-  role: { key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null } | null;
-  rising: string | null;
+  market: {
+    score: number; label: string; delta: number | null;
+    emoji?: string | null;
+    scale?: string | null; // human scale legend, e.g. "45-59 Stable"
+    components?: { demand: number | null; supply: number | null; culture: number | null } | null;
+  } | null;
+  role: {
+    key: string; label: string; demand: number | null; band: string | null; deltaPct: number | null;
+    rank?: number | null; total?: number | null; // rank by demand among the tracked roles
+    insight?: string | null; // this-week human read, e.g. "124 jobs - below market average"
+  } | null;
+  rising: string | null; // kept: the single top theme label (back-compat)
+  // The eye-catching metric rail: value + a real 30-day arrow (delta) + a strategic
+  // one-liner. positiveWhenUp drives arrow colour (e.g. competition up = not good).
+  metrics?: { key: string; label: string; value: string; delta: number | null; deltaSuffix?: string; positiveWhenUp?: boolean; insight: string }[] | null;
+  themes?: { label: string; summary?: string | null; breakout?: boolean; angle?: string | null }[] | null;
+  roleLandscape?: { label: string; demand: number; band: string | null }[] | null; // which roles are fractionalising
   asOf: string | null;
+  nextUpdate?: string | null; // ISO date/time of the next Pulse refresh
 }
 
 // Live market movement (role-level) from the sister product fractionl-pulse, via the
@@ -77,7 +100,7 @@ export async function getMarketPulse(thesis: string): Promise<MarketPulse | null
   try {
     const { data, error } = await supabase.functions.invoke('market-pulse', { body: { thesis } });
     if (error) throw error;
-    return data as MarketPulse;
+    return stripEmDash(data as MarketPulse);
   } catch { return null; }
 }
 
@@ -86,9 +109,85 @@ export async function getInspirationCount(userId: string): Promise<number> {
   return count ?? 0;
 }
 
+export async function getCircleCount(userId: string): Promise<number> {
+  const { count } = await supabase.from('circle_person').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+  return count ?? 0;
+}
+
+// People you've actually spoken to, but not in 30+ days - the honest "going quiet"
+// signal (people never contacted, e.g. raw CSV rows, are deliberately excluded so
+// we never nag about strangers). Powers the return surface.
+export async function getGoingQuietCount(userId: string): Promise<number> {
+  const cutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const { count } = await supabase
+    .from('circle_person')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .not('last_interaction_at', 'is', null)
+    .lt('last_interaction_at', cutoff);
+  return count ?? 0;
+}
+
+// The actual people behind getGoingQuietCount - spoken to before, but quiet for
+// 30+ days - with the fields the warm-reach drawer needs to offer one-tap reach.
+// Warmest first, so the most worth-saving relationships surface at the top. Never
+// includes never-contacted rows (last_interaction_at is null), so we never nag
+// strangers. RLS scopes to the owner.
+export interface QuietPerson {
+  id: string;
+  display_name: string;
+  title: string | null;
+  company: string | null;
+  primary_email: string | null;
+  primary_phone: string | null;
+  linkedin_url: string | null;
+  handles: unknown;
+  last_interaction_at: string | null;
+}
+
+export async function getGoingQuietPeople(userId: string, limit = 20): Promise<QuietPerson[]> {
+  const cutoff = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const { data } = await supabase
+    .from('circle_person')
+    .select('id, display_name, title, company, primary_email, primary_phone, linkedin_url, handles, last_interaction_at')
+    .eq('user_id', userId)
+    .not('last_interaction_at', 'is', null)
+    .lt('last_interaction_at', cutoff)
+    .order('warmth', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  return (data as QuietPerson[]) ?? [];
+}
+
+// Persist the first-run "about you" into the existing identity columns. Best-effort:
+// never block onboarding if the write fails (the run itself is what matters).
+export async function saveAboutYou(userId: string, fields: { target_buyer?: string; positioning?: string; first_run_transcript?: string }): Promise<void> {
+  try {
+    await supabase.from('user_profiles').update(fields).eq('id', userId);
+  } catch { /* non-fatal */ }
+}
+
+// Stamp the first-run as done so the app stops showing onboarding and the
+// re-engagement surfaces can reason about "new vs returning".
+export async function markFirstRunComplete(userId: string): Promise<void> {
+  const now = new Date().toISOString();
+  try {
+    await supabase.from('user_profiles')
+      .update({ onboarding_completed: true, onboarding_completed_at: now, first_run_completed_at: now })
+      .eq('id', userId);
+  } catch { /* non-fatal: a saved run already gates first-run */ }
+}
+
 export async function getLatestRun(userId: string): Promise<Scorecard | null> {
   const full = await getLatestRunFull(userId);
   return full?.result ?? null;
+}
+
+// The user's OWN LinkedIn, set once in Profile & Settings (not a contact). It feeds
+// the plan's fit + credibility read, so runs pass it through. Persisted, so it now
+// survives a reload - unlike the old ad-hoc capture that was lost every session.
+export async function getProfileLinkedin(userId: string): Promise<string> {
+  const { data } = await supabase.from('user_profiles').select('linkedin_url').eq('id', userId).maybeSingle();
+  return (data as { linkedin_url: string | null } | null)?.linkedin_url || '';
 }
 
 export async function getRunCount(userId: string): Promise<number> {
@@ -107,6 +206,156 @@ export async function getCircle(userId: string): Promise<CircleP[]> {
     .limit(500);
   return ((data as Array<{ id: string; display_name: string; title: string | null; company: string | null; note: string | null; source: string | null }>) ?? [])
     .map((p) => ({ id: p.id, name: p.display_name, title: p.title, company: p.company, note: p.note, source: p.source }));
+}
+
+// People to reach, with a grounded reason and a ready-to-send draft, from the
+// warm-digest edge fn (the same brain the Monday email uses). Powers the warm-reach
+// step's actual action. Without context it's the cooling cohort; WITH a plan+move
+// context it's the people who FIT that idea (why_fit set), drafted around it.
+export interface ReachPerson {
+  id: string;
+  name: string;
+  title: string | null;
+  company: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  band: string;
+  recency_days: number | null;
+  why_now: string;
+  why_fit?: string | null; // set on a path-focused reach: why this person fits THIS move
+  subject: string;
+  message: string;
+}
+
+export interface ReachContext { thesis: string; move?: string | null }
+
+// Pass a { thesis, move } context to surface people who fit that specific plan/move
+// (path-focused reach); omit it for the classic going-quiet digest.
+export async function getWarmDigest(context?: ReachContext): Promise<ReachPerson[]> {
+  const body = context?.thesis?.trim() ? { context: { thesis: context.thesis, move: context.move ?? null } } : {};
+  const { data, error } = await supabase.functions.invoke('warm-digest', { body });
+  if (error) throw error;
+  const d = data as { people?: ReachPerson[] } | null;
+  return stripEmDash(Array.isArray(d?.people) ? d!.people! : []);
+}
+
+// The proactive sharpen question: the single highest-leverage thing to decide
+// next, from the next-question edge fn (weakest read dimension, decision-shaped).
+export interface NextQuestion {
+  run_id: string | null;
+  dimension: string;
+  topic: string;
+  question: string;
+  why: string;
+  options: string[];
+  source?: string;
+}
+
+// `focus` (a journey move's title/why) biases the question toward THAT move instead
+// of the whole thesis; omit it for the general weakest-dimension question.
+export async function getNextQuestion(focus?: string): Promise<NextQuestion | null> {
+  try {
+    const body = focus?.trim() ? { focus: focus.trim() } : {};
+    const { data, error } = await supabase.functions.invoke('next-question', { body });
+    if (error) throw error;
+    const d = data as NextQuestion | null;
+    return d?.question ? stripEmDash(d) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Persist a decision the user made. validate-thesis folds unapplied answers into
+// the next read, raising the strength score; applied answers stay in the log as
+// settled memory every future read builds on. `options` preserves the branches
+// the coach offered, so the log records what was considered, not just chosen.
+export async function saveThesisAnswer(a: { run_id: string | null; dimension: string; topic: string; question: string; answer: string; options?: string[] }): Promise<void> {
+  const { error } = await supabase.from('thesis_answers').insert({
+    run_id: a.run_id, dimension: a.dimension, topic: a.topic, question: a.question, answer: a.answer,
+    options: a.options?.length ? a.options : null,
+  });
+  if (error) throw error;
+}
+
+// Record that the user declined a coach question (refresh/dismiss). Best-effort
+// memory so the coach stops re-asking angles the user does not want; skips never
+// count as banked decisions or provisional lift.
+export async function saveSkippedQuestion(a: { run_id: string | null; dimension: string; topic: string; question: string }): Promise<void> {
+  try {
+    await supabase.from('thesis_answers').insert({
+      run_id: a.run_id, dimension: a.dimension, topic: a.topic, question: a.question, answer: '', status: 'skipped',
+    });
+  } catch { /* non-fatal: losing one skip never blocks the coach */ }
+}
+
+// How many answers are banked but not yet folded into a read - the provisional
+// score lift the user has earned but not locked in. Skipped questions never count.
+export async function getUnrunAnswerCount(userId: string): Promise<number> {
+  const { count } = await supabase
+    .from('thesis_answers')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('status', 'answered')
+    .is('applied_at', null);
+  return count ?? 0;
+}
+
+// The visible decision log: what you decided, when, whether a read has folded it
+// in, and (optionally) how it turned out. Newest first, skips excluded.
+export interface DecisionEntry {
+  id: string;
+  dimension: string | null;
+  topic: string | null;
+  question: string;
+  answer: string;
+  applied_at: string | null;
+  outcome: 'worked' | 'didnt_work' | null;
+  created_at: string;
+}
+
+export async function getDecisionLog(userId: string, limit = 50): Promise<DecisionEntry[]> {
+  const { data } = await supabase
+    .from('thesis_answers')
+    .select('id, dimension, topic, question, answer, applied_at, outcome, created_at')
+    .eq('user_id', userId)
+    .eq('status', 'answered')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  return (data as DecisionEntry[]) ?? [];
+}
+
+// One-tap retrospective on a decision. The outcome colors the settled-decision
+// memory future reads build on (a decision that did not work is weighed, not
+// repeated). Tapping the same outcome again clears it.
+export async function markDecisionOutcome(id: string, outcome: 'worked' | 'didnt_work' | null): Promise<void> {
+  const { error } = await supabase
+    .from('thesis_answers')
+    .update({ outcome, outcome_at: outcome ? new Date().toISOString() : null })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+// The correction loop on drafts: record what the AI drafted vs what the user
+// actually sent. Edited finals become the voice few-shot the digest brain learns
+// from, so drafts converge on the user's real voice. Best-effort: losing one
+// sample never blocks the send.
+export async function recordDraftEdit(a: { person_id: string | null; channel: 'email' | 'linkedin' | 'copy'; generated: string; final: string }): Promise<void> {
+  try {
+    await supabase.from('draft_edits').insert({
+      person_id: a.person_id, channel: a.channel, generated: a.generated, final: a.final,
+      edited: a.generated.trim() !== a.final.trim(),
+    });
+  } catch { /* non-fatal */ }
+}
+
+// Record that the user reached out: stamp last_interaction_at = now so warmth
+// recovers and the person stops surfacing as cold. RLS scopes to the owner.
+export async function markReachedOut(personId: string): Promise<void> {
+  const { error } = await supabase
+    .from('circle_person')
+    .update({ last_interaction_at: new Date().toISOString() })
+    .eq('id', personId);
+  if (error) throw error;
 }
 
 // Screenshot -> Gemini vision -> a person added to the circle. Throws the honest error message.
@@ -156,6 +405,49 @@ export async function importConnectionsCsv(userId: string, text: string): Promis
     if (error) throw error;
   }
   return rows.length;
+}
+
+// Voice -> text, via the transcribe edge fn. Base64-encodes the recorded blob the
+// same way the Circle voice box does. Returns '' on anything unusable.
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onloadend = () => res((r.result as string).split(',')[1] || '');
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+export async function transcribeAudio(blob: Blob): Promise<string> {
+  const base64 = await blobToBase64(blob);
+  const { data, error } = await supabase.functions.invoke('transcribe', { body: { audio: base64, format: 'webm' } });
+  if (error) throw new Error(error.message || 'Transcription failed');
+  return (data as { transcript?: string } | null)?.transcript?.trim() ?? '';
+}
+
+// A voiced concern or idea/evolution -> the strengthen-plan edge fn. 'concern' runs
+// live research on the worry; 'evolution' folds an idea into what makes you
+// different. Returns a grounded finding + how it changes the plan + which read
+// dimension it maps to, so the answer can be banked into the next read.
+export interface StrengthenResult {
+  mode: 'concern' | 'evolution';
+  dimension: string;
+  topic: string;
+  finding: string; // the grounded conclusion / strengthened angle
+  impact: string;  // one line: how this changes the plan
+  sources?: string[];
+}
+
+export async function strengthenPlan(mode: 'concern' | 'evolution', input: string, thesis: string): Promise<StrengthenResult> {
+  const { data, error } = await supabase.functions.invoke('strengthen-plan', { body: { mode, input, thesis } });
+  if (error) {
+    const ctx = (error as { context?: { body?: string } })?.context?.body;
+    let msg = 'Could not work that through just now. Try again in a moment.';
+    try { if (ctx) msg = JSON.parse(ctx).error || msg; } catch { /* keep default */ }
+    throw new Error(msg);
+  }
+  if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+  return stripEmDash(data as StrengthenResult);
 }
 
 export async function runValidation(thesis: string, linkedin: string, background: string): Promise<Scorecard> {

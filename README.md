@@ -1,30 +1,40 @@
 # Fractionl
 
-**The thesis-validation engine for fractional executives.** Bring your idea for how you
-want to fractionalize (what you want to offer, and to whom). It validates the idea against
-the real market in the open, then breaks the path to your first clients into doable,
-validated steps.
+**Two halves in one mobile-first app for people building a business off their network.**
+**Circle** is your warm network - the people who can help you sell. **Plan** reads the live
+market against what you want to offer and shows where you stand (a strength score 0–100 with
+banded, evidence-backed signals) plus your next moves.
 
 Live: https://circle.fractionl.ai
 
 Full product, architecture, and run/deploy: **[docs/PRODUCT.md](docs/PRODUCT.md)**.
 
+> **Note (2026-06-29):** the older "Circle CRM" generation (Ideas → Matches → Moves →
+> Streams → Sunday Letter) has been removed. Docs are being kept honest to the shipped
+> product; if you find a stale reference to that model, trust the code and the dated notes
+> in `docs/PRODUCT.md`.
+
 ## What it does (60 seconds)
 
-1. A **guided dialogue** draws out your thesis, pushing back on thin inputs until it has
-   enough (a who, a what, a why-you), with one line of background. The brand mark brightens
-   as it learns more about you.
-2. It runs live research in the open (~20s) and returns an honest scorecard: **is it a
-   real opportunity**, and **can you win it, fast** (bands with evidence and confidence,
-   never fake numbers).
-3. After the read, **add fuel to sharpen it**: a business you admire feeds your edge, a
-   business card feeds your circle, LinkedIn feeds your fit.
-4. A **living journey map** breaks the hard middle into small, ordered, validated moves to
-   your first retained client, with your **circle** woven in (the warm move shows real faces
-   and lights up as you add people).
+1. **Start here (first run).** A brand-new user (no plan yet) is held in a warm, gated
+   onboarding (`src/pathroom/StartHere.tsx`), read-first: it unlocks **See how it lands** as soon
+   as you give a few plain words about who you want to sell to, why you, and your current
+   objective. Your people (who could help you sell) and a business you admire are optional
+   sharpeners, offered here and again after the read, not a wall in front of it. Why: a one-box
+   "type an idea → AI report" reads as a generic LLM wrapper, so the read is grounded in the
+   uniquely-yours about-you; an empty circle honestly reads warm-reach as LOW, the earned reason
+   to add your people next (fast via LinkedIn CSV, CRM/sheet, or instant Google/Microsoft contacts
+   sync). Your typed words persist locally so an OAuth contacts-sync redirect never loses them.
+2. **Plan.** The read runs live market research and returns **where you stand**: a strength
+   score (0–100) and honest, banded signals with evidence (never fake numbers), plus a
+   **make it stronger** coach that asks the single highest-leverage decision next, and a
+   living, action-first path of next moves.
+3. **Circle.** Your warm network stays alive on its own: a weekly "keep your circle warm"
+   digest surfaces who to reconnect with, and a **return surface** on the Circle landing shows
+   what's waiting for you when you come back (people going quiet, decisions to fold in).
 
-Free gives one full validation with no paywall on first value. Pro ($39/mo) is unlimited,
-plus your network's warm reach and ongoing monitoring.
+Free gives one full read with no paywall on first value. Pro ($39/mo) is unlimited reads,
+real warm reach from your full network, named next moves, and ongoing market monitoring.
 
 ## Quick start
 
@@ -42,9 +52,16 @@ Stripe, Vercel.
 
 ## Docs
 
-- [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and architecture.
+- [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and architecture (source of truth).
+- [AGENT_BRIEFING.md](AGENT_BRIEFING.md) - the sales/marketing brief, with a LIVE-vs-ROADMAP discipline.
 - [docs/icp-archetype.md](docs/icp-archetype.md) - the ICP.
 - [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the vision capture.
 - `docs/google-oauth-setup.md`, `docs/microsoft-oauth-setup.md`, `docs/supabase-custom-domain.md` - ops setup.
+- [docs/reengagement-and-push.md](docs/reengagement-and-push.md) - the re-engagement sweep + email/web-push setup.
+- `docs/google-oauth-verification.md` - the calendar-write sensitive-scope submission pack (native warm-reach holds).
 - `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance.
 - `docs/_archive/` - superseded strategy (the earlier Circle CRM and the Path Room decision room), kept for history.
+
+> Plain-language vocabulary (Plan / your idea / see how it lands / where you stand / make it
+> stronger) has a single source of truth: `src/pathroom/copy.ts`. Code symbols may still say
+> "thesis" internally; only what the user reads is renamed.

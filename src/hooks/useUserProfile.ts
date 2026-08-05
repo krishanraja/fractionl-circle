@@ -19,6 +19,7 @@ export interface UserProfile {
   client_stages: string[];
   client_verticals: string[];
   positioning: string | null;
+  linkedin_url: string | null;
   // P1 identity foundation (borrowed-conviction first-run)
   motivation_type: string | null;
   journey_stage: string | null;

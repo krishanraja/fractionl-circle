@@ -1,4 +1,4 @@
-# Circle by Fractionl — Roadmap
+# Circle by Fractionl - Roadmap
 
 The 90-day plan (Phases 1–11) is shipped. The April 2026 audit (`AUDIT_2026-04-24.md`) shipped 13 of 14 findings via PR #46 (merged 2026-04-26). This file is the honest state of what's done, what's deferred, and roughly what each open item costs.
 
@@ -27,7 +27,7 @@ Weekly narrative with stats sidebar. Text on Operator+, 90-second TTS audio on C
 - Google Contacts + Calendar (`oauth-google-*`, `sync-google`, `cron-sync-google`).
 - Microsoft Contacts + Calendar (`oauth-microsoft-*`, `sync-microsoft`, `cron-sync-microsoft`).
 - Browser extension capture (`extension/` + `extension-ingest`).
-- Screenshot capture — Android share target + iOS Apple Shortcut (`parse-screenshot`).
+- Screenshot capture - Android share target + iOS Apple Shortcut (`parse-screenshot`).
 
 ### LLM-assisted Circle dedupe (Operator+)
 `useCircleDedupe`, `DedupeReviewSheet`, `dedupe-circle` edge function. Score-based candidates with LLM tiebreaker.
@@ -48,10 +48,10 @@ ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent
 - `send-sms` uses origin-allowlist CORS (C4).
 - Sunday Letter output is Zod-validated, length-capped, generation-source tagged (C2).
 - Durable per-user `rate_limits` table replaces in-memory map (H4).
-- `npm audit fix` ran — 14 of 18 vulns resolved (H2).
+- `npm audit fix` ran - 14 of 18 vulns resolved (H2).
 - ESLint `no-unused-vars` enforced and cleaned (M1).
 - `.env.example` regenerated from code references (M2).
-- DOCS.md regenerated to match shipped state (M3) — this file.
+- DOCS.md regenerated to match shipped state (M3) - this file.
 - Central error telemetry sink + `window` error/unhandledrejection listeners (M5).
 - Form labels associated with inputs (M8).
 - Single lockfile (`bun.lockb` removed) (H5).
@@ -62,36 +62,36 @@ ConsentBanner, PrivacySettings, SessionManager. `useConsent` syncs local consent
 
 These are the items the audit flagged that did **not** ship in PR #46. They are not blockers; they are next-sprint sized.
 
-### H3 — Adopt `react-hook-form` + `@tanstack/react-query` consistently
-Both are installed. `QueryClientProvider` is mounted. Adoption across forms is partial — most forms still hand-roll `useState` + direct `supabase.functions.invoke`. Migration is large but mechanical: `AuthPage`, `FirstVoice`, `ConciergeBookingSheet`, `MatchCard`, `ProfileSettingsSheet`. **Effort:** 1–2 sessions for full migration. Reuse existing `src/components/ui/form.tsx` scaffolding.
+### H3 - Adopt `react-hook-form` + `@tanstack/react-query` consistently
+Both are installed. `QueryClientProvider` is mounted. Adoption across forms is partial - most forms still hand-roll `useState` + direct `supabase.functions.invoke`. Migration is large but mechanical: `AuthPage`, `FirstVoice`, `ConciergeBookingSheet`, `MatchCard`, `ProfileSettingsSheet`. **Effort:** 1–2 sessions for full migration. Reuse existing `src/components/ui/form.tsx` scaffolding.
 
-### H6 — OAuth PKCE
+### H6 - OAuth PKCE
 Current state: double-`crypto.randomUUID()` state + TTL + single-use deletion at callback. Sufficient for confidential web clients. Required if we ever ship a native or extension-hosted OAuth flow. **Effort:** half-session per provider. Add `code_challenge` (S256) on start, persist `code_verifier` alongside state, send on token exchange.
 
-### H7 — `parse-screenshot` error-body redaction
-Current: `throw new Error(\`Anthropic error: ${res.status} ${text.slice(0, 300)}\`)` — that body slice can leak echoed prompt fragments into edge logs. **Effort:** 15-minute fix. Log status + request-id only.
+### H7 - `parse-screenshot` error-body redaction
+Current: `throw new Error(\`Anthropic error: ${res.status} ${text.slice(0, 300)}\`)` - that body slice can leak echoed prompt fragments into edge logs. **Effort:** 15-minute fix. Log status + request-id only.
 
-### M4 — `resolve-contact` N+1
+### M4 - `resolve-contact` N+1
 `resolve-contact/index.ts:280–285` loops awaiting per-item `talent_contact_identities` queries. **Effort:** 30 minutes. Single `.in('<col>', ids)` query.
 
-### M6 / M7 / M9 — UI polish
+### M6 / M7 / M9 - UI polish
 - M6: ~20 raw HTML form elements (`<button>`, `<textarea>`) bypass shadcn primitives. Migrate to `Button` / `Textarea`.
-- M7: `Skeleton` component exists but is unused — add list-shaped skeletons to TodayScreen / CircleScreen / StreamsScreen / AskScreen instead of the generic `PageLoader`.
+- M7: `Skeleton` component exists but is unused - add list-shaped skeletons to TodayScreen / CircleScreen / StreamsScreen / AskScreen instead of the generic `PageLoader`.
 - M9: Icon-only buttons missing `aria-label` (~30 sites). One sweep.
 
 **Effort:** one session for M6+M7+M9 together.
 
-### M10 — Surface generation source in UI
+### M10 - Surface generation source in UI
 Sunday Letter `generation_source` is now persisted (the schema landed in PR #46). Surface it in admin / debug for monitoring drift. **Effort:** 30 minutes if the admin surface exists; otherwise rolled into a future admin pass.
 
-### L1 — Bundle visualizer
+### L1 - Bundle visualizer
 Main chunk is 903 KB. Add `rollup-plugin-visualizer` to confirm where the weight is. AskScreen and StreamsScreen ship suspiciously small (1.1 KB each), suggesting most of their code is in the main bundle. **Effort:** 30 minutes setup, 1–2 sessions to act on results.
 
-### L2 / L3 / L5 / L6 — Design-system polish
-- L2: 4 hardcoded hex colors in `App.css` + one component default — move to tokens.
-- L3: ~20 arbitrary Tailwind dimensions (`text-[10px]` etc.) — extend theme with `text-micro` / `text-tiny` tokens.
-- L5: `lovable-tagger@1.1.7` — verify necessity, remove if unused.
-- L6: 153 `motion.*` instances — moderate at current scale. Revisit if LCP regresses.
+### L2 / L3 / L5 / L6 - Design-system polish
+- L2: 4 hardcoded hex colors in `App.css` + one component default - move to tokens.
+- L3: ~20 arbitrary Tailwind dimensions (`text-[10px]` etc.) - extend theme with `text-micro` / `text-tiny` tokens.
+- L5: `lovable-tagger@1.1.7` - verify necessity, remove if unused.
+- L6: 153 `motion.*` instances - moderate at current scale. Revisit if LCP regresses.
 
 **Effort:** half-session in aggregate.
 
@@ -99,7 +99,7 @@ Main chunk is 903 KB. Add `rollup-plugin-visualizer` to confirm where the weight
 
 ## New surfaces & features (not from the audit)
 
-### Phase 2 — Voice-first command surface (`AskScreen`)
+### Phase 2 - Voice-first command surface (`AskScreen`)
 The Ask tab is currently a placeholder. Voice command capture is the Phase 2 project. Hold-to-talk → Whisper → intent classifier → command dispatcher (change a setting, voice an Idea, ask a tactical question). Reuses the `FirstVoice` interaction pattern.
 
 **Effort:** 1–2 sessions.
@@ -108,13 +108,13 @@ The Ask tab is currently a placeholder. Voice command capture is the Phase 2 pro
 ### Per-category auto-send opt-in (Chief of Staff)
 The Chief of Staff tier promises per-category auto-send (e.g. `congrats_promotion`, `congrats_job_change`). Schema needed: `move_category` enum, `autosend_consents` table, worker that dispatches approved-and-consented Moves.
 
-**Effort:** one session — but UX scoping comes first. Decide:
+**Effort:** one session - but UX scoping comes first. Decide:
 - Which categories are auto-send candidates on launch? (Promotion / job-change are obvious starters; fundraise + anniversary are likely.)
 - Per-category-only, or per-category × per-contact?
 - Auto-send straight, or undo banner?
 
 ### External signal feeds (Chief of Staff)
-**RFP scraper** — SAM.gov is the cheapest start. **News per named contact** — Google News RSS. **Tweet / X monitoring** — X API is now $100/mo minimum; small-scale RSS bridges are the realistic path early.
+**RFP scraper** - SAM.gov is the cheapest start. **News per named contact** - Google News RSS. **Tweet / X monitoring** - X API is now $100/mo minimum; small-scale RSS bridges are the realistic path early.
 
 Each is a cron-fired edge function writing `signals` rows that the Match Engine already consumes. **Effort:** one session per feed.
 
@@ -123,7 +123,7 @@ Aggregated signal → outcome patterns surfaced in the Sunday Letter ("Offers sh
 
 **Gate:** revisit when paying-user count > 200 OR when 90 days of Match + Move data exists.
 
-### External enrichment — PDL / Clay / Apollo on consent
+### External enrichment - PDL / Clay / Apollo on consent
 Per-user consent + per-provider edge function + UI toggle. **Effort:** half-session per provider. **Gotcha:** none have a free tier worth testing at scale; budget $10–$50 per provider for ingest-quality tuning.
 
 ### Social data-export parsers (Instagram / Facebook / X)
@@ -133,13 +133,13 @@ Same shape as `crmCsv.ts`, format-tuned. ZIP parsing into a new `ingestSocialExp
 Only worth it for users who can't export clean CSVs. HubSpot is the most demanded; Attio is API-key auth (simpler). **Effort:** one session per target.
 
 ### Chrome Web Store submission
-Not code — listing copy, 3–5 screenshots at 1280×800, 128×128 branded icon, public privacy policy URL, $5 one-time dev fee. **Effort:** 1–2 hours of writing + 1–2 weeks of Google review.
+Not code - listing copy, 3–5 screenshots at 1280×800, 128×128 branded icon, public privacy policy URL, $5 one-time dev fee. **Effort:** 1–2 hours of writing + 1–2 weeks of Google review.
 
 ### Cal.com / Calendly deep integration
 Already shipped: ops drops a booking URL, user clicks. Deep = embedded scheduler in `ConciergeCard` + webhook-driven `BOOKING_CREATED` → `concierge_requests.status = 'scheduled'`. Obsoletes the manual `schedule` CLI command. **Effort:** half-session.
 
 ### Slack interactivity for concierge ops
-Buttons in the Slack notification to schedule / start / deliver without leaving the channel. **Effort:** half-session — only when ops asks.
+Buttons in the Slack notification to schedule / start / deliver without leaving the channel. **Effort:** half-session - only when ops asks.
 
 ### Per-user email digests
 Resend-driven "Your concierge delivered: ..." email for users who don't open the app daily. **Effort:** half-session.
@@ -157,7 +157,7 @@ Read the signal from paying users:
 | **"I want auto-send for the easy ones"** | Per-category auto-send |
 | **"I can't show this without a real Chrome listing"** | Chrome Web Store submission |
 | **"Ops is buried in concierge coordination"** | Cal.com deep integration + Slack interactivity |
-| **"The forms feel inconsistent"** | Audit H3 — finish react-hook-form + TanStack Query migration |
+| **"The forms feel inconsistent"** | Audit H3 - finish react-hook-form + TanStack Query migration |
 | **"I want to share Circle with my EA"** | Team mode (out of scope for current architecture; needs a real spec) |
 
 ---
@@ -175,9 +175,9 @@ Read the signal from paying users:
 ## Operational ledger
 
 - **Last full audit:** 2026-04-24 (`AUDIT_2026-04-24.md`).
-- **Audit remediation merged:** 2026-04-26 (PR #46 — `audit/post-audit-fixes`).
+- **Audit remediation merged:** 2026-04-26 (PR #46 - `audit/post-audit-fixes`).
 - **Next recommended audit:** 2026-06-01, or immediately after a new major surface ships.
 - **Migration drift:** known, untouched. Don't run `supabase db push` blindly. Apply targeted migrations via the Management API.
-- **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work — treat as compromised, rotate at first opportunity.
+- **Token rotation pending:** `sbp_d44...` Supabase access token shared in chat plaintext during audit-deploy work - treat as compromised, rotate at first opportunity.
 
 Nothing here blocks a real launch. The 90-day plan is complete; the audit is clean; the runway is sales and signal.

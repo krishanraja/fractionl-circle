@@ -8,7 +8,7 @@ import { useEffect } from 'react';
  *     `--app-height` CSS variable. We prefer `window.visualViewport.height`
  *     (which excludes browser chrome AND shrinks when the keyboard opens) and
  *     fall back to `innerHeight`. This is the belt-and-braces value behind the
- *     `.app-frame` height stack — correct even on old iOS Safari where `vh`
+ *     `.app-frame` height stack - correct even on old iOS Safari where `vh`
  *     over-reports and `dvh` is unsupported.
  *
  *  2. Adds `app-locked` to <html>, which pins <body> (position:fixed) and kills
@@ -28,6 +28,11 @@ export function useAppFrame(active: boolean = true): void {
     const setHeight = () => {
       const h = vv?.height ?? window.innerHeight;
       root.style.setProperty('--app-height', `${Math.round(h)}px`);
+      // Visual-viewport top offset: how far the visible area is pushed down by
+      // dynamic browser chrome (e.g. Android Chrome's address bar). The locked
+      // body anchors to this so the pinned bottom tab bar can't be shoved below
+      // the visible fold.
+      root.style.setProperty('--app-top', `${Math.round(vv?.offsetTop ?? 0)}px`);
     };
 
     setHeight();
@@ -45,6 +50,7 @@ export function useAppFrame(active: boolean = true): void {
       vv?.removeEventListener('scroll', setHeight);
       root.classList.remove('app-locked');
       root.style.removeProperty('--app-height');
+      root.style.removeProperty('--app-top');
     };
   }, [active]);
 }

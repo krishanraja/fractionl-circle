@@ -1,4 +1,4 @@
-// Circle — LinkedIn Capture: background service worker.
+// Circle - LinkedIn Capture: background service worker.
 //
 // Responsibilities:
 //  1. Hold the user's pairing credentials (Supabase URL + anon key + access

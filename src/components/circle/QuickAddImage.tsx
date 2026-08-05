@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { ImagePlus, Loader2, Check, AlertCircle, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult, type QuickAddInput } from '@/lib/circleIngest';
@@ -46,8 +45,8 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
     setNote('');
     setPreviewUrl(URL.createObjectURL(file));
     setStep('parsing');
-    // Resilient: whatever the parser does — succeeds, finds no name, errors, or
-    // the key is missing — we land in an editable confirm card with the photo
+    // Resilient: whatever the parser does - succeeds, finds no name, errors, or
+    // the key is missing - we land in an editable confirm card with the photo
     // still attached. A bad read becomes a 2-second manual add, never a dead end.
     try {
       const base64 = await fileToBase64(file);
@@ -56,7 +55,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
       });
       if (res.error) {
         setParsed({ name: '' });
-        setNote("Couldn't read that one automatically — add the details below and save.");
+        setNote("Couldn't read that one automatically - add the details below and save.");
         haptics.error();
         setStep('review');
         return;
@@ -77,13 +76,13 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
         website: p.website,
         detected_platform: p.platform,
       });
-      setNote(name ? '' : "Couldn't make out the name — add it and save. I kept everything else I could read.");
+      setNote(name ? '' : "Couldn't make out the name - add it and save. I kept everything else I could read.");
       haptics.tap();
       setStep('review');
     } catch {
       // Even a hard failure (couldn't read the file) → manual add, photo kept.
       setParsed({ name: '' });
-      setNote("Couldn't read that image — add the details here and save.");
+      setNote("Couldn't read that image - add the details here and save.");
       haptics.error();
       setStep('review');
     }
@@ -120,15 +119,10 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
 
   if (step === 'done') {
     return (
-      <div className="flex flex-col items-center gap-2 py-4">
-        <Check className="w-6 h-6 text-success" />
-        <p className="text-sm text-foreground">Added from photo.</p>
-        <button
-          onClick={handleReset}
-          className="text-xs text-primary hover:underline"
-        >
-          Add another
-        </button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0' }}>
+        <Check size={22} style={{ color: 'var(--thx-good)' }} />
+        <p className="slabel">Added from photo.</p>
+        <button className="foothint" onClick={handleReset}>Add another</button>
       </div>
     );
   }
@@ -165,7 +159,7 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
 
   return (
     <div className="space-y-3">
-      {/* Single file input — iOS surfaces its own action sheet
+      {/* Single file input - iOS surfaces its own action sheet
           (Take Photo / Photo Library / Choose Files); Android opens the
           gallery with a camera shortcut. Matches Apple Notes "Scan" feel. */}
       <input
@@ -187,32 +181,26 @@ export const QuickAddImage = ({ onDone, onClose }: QuickAddImageProps) => {
       ) : (
         <button
           onClick={() => fileInputRef.current?.click()}
-          className={cn(
-            'w-full rounded-2xl bg-surface-muted/70 backdrop-blur',
-            'flex flex-col items-center justify-center gap-2.5 px-4 py-8',
-            'hover:bg-surface-muted transition-colors',
-            'active:scale-[0.99] transition-transform duration-100'
-          )}
+          className="modetile"
+          style={{ width: '100%', minHeight: 0, alignItems: 'center', textAlign: 'center', padding: '28px 16px', gap: 12 }}
         >
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <ImagePlus className="w-7 h-7 text-primary" strokeWidth={1.8} />
+          <div className="modeicon" style={{ width: 52, height: 52, borderRadius: 14 }}>
+            <ImagePlus size={26} strokeWidth={1.8} />
           </div>
-          <span className="text-[15px] font-semibold text-foreground">Add a photo</span>
-          <span className="text-xs text-foreground-muted">
-            Camera or photo library
-          </span>
+          <div className="modetitle" style={{ fontSize: 15 }}>Add a photo</div>
+          <div className="modehint">Camera or photo library</div>
         </button>
       )}
 
       {step === 'error' && errorMsg && (
-        <div className="flex items-start gap-2 text-xs text-destructive">
-          <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+        <div className="cerr" style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+          <AlertCircle size={14} style={{ marginTop: 1, flex: '0 0 auto' }} />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      <p className="text-[11px] text-foreground-muted text-center">
-        LinkedIn screenshot, business card, name tag, calendar invite — whatever you have.
+      <p className="ssrc" style={{ textAlign: 'center' }}>
+        LinkedIn screenshot, business card, name tag, calendar invite - whatever you have.
       </p>
     </div>
   );

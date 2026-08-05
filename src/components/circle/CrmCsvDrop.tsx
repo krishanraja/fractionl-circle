@@ -81,7 +81,7 @@ export const CrmCsvDrop = ({ onDone }: CrmCsvDropProps) => {
         <p className="mb-2 font-medium text-foreground">Bring your existing book</p>
         <p>
           Drop a CSV export from your old CRM or spreadsheet. We auto-detect
-          the format — HubSpot, Attio, Folk, LinkedIn, or generic sheets all
+          the format - HubSpot, Attio, Folk, LinkedIn, or generic sheets all
           work. Headers get matched by name (case-insensitive); we pull name,
           email, phone, company, title, LinkedIn, and location if present.
         </p>

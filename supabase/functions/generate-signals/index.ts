@@ -8,9 +8,9 @@ import { getCorsHeaders, requireAuth, safeErrorResponse, checkRateLimit } from '
 // (person, kind, recent window).
 //
 // Sources:
-//   1. Warmth-decay  — circle_person whose last_interaction_at is older than
+//   1. Warmth-decay  - circle_person whose last_interaction_at is older than
 //      WARMTH_DECAY_DAYS but who are linked to an active match (going cold).
-//   2. Mention        — explicit "reconnect / follow up / should talk to <name>"
+//   2. Mention        - explicit "reconnect / follow up / should talk to <name>"
 //      intentions parsed from the user's recent Sunday Letters. (ai_conversations
 //      is a legacy single-tenant table locked to 'default_user' RLS, so it is NOT
 //      a valid per-user source and is intentionally skipped.)
@@ -20,6 +20,10 @@ const WARMTH_DECAY_DAYS = 60;
 // ACTIVE_STATES plus 'sent', since a sent-but-unanswered match is exactly the kind
 // of relationship that can go cold).
 const ACTIVE_MATCH_STATES = ['new', 'approved', 'edited', 'sent'] as const;
+// Broad-network decay: a person with no open match still matters if they were a
+// genuinely warm relationship. Surface the ones cooling off, highest-warmth
+// first, so the digest is "your warmer people going quiet" not "every stale row".
+const WARM_FLOOR = 0.45;
 // Idempotency window: do not re-emit a signal of the same kind for the same person
 // if one already exists within this many days.
 const DEDUPE_WINDOW_DAYS = 30;
@@ -70,52 +74,96 @@ Deno.serve(async (req) => {
     const errors: string[] = [];
 
     // ── Source 1: Warmth-decay ────────────────────────────────────────────
-    // People linked to an active match whose last_interaction_at is stale.
+    // Two cohorts go cold and both deserve a touch:
+    //   (a) anyone tied to an active match (a live thread that can die), and
+    //   (b) anyone who was genuinely warm (warmth >= WARM_FLOOR) and has gone
+    //       quiet, even with no open match - the broad-network case.
+    // Merge them, highest priority / warmth first, dedupe by person, then cap.
     try {
+      const staleBefore = daysAgoIso(WARMTH_DECAY_DAYS);
+
+      // Person ids that are "in play" via an active match.
       const { data: activeMatches, error: matchErr } = await supabase
         .from('matches')
         .select('circle_person_id')
         .eq('user_id', userId)
         .in('state', ACTIVE_MATCH_STATES as unknown as string[]);
       if (matchErr) throw matchErr;
-
-      const activePersonIds = Array.from(
-        new Set(
-          (activeMatches ?? [])
-            .map((m: { circle_person_id: string | null }) => m.circle_person_id)
-            .filter((id): id is string => !!id),
-        ),
+      const activePersonIds = new Set(
+        (activeMatches ?? [])
+          .map((m: { circle_person_id: string | null }) => m.circle_person_id)
+          .filter((id): id is string => !!id),
       );
 
-      if (activePersonIds.length) {
-        const staleBefore = daysAgoIso(WARMTH_DECAY_DAYS);
-        const { data: people, error: peopleErr } = await supabase
+      // (a) stale people on an active match.
+      let matchStale: Array<{ id: string; display_name: string; last_interaction_at: string }> = [];
+      if (activePersonIds.size) {
+        const { data, error: peopleErr } = await supabase
           .from('circle_person')
           .select('id, display_name, last_interaction_at')
           .eq('user_id', userId)
-          .in('id', activePersonIds)
+          .in('id', Array.from(activePersonIds))
           .not('last_interaction_at', 'is', null)
           .lt('last_interaction_at', staleBefore)
           .limit(MAX_SIGNALS_PER_RUN);
         if (peopleErr) throw peopleErr;
+        matchStale = (data ?? []) as typeof matchStale;
+      }
 
-        for (const p of (people ?? []) as Array<{ id: string; display_name: string; last_interaction_at: string }>) {
-          const days = Math.floor(
-            (Date.now() - new Date(p.last_interaction_at).getTime()) / (24 * 60 * 60 * 1000),
-          );
-          proposed.push({
-            user_id: userId,
-            subject: 'person',
-            kind: 'other',
-            circle_person_id: p.id,
-            headline: `${p.display_name} is going cold`,
-            detail: `No interaction in about ${days} days, and they're tied to an active match. Worth a touch before the thread dies.`,
-            source_url: null,
-            occurred_at: p.last_interaction_at,
-            confidence: 0.6,
-            raw: { source: 'warmth_decay', days_since_interaction: days, threshold_days: WARMTH_DECAY_DAYS },
-          });
-        }
+      // (b) stale-but-warm people across the whole network, warmest first.
+      const { data: warmStaleData, error: warmErr } = await supabase
+        .from('circle_person')
+        .select('id, display_name, last_interaction_at, warmth')
+        .eq('user_id', userId)
+        .not('last_interaction_at', 'is', null)
+        .lt('last_interaction_at', staleBefore)
+        .gte('warmth', WARM_FLOOR)
+        .order('warmth', { ascending: false, nullsFirst: false })
+        .limit(MAX_SIGNALS_PER_RUN);
+      if (warmErr) throw warmErr;
+      const warmStale = (warmStaleData ?? []) as Array<{
+        id: string; display_name: string; last_interaction_at: string; warmth: number | null;
+      }>;
+
+      // Merge, active-match people first (they keep the "tied to an active match"
+      // framing), then warm-network people, deduped by id and capped.
+      const seenPerson = new Set<string>();
+      const merged: Array<{ id: string; display_name: string; last_interaction_at: string; matched: boolean }> = [];
+      for (const p of matchStale) {
+        if (seenPerson.has(p.id)) continue;
+        seenPerson.add(p.id);
+        merged.push({ ...p, matched: true });
+      }
+      for (const p of warmStale) {
+        if (seenPerson.has(p.id)) continue;
+        seenPerson.add(p.id);
+        merged.push({ id: p.id, display_name: p.display_name, last_interaction_at: p.last_interaction_at, matched: false });
+      }
+
+      for (const p of merged.slice(0, MAX_SIGNALS_PER_RUN)) {
+        const days = Math.floor(
+          (Date.now() - new Date(p.last_interaction_at).getTime()) / (24 * 60 * 60 * 1000),
+        );
+        const detail = p.matched
+          ? `No interaction in about ${days} days, and they're tied to an active match. Worth a touch before the thread dies.`
+          : `No interaction in about ${days} days with one of your warmer relationships. Worth a touch before it cools further.`;
+        proposed.push({
+          user_id: userId,
+          subject: 'person',
+          kind: 'other',
+          circle_person_id: p.id,
+          headline: `${p.display_name} is going cold`,
+          detail,
+          source_url: null,
+          occurred_at: p.last_interaction_at,
+          confidence: p.matched ? 0.6 : 0.5,
+          raw: {
+            source: 'warmth_decay',
+            days_since_interaction: days,
+            threshold_days: WARMTH_DECAY_DAYS,
+            active_match: p.matched,
+          },
+        });
       }
     } catch (e) {
       errors.push(`warmth_decay: ${e instanceof Error ? e.message : String(e)}`);

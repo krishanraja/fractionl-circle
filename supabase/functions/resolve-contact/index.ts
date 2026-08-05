@@ -6,7 +6,7 @@ import { collectIdentities, type Identity, type IdentityKind } from '../_shared/
  * resolve-contact edge function.
  *
  * Given a set of identifiers (email, phone, linkedin_url, instagram, name+company),
- * returns the matching talent_contact for the caller — or null if none match.
+ * returns the matching talent_contact for the caller - or null if none match.
  *
  * Dedup keys (strongest → weakest):
  *   1. linkedin_slug  (1.0)

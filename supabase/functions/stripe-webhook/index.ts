@@ -65,16 +65,24 @@ function tierFromPriceId(priceId: string): 'free' | 'pro' | 'executive' {
   return 'free';
 }
 
-// Simple signature verification using Web Crypto API
+// Constant-time hex-string compare (avoid leaking the signature via early-exit).
+function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+// Signature verification using Web Crypto API. Checks EVERY v1= signature (Stripe
+// sends more than one during a webhook-secret rotation) with a constant-time compare.
 async function verifyStripeSignature(payload: string, signature: string, secret: string): Promise<boolean> {
   try {
     const parts = signature.split(',');
     const timestampPart = parts.find(p => p.startsWith('t='));
-    const sigPart = parts.find(p => p.startsWith('v1='));
-    if (!timestampPart || !sigPart) return false;
+    const v1Sigs = parts.filter(p => p.startsWith('v1=')).map(p => p.slice(3));
+    if (!timestampPart || v1Sigs.length === 0) return false;
 
     const timestamp = timestampPart.split('=')[1];
-    const expectedSig = sigPart.split('=')[1];
 
     // Replay protection: reject signatures older than 5 minutes
     const timestampAge = Math.abs(Date.now() / 1000 - parseInt(timestamp));
@@ -89,7 +97,7 @@ async function verifyStripeSignature(payload: string, signature: string, secret:
     const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(signedPayload));
     const computedSig = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    return computedSig === expectedSig;
+    return v1Sigs.some(s => timingSafeEqualHex(computedSig, s));
   } catch {
     return false;
   }
@@ -117,10 +125,13 @@ Deno.serve(async (req) => {
     const event = JSON.parse(body);
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Idempotency: Stripe delivers at-least-once. Record each verified event.id
-    // and short-circuit on a redelivery so we never reprocess (Phase 2 hardening,
-    // 5d foundation). Fail-open on unexpected DB errors so real events are never
-    // silently dropped.
+    // Idempotency: Stripe delivers at-least-once. INSERT the marker FIRST (atomic,
+    // so a concurrent redelivery is deduped by the unique(event_id) constraint), then
+    // process, and DELETE the marker if processing throws so Stripe's retry can
+    // reprocess. The old code marked-then-processed but never rolled back on failure,
+    // so a transient error left the marker in place and the retry was deduped, silently
+    // dropping the entitlement. This insert-first-with-rollback pattern gives BOTH
+    // concurrent-dedup and retry-on-failure.
     const { error: dedupeError } = await supabase
       .from('processed_stripe_events')
       .insert({ event_id: event.id, event_type: event.type });
@@ -130,14 +141,36 @@ Deno.serve(async (req) => {
           headers: { 'Content-Type': 'application/json' },
         });
       }
+      // Unexpected DB error: fail-open (process anyway) so a real event is never dropped.
       console.error('processed_stripe_events insert error:', dedupeError.code);
     }
 
     console.log('Stripe webhook event:', event.type);
 
+    try {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
+
+        // Credit pack: a one-time payment (no subscription). Grant is idempotent on
+        // event.id inside the RPC, so a redelivered webhook never double-credits.
+        if (session.mode === 'payment' && session.metadata?.credit_pack) {
+          const creditUser = session.metadata?.supabase_user_id;
+          const credits = parseInt(session.metadata.credit_pack, 10);
+          const pi = typeof session.payment_intent === 'string' ? session.payment_intent : null;
+          if (creditUser && credits > 0) {
+            await supabase.rpc('grant_credits', {
+              p_user_id: creditUser, p_amount: credits, p_reason: 'purchase', p_ref: pi, p_event_id: event.id,
+            });
+            await emitAttribution('credits_purchased', {
+              user_id: creditUser, amount_cents: session.amount_total ?? null, currency: session.currency ?? null,
+              metadata: { credits: String(credits), payment_intent: pi, source_event: 'checkout.session.completed' },
+            }, `circle:credits:${event.id}`);
+            console.log(`User ${creditUser} purchased ${credits} credits`);
+          }
+          break;
+        }
+
         const userId = session.subscription
           ? (await stripeGet(`/subscriptions/${session.subscription}`)).metadata?.supabase_user_id
           : session.metadata?.supabase_user_id;
@@ -257,6 +290,13 @@ Deno.serve(async (req) => {
 
       case 'charge.refunded': {
         const charge = event.data.object;
+        // Full refund of a credit-pack payment -> claw back the granted credits.
+        // clawback_credits only matches 'purchase' ledger rows for this payment
+        // intent (subscription refunds match nothing) and is idempotent on event.id.
+        const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : null;
+        if (pi && charge.amount && charge.amount_refunded && charge.amount_refunded >= charge.amount) {
+          await supabase.rpc('clawback_credits', { p_payment_intent: pi, p_event_id: event.id });
+        }
         await emitAttribution('refunded', {
           stripe_customer_id: charge.customer ?? null,
           amount_cents: charge.amount_refunded ?? null,
@@ -265,6 +305,13 @@ Deno.serve(async (req) => {
         }, `circle:refunded:${charge.id}:${charge.amount_refunded}`);
         break;
       }
+    }
+
+    } catch (handlerError) {
+      // Processing failed after we claimed the idempotency marker. Roll it back so
+      // Stripe's automatic retry reprocesses this event instead of being deduped.
+      await supabase.from('processed_stripe_events').delete().eq('event_id', event.id);
+      throw handlerError;
     }
 
     return new Response(JSON.stringify({ received: true }), {

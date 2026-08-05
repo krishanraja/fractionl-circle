@@ -3,6 +3,7 @@
 // register, plain language. Types match the validate-thesis edge function output.
 import { useState } from 'react';
 import { C, FONT, MONO } from './tokens';
+import { PLAN, dimLabel } from './copy';
 
 export type Band = 'weak' | 'mixed' | 'strong' | 'risk';
 export interface ScoreRowT { label: string; band: Band; evidence: string; confidence: 'high' | 'medium' | 'low' }
@@ -11,6 +12,9 @@ export interface JourneyT { label: string; finding?: string; source?: string; lo
 export interface Scorecard {
   read: string; from?: string; to?: string;
   opportunity: ScoreRowT[]; ability: ScoreRowT[]; flags: string[]; steps: StepT[]; journey: JourneyT[]; citations?: string[];
+  // The sparring-partner line: the single strongest evidence-backed argument
+  // against pursuing this thesis. Optional - older runs don't carry it.
+  case_against?: string;
 }
 
 // The canonical journey labels shown while the live research call runs (~19s).
@@ -20,19 +24,28 @@ export const CANONICAL_JOURNEY: JourneyT[] = [
   { label: 'Scanning where your buyers complain' },
   { label: 'Checking who else offers this' },
   { label: 'Mapping your network to the buyers' },
-  { label: 'Weighing your edge and pricing' },
+  { label: 'Weighing what makes you different, and pricing' },
 ];
 
 const BANDVAL: Record<Band, number> = { weak: 1, mixed: 2, strong: 3, risk: 3 };
 
 export const thesisCss = `
 .thx * { box-sizing:border-box; margin:0; padding:0; }
-.thx { background:${C.bg}; color:${C.hi}; font-family:${FONT}; min-height:100vh; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; }
-.thx .wrap { max-width:520px; margin:0 auto; padding:22px 18px 80px; }
+/* .thx is THEME ONLY - colour, type, component skins. It must never set
+   width/height/min-height/position. All sizing lives on the layout classes
+   (.app-frame, .thxframe, .thx-page) so a broadly-applied theme rule can never
+   fight a frame's height. (A stray min-height:100vh here once forced the locked
+   shell taller than the viewport and hid the bottom tab bar.) */
+.thx { background:${C.bg}; color:${C.hi}; font-family:${FONT}; -webkit-font-smoothing:antialiased; letter-spacing:-0.01em; }
+/* Standalone, normally-scrolling full-page surface (preview fixtures, and any
+   future non-framed page): fill the viewport so the themed background covers it.
+   Locked/framed surfaces do NOT use this - they size via .app-frame/.thxframe. */
+.thx-page { min-height:100dvh; }
+.thx .wrap { max-width:520px; margin:0 auto; padding:24px 20px 80px; }
 .thx .ovl { font-family:${MONO}; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:${C.lo}; }
 .thx .mono { font-family:${MONO}; font-variant-numeric:tabular-nums; }
 .thx .h { font-size:23px; line-height:1.18; letter-spacing:-0.02em; font-weight:600; }
-.thx .sub { font-size:13.5px; color:${C.mid}; line-height:1.5; margin-top:8px; }
+.thx .sub { font-size:13.5px; color:${C.mid}; line-height:1.55; margin-top:10px; }
 .thx textarea, .thx input { width:100%; background:${C.panel}; border:1px solid ${C.line2}; border-radius:9px; padding:13px 14px; color:${C.hi}; font-size:14px; font-family:${FONT}; line-height:1.5; }
 .thx textarea { min-height:92px; resize:none; }
 .thx .cta { display:flex; align-items:center; justify-content:space-between; background:${C.accent}; color:#1A1206; border-radius:7px; padding:14px 16px; font-weight:600; font-size:15px; cursor:pointer; border:0; width:100%; }
@@ -45,7 +58,7 @@ export const thesisCss = `
 .thx .dot.spin { border-top-color:${C.accent}; animation:thxspin 0.8s linear infinite; }
 @keyframes thxspin { to { transform:rotate(360deg); } }
 .thx .slabel { font-size:13.5px; color:${C.hi}; font-weight:500; }
-.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.thx .sfind { font-size:12.5px; color:${C.mid}; line-height:1.4; margin-top:3px; }
 .thx .ssrc { font-family:${MONO}; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:${C.lo}; margin-top:5px; }
 .thx .panel { background:${C.panel2}; border:1px solid ${C.line}; border-radius:11px; padding:16px; }
 .thx .grp { font-family:${MONO}; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:${C.accent}; }
@@ -76,7 +89,7 @@ export const thesisCss = `
 
 function Pips({ band }: { band: Band }) {
   const n = BANDVAL[band];
-  const color = band === 'risk' ? C.risk : band === 'strong' ? C.accent : band === 'mixed' ? '#C9A24B' : C.mid;
+  const color = band === 'risk' ? C.risk : band === 'strong' ? C.accent : band === 'mixed' ? C.gold : C.mid;
   return <div className="pips">{[0, 1, 2].map((i) => <div key={i} className="pip" style={{ background: i < n ? color : C.line2 }} />)}</div>;
 }
 
@@ -88,7 +101,7 @@ function ScoreRow({ r }: { r: ScoreRowT }) {
   return (
     <div className="row" onClick={() => setOpen((o) => !o)} style={{ cursor: 'pointer' }}>
       <div className="rtop">
-        <span className="rlabel">{r.label}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
+        <span className="rlabel">{dimLabel(r.label)}{r.band === 'risk' ? <span className="risktag">risk</span> : null}</span>
         <Pips band={r.band} />
         <span className="conf">{r.confidence}</span>
       </div>
@@ -117,7 +130,7 @@ export function CaptureView({ onSubmit, busy, onAddPeople }: { onSubmit: (thesis
       ) : null}
       <div className="mono" style={{ fontSize: 10.5, color: C.lo, margin: '14px 0' }}>We will be upfront about anything we are not sure of.</div>
       <button className="cta" disabled={busy || !thesis.trim()} onClick={() => onSubmit(thesis.trim(), linkedin.trim(), background.trim())}>
-        <span>{busy ? 'starting...' : 'Validate my thesis'}</span><span className="mono">→</span>
+        <span>{busy ? 'starting...' : 'See how it lands'}</span><span className="mono">→</span>
       </button>
     </>
   );
@@ -135,12 +148,12 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
             <circle cx="32" cy="32" r={rr} fill="none" stroke={C.line2} strokeWidth="3" />
             <circle cx="32" cy="32" r={rr} fill="none" stroke={C.accent} strokeWidth="3" strokeLinecap="round"
               strokeDasharray={rc} strokeDashoffset={rc * (1 - charge)} transform="rotate(-90 32 32)"
-              style={{ transition: 'stroke-dashoffset .7s ease', filter: 'drop-shadow(0 0 5px rgba(224,162,60,0.8))' }} />
+              style={{ transition: 'stroke-dashoffset .7s ease', filter: 'var(--thx-glow-ring)' }} />
           </svg>
-          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 26, height: 26, filter: 'drop-shadow(0 0 8px rgba(224,162,60,0.55))', animation: done ? 'none' : 'ldrbreath 2.4s ease-in-out infinite' }} />
+          <img src="/brand/fractionl-icon.png" alt="" style={{ width: 26, height: 26, filter: 'var(--thx-glow-core)', animation: done ? 'none' : 'ldrbreath 2.4s ease-in-out infinite' }} />
         </div>
       </div>
-      <div className="sub" style={{ marginTop: 4, textAlign: 'center' }}>Reading the market, your buyers, and your edge.</div>
+      <div className="sub" style={{ marginTop: 4, textAlign: 'center' }}>Reading the market, your buyers, and what makes you different.</div>
       <div style={{ marginTop: 16 }}>
         {steps.map((s, i) => (
           <div key={i} className={'step' + (i < shown ? ' on' : '')}>
@@ -159,12 +172,13 @@ export function ThinkingView({ steps, shown, done }: { steps: JourneyT[]; shown:
 
 export function ReadView({ data }: { data: Scorecard }) {
   const [flagsOpen, setFlagsOpen] = useState(false);
-  const [readOpen, setReadOpen] = useState(false);
-  const clamp: React.CSSProperties = readOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
+  const [againstOpen, setAgainstOpen] = useState(false);
+  // The read is the verdict - the payoff of the whole screen. It always shows in
+  // full: no line-clamp, no ellipsis. The honest call is never cut mid-sentence.
   return (
     <>
-      <div className="ovl">Your read</div>
-      <div className="h" onClick={() => setReadOpen((o) => !o)} style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32, cursor: 'pointer', ...clamp }}>{data.read}</div>
+      <div className="ovl">{PLAN.resultTitle}</div>
+      <div className="h" style={{ marginTop: 8, fontSize: 19, lineHeight: 1.32 }}>{data.read}</div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
         <div className="panel" style={{ flex: '1 1 230px', padding: 13 }}>
           <div className="grp">Is it a real opportunity?</div>
@@ -176,6 +190,19 @@ export function ReadView({ data }: { data: Scorecard }) {
         </div>
       </div>
       <div className="mono" style={{ fontSize: 9.5, color: C.lo, marginTop: 9, textAlign: 'center' }}>tap any line for the evidence. bands, not exact numbers.</div>
+      {/* The sparring partner: the sceptic's strongest evidence-backed shot, one tap
+          away. Same honesty register as the flags - shown, never softened. */}
+      {data.case_against ? (
+        <div style={{ marginTop: 12 }}>
+          <button className="row" style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, borderTop: `1px solid ${C.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '11px 0' }} onClick={() => setAgainstOpen((o) => !o)}>
+            <span className="ovl" style={{ flex: 1, color: C.risk }}>The case against, before you commit</span>
+            <span className="mono" style={{ color: C.lo, fontSize: 11 }}>{againstOpen ? '–' : '+'}</span>
+          </button>
+          {againstOpen ? (
+            <div style={{ fontSize: 12.5, color: C.mid, lineHeight: 1.5, marginTop: 4 }}>{data.case_against}</div>
+          ) : null}
+        </div>
+      ) : null}
       {data.flags?.length ? (
         <div style={{ marginTop: 12 }}>
           <button className="row" style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, borderTop: `1px solid ${C.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '11px 0' }} onClick={() => setFlagsOpen((o) => !o)}>
@@ -196,7 +223,7 @@ export function ReadView({ data }: { data: Scorecard }) {
 export function StepsView({ data, onStart }: { data: Scorecard; onStart: () => void }) {
   return (
     <>
-      <div className="ovl">Your path</div>
+      <div className="ovl">{PLAN.pathTitle}</div>
       <div className="h" style={{ marginTop: 10 }}>Here is how you get there.</div>
       <div className="sub">{data.steps.length} moves from where you are to your first retained clients. Small, in order, and each one earns its place.</div>
       {data.from || data.to ? (
@@ -212,7 +239,7 @@ export function StepsView({ data, onStart }: { data: Scorecard; onStart: () => v
             <div style={{ flex: 1 }}>
               <div className="ptitle">{s.title}{s.tag ? <span className="ptag">{s.tag}</span> : null}{s.big ? <span className="ptag">the big one</span> : null}</div>
               <div className="pwhy">{s.why}</div>
-              <div className="vchip">✓ validated{s.touches ? ' · touches ' + s.touches : ''}</div>
+              <div className="vchip">✓ checked{s.touches ? ' · touches ' + s.touches : ''}</div>
             </div>
           </div>
         ))}

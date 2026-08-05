@@ -1,12 +1,12 @@
 /**
- * Browser verification for fractionl-circle — writes scripts/browser-audit-results.json
+ * Browser verification for fractionl-circle - writes scripts/browser-audit-results.json
  */
 import { chromium, devices } from 'playwright';
 import { writeFileSync } from 'fs';
 
 const BASE = process.env.AUDIT_BASE_URL || 'https://circle.fractionl.ai';
 const SUPABASE = 'https://ksyuwacuigshvcyptlhe.supabase.co';
-const ANON_KEY = process.env.SUPABASE_ANON_KEY; // optional — extracted from bundle if missing
+const ANON_KEY = process.env.SUPABASE_ANON_KEY; // optional - extracted from bundle if missing
 
 const results = [];
 const record = (id, title, data) => results.push({ id, title, ...data });
@@ -89,7 +89,7 @@ async function main() {
   const desktop = { viewport: { width: 1440, height: 900 } };
   const iphone = devices['iPhone 14 Pro'];
 
-  // 1 — Forgot password
+  // 1 - Forgot password
   {
     const ctx = await browser.newContext(desktop);
     const page = await ctx.newPage();
@@ -106,13 +106,13 @@ async function main() {
       console: errs.slice(0, 8),
       result: hasForgot ? 'verified' : 'broken',
       notes: hasForgot
-        ? 'Link present — full email link test needs audit branch + allow-listed redirect URL'
+        ? 'Link present - full email link test needs audit branch + allow-listed redirect URL'
         : 'No Forgot password control on production/main Sign In screen. Branch audit/non-functional-pass-20260515 not on remote.',
     });
     await ctx.close();
   }
 
-  // 14 — Privacy
+  // 14 - Privacy
   {
     const ctx = await browser.newContext(desktop);
     const page = await ctx.newPage();
@@ -149,7 +149,7 @@ async function main() {
   }
   await bootstrapPage.close();
 
-  // 9 — Stripe
+  // 9 - Stripe
   {
     const ctx = await browser.newContext(desktop);
     const page = await ctx.newPage();
@@ -187,7 +187,7 @@ async function main() {
     await ctx.close();
   }
 
-  // 16 — Mobile nav (authenticated)
+  // 16 - Mobile nav (authenticated)
   {
     const ctx = await browser.newContext({ ...iphone });
     const page = await ctx.newPage();
@@ -298,25 +298,25 @@ async function main() {
           network: n.filter('dedupe'),
           console: consoleErrs.slice(0, 5),
           result: errToast ? 'verified' : emptyNoDup ? 'broken' : 'blocked',
-          notes: errToast ? 'Error toast shown' : emptyNoDup ? 'Silent empty state — regression NOT fixed on deployed main' : 'Could not trigger scan UI',
+          notes: errToast ? 'Error toast shown' : emptyNoDup ? 'Silent empty state - regression NOT fixed on deployed main' : 'Could not trigger scan UI',
         });
       } else {
         record(3, 'Dedupe scan error surfacing', { route: 'Circle', result: 'blocked', notes: 'Find duplicates entry not visible' });
       }
       await page.unroute('**/functions/v1/dedupe-circle');
 
-      // 4-7 quick add / voice — open Add sheet
+      // 4-7 quick add / voice - open Add sheet
       await page.getByRole('button', { name: /^circle$/i }).click();
       await page.waitForTimeout(400);
       const addBtn = page.getByRole('button', { name: /^add$/i }).or(page.getByText(/^add$/i));
       const hasAdd = await addBtn.first().isVisible().catch(() => false);
-      record(6, 'Quick Add — paste', {
+      record(6, 'Quick Add - paste', {
         route: 'Circle',
         steps: ['Open Add sheet'],
         network: [],
         console: [],
         result: hasAdd ? 'blocked' : 'blocked',
-        notes: hasAdd ? 'Add entry visible — paste/URL tests need manual paste in headed mode' : 'Add button not found',
+        notes: hasAdd ? 'Add entry visible - paste/URL tests need manual paste in headed mode' : 'Add button not found',
       });
 
       // 8 Google connect
@@ -333,13 +333,13 @@ async function main() {
           network: n.filter('oauth'),
           console: [],
           result: popup ? 'verified' : 'blocked',
-          notes: popup ? `Redirect/popup URL: ${popup.url().slice(0, 80)}` : 'No popup — check toast/error',
+          notes: popup ? `Redirect/popup URL: ${popup.url().slice(0, 80)}` : 'No popup - check toast/error',
         });
       } else {
         record(8, 'Google / Microsoft Connect', { route: 'Circle', result: 'blocked', notes: 'Connect buttons not found without opening Add sheet' });
       }
 
-      // 15 PWA — manifest + install hook grep done statically; check manifest link
+      // 15 PWA - manifest + install hook grep done statically; check manifest link
       const manifest = await page.locator('link[rel="manifest"]').getAttribute('href');
       record(15, 'PWA install', {
         route: '/',

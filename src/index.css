@@ -2,10 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Archivo (Expanded) — the brand display face. Self-hosted variable font
+/* Archivo (Expanded) - the brand display face. Self-hosted variable font
    (SIL OFL, free for commercial use; see public/fonts/Archivo-OFL.txt). Used
    only for big page headers (.text-display), set in expanded width + uppercase
-   with wide tracking so headings read as a confident, squared wordmark —
+   with wide tracking so headings read as a confident, squared wordmark -
    without every card title looking like the logo. */
 @font-face {
   font-family: 'Archivo Variable';
@@ -33,7 +33,7 @@
     --foreground-secondary: 28 8% 38%;
     --foreground-muted: 30 6% 56%;
 
-    /* Brand violet — the one rationed accent (restores documented #994CCC) */
+    /* Brand violet - the one rationed accent (restores documented #994CCC) */
     --primary: 37 73% 56%;
     --primary-light: 37 78% 64%;
     --primary-foreground: 30 45% 8%;
@@ -85,7 +85,7 @@
     --transition-normal: 250ms;
     --transition-slow: 400ms;
 
-    /* Typography — Archivo Expanded display (brand), Satoshi body */
+    /* Typography - Archivo Expanded display (brand), Satoshi body */
     --font-display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
     --font-body: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif;
 
@@ -104,6 +104,35 @@
     --sidebar-accent-foreground: 24 16% 12%;
     --sidebar-border: 34 18% 84%;
     --sidebar-ring: 37 73% 56%;
+
+    /* "Deep dive" chrome tokens - Daylight Desk (light). Mirrors the cream
+       shadcn surfaces above so the thesis tab and the Circle tab read as one
+       app. Lines are walnut-alpha (visible on cream), not white-alpha. */
+    --thx-bg: hsl(38 30% 96%);
+    --thx-panel: hsl(36 30% 98%);
+    --thx-panel2: hsl(36 28% 96%);
+    --thx-panel3: hsl(36 24% 93%);
+    --thx-line: hsl(28 15% 20% / 0.10);
+    --thx-line2: hsl(28 15% 20% / 0.18);
+    --thx-hi: hsl(24 16% 12%);
+    --thx-mid: hsl(28 8% 38%);
+    --thx-lo: hsl(30 6% 54%);
+    --thx-accent: hsl(37 73% 50%);
+    --thx-accent-dim: hsl(37 73% 50% / 0.14);
+    --thx-accent-edge: hsl(37 60% 46% / 0.5);
+    --thx-risk: hsl(2 50% 45%);
+    --thx-good: hsl(142 40% 36%);
+    --thx-gold: hsl(40 55% 42%);
+    --thx-cool: hsl(199 34% 42%);
+    --thx-nav: hsl(38 30% 96% / 0.82);
+    /* Ember glow - Daylight Desk. On cream, the dark-mode halo reads as a muddy
+       smudge, so light mode keeps the mark crisp: a barely-there warm halo, a soft
+       neutral lift on the icon (depth, not neon), and no glow on the ring stroke or
+       the nav mark. The ember signature lives in dark mode (below). */
+    --thx-glow-halo: hsl(37 73% 50% / 0.10);
+    --thx-glow-halo-blur: 2px;
+    --thx-glow-core: drop-shadow(0 1px 2px hsl(28 30% 30% / 0.18));
+    --thx-glow-ring: none;
   }
 
   /* Dark mode override - Walnut desk, cream paper as the bright surface */
@@ -158,6 +187,33 @@
     --sidebar-accent: 28 14% 16%;
     --sidebar-accent-foreground: 38 28% 92%;
     --sidebar-border: 28 12% 22%;
+
+    /* "Deep dive" chrome tokens - Walnut Desk (dark). Byte-identical to the
+       original tokens.ts palette, so dark mode is visually unchanged. */
+    --thx-bg: #0A0A0B;
+    --thx-panel: #121214;
+    --thx-panel2: #17171A;
+    --thx-panel3: #1C1C20;
+    --thx-line: rgba(255,255,255,0.07);
+    --thx-line2: rgba(255,255,255,0.12);
+    --thx-hi: #ECEBE7;
+    --thx-mid: #8E8E88;
+    --thx-lo: #56564F;
+    --thx-accent: #E0A23C;
+    --thx-accent-dim: rgba(224,162,60,0.13);
+    --thx-accent-edge: rgba(224,162,60,0.55);
+    --thx-risk: #C77;
+    --thx-good: #7FB996;
+    --thx-gold: #C9A24B;
+    --thx-cool: #8FB8C9;
+    --thx-nav: rgba(10,10,11,0.82);
+    /* Ember glow - Walnut Desk. Reproduces the original hardcoded glow so dark mode
+       is visually unchanged: the charging ember reads as a warm halo against the
+       near-black desk. */
+    --thx-glow-halo: rgba(224,162,60,0.3);
+    --thx-glow-halo-blur: 6px;
+    --thx-glow-core: drop-shadow(0 0 9px rgba(224,162,60,0.6));
+    --thx-glow-ring: drop-shadow(0 0 5px rgba(224,162,60,0.8));
   }
 }
 
@@ -183,7 +239,7 @@
   }
 
   /* Zero-scroll app lock. Applied to <html> only while a fixed-frame surface
-     (the mobile app shell, onboarding, auth) is mounted — so marketing/legal
+     (the mobile app shell, onboarding, auth) is mounted - so marketing/legal
      routes keep scrolling normally. position:fixed on <body> is the only way
      to fully defeat iOS Safari rubber-band/overscroll; the frame supplies its
      own height, so nothing relies on body scroll. */
@@ -193,17 +249,29 @@
     overflow: hidden;
     overscroll-behavior: none;
   }
+  /* Size the locked body to the visible viewport so the frame it contains -
+     and the bottom tab bar pinned inside that frame - always sit on screen.
+     100dvh wins on modern browsers (it tracks the address bar live); the
+     JS-measured --app-height stays as the old-iOS fallback (the dvh line is
+     dropped where unsupported). Anchored at top:0 (not inset:0) so the body
+     can never resolve taller than the visible area and clip the bar below the
+     fold - the failure mode of the earlier --app-top / --app-height anchor. */
   html.app-locked body {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    height: var(--app-height, 100vh);
+    height: 100dvh;
     width: 100%;
     touch-action: pan-x pan-y;
   }
 
-  /* Typography Scale — Premium */
-  /* Big brand header — the ONLY place the display face is used. Archivo set in
+  /* Typography Scale - Premium */
+  /* Big brand header - the ONLY place the display face is used. Archivo set in
      expanded width, uppercase, with wide tracking reads as a squared,
-     architectural wordmark — professional, not poster. */
+     architectural wordmark - professional, not poster. */
   .text-display {
     font-family: var(--font-display);
     font-size: 2.25rem;
@@ -440,13 +508,13 @@
 
 /* The locked app viewport. Layered height so every device gets the right
    value: 100vh (legacy), 100dvh (modern, tracks the visual viewport), and
-   --app-height (JS-measured innerHeight — the belt-and-braces value that is
+   --app-height (JS-measured innerHeight - the belt-and-braces value that is
    correct even on old iOS Safari where vh is wrong and dvh is unsupported).
    The last valid declaration wins, so JS-set px overrides everything. */
 .app-frame {
-  height: 100vh;
-  height: 100dvh;
-  height: var(--app-height, 100dvh);
+  height: 100vh;                    /* ancient fallback */
+  height: var(--app-height, 100vh); /* old iOS Safari (no dvh): JS-measured visible height */
+  height: 100dvh;                   /* modern: dynamic viewport tracks the toolbar; wins where supported, dropped where not */
   width: 100%;
   overflow: hidden;
 }
@@ -734,7 +802,7 @@ html.compact-mode .gap-4 {
 }
 
 /* ============================================
-   CIRCLE HERO UX — Premium Visual System
+   CIRCLE HERO UX - Premium Visual System
    ============================================ */
 
 /* Circle hero - solid warm surface (formerly gradient mesh) */

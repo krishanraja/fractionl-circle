@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Camera, Clipboard, Mic, Type, ChevronRight, Sparkles, X } from 'lucide-react';
-import { Drawer, DrawerContent } from '@/components/ui/drawer';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { QuickAddImage } from './QuickAddImage';
 import { QuickAddPaste } from './QuickAddPaste';
@@ -23,10 +23,9 @@ const looksLikeContact = (raw: string): boolean => {
   return false;
 };
 
-const shortPreview = (raw: string): string => {
-  const t = raw.trim().split('\n')[0];
-  return t.length > 48 ? `${t.slice(0, 45)}…` : t;
-};
+// The first line of what was pasted, shown in full (it wraps where it renders) -
+// no ellipsis. The complete paste is always captured regardless of this preview.
+const shortPreview = (raw: string): string => raw.trim().split('\n')[0];
 
 type Mode = 'image' | 'paste' | 'voice' | 'typed';
 
@@ -66,25 +65,18 @@ const SheetBody = ({
   pastePrefill?: string;
 }) => {
   return (
-    <div className="px-5 pt-2 pb-6 space-y-5">
-      <div className="text-center sm:text-left">
-        <h2 className="text-title-1 text-foreground">Add to your Circle</h2>
-        <p className="mt-1.5 text-sm text-foreground-secondary leading-relaxed">
-          Whatever you've got — a name, screenshot, link, voice memo.
-        </p>
+    <div className="sheetwrap" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div>
+        <div className="ovl">Add someone</div>
+        <div className="h" style={{ marginTop: 6 }}>Add to your circle</div>
+        <div className="sub">Whatever you've got - a name, screenshot, link, voice memo.</div>
       </div>
 
       {clipboardHint && (
-        <button
-          onClick={onUseClipboard}
-          className={cn(
-            'w-full flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5',
-            'px-3 h-11 text-left text-sm text-foreground hover:bg-primary/10 transition-colors'
-          )}
-        >
-          <Sparkles className="w-4 h-4 text-primary shrink-0" />
-          <span className="flex-1 min-w-0 truncate">
-            Use clipboard — <span className="text-foreground-secondary">{clipboardHint}</span>
+        <button className="modetile" style={{ minHeight: 0, flexDirection: 'row', alignItems: 'center', gap: 9 }} onClick={onUseClipboard}>
+          <Sparkles size={16} style={{ color: 'var(--thx-accent)', flex: '0 0 auto' }} />
+          <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--thx-hi)', lineHeight: 1.35 }}>
+            Use clipboard - <span style={{ color: 'var(--thx-mid)' }}>{clipboardHint}</span>
           </span>
           <span
             role="button"
@@ -92,14 +84,14 @@ const SheetBody = ({
             aria-label="Dismiss clipboard hint"
             onClick={(e) => { e.stopPropagation(); onDismissClipboard(); }}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDismissClipboard(); } }}
-            className="shrink-0 w-7 h-7 -mr-1 rounded-full inline-flex items-center justify-center text-foreground-muted hover:text-foreground"
+            style={{ flex: '0 0 auto', color: 'var(--thx-lo)', display: 'inline-flex' }}
           >
-            <X className="w-3.5 h-3.5" />
+            <X size={14} />
           </span>
         </button>
       )}
 
-      <div role="radiogroup" aria-label="Choose add method" className="grid grid-cols-2 gap-2.5">
+      <div role="radiogroup" aria-label="Choose add method" className="modegrid">
         {MODES.map((m) => {
           const Icon = m.icon;
           const active = mode === m.id;
@@ -108,37 +100,20 @@ const SheetBody = ({
               key={m.id}
               role="radio"
               aria-checked={active}
-              onClick={() => {
-                if (!active) haptics.tap();
-                setMode(m.id);
-              }}
-              className={cn(
-                'group relative rounded-2xl border text-left transition-all duration-200',
-                'flex flex-col gap-2 p-3.5 min-h-[112px]',
-                'active:scale-[0.98] active:transition-transform active:duration-75',
-                active
-                  ? 'border-primary/60 bg-primary/8 shadow-sm shadow-primary/15'
-                  : 'border-border/70 bg-card/60 hover:border-primary/30 hover:bg-card'
-              )}
+              onClick={() => { if (!active) haptics.tap(); setMode(m.id); }}
+              className={cn('modetile', active && 'on')}
             >
-              <div className={cn(
-                'rounded-2xl w-10 h-10 flex items-center justify-center shrink-0 transition-colors',
-                active ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
-              )}>
-                <Icon className="w-5 h-5" strokeWidth={2} />
-              </div>
-              <div className="min-w-0 mt-auto">
-                <p className="text-sm font-semibold text-foreground leading-tight">{m.label}</p>
-                <p className="text-xs text-foreground-muted mt-1 leading-snug">
-                  {m.hint}
-                </p>
+              <div className="modeicon"><Icon size={18} strokeWidth={2} /></div>
+              <div style={{ marginTop: 'auto' }}>
+                <div className="modetitle">{m.label}</div>
+                <div className="modehint">{m.hint}</div>
               </div>
             </button>
           );
         })}
       </div>
 
-      <div className="pt-2">
+      <div>
         {mode === 'image' && <QuickAddImage onDone={onAdded} onClose={onClose} />}
         {mode === 'paste' && <QuickAddPaste onDone={onAdded} onClose={onClose} prefill={pastePrefill} />}
         {mode === 'voice' && <VoiceSeedCapture onDone={onAdded} onClose={onClose} />}
@@ -146,16 +121,9 @@ const SheetBody = ({
       </div>
 
       {onConnectSourceClick && (
-        <button
-          onClick={onConnectSourceClick}
-          className={cn(
-            'w-full mt-1 flex items-center justify-between rounded-2xl px-4 py-3',
-            'bg-surface-muted/60 hover:bg-surface-muted',
-            'text-sm font-medium text-foreground-secondary hover:text-foreground transition-colors'
-          )}
-        >
+        <button className="ghostbtn" style={{ width: '100%', justifyContent: 'space-between' }} onClick={onConnectSourceClick}>
           <span>Or connect a source for a bigger import</span>
-          <ChevronRight className="w-4 h-4 shrink-0" />
+          <ChevronRight size={15} />
         </button>
       )}
     </div>
@@ -208,7 +176,7 @@ export const AddToCircleSheet = ({
         if (!looksLikeContact(raw)) return;
         setClipboardText(raw);
         setClipboardHint(shortPreview(raw));
-      } catch { /* permission denied or unsupported — ignore */ }
+      } catch { /* permission denied or unsupported - ignore */ }
     })();
     return () => { cancelled = true; };
   }, [open]);
@@ -257,7 +225,8 @@ export const AddToCircleSheet = ({
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[92vh]">
-          <div className="overflow-y-auto pb-safe-bottom">{body}</div>
+          <DrawerTitle className="sr-only">Add to your circle</DrawerTitle>
+          <div className="thx overflow-y-auto pb-safe-bottom" style={{ background: 'var(--thx-bg)' }}>{body}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -266,7 +235,8 @@ export const AddToCircleSheet = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        <div className="max-h-[80vh] overflow-y-auto">{body}</div>
+        <DialogTitle className="sr-only">Add to your circle</DialogTitle>
+        <div className="thx max-h-[80vh] overflow-y-auto" style={{ background: 'var(--thx-bg)' }}>{body}</div>
       </DialogContent>
     </Dialog>
   );

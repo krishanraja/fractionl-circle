@@ -1,6 +1,6 @@
 # Screenshot → Contact
 
-One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline — same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
+One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
 
 Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.
 
@@ -11,7 +11,7 @@ Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual
 1. User takes a screenshot of a profile on their phone.
 2. Screenshot is shared into Circle via the OS share sheet (Android) or an Apple Shortcut (iOS).
 3. `parse-screenshot` edge function runs vision LLM on the image (Claude Haiku 4.5 → GPT-4o fallback) and extracts name / headline / company / title / location / handle / profile_url / email / phone.
-4. Parsed payload is handed to `ingestSharedContact` in `src/lib/circleIngest.ts` — the same function every Circle ingest path uses. A `person_raw` row is written; fingerprint dedupe collapses it into a canonical `circle_person` row (or merges into an existing one).
+4. Parsed payload is handed to `ingestSharedContact` in `src/lib/circleIngest.ts` - the same function every Circle ingest path uses. A `person_raw` row is written; fingerprint dedupe collapses it into a canonical `circle_person` row (or merges into an existing one).
 5. User lands on `/share-contact` (`src/pages/ShareContact.tsx`), confirms / edits, taps Save.
 
 No copying. No pasting. No typing unless correction is needed.
@@ -25,7 +25,7 @@ No copying. No pasting. No typing unless correction is needed.
 
 ## Android / PWA (Web Share Target)
 
-Already wired up — nothing further to ship.
+Already wired up - nothing further to ship.
 
 - `public/site.webmanifest` declares `share_target` with `action: "/share-contact"` and accepts image files.
 - `public/sw.js` intercepts the POST, stashes the file in the Cache API, and redirects to `/share-contact?pending=1`.
@@ -64,7 +64,7 @@ The Shortcut performs:
      ```
 4. **Open URL** → `https://circle.fractionl.ai/share-contact?prefill=<urlencoded-JSON-of-response.parsed>`
 
-`ShareContact.tsx` reads the `prefill` query param, JSON-parses it, and jumps straight to the `confirm` state — no DB round-trip needed.
+`ShareContact.tsx` reads the `prefill` query param, JSON-parses it, and jumps straight to the `confirm` state - no DB round-trip needed.
 
 ### Distributing the Shortcut
 
@@ -121,7 +121,7 @@ Existing secrets used by `contact-enrich` (Apollo / Clearbit / Twilio) and `link
 - Screenshots only leave the device when the user explicitly shares (Android) or runs the Shortcut (iOS).
 - `parse-screenshot` does not persist the raw image. The parsed JSON is returned inline; no image is stored.
 - EXIF is not read.
-- Same Supabase RLS rules apply — the resulting `circle_person` is only readable by the user who created it.
+- Same Supabase RLS rules apply - the resulting `circle_person` is only readable by the user who created it.
 - Upstream LLM error bodies are **not** echoed into edge logs (audit H7 posture). Status + request-id only.
 
 ---
@@ -135,7 +135,7 @@ Existing secrets used by `contact-enrich` (Apollo / Clearbit / Twilio) and `link
 
 ## Troubleshooting
 
-- **"The share didn't come through"** on `/share-contact?error=...` — Android share-target wrote nothing into the cache, usually because the PWA is not installed or the service worker is stale. Reinstall, hard-refresh.
-- **iOS Shortcut returns 401** — the access token in the Shortcut expired. Re-install via Circle's settings.
-- **"No vision model API key configured"** — set either `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` on the Supabase project.
-- **Parsed fields are empty** — the screenshot may be too low-res or the platform layout has changed. Edit fields manually and save; the contact still goes through dedupe.
+- **"The share didn't come through"** on `/share-contact?error=...` - Android share-target wrote nothing into the cache, usually because the PWA is not installed or the service worker is stale. Reinstall, hard-refresh.
+- **iOS Shortcut returns 401** - the access token in the Shortcut expired. Re-install via Circle's settings.
+- **"No vision model API key configured"** - set either `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` on the Supabase project.
+- **Parsed fields are empty** - the screenshot may be too low-res or the platform layout has changed. Edit fields manually and save; the contact still goes through dedupe.

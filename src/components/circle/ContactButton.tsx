@@ -46,39 +46,32 @@ function dispatch(action: ContactAction, displayName: string) {
   }
 }
 
-export const ContactButton = ({ person, raws, size = 'md', className }: ContactButtonProps) => {
+export const ContactButton = ({ person, raws, className }: ContactButtonProps) => {
   const { primary, alternates } = primaryContactAction(person, raws);
   const PrimaryIcon = primary.icon;
-
-  const heightClass = size === 'sm' ? 'h-8 text-xs' : 'h-9 text-sm';
+  const hasAlts = alternates.length > 0;
 
   return (
     <div className={cn('inline-flex items-stretch', className)}>
       <button
         onClick={() => dispatch(primary, person.display_name)}
-        className={cn(
-          heightClass,
-          'pl-3 pr-3 rounded-l-full border border-primary/30 bg-primary/10 hover:bg-primary/15',
-          'text-primary font-medium inline-flex items-center gap-1.5 transition-colors'
-        )}
+        className="reachbtn"
+        style={hasAlts ? { borderTopRightRadius: 0, borderBottomRightRadius: 0 } : undefined}
         title={primary.label}
       >
-        <PrimaryIcon className="w-3.5 h-3.5" />
-        <span className="truncate max-w-[10rem]">{primary.label}</span>
+        <PrimaryIcon size={14} />
+        <span>{primary.label}</span>
       </button>
-      {alternates.length > 0 && (
+      {hasAlts && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className={cn(
-                heightClass,
-                'px-2 rounded-r-full border border-l-0 border-primary/30 bg-primary/10 hover:bg-primary/15',
-                'text-primary inline-flex items-center justify-center transition-colors'
-              )}
+              className="reachbtn"
+              style={{ borderLeft: 0, borderTopLeftRadius: 0, borderBottomLeftRadius: 0, padding: '7px 8px' }}
               title="More ways to contact"
               aria-label="More ways to contact"
             >
-              <ChevronDown className="w-3.5 h-3.5" />
+              <ChevronDown size={14} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-[200px]">

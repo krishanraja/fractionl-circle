@@ -53,7 +53,7 @@ const chunkByFirstName = (people: Person[]): Person[][] => {
     bucket.push(p);
     groups.set(key, bucket);
   }
-  // Only keep groups with >1 person — singletons can't dupe.
+  // Only keep groups with >1 person - singletons can't dupe.
   const chunks: Person[][] = [];
   for (const bucket of groups.values()) {
     if (bucket.length < 2) continue;
@@ -76,7 +76,7 @@ Rules:
 - Use id values exactly as provided.
 - Do not pair someone with themselves.
 - Do not return more than ${MAX_PAIRS_RETURNED} pairs.
-- "rationale" is a short phrase like "same LinkedIn URL" or "same email domain + same title" — under 60 chars.
+- "rationale" is a short phrase like "same LinkedIn URL" or "same email domain + same title" - under 60 chars.
 
 Strong signals (score >=0.9): identical email, identical linkedin_url, identical phone.
 Medium (0.75-0.9): same last name + same company; same email domain + same title.

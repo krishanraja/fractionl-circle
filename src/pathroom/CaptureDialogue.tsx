@@ -52,7 +52,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
   async function submitOffer(text: string) {
     const t = text.trim();
     if (!t || busy) return;
-    push([{ role: 'you', text: t, kicker: round > 0 ? 'your answer' : 'your thesis' }]);
+    push([{ role: 'you', text: t, kicker: round > 0 ? 'your answer' : 'your idea' }]);
     setInput(''); setBusy(true);
     let r: Verdict;
     try { r = await onJudge(t, round); } finally { setBusy(false); }
@@ -74,7 +74,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     }
     // thin
     const nr = round + 1; setRound(nr);
-    if (nr >= 3) { accept(t, 'Okay, we will run it. Heads up: it is broad, so the read will be a sketch, not a verdict. You can sharpen it any time.', true); return; }
+    if (nr >= 3) { accept(t, "Okay, we will run it. Heads up: it is broad, so it will be a sketch, not a verdict. You can make it sharper any time.", true); return; }
     push([{ role: 'app', text: r.followup || 'That is the what, but not the who. Who is it for, and what makes you the one they pick?' }]);
     setHead(nr === 1 ? 'Almost. Give me the who.' : 'Closer. Get specific.');
     setSub(nr === 1 ? 'Who is it for, and why you?' : 'Which buyer, at what stage, with what problem?');
@@ -95,7 +95,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     if (t) push([{ role: 'you', text: t, kicker: 'your background' }]);
     setStep('ready'); setInput('');
     setHead(thin ? 'Ready when you are.' : 'Good. That gives us something real to test.');
-    setSub(thin ? 'The read will be a sketch until you sharpen the thesis.' : 'Next we check it against live demand, your buyers, the crowding, and your edge.');
+    setSub(thin ? 'The read will be a sketch until you sharpen the thesis.' : 'Next we check it against live demand, your buyers, the crowding, and what makes you different.');
     setBgFinal(t); // complete is triggered by the CTA on the ready step
   }
 
@@ -129,7 +129,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             <textarea style={{ marginTop: 16 }} value={input} onChange={(e) => setInput(e.target.value)} disabled={busy}
               placeholder={step === 'discover' ? 'e.g. building and running marketing teams at early-stage B2B software' : 'e.g. Fractional CMO for seed B2B SaaS founders who hired too senior too early'} />
             <button className="cta" style={{ marginTop: 12 }} disabled={busy || !input.trim()} onClick={() => (step === 'offer' ? submitOffer(input) : submitDiscover(input))}>
-              <span>{busy ? 'checking...' : step === 'discover' ? 'That is it' : round > 0 ? 'Try again' : 'Check my thesis'}</span><span className="mono">→</span>
+              <span>{busy ? 'checking...' : step === 'discover' ? 'That is it' : round > 0 ? 'Try again' : 'Check this'}</span><span className="mono">→</span>
             </button>
           </>
         ) : null}
@@ -148,7 +148,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             </div>
             <div className="twobtn">
               <button className="cta" onClick={() => accept(pending, 'Good. That gives us something real to test.')}><span>That is it</span><span className="mono">→</span></button>
-              <button className="chip" style={{ justifyContent: 'center', flex: '0 0 auto' }} onClick={() => { setStep('offer'); setInput(pending); setHead('Edit your thesis.'); setSub('Tweak it until it reads true.'); }}>Let me edit</button>
+              <button className="chip" style={{ justifyContent: 'center', flex: '0 0 auto' }} onClick={() => { setStep('offer'); setInput(pending); setHead('Edit your idea.'); setSub('Tweak it until it reads true.'); }}>Let me edit</button>
             </div>
           </>
         ) : null}
@@ -166,11 +166,11 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
             <div className="h" style={{ marginTop: 12 }}>{head}</div>
             <div className="sub">{sub}</div>
             <div className="panel" style={{ marginTop: 16 }}>
-              <div className="grp">Your thesis</div>
+              <div className="grp">Your idea</div>
               <div style={{ fontSize: 14.5, color: C.hi, marginTop: 8, lineHeight: 1.4 }}>{thesis}</div>
             </div>
             <button className="cta" style={{ marginTop: 18 }} onClick={() => onComplete(thesis, bgFinal)}>
-              <span>{thin ? 'Run it anyway' : 'Validate my thesis'}</span><span className="mono">→</span>
+              <span>{thin ? 'Run it anyway' : 'See how it lands'}</span><span className="mono">→</span>
             </button>
           </>
         ) : null}

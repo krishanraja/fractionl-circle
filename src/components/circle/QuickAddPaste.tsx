@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Loader2, Check, AlertCircle, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ingestQuickAdd, type IngestResult, type QuickAddInput } from '@/lib/circleIngest';
@@ -175,46 +174,27 @@ export const QuickAddPaste = ({ onDone, onClose, prefill }: QuickAddPasteProps) 
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Paste a LinkedIn URL, an Instagram handle, an email signature, a bio — anything you have."
+        placeholder="Paste a LinkedIn URL, an Instagram handle, an email signature, a bio - anything you have."
         rows={5}
         autoFocus
-        className={cn(
-          'w-full px-3 py-2 rounded-xl border border-border/60 bg-card/50 backdrop-blur',
-          'text-base text-foreground placeholder:text-foreground-muted outline-none resize-none',
-          'focus:border-primary/60'
-        )}
+        style={{ minHeight: 120 }}
       />
       {step === 'error' && errorMsg && (
-        <div className="flex items-start gap-2 text-xs text-destructive">
-          <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+        <div className="cerr" style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+          <AlertCircle size={14} style={{ marginTop: 1, flex: '0 0 auto' }} />
           <span>{errorMsg}</span>
         </div>
       )}
-      <button
-        onClick={handleParse}
-        disabled={!trimmed || step === 'parsing'}
-        className={cn(
-          'w-full h-12 rounded-full bg-primary text-primary-foreground text-[15px] font-semibold',
-          'flex items-center justify-center gap-2 shadow-md shadow-primary/25',
-          'active:scale-[0.98] transition-transform duration-100',
-          'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100'
-        )}
-      >
-        {step === 'parsing' ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Reading…
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-4 h-4" />
-            {shortcut ? 'Add this person' : 'Find this person'}
-          </>
-        )}
+      <button className="cta" onClick={handleParse} disabled={!trimmed || step === 'parsing'}>
+        <span className="ctaicon">
+          {step === 'parsing' ? <Loader2 size={16} style={{ animation: 'thxspin 0.8s linear infinite' }} /> : <Sparkles size={16} />}
+          {step === 'parsing' ? 'Reading…' : shortcut ? 'Add this person' : 'Find this person'}
+        </span>
+        <span className="mono">→</span>
       </button>
     </div>
   );

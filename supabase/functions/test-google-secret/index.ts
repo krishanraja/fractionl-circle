@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const rawCredentials = Deno.env.get('GOOGLE_OAUTH_CREDENTIALS');
     const hasSecret = !!rawCredentials;
 
-    // Only return whether the secret exists — never expose structure or length
+    // Only return whether the secret exists - never expose structure or length
     return new Response(
       JSON.stringify({
         configured: hasSecret,

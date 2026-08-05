@@ -21,8 +21,15 @@ export function applyUserPreferences(prefs: Partial<UserPreferences> | null | un
   }
 }
 
+// Cache key read by the pre-paint inline script in index.html. Keeping it in
+// localStorage lets us set the correct theme BEFORE first paint, killing the
+// dark→light flash for returning users.
+export const THEME_STORAGE_KEY = 'circle-theme';
+
 export function applyTheme(theme: ThemePreference) {
   const root = document.documentElement;
+  // Persist for the next load's pre-paint script (best-effort).
+  try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch { /* ignore */ }
   // Dark-first ("walnut desk" is the brand): everything is dark unless the user
   // has explicitly opted into light. 'system' and unset both resolve to dark so
   // the night-shift look is the default the anxious operator opens at night.

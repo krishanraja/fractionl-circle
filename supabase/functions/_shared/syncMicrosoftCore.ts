@@ -29,7 +29,7 @@ interface MsContact {
   companyName?: string;
   jobTitle?: string;
   // The 'profession' field sometimes carries a LinkedIn URL when synced from
-  // a CRM connector — opportunistic only.
+  // a CRM connector - opportunistic only.
   profession?: string;
 }
 

@@ -233,6 +233,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   const [nameValue, setNameValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [positioning, setPositioning] = useState('');
+  const [linkedin, setLinkedin] = useState('');
   const [pushBusy, setPushBusy] = useState(false);
 
   const showPushOptIn = PUSH_ENABLED && pushSupported;
@@ -242,7 +243,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     try {
       const ok = await subscribePush();
       if (ok) {
-        toast.success("You're set — we'll ping you when moves are ready.");
+        toast.success("You're set - we'll ping you when something's waiting.");
       } else {
         toast.error('Allow notifications in your browser to enable this.');
       }
@@ -254,7 +255,8 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
   useEffect(() => {
     if (!open) return;
     setPositioning(profile?.positioning ?? '');
-  }, [open, profile?.positioning]);
+    setLinkedin(profile?.linkedin_url ?? '');
+  }, [open, profile?.positioning, profile?.linkedin_url]);
 
   const role = profile?.role ?? null;
   const engagementModel = profile?.business_type ?? null;
@@ -295,6 +297,18 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
       /* toast from updateProfile */
     }
   }, [positioning, profile?.positioning, updateProfile]);
+
+  const saveLinkedin = useCallback(async () => {
+    const trimmed = linkedin.trim();
+    const prev = (profile?.linkedin_url ?? '').trim();
+    if (trimmed === prev) return;
+    try {
+      await updateProfile({ linkedin_url: trimmed || null });
+      toast.success('Saved');
+    } catch {
+      /* toast from updateProfile */
+    }
+  }, [linkedin, profile?.linkedin_url, updateProfile]);
 
   const handleSelectRole = useCallback(
     async (value: string) => {
@@ -447,7 +461,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
                   <p className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
                     {profile?.full_name || 'Set your name'}
                   </p>
-                  <p className="text-xs text-foreground-muted truncate">
+                  <p className="text-xs text-foreground-muted break-all">
                     {user?.email || 'No email'}
                   </p>
                 </button>
@@ -499,7 +513,23 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
               onBlur={() => void savePositioning()}
             />
             <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
-              Optional. Your LinkedIn headline, in one line — we use it to flavor AI suggestions.
+              Optional. Your LinkedIn headline, in one line - we use it to flavor AI suggestions.
+            </p>
+          </div>
+
+          <div className="py-2">
+            <label className="text-xs font-medium text-foreground-muted mb-1 block">
+              Your LinkedIn
+            </label>
+            <Input
+              value={linkedin}
+              onChange={(e) => setLinkedin(e.target.value)}
+              placeholder="linkedin.com/in/your-profile"
+              className="h-9 text-sm"
+              onBlur={() => void saveLinkedin()}
+            />
+            <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
+              Optional. Your own profile - it sharpens your plan's fit and credibility. This is you, not a contact.
             </p>
           </div>
 
@@ -572,8 +602,8 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           {showPushOptIn && (
             <SettingRow
-              label="Notify me when moves are ready"
-              description="Get a push the moment Circle drafts your overnight Moves"
+              label="Notify me when something's waiting"
+              description="Get a push when people go quiet or your plan is worth another look"
             >
               {pushPermission === 'granted' ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground-muted">
@@ -598,7 +628,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Daily digest"
-            description="Saved for morning summary emails (when enabled on our side)"
+            description="A short morning summary email, when available"
           >
             <Switch
               checked={preferences?.daily_digest ?? true}
@@ -608,7 +638,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Weekly summary"
-            description="Controls automated Sunday Letter generation for your account"
+            description="Your weekly recap email, when available"
           >
             <Switch
               checked={preferences?.weekly_summary ?? true}
@@ -618,7 +648,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Goal reminders"
-            description="Saved for goal nudges (when reminder emails are enabled)"
+            description="Surfaces what's waiting for you - in the app and by email"
           >
             <Switch
               checked={preferences?.goal_reminders ?? true}
@@ -651,7 +681,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
           <SettingRow
             label="Proactive suggestions"
-            description="When on, Today nudges you to surface Matches (saved for smarter automation later)"
+            description="When on, we surface your most useful next move"
           >
             <Switch
               checked={preferences?.ai_proactive_suggestions ?? true}

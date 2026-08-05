@@ -4,6 +4,7 @@
 // read does not pretend, it pivots to sharpening. Renders BODY only inside ThesisApp's
 // .thxbody; the single primary action is pinned in the frame footer (see journeyState).
 import { C } from './tokens';
+import { PLAN } from './copy';
 import type { Scorecard } from './thesisViews';
 import type { CircleP } from './thesisData';
 
@@ -37,9 +38,9 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
   if (st.weak) {
     return (
       <>
-        <div className="ovl">Your read</div>
+        <div className="ovl">{PLAN.pathTitle}</div>
         <div className="h" style={{ marginTop: 10 }}>This one is too thin to map yet.</div>
-        <div className="sub">The thesis is too broad for the market to answer clearly, so a path would be guesswork. Sharpen who it is for and why you, and the map writes itself.</div>
+        <div className="sub">Your idea is still too broad for the market to answer clearly, so a path would be guesswork. Make it clearer - who it's for and why you - and the map writes itself.</div>
         <div className="panel" style={{ marginTop: 16 }}>
           <div className="grp">What is missing</div>
           <div style={{ fontSize: 13, color: C.mid, marginTop: 8, lineHeight: 1.5 }}>A specific buyer, and the one reason they pick you over the crowded field.</div>
@@ -55,7 +56,7 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
 
   return (
     <>
-      <div className="ovl">Your path</div>
+      <div className="ovl">{PLAN.pathTitle}</div>
       <div className="h" style={{ marginTop: 8, fontSize: 20 }}>From where you are to your first retained client.</div>
       <div style={{ marginTop: 16 }}>
         {steps.map((s, i) => {
@@ -67,7 +68,11 @@ export default function JourneyMap({ data, circle, progress }: { data: Scorecard
               <div className="jrail" />
               <div className={'jnode ' + (state === 'done' ? 'done' : locked ? 'locked' : state === 'current' ? 'current' : '')}>{state === 'done' ? '✓' : i + 1}</div>
               <div className="jbody">
-                <div className="jtitle">{s.title}{s.tag && state === 'current' ? <span className="jtag">{s.tag}</span> : null}{s.big ? <span className="jtag">the big one</span> : null}</div>
+                <div className="jtitle">
+                  <span className="jtitletext">{s.title}</span>
+                  {s.tag && state === 'current' ? <span className="jtag">{s.tag}</span> : null}
+                  {s.big ? <span className="jtag big">the big one</span> : null}
+                </div>
                 {/* keep the map short: only the current and big steps show the why + faces */}
                 {focused || s.big ? <div className="jwhy">{s.why}</div> : null}
                 {s.big ? (

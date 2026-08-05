@@ -1,95 +1,147 @@
-// The command-center Home for your one venture: a living ember orb (charge), the live
-// market-movement instrument fed by fractionl-pulse, and the permanent icon'd sections you
-// navigate (Where you are / Your next customer / Your network). One evolving thesis you
-// deepen daily. Two regions on desktop, stacked on mobile. Renders inside .thxbody.
-import { Compass, Target, Users } from 'lucide-react';
+// The command-center Home for your one venture, laser-focused: a living, TAPPABLE
+// ember orb (tap it to open your Value Prop), the strength score, and the Plan
+// tab's two clear forks - Value Prop (understand + strengthen the opportunity) and
+// Next Action (take the next step) - with a quiet "Your decisions" memory link
+// beneath. The ONE orange action lives in the frame's pinned footer, picked
+// contextually by primaryAction.ts. People are owned by the Circle tab.
+// Renders inside .thxbody.
+import { useState } from 'react';
 import { C } from './tokens';
-import type { Scorecard } from './thesisViews';
-import type { CircleP, MarketPulse } from './thesisData';
+import { PLAN, dimLabel } from './copy';
+import type { DecisionEntry } from './thesisData';
+import { holdingBack, type Sharpness } from './sharpness';
 
-function Delta({ v, suffix = '' }: { v: number | null; suffix?: string }) {
-  if (v == null) return null;
-  const flat = v === 0, up = v > 0;
-  return <span className={'vdelta ' + (flat ? 'vflat' : up ? 'vup' : 'vdn')}>{flat ? '•' : up ? '▲' : '▼'} {Math.abs(v)}{suffix}</span>;
+// The visible decision log: institutional memory the user can see. Each entry is a
+// decision banked with the coach; "in your read" means a read has folded it in and
+// every future read builds on it. One-tap outcome marks feed that memory back.
+function DecisionSheet({ decisions, onMarkOutcome, onClose }: {
+  decisions: DecisionEntry[];
+  onMarkOutcome: (id: string, outcome: 'worked' | 'didnt_work' | null) => void;
+  onClose: () => void;
+}) {
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  const chip = (d: DecisionEntry, val: 'worked' | 'didnt_work', label: string) => {
+    const on = d.outcome === val;
+    return (
+      <button
+        onClick={() => onMarkOutcome(d.id, on ? null : val)}
+        className="mono"
+        style={{
+          fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+          padding: '2px 7px', borderRadius: 4, border: `1px solid ${on ? C.accentEdge : C.line2}`,
+          color: on ? C.accent : C.lo, background: on ? C.accentDim : 'none',
+        }}
+      >{label}</button>
+    );
+  };
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 520, maxHeight: '72dvh', overflowY: 'auto', background: C.bg, borderTop: `1px solid ${C.line2}`, borderRadius: '14px 14px 0 0', padding: '18px 20px 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span className="ovl" style={{ flex: 1 }}>Your decisions</span>
+          <button className="mono" onClick={onClose} style={{ background: 'none', border: 0, color: C.lo, fontSize: 14, cursor: 'pointer' }}>×</button>
+        </div>
+        <div className="sub" style={{ marginTop: 6 }}>Every decision you bank becomes part of your plan's memory. Your next read builds on these, it never re-asks them.</div>
+        {decisions.map((d) => (
+          <div key={d.id} style={{ borderTop: `1px solid ${C.line}`, padding: '11px 0', marginTop: 10 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: C.hi, lineHeight: 1.35 }}>{d.answer}</div>
+            {d.question ? <div style={{ fontSize: 12, color: C.mid, lineHeight: 1.4, marginTop: 4 }}>{d.question}</div> : null}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
+              <span className="mono" style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.lo }}>
+                {fmt(d.created_at)}{d.dimension ? ` · ${dimLabel(d.dimension)}` : ''}
+              </span>
+              <span className="mono" style={{ fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: d.applied_at ? C.good : C.accent }}>
+                {d.applied_at ? 'in your read' : 'banked, folds into your next read'}
+              </span>
+              <span style={{ flex: 1 }} />
+              {chip(d, 'worked', 'worked')}
+              {chip(d, 'didnt_work', "didn't")}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-export default function Home({ data, thesis, stepProgress, circle, fuel, market, onOpenRead, onOpenPath, onOpenCircle }: {
-  data: Scorecard;
-  thesis: string;
-  stepProgress: number[];
-  circle: CircleP[];
+export default function Home({ fuel, sharp, decisions, onMarkOutcome, onOpenRead, onOpenStrengthen, onOpenPath, onRerun, recommend, unrunAnswers, busyRerun }: {
   fuel: number;
-  market: MarketPulse | null;
+  sharp: Sharpness;
+  decisions: DecisionEntry[];
+  onMarkOutcome: (id: string, outcome: 'worked' | 'didnt_work' | null) => void;
   onOpenRead: () => void;
+  onOpenStrengthen: () => void;
   onOpenPath: () => void;
-  onOpenCircle: () => void;
+  onRerun: () => void;
+  recommend: 'strengthen' | 'act';
+  unrunAnswers: number;
+  busyRerun: boolean;
 }) {
-  const opp = data.opportunity || [];
-  const steps = data.steps || [];
-  const oppStrong = opp.filter((r) => r.band === 'strong').length;
-  const oppRisk = opp.some((r) => r.band === 'risk');
-  const done = stepProgress.length;
-  const n = circle.length;
-  const nextStep = steps.find((_, i) => !stepProgress.includes(i));
-  const pct = Math.round(Math.max(0, Math.min(1, fuel)) * 100);
+  const [logOpen, setLogOpen] = useState(false);
   const r = 44, circ = 2 * Math.PI * r;
 
-  const section = (icon: React.ReactNode, k: string, v: string, onClick: () => void) => (
-    <button className="hometile" onClick={onClick}>
-      <span className="hticon">{icon}</span>
-      <span style={{ flex: 1, minWidth: 0 }}><span className="htk">{k}</span><div className="htv">{v}</div></span>
-      <span className="htarrow">→</span>
-    </button>
-  );
+  // The "work on your plan" door. When answers are banked but not yet re-read, it
+  // becomes the one-tap "lock in your gains" re-read; otherwise it opens the
+  // strengthen surface. Either way it is the SAME door - working on the plan.
+  const banked = unrunAnswers > 0;
+  const strengthenTitle = busyRerun ? 'reading…' : banked ? `${PLAN.lockIn} (+${sharp.provisional})` : PLAN.strengthenTitle;
+  const strengthenSub = banked ? PLAN.lockInSub : PLAN.strengthenSub;
+  const onStrengthenTap = banked ? onRerun : onOpenStrengthen;
 
   return (
     <div className="vhome">
       <div className="vhero">
-        <div className="ovl" style={{ textAlign: 'center', marginBottom: 12 }}>Your venture</div>
-        <div className="vorb">
-          <div className="vorbglow" />
-          <svg className="vorbsvg" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r={r} fill="none" stroke={C.line2} strokeWidth="5" />
-            <circle cx="50" cy="50" r={r} fill="none" stroke={C.accent} strokeWidth="5" strokeLinecap="round"
-              strokeDasharray={circ} strokeDashoffset={circ * (1 - Math.max(0.04, Math.min(1, fuel)))} transform="rotate(-90 50 50)"
-              style={{ transition: 'stroke-dashoffset .8s ease', filter: 'drop-shadow(0 0 5px rgba(224,162,60,0.8))' }} />
-          </svg>
-          <img src="/brand/fractionl-icon.png" alt="" className="vorbcore" />
-        </div>
-        <div className="vorbcap">{pct}% charged · brightening</div>
-      </div>
-
-      <div className="vpanels">
-        {market && (market.market || market.role) ? (
-          <div className="vmkt">
-            <div className="vmkthead">
-              <span className="vmkttitle">The market · this week</span>
-              <span className="navhint" style={{ color: C.lo }}>via pulse</span>
-            </div>
-            {market.role && (market.role.demand != null || market.role.deltaPct != null) ? (
-              <div className="vmktrow">
-                <span className="vmktname">{market.role.label} demand</span>
-                {market.role.band ? <span className="vmktval">{market.role.band}{market.role.demand != null ? ' ' + market.role.demand : ''}</span> : null}
-                <Delta v={market.role.deltaPct} suffix="%" />
-              </div>
-            ) : null}
-            {market.market ? (
-              <div className="vmktrow">
-                <span className="vmktname">Fractional market</span>
-                <span className="vmktval">{market.market.label} {market.market.score}</span>
-                <Delta v={market.market.delta} />
-              </div>
-            ) : null}
-            {market.rising ? <div className="vmktchip">Rising: {market.rising}</div> : null}
+        <div className="ovl" style={{ textAlign: 'center', marginBottom: 8 }}>Your venture</div>
+        <button className="vorbbtn" onClick={onOpenRead} aria-label={PLAN.openResult}>
+          <div className="vorb">
+            <div className="vorbglow" />
+            <svg className="vorbsvg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r={r} fill="none" stroke={C.line2} strokeWidth="5" />
+              <circle cx="50" cy="50" r={r} fill="none" stroke={C.accent} strokeWidth="5" strokeLinecap="round"
+                strokeDasharray={circ} strokeDashoffset={circ * (1 - Math.max(0.04, Math.min(1, fuel)))} transform="rotate(-90 50 50)"
+                style={{ transition: 'stroke-dashoffset .8s ease', filter: 'var(--thx-glow-ring)' }} />
+            </svg>
+            <img src="/brand/fractionl-icon.png" alt="" className="vorbcore" />
           </div>
-        ) : null}
-
-        <div style={{ marginTop: market ? 12 : 0 }}>
-          {section(<Compass size={18} />, 'Where you are', opp.length ? `${oppStrong} of ${opp.length} signals strong${oppRisk ? ', crowding flagged' : ''}` : 'your honest read', onOpenRead)}
-          {section(<Target size={18} />, 'Your next customer', nextStep ? `Next: ${nextStep.title}` : (steps.length ? `${done} of ${steps.length} moves done` : 'the path to your first client'), onOpenPath)}
-          {section(<Users size={18} />, 'Your network', n ? `${n} ${n === 1 ? 'person' : 'people'} for warm reach` : 'add people for warm reach', onOpenCircle)}
-        </div>
+          <div className="vorbcap">
+            <div className="scorewrap" style={{ justifyContent: 'center' }}>
+              <span className="scorenum">{sharp.score}</span>
+              <span className="scoremax">/100 strength</span>
+              {sharp.provisional > 0 ? <span className="scorepend">+{sharp.provisional} pending</span> : null}
+            </div>
+            <div className="scorehold">{holdingBack(sharp)}</div>
+          </div>
+        </button>
       </div>
+
+      {/* The Plan tab is exactly two doors, never three competing buttons: work on
+          your plan (understand where you stand + strengthen it), or push it forward
+          (your next action). The app highlights the one it recommends; the other
+          stays available. The orb above is the quiet door into the full Value Prop. */}
+      <div className="forks">
+        <button className={'forkrow' + (recommend === 'strengthen' ? ' primary' : '')} disabled={busyRerun} onClick={onStrengthenTap}>
+          <span className="forkrow-t">
+            <span className="forkrow-title">{strengthenTitle}</span>
+            <span className="forkrow-sub">{strengthenSub}</span>
+          </span>
+          <span className="htarrow">→</span>
+        </button>
+        <button className={'forkrow' + (recommend === 'act' ? ' primary' : '')} onClick={onOpenPath}>
+          <span className="forkrow-t">
+            <span className="forkrow-title">{PLAN.actionTitle}</span>
+            <span className="forkrow-sub">{PLAN.actionSub}</span>
+          </span>
+          <span className="htarrow">→</span>
+        </button>
+      </div>
+
+      {decisions.length > 0 ? (
+        <div className="homelinks">
+          <button className="homelink" onClick={() => setLogOpen(true)}>Your decisions</button>
+        </div>
+      ) : null}
+
+      {logOpen ? <DecisionSheet decisions={decisions} onMarkOutcome={onMarkOutcome} onClose={() => setLogOpen(false)} /> : null}
     </div>
   );
 }

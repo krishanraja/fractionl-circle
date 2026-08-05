@@ -1,5 +1,5 @@
 /**
- * Authenticated browser pass — requires AUDIT_EMAIL + AUDIT_PASSWORD env vars.
+ * Authenticated browser pass - requires AUDIT_EMAIL + AUDIT_PASSWORD env vars.
  * Output: scripts/browser-audit-authed-results.json
  */
 import { chromium, devices } from 'playwright';
@@ -22,7 +22,7 @@ async function getAnon(page) {
   if (process.env.SUPABASE_ANON) return process.env.SUPABASE_ANON;
   const src = await page.locator('script[src*="index"]').first().getAttribute('src', { timeout: 5000 }).catch(() => null);
   if (!src) {
-    // Vite dev: anon key not in HTML — caller should set SUPABASE_ANON
+    // Vite dev: anon key not in HTML - caller should set SUPABASE_ANON
     return null;
   }
   const jsUrl = new URL(src, BASE).href;
@@ -175,7 +175,7 @@ async function main() {
     });
   }
 
-  // 9 Stripe — profile or today upgrade
+  // 9 Stripe - profile or today upgrade
   await page.goto(BASE, { waitUntil: 'networkidle' });
   const upgrade = page.getByRole('button', { name: /upgrade/i }).first();
   if (await upgrade.isVisible().catch(() => false)) {

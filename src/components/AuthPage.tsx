@@ -7,6 +7,22 @@ import { ErrorBanner } from '@/components/feedback';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { AuthLegalFooter } from '@/components/auth/AuthLegalFooter';
+import { setRememberMe } from '@/lib/rememberMe';
+
+// "Remember me on this device" - opts out of the 30-min inactivity auto-logout, so a
+// returning user stays signed in until they sign out or clear their site data. Shared
+// by the welcome and sign-in surfaces so the choice reads the same in both.
+const RememberMeToggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
+  <label className="flex items-center gap-3 cursor-pointer select-none text-caption text-foreground-secondary">
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      className="w-4 h-4 rounded border-border accent-primary cursor-pointer"
+    />
+    Keep me signed in on this device
+  </label>
+);
 
 // Stable animation variants defined at module level to prevent re-creation
 const fadeInUpVariants = {
@@ -58,6 +74,8 @@ interface WelcomeContentProps {
   onSignInClick: () => void;
   error: { title: string; message: string } | null;
   onDismissError: () => void;
+  rememberMe: boolean;
+  onRememberMeChange: (v: boolean) => void;
 }
 
 interface SignInContentProps {
@@ -74,6 +92,8 @@ interface SignInContentProps {
   onDismissError: () => void;
   onSignUpClick: () => void;
   onForgotPasswordClick: () => void;
+  rememberMe: boolean;
+  onRememberMeChange: (v: boolean) => void;
 }
 
 interface ForgotPasswordContentProps {
@@ -111,6 +131,8 @@ const WelcomeContent = ({
   onSignInClick,
   error,
   onDismissError,
+  rememberMe,
+  onRememberMeChange,
 }: WelcomeContentProps) => (
   <motion.div
     key="welcome"
@@ -128,9 +150,9 @@ const WelcomeContent = ({
         alt="Fractionl"
         className="h-12 mx-auto mb-6"
       />
-      <h1 className="text-title-1 text-foreground mb-2">Validate your fractional thesis</h1>
+      <h1 className="text-title-1 text-foreground mb-2">Is your idea worth selling?</h1>
       <p className="text-body text-foreground-secondary">
-        Check your idea against the real market, then get your first moves
+        An honest read on whether your idea sells, grounded in the live market and your real network - plus the warm moves to land your first client.
       </p>
     </div>
 
@@ -182,6 +204,9 @@ const WelcomeContent = ({
       )}
     </Button>
 
+    {/* Remember me - opts out of the inactivity auto-logout on this device */}
+    <RememberMeToggle checked={rememberMe} onChange={onRememberMeChange} />
+
     {/* Sign In Link */}
     <p className="text-center text-body text-foreground-secondary">
       Already have an account?{' '}
@@ -218,6 +243,8 @@ const SignInContent = ({
   onDismissError,
   onSignUpClick,
   onForgotPasswordClick,
+  rememberMe,
+  onRememberMeChange,
 }: SignInContentProps) => (
   <motion.div
     key="signin"
@@ -285,9 +312,10 @@ const SignInContent = ({
           </button>
         </motion.div>
       </div>
-      <Button 
-        type="submit" 
-        className="w-full h-12 text-body font-semibold btn-touch" 
+      <RememberMeToggle checked={rememberMe} onChange={onRememberMeChange} />
+      <Button
+        type="submit"
+        className="w-full h-12 text-body font-semibold btn-touch"
         disabled={loading}
       >
         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
@@ -523,6 +551,14 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
   const [error, setError] = useState<{ title: string; message: string } | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [mode, setMode] = useState<'welcome' | 'signin' | 'signup' | 'forgot'>('welcome');
+  const [rememberMe, setRememberMeState] = useState(false);
+
+  // Persist the choice the moment it changes, so it's already saved before the Google
+  // OAuth redirect navigates away from the page (the redirect flow never returns here).
+  const handleRememberMeChange = useCallback((v: boolean) => {
+    setRememberMeState(v);
+    setRememberMe(v);
+  }, []);
 
   const clearMessages = useCallback(() => {
     setError(null);
@@ -576,7 +612,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     clearMessages();
     
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -586,8 +622,13 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
 
       if (error) {
         setError({ title: 'Sign up failed', message: error.message });
+      } else if (data.session) {
+        // Frictionless signup: email auto-confirm is on, so signUp returns a live
+        // session and the auth listener drops the user straight into the app. No
+        // email wall (which previously stranded ~45% of signups). If auto-confirm
+        // is ever turned back off, data.session is null and we fall back below.
       } else {
-        setSuccessMessage('Check your email to confirm your account. Once you\'re in, talk (or type) for a few seconds and Circle turns it into Ideas you can sell.');
+        setSuccessMessage('Check your email to confirm your account. Once you\'re in, we\'ll turn who you know into a plan for your next clients.');
       }
     } catch (_err) {
       setError({ title: 'Sign up failed', message: 'An unexpected error occurred' });
@@ -704,6 +745,8 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
             onDismissError={handleDismissError}
             onSignUpClick={handleSetModeWelcome}
             onForgotPasswordClick={handleSetModeForgot}
+            rememberMe={rememberMe}
+            onRememberMeChange={handleRememberMeChange}
           />
         );
       case 'forgot':
@@ -746,6 +789,8 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
             onSignInClick={handleSetModeSignIn}
             error={error}
             onDismissError={handleDismissError}
+            rememberMe={rememberMe}
+            onRememberMeChange={handleRememberMeChange}
           />
         );
     }
@@ -758,6 +803,8 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     googleLoading,
     successMessage,
     error,
+    rememberMe,
+    handleRememberMeChange,
     handleTogglePassword,
     handleSignIn,
     handleSignUp,

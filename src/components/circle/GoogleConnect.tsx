@@ -40,11 +40,11 @@ export const GoogleConnect = () => {
         <p className="mb-2 font-medium text-foreground">What we read</p>
         <ul className="list-disc pl-4 space-y-1">
           <li>Your Google Contacts (including the auto-learned "Other contacts" Gmail builds from past email).</li>
-          <li>Your Calendar events for the last 90 days — to know who you've met and how recently.</li>
+          <li>Your Calendar events for the last 90 days - to know who you've met and how recently.</li>
         </ul>
         <p className="mt-2">
           We do <span className="font-medium">not</span> read email bodies. If you want Gmail body scanning
-          for signature enrichment, that requires Google's separate CASA audit — not part of this.
+          for signature enrichment, that requires Google's separate CASA audit - not part of this.
         </p>
       </div>
 

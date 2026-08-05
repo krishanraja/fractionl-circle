@@ -1,5 +1,5 @@
 /**
- * Profile settings sheet — theme, compact, industry, currency
+ * Profile settings sheet - theme, compact, industry, currency
  */
 import { chromium } from 'playwright';
 import { writeFileSync } from 'fs';

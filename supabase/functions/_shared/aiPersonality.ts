@@ -4,6 +4,17 @@
 
 export type AiPersonality = 'professional' | 'friendly' | 'concise' | 'detailed';
 
+// The user-facing assistant persona. Keep this NAME in sync with the frontend's
+// `ASSISTANT.name` in `src/pathroom/copy.ts` - the client and edge runtimes cannot share
+// a module, so the name is duplicated here on purpose.
+export const ASSISTANT_NAME = 'Freya';
+
+// A one-line persona prefix so the AI speaks as a named person, not a faceless model.
+// Prepend to the system prompt of any surface the user experiences as "talking to Freya".
+export function assistantPersona(): string {
+  return `You are ${ASSISTANT_NAME}, the user's sharp, warm strategy partner. When you speak to the user, speak as ${ASSISTANT_NAME} in the first person. Never say you are an AI, a model, or an assistant.`;
+}
+
 export interface UserAiPreferences {
   ai_personality: AiPersonality | null;
   ai_proactive_suggestions: boolean | null;

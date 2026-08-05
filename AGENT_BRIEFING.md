@@ -5,39 +5,41 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
 **Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
 **Stripe account:** fractionl_ai
-**Last verified against repo:** README.md, DOCS.md, src/lib/tiers.ts, _upgrade/fractionl-circle/PHASE-1.md.
+**Last verified against repo (2026-07-03):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
+
+> **Important - the product changed.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter). That whole model was removed. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it.
 
 ---
 
 ## 1. Pitch (the promise, framed honestly)
 
-**One line:** Circle is the relationship-to-revenue engine for fractional executives, advisors, and portfolio operators.
+**One line:** Circle turns what you know - your people, your taste, your goal - into a plan for your next clients, and keeps your warm network alive while you do it.
 
-**The promise (one paragraph):** "Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know overnight, and drops a hand-drafted Move on the right person while you sleep." A fractional CMO runs four retainers, 200 warm LinkedIn leads, three product ideas she is not sure are real, and zero time. Her CRM is a stale Google Sheet and a Notes file called ideas??.md. Circle automates the exact way she actually closes business (someone she met remembers her, a message goes out, the deal happens) by extracting sellable Ideas from a 90-second voice note, unifying every person she knows across LinkedIn, contacts, the browser, and screenshots into one deduplicated Circle, scoring Idea x Person for fit, and drafting the Move (the DM or email) so all she has to do is hit send. She sells more by sending fewer, better messages to the right people. The AI is the operator. She is the relationship.
+**The promise (one paragraph):** A fractional CMO runs four retainers, knows hundreds of people who could help her sell, and has zero time and no system. Circle is two things working together. **Circle** is her warm network - the people who can actually open doors - kept warm with a weekly nudge on who is going quiet and a one-tap, pre-written hello. **Plan** takes what she wants to offer and reads the live market against it: where she stands (a strength score 0–100 with honest, evidence-backed signals - never fake numbers), what is holding her back, and the specific next moves to her first clients, with her own network woven into the warm-reach step. She does not type one line into a box and get a generic AI answer; she grounds the read in her real people, her taste (a business she admires), and her goal, so what comes back is about her, not the internet.
 
-**Honesty note for the fleet:** "talk once, wake to a drafted Move" is the product PROMISE and is fair to say as the vision. Do NOT state that automatic overnight, while-you-sleep delivery (cron plus push) is live. Today the Match Engine and drafted Move are real but surfaced via a manual "Surface Matches" action, and the PWA has no push. See Section 9 for the exact line.
+**Honesty note for the fleet:** the value is grounded, honest market reading plus a living warm network - not magic automation. Do NOT claim automatic overnight delivery, push notifications to the user's phone, or one-tap native sending as live. See Section 9 for the exact LIVE-vs-ROADMAP table.
 
 ---
 
 ## 2. ICP (primary, secondary, anti-ICP) with exact pains and what Circle replaces
 
-> This section is the tight pitch-ready ICP. For the deep archetype — motivations that predict buying (Pushed / Pulled / Lifestyle), the psychology, the month-2-to-6 buying window, and the commercial wedge — the canonical reference is `docs/icp-archetype.md` in the repo.
+> This section is the tight pitch-ready ICP. For the deep archetype - motivations that predict buying (Pushed / Pulled / Lifestyle), the psychology, the month-2-to-6 buying window, and the commercial wedge - the canonical reference is `docs/icp-archetype.md` in the repo.
 
 ### Primary ICP: the fractional executive
 - **Who:** Fractional CMO / CFO / CTO / COO / CHRO. 15+ years experience, ex-VP or C-suite from high-growth companies.
 - **Revenue:** $150K to $1.5M annually across 2 to 7 concurrent retainers.
 - **Working pattern:** Mobile during the day (between client meetings), desktop on Sunday for planning.
-- **Core pain:** "I know I should follow up. I do not have a system that works on the move." Warm revenue is lost because no system survives the next client call, so the follow-up that would have closed never happens.
-- **Buying trigger:** A missed referral, a warm lead that went cold, a slow quarter that surfaced an empty pipeline.
-- **What Circle replaces:** The spreadsheet, Apple Notes, the part of HubSpot they hate, calendar reminders that never fire.
+- **Core pain:** "I have an idea for what to offer and a network that could buy it, but no honest read on whether it is real, and no system that keeps me in front of the right people." Warm revenue is lost because no system survives the next client call.
+- **Buying trigger:** A missed referral, a warm lead that went cold, a slow quarter that surfaced an empty pipeline, or a new offer they are unsure is real.
+- **What Circle replaces:** The spreadsheet, Apple Notes, the part of HubSpot they hate, calendar reminders that never fire, and the generic ChatGPT answer that does not know their network.
 
 ### Secondary ICPs
-- **Independent strategy advisor / boutique consultant.** Retainers, project work, speaking gigs. Pain: pipeline is invisible until a deal hits the bank. Replaces: unread LinkedIn DMs, calendar reminders that do not fire.
-- **Thought-leader operator (author / keynote speaker / workshop facilitator).** Monetizes IP through multiple channels. Pain: audience engagement and revenue live in two different worlds. Replaces: Mailchimp plus an expired CRM trial.
-- **Emerging fractional (year 1).** Senior professional in their first year independent. Pain: "I have no system, and the senior fractionals all do." Replaces: vibes and panic with structure.
+- **Independent strategy advisor / boutique consultant.** Retainers, project work, speaking gigs. Pain: pipeline is invisible until a deal hits the bank, and they are not sure which offer to lean into. Replaces: unread LinkedIn DMs, calendar reminders that do not fire.
+- **Thought-leader operator (author / keynote speaker / workshop facilitator).** Monetizes IP through multiple channels. Pain: audience and revenue live in two different worlds.
+- **Emerging fractional (year 1).** Senior professional in their first year independent. Pain: "I have no system, and the senior fractionals all do." Replaces: vibes and panic with a grounded plan and a managed network.
 
 ### What every Circle ICP shares
-Their circle is their business. They are time-starved and need tools that work in 30-second bursts. They value relationships over transactions. They need accountability more than automation. They will pay for a tool that makes them feel organized and in control (they already spend $50 to $200/mo on personal SaaS without thinking).
+Their circle is their business. They are time-starved and need tools that work in 30-second bursts. They value relationships over transactions. They will pay for a tool that makes them feel organized and in control (they already spend $50 to $200/mo on personal SaaS without thinking).
 
 ### Anti-ICP (do NOT sell to)
 - In-house SDR / outbound BDR teams running prospecting for someone else.
@@ -50,135 +52,129 @@ Their circle is their business. They are time-starved and need tools that work i
 ## 3. The single magic moment and the core outcomes
 
 ### The magic moment
-Talk for about 90 seconds, get sellable Ideas, and wake to a drafted Move on the right person. (Framed as the promise/vision per the honesty gate, see Section 9.)
+You tell Circle who you want to sell to and why you, in a few plain words, and it reads the live market against that and shows you **where you stand**: a strength score, the honest signals behind it, and your next moves. Then you add the two things that only you have - your people (who could help you sell) and a business you admire - to sharpen the read and light up real warm reach. It is the opposite of a one-box AI answer: grounded in your real world, so the output is about you.
 
 ### Core outcomes (quotable)
-- **Stop losing warm leads.** Every person you meet flows into your Circle. The Match Engine surfaces them when one of your Ideas fits.
-- **Sell more by sending less.** One drafted Move per Match, not a sequence, not a blast. The right thing to say to one person.
-- **Get your Sunday morning back.** The Sunday Letter writes itself. You read for two minutes instead of staring at a spreadsheet for an hour.
-- **Trust your pipeline again.** Streams are Ideas that earned revenue, the closed-loop view of what is working.
-- **Reactivate a dormant network.** Recency x warmth scoring brings forward the people you would otherwise forget.
-- **Look organized when it matters.** Mobile capture in seconds means no apologetic "remind me how we met" follow-ups.
+- **An honest read, not a hype answer.** Banded signals with evidence and a confidence mark. Low confidence is shown, not faked. You learn whether the opportunity is real and whether you can win it, fast.
+- **A plan, not a verdict.** A living, action-first path of next moves to your first clients, with your own network woven into the warm-reach step.
+- **Make it stronger over time.** The Plan tab gives you exactly two moves: work on your plan, or take your next action. On "make it stronger" you can screenshot a business you admire, **voice a concern and have it researched**, or **voice an idea and have the AI fold it in** - plus a coach that asks the single highest-leverage decision to raise your weakest signal. Each one lifts your strength score on the next read.
+- **Keep your circle warm.** A weekly nudge on who is going quiet, each with a grounded, pre-written hello and one tap to send.
+- **A reason to come back.** When you return, Circle shows what is waiting - people going quiet, decisions to fold into your plan - computed from your own data.
 
 ### Quotable hooks (verbatim-safe)
-- "Your circle is your business. Circle turns it into Streams." (paid media)
-- "The AI does not replace the relationship. It replaces the spreadsheet." (podcasts, interviews)
-- "Fractional execs lose more revenue to forgetting than to losing. We built the system that does not let you forget." (LinkedIn organic)
+- "Your circle is your business. Circle helps you sell into it." (paid media)
+- "Most AI gives you a generic answer. Circle reads the market against your real people, your taste, and your goal." (podcasts, interviews)
+- "Fractional execs lose more revenue to forgetting than to losing. Circle keeps your network warm and tells you where you stand." (LinkedIn organic)
 
 ### Numbers anchor (use in copy)
 - 2 to 7 concurrent engagements is the modal portfolio-operator load.
-- 200+ is the modal active LinkedIn-warm network.
-- 90 seconds to the first artefact (3 Ideas).
-- 1 Match per week on Free, 21/week (3/day) on Operator, unlimited on Chief of Staff.
-- $30/mo to make the spreadsheet die.
+- A strength score is **0 to 100** - the number you push toward 100.
+- First-run asks for **10 people**, **1 admired business**, and a few plain words.
+- People going quiet are flagged at **30+ days** since you last spoke.
+- $39/mo for unlimited reads and your network's warm reach.
 
 ---
 
 ## 4. Pricing, tiers, and the current offer
 
-Always confirm live prices and the current offer from https://circle.fractionl.ai/agent.json before quoting. Source of truth in repo: src/lib/tiers.ts. New accounts get a 14-day Operator-equivalent trial (during the trial the effective tier is Operator until the trial ends).
+Always confirm live prices and the current offer from https://circle.fractionl.ai/agent.json before quoting. Source of truth in repo: `src/lib/tiers.ts` (DB tier enum: `free | pro | executive`).
 
 | Tier | Price | Tagline | What it unlocks |
 |---|---|---|---|
-| **Freemium** | $0 | Try the magic. | Voice onboarding + 3 proposed Ideas; LinkedIn CSV into your Circle; 1 Match surfaced per week; read-only People view with one enrichment pass; Ask: 5 messages/week. |
-| **Operator** | $30/mo | Help me run. | Up to 3 active Streams; 3 Matches surfaced per day (21/week); inbox + calendar connect (inferred Ledger); Ask with memory across sessions; Sunday Letter as text; LLM-powered Circle dedupe. |
-| **Chief of Staff** | $79/mo | Help me scale. | Unlimited Streams and Matches; Sunday Letter as 90-second audio; external signal feeds (RFPs, job changes, trends); cross-user market intelligence; per-category auto-send consent; priority compute and white-glove concierge onboarding. |
+| **Freemium** | $0 | Try the magic. | One full read of where you stand; your plan and next moves; build your circle by screenshot or CSV. |
+| **Pro** | $39/mo | Build the whole portfolio. | Unlimited reads as your plan evolves; real warm reach from your full network; specific, named next moves; ongoing market monitoring. |
+| **Chief of Staff** (`executive`) | $79/mo | Help me scale. | Unlimited reads and warm reach; the Monday chief-of-staff brief (where you stand, your market this week, the week's decision, plus the people going quiet); priority compute and white-glove concierge onboarding. External signal feeds and cross-user market intelligence are COMING - never pitch them as live. |
 
-- **Trial:** 14-day Operator-equivalent trial for new accounts.
-- **Operator is the highlighted / primary CTA tier.** Most users upgrade in week 2 because 1 Match/week on Free is too few, not because they are unsure of the product.
-- **Stripe account:** fractionl_ai (three tiers plus checkout are live).
+- **Pro is the highlighted / primary CTA tier.** Free gives one full read with no paywall on first value; the deepening tools (re-reads, the path, warm reach, ongoing monitoring) are Pro.
+- **Stripe account:** fractionl_ai (three subscription tiers plus checkout are live).
+- **Credit packs (one-time, on top of any tier):** Starter 120 credits / $15 · Pro 650 / $70 · Scale 3000 / $280. Credits fund max-effort "10/10" enrichment (live open-web research on a person, 20 credits per deep dive). Source of truth: `src/lib/creditPacks.ts` + `src/lib/creditCosts.ts`; server maps price→credits via the `STRIPE_CREDIT_PACKS` secret so a purchase can never be inflated client-side.
 
 ---
 
-## 5. Positioning and differentiation: a relationship-to-revenue engine, NOT a CRM
+## 5. Positioning and differentiation: a grounded read + a living network, NOT a CRM and NOT a chatbot
 
-We are not "another CRM" and not "an AI assistant." We are the relationship-to-revenue engine for portfolio operators: the AI is the operator sitting on top of the user's existing graph (LinkedIn, calendar, contacts).
+We are not "another CRM" and not "a generic AI assistant." We help a single operator decide what to sell and to whom, ground that in their real network and taste, and keep the network warm enough to act on.
 
 ### Why Circle is not a CRM (HubSpot / Salesforce / Pipedrive)
 - Built for a single operator, not a sales team of 5 to 500.
-- Data model is Ideas x People to Matches to Moves to Streams, not Companies to Deals to Contacts.
-- Filing burden is zero (voice-first capture) versus heavy discipline.
-- Outbound is one handcrafted Move per Match, not sequences and automation at scale.
-- Pipeline view is "an Idea is winning or it is retired," not 20 stages and 14 unused fields.
+- The job is "is this offer real, can I win it, and who do I reach" - not 20 deal stages and 14 unused fields.
+- Filing burden is near zero (screenshot/CSV/contacts-sync capture).
 - Mobile is the primary surface, not an afterthought.
-- One seat is $30/mo, not $50 to $150/mo locked behind seats.
-
-### Why Circle is not Notion / Apple Notes
-Notion is a doc tool, Notes is a memory tool. Neither runs anything, drafts a Move, or connects what you want to sell to who might buy it.
-
-### Why Circle is not LinkedIn / Sales Navigator
-LinkedIn is the graph. Circle is the operator on top of the graph. Sales Nav is built for SDRs running prospecting motions and has zero context on your Ideas, your edits, your past Moves, or your revenue. Circle has all of that.
+- One seat is $39/mo, not $50 to $150/mo locked behind seats.
 
 ### Why Circle is not a generic AI chatbot (ChatGPT / Claude)
-Generic LLMs do not have your Circle, your Ideas, or your edit history, so they draft generic Moves to generic people. Circle is tuned on your taste (every edit you make to a draft is logged via edit distance) and on your network (every Match scores against your specific people).
+A generic LLM does not have your network, your taste, or your goal, so a one-box prompt gives a generic answer. Circle grounds the read in a small amount of uniquely-yours input - your goal and who you sell to in plain words to start, then your people and a business you admire to sharpen it - and reads the live market against that. The output is grounded in your real world, with honest confidence, not a confident guess.
+
+### Why Circle is not LinkedIn / Sales Navigator
+LinkedIn is the graph; Sales Nav is built for SDRs running prospecting. Circle sits on top of the operator's own warm network and answers "where do I stand and who do I reach," then keeps that network warm.
 
 ### What is genuinely defensible
-- The ontology: Sources to Person to Idea x Person to Match to Move to Stream is a model of the actual fractional business. No CRM ships this.
-- The edit-distance taste model: every Move you edit before sending is captured, so the AI converges on how you talk. CRMs cannot do this because they do not draft outbound.
-- The Sunday Letter as a retention loop: once you have read three, you do not stop.
-- Cross-source dedupe with an LLM tiebreaker (Operator+): most contact lists are 30%+ duplicates. Circle makes one Circle from five sources.
+- **Grounded, honest reads.** The strength score is a transparent 0–100 over graded, evidence-backed signals with confidence caps. It refuses to fake precision - rare in AI products and exactly what a senior operator trusts.
+- **The network woven into the plan.** The warm-reach move is real named people with pre-written drafts, not "reach out to your network" as a platitude.
+- **The living loop.** A make-it-stronger coach turns the weakest signal into a decision; decisions lift the score; the return surface and weekly digest pull the user back with concrete, data-grounded reasons.
+- **The Pulse flywheel** (Section 8): the free Fractional Working Index feeds Circle's market read and is the funnel mouth.
 
 ---
 
 ## 6. Channel-ready copy (post or send verbatim, in the voice of a fractional operator)
 
-All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be personalized against the prospect's real context (recent post, current role, mutual connection). Note: "overnight / surfaces" describes the Match Engine and drafted Move, which are real; the agent must NOT add literal automatic push or while-you-sleep claims as live.
+All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be personalized against the prospect's real context (recent post, current role, mutual connection). Do NOT add automatic/while-you-sleep delivery, push, or native one-tap-send as live claims.
 
-### LinkedIn post 1 (the forgetting hook)
-> Fractional execs do not lose revenue to losing. We lose it to forgetting.
+### LinkedIn post 1 (the grounded-read hook)
+> Most "AI for your business" is a box: type an idea, get a confident answer that has never met your network.
 >
-> You meet the perfect-fit founder at a dinner. Three client calls later, the follow-up that would have closed never happens. Your pipeline lives in your head, and your head is full.
+> I wanted the opposite. So before Circle says a word, it asks for the thing only I have: a couple of plain sentences about who I want to sell to and why me. Then it gets sharper as I add the people who could actually help me sell and a business I admire.
 >
-> I built Circle for exactly this. Talk for 90 seconds, get 3 sellable Ideas. Drop in your LinkedIn CSV, and your whole network dedupes into one Circle. Then it cross-references what you sell against who you know and surfaces the Matches with the message already drafted. You send fewer, better messages to the right people.
->
-> The AI is the operator. You are the relationship. circle.fractionl.ai
-
-### LinkedIn post 2 (the Sunday hook)
-> My old Sunday: an hour staring at a CRM I had not touched in three weeks, trying to remember who I was supposed to follow up with.
->
-> My new Sunday: a 200-word letter that tells me what shipped this week, what is worth chasing, and what to fix. Then I close the laptop.
->
-> That is Circle. It turns the part of fractional work that lives in your head into Streams: the Ideas that actually earn revenue. $30/mo. There is a free tier to try the magic first.
+> It reads the live market against that and tells me where I stand - an honest score, the signals behind it, what is holding me back, and my next moves. Grounded in my real world, not the internet's.
 >
 > circle.fractionl.ai
+
+### LinkedIn post 2 (the warm-network hook)
+> Fractional execs do not lose revenue to losing. We lose it to forgetting.
+>
+> You meet the perfect-fit founder. Three client calls later, the follow-up that would have closed never happens.
+>
+> Circle keeps my warm network actually warm: it tells me who is going quiet, hands me a pre-written hello grounded in our history, and gets out of the way. And it ties that network straight into the plan for my next clients.
+>
+> $39/mo, free tier to try it first. circle.fractionl.ai
 
 ### LinkedIn post 3 (the category hook)
 > Your CRM was built for a sales team of fifty. You are a team of one.
 >
-> Fractional operators do not need 20 deal stages and 14 fields nobody fills in. We need the right thing said to one person, on one day. We need our circle (which is our entire business) to actually be managed.
+> Fractional operators do not need 20 deal stages and 14 fields nobody fills in. We need to know whether our next offer is real, where we stand in the market, and who in our own circle to reach first.
 >
-> Circle is a relationship-to-revenue engine, not a CRM. Voice in, sellable Ideas out, your network unified across LinkedIn and contacts and screenshots, and a hand-drafted Move on the people most likely to buy what you sell. Every edit you make teaches it to sound more like you.
+> Circle is two halves: your warm network, kept warm - and a grounded, honest read on your plan for your next clients. Not a CRM, not a chatbot.
 >
 > circle.fractionl.ai
 
-### Cold email 1 (founder-led, the pattern)
-> Subject: For the part of fractional work that lives in your head
+### Cold email 1 (the grounded-read angle)
+> Subject: An honest read on your next offer - grounded in your own network
 >
 > Hi [name],
 >
-> Most fractional CMOs/CFOs/CTOs I talk to run their pipeline the same way: a stale Google Sheet, a Notes file called ideas??.md, and the prayer that someone they met two years ago at a dinner remembers them.
+> Most AI tools give you a confident answer to a one-line prompt. Circle does the opposite: it asks for a few of your real people, one business you admire, and a couple of plain sentences about your goal - then reads the live market against all of it and shows you where you stand. An honest score, the signals behind it, and your next moves.
 >
-> I built Circle to automate that exact pattern. Talk for 90 seconds at signup and you get 3 sellable Ideas. Drop in a LinkedIn CSV and your circle dedupes itself across sources. Then an engine cross-references your Ideas against your people and surfaces your best Matches with the DM already drafted, so all you do is hit send.
+> It also keeps your warm network alive: who is going quiet, with a pre-written hello ready to send.
 >
-> $30/mo for the version most fractionals use. Free tier to try it. Worth 10 minutes?
+> Free to try, $39/mo for unlimited reads and your full network's warm reach. Worth 10 minutes?
 >
 > [signature]
 
-### Cold email 2 (the missed-referral angle)
+### Cold email 2 (the warm-network angle)
 > Subject: The warm lead you forgot to follow up on
 >
 > Hi [name],
 >
-> You are running [N] fractional engagements. Somewhere in your network is a founder who needs exactly what you sell, and the only reason the deal will not happen is that it never makes it past your next client call.
+> You are running [N] fractional engagements. Somewhere in your network is someone who needs exactly what you sell, and the only reason the deal will not happen is that it never makes it past your next client call.
 >
-> Circle exists to close that gap. It extracts your sellable Ideas from a 90-second voice note, unifies everyone you know into one deduplicated Circle, scores who fits which Idea, and hands you a hand-drafted Move (the DM or the email) to send. Every edit you make is logged so the drafts converge on how you actually write.
+> Circle keeps that network warm - it surfaces who is going quiet and drafts the hello - and ties it into a grounded plan for your next clients: where you stand, what is holding you back, and the moves to make.
 >
-> Free to try, $30/mo for Operator. Want a 10-minute walkthrough?
+> Free to try, $39/mo for Pro. Want a 10-minute walkthrough?
 >
 > [signature]
 
 ### Short DM (60 to 90 words)
-> Hey [name], saw you are running [N] fractional engagements. I built the thing I wished existed when I watched fractionals lose warm leads to "I will follow up after this client call." It is called Circle: talk for 90 seconds, drop in your LinkedIn CSV, and it surfaces the Matches between what you sell and who you know with the Move already drafted. $30/mo, free tier to try. Want a quick walkthrough?
+> Hey [name], saw you are running [N] fractional engagements. I built the thing I wish existed: instead of a one-box AI answer, Circle reads the live market against your real people, a business you admire, and your goal - and shows you where you stand plus your next moves. It also keeps your warm network alive (who is going quiet, with the hello drafted). $39/mo, free tier to try. Want a quick walkthrough?
 
 ---
 
@@ -186,13 +182,12 @@ All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be per
 
 | Objection | Crisp answer |
 |---|---|
-| **"I do not want my contacts in someone else's database / privacy of my network."** | Every row is RLS-isolated and scoped to your own account. The service-role key never appears in the client. OAuth tokens are encrypted. We do not sell data and we do not train models on your contacts. There is a one-click export and a one-click full deletion in Settings, and we publish our security audit. |
-| **"Is this just another CRM?"** | No. CRMs are built for sales teams of 10+; Circle is built for one operator. The model is Ideas x People to Matches to Moves to Streams, not Companies to Deals to Contacts. The filing burden is zero (voice-first). Keep your CRM if your clients use one; Circle replaces the spreadsheet you keep on the side. |
-| **"Will the AI sound like me?"** | Not on day one, and we do not pretend it does. Circle drafts, you edit, you send. Every edit is logged via edit distance, so the AI converges on your voice over a few weeks. Nothing auto-sends by default; auto-send is opt-in per category and only on Chief of Staff. |
-| **"$30 is fine but I want to try it first."** | The free tier is built for exactly that: voice onboarding, 3 Ideas, LinkedIn CSV, 1 Match per week. Most people upgrade in week 2 because 1/week is too few, not because they doubt the product. |
-| **"My LinkedIn graph is mostly noise."** | That is the point. The Match Engine pre-filters on recency x warmth x source quality, and Operator-tier dedupe collapses the duplicates (most lists are 30%+). You will be surprised how much signal is there once it is deduped. |
-| **"I already use Sales Navigator."** | Sales Nav is the graph, built for SDRs running prospecting. Circle sits on top of your existing graph and runs the operator workflow (Ideas to Matches to Moves to Streams). Different tool, different job. |
-| **"Will it work for my coaching / advisory practice?"** | Yes, advisors and coaches are the second-largest cohort. Substitute "Idea" for "service offer" and let the Match Engine answer "who should I follow up with." |
+| **"I do not want my contacts in someone else's database / privacy of my network."** | Every row is RLS-isolated and scoped to your own account. The service-role key never appears in the client. OAuth tokens are encrypted. We do not sell data and we do not train models on your contacts. There is account deletion in Settings. |
+| **"Is this just another CRM?"** | No. CRMs are built for sales teams of 10+; Circle is built for one operator. It answers "is my offer real, where do I stand, and who do I reach," and keeps your network warm - not 20 deal stages. Keep your CRM if your clients use one; Circle replaces the spreadsheet you keep on the side. |
+| **"Is this just ChatGPT with a wrapper?"** | The opposite by design. Circle grounds the read in your goal and who you sell to (in your words), then gets sharper as you add your real people and a business you admire - and it reads the live market against that. The answer is grounded in your world, with honest confidence - not a generic guess. |
+| **"Why do I have to add 10 people before I get value?"** | Because that is what makes the read about you and not the internet. The warm-reach part of your plan is your real network; without it the read is generic. We make it fast - screenshot, paste a list, LinkedIn CSV, or a one-click Google/Microsoft contacts sync. |
+| **"Will the read just tell me what I want to hear?"** | No. Signals are bands with evidence and a confidence mark; low confidence is shown, not hidden. It will tell you what is holding you back. That honesty is the point. |
+| **"$39 is fine but I want to try it first."** | The free tier gives one full read of where you stand, your plan, and your circle - no paywall on first value. Pro ($39/mo) adds unlimited reads as your plan evolves, your full network's warm reach, and ongoing monitoring. |
 
 ---
 
@@ -200,43 +195,45 @@ All copy below respects the LIVE-vs-ROADMAP rule. Bracketed fields should be per
 
 **Pulse (pulse.fractionl.ai)** is the free, citable Fractional Working Index. It is the funnel mouth and the moat for Circle.
 
-How the loop works (per the locked plan, parts are ROADMAP, see Section 9):
-- Circle's anonymized aggregate signal (with genuine k-anonymity and disclosure) makes Pulse the freshest index in the fractional category.
-- Pulse citations and coverage drive traffic to Circle's public surface and the live-mic demo.
-- That demo converts visitors into accounts; their activity feeds the index again. Private Brief feeds the user's revenue; public artifacts feed Circle's growth.
+How the loop works (per the locked plan; parts are ROADMAP, see Section 9):
+- Pulse's role-level market data feeds Circle's live market-movement read (Circle's `market-pulse` calls Pulse's public APIs for the user's role demand, the overall index, this-week deltas, and a rising topic).
+- Pulse citations and coverage drive traffic to Circle's public surface.
+- Account activity feeds the index again. Public artifacts feed Circle's growth; the private read feeds the user's revenue.
 
 **How the fleet uses this in content:**
 - Cite Pulse as the free, neutral data source in PR, posts, and outreach ("the Fractional Working Index shows X"). It is the credibility asset that is not a sales pitch.
-- Point Pulse readers to Circle's public surface as the "now do this on your own network" next step.
+- Point Pulse readers to Circle's public surface as the "now do this for your own plan" next step.
 - Keep the disclosure clean: Pulse is aggregate and anonymized; never imply it exposes any individual operator's network.
 
 ---
 
 ## 9. LIVE vs ROADMAP (the fleet must never overclaim)
 
-The single hard rule: marketing copy may say "talk once, wake to a drafted Move" as the PROMISE/vision, but must NOT state that automatic overnight, while-you-sleep delivery is live until the cron plus push ship. Today, "overnight match" is a manual button and the PWA has no push.
+The single hard rule: pitch the grounded read, the plan, and the living warm network as they are. Weekly email + web-push delivery IS live as of 2026-07-03 (the Monday digest/brief and the re-engagement sweep); native one-tap SEND (Gmail/Outlook draft injection) and native calendar writes are still NOT - do not claim them.
 
 | Capability | Status | What the fleet may say |
 |---|---|---|
-| Voice onboarding that extracts Ideas (90 seconds to 3 Ideas) | LIVE | Claim freely. |
-| Match Engine scoring Idea x Person and drafting a Move (DM/email) | LIVE | Claim, but it is surfaced via a manual action (Surface Matches), NOT automatic overnight delivery. |
-| Sunday Letter, text (Operator+) | LIVE | Claim freely. |
-| Sunday Letter, 90-second audio (Chief of Staff) | LIVE | Claim freely. |
-| Circle capture: LinkedIn CSV, Google/Microsoft contacts, browser extension, screenshot-to-contact (vision), voice | LIVE | Claim freely. |
-| LLM cross-source dedupe (Operator+) | LIVE | Claim freely. |
+| Read-first grounded onboarding (your goal + who you sell to → one live read; people + an admired business optional, to sharpen it) | LIVE | Claim freely. This is the magic moment. |
+| The Plan read: live market research → your **Value Prop** (labelled "Value Prop" in-app; 0–100 strength score + banded, evidence-backed signals with confidence) | LIVE | Claim freely, including the honesty (low confidence shown, never fake numbers). The prose "shows you where you stand" is still fine as positioning. |
+| Make-it-stronger coach (one decision-shaped question on the weakest signal; banked decisions lift the score on the next read) | LIVE | Claim freely. |
+| Living, action-first path of next moves, with the warm-reach step using real named people + pre-written drafts | LIVE | Claim freely. Reaching out is one tap to your own email/LinkedIn (you send), not automated send. |
+| Circle warm network + weekly "keep your circle warm" digest (email with one-tap `mailto:` drafts + an `.ics` calendar hold) | LIVE | Claim freely. |
+| In-app return surface ("what's waiting": people going quiet, decisions to fold in) | LIVE | Claim freely. |
+| Circle capture: LinkedIn CSV, CRM/sheet, Google/Microsoft contacts sync, screenshot-to-contact (vision) | LIVE | Claim freely. |
 | Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
-| 14-day Operator-equivalent trial | LIVE | Claim freely. |
-| Literal automatic "overnight / while you sleep" delivery + push notifications | ROADMAP | Frame ONLY as the promise/vision. Today it is a manual button and the PWA has no push. |
-| Seeding people from the onboarding voice note | ROADMAP | Do not claim as live. |
-| Trigger layer (job-change / funding / news signals driving Moves) | ROADMAP | Do not claim as live (external signal feeds appear in tier copy as the vision). |
-| Voice fingerprint (drafts in your sent-mail/DM style) | ROADMAP | Do not claim; today personalization is the logged edit-distance substrate. |
-| Real one-tap sending (Gmail/Outlook draft or LinkedIn composer inject) | ROADMAP | Do not claim; today it is draft + manual send. |
-| Public "Signal" share posts | ROADMAP | Do not claim as live. |
-| Anonymous live-mic demo on the landing page | ROADMAP | Do not claim as live. |
-| SSG marketing surface and the /app move (authed app to /app, marketing at root) | ROADMAP | Do not claim as live. |
-| Sunday Letter public feed (/feed/sunday-letter.json) | ROADMAP | Do not claim as live. |
+| One box on the Circle home: say what you're working on (surfaces your inner circle) OR who - or the kind of person - you're looking for (searches your whole network). Type it or voice-note it. | LIVE | Claim freely. |
+| Intelligent people-search over your whole network: semantic (meaning-based) + keyword retrieval returns real people, each with the actual fact that matched and a confidence - plus evidence-backed "warm route" (second-degree) inferences grounded in a person's OWN history (e.g. "was at Accel, a warm way into that fund"), never an invented relationship. | LIVE | Claim freely, including the honesty (nothing invented; every match cites a real fact). |
+| "Drop a contact" pinned in the top nav + a warm-reach bell/drawer (people going quiet, one-tap reach) | LIVE | Claim freely. |
+| Credit packs (one-time top-ups, on top of the subscription) that fund max-effort "10/10" enrichment - live open-web research synthesised into the contact's dossier - spent per deep dive; every match stays honest and cited. | LIVE | Claim freely. Credits are optional top-ups; the core search works on already-connected data without them. |
+| Weekly re-engagement EMAIL + WEB PUSH sweep (`cron-reengage`) | LIVE (2026-07-03: Resend + VAPID keys verified set, cron active Mondays 15:00 UTC; every send lands a `delivery_log` row) | Claim carefully: a drifted user (5-21 days quiet) with something genuinely waiting gets a short email/push. Never claim real-time or per-event push. |
+| The Monday chief-of-staff brief for the $79 tier: where you stand (the same 0-100 as Home), your market this week (honest Pulse numbers), this week's one decision question, plus the people going quiet | LIVE | Claim freely for the Chief of Staff tier. It is composed only from the product's own state - never invented figures. |
+| Editable reach-out drafts + the voice loop (edits are remembered and future drafts converge on the user's own voice) | LIVE | Claim freely, plainly: "edit the draft before sending; it learns how you write." |
+| Native one-tap SEND (Gmail/Outlook draft injected, or LinkedIn composer) | ROADMAP | Do not claim; today it is a pre-filled draft + the user sends. |
+| Native calendar-write holds (vs the `.ics` attachment) | ROADMAP (behind off-by-default flags, pending sensitive-scope verification) | Do not claim; today the digest ships an `.ics` hold. |
+| External signal feeds (RFPs, job changes, trends) and cross-user market intelligence | ROADMAP (appears in Chief of Staff tier copy as the vision) | Do not claim as live behavior. |
+| Anything from the retired model: voice-to-Ideas, the Match Engine, drafted Moves, Streams, the Sunday Letter | REMOVED | NEVER mention. This generation no longer exists. |
 
-**Approved promise line (safe everywhere):** "Talk once, wake to a drafted Move on the right person." This is the product promise. Do not append "automatically while you sleep, pushed to your phone" as a present-tense live claim.
+**Approved promise line (safe everywhere):** "Give Circle your real people, your taste, and your goal - and it shows you where you stand and your next moves." Do not append "automatically, pushed to your phone."
 
 ---
 
@@ -260,20 +257,16 @@ Circle is emit-only. The central warehouse is the Mindmaker OS Supabase project 
 - https://circle.fractionl.ai/llms.txt
 - https://circle.fractionl.ai/agent.json (carries product, pitch, ICP, the three tiers with live Stripe price IDs, current offer, magic moment, URLs, stripe_account: fractionl_ai)
 
-(Note: the SSG-emitted llms.txt / agent.json and the attribution wiring are part of the locked plan; treat the URLs as the canonical read target per the contract.)
-
 ---
 
 ## 11. Links
 
-- **Marketing:** https://circle.fractionl.ai
-- **App:** https://circle.fractionl.ai/app (the /app move is roadmap; the authed app is the product today)
+- **App / product:** https://circle.fractionl.ai
 - **Pricing:** https://circle.fractionl.ai (pricing surface) and the live tiers/offer in https://circle.fractionl.ai/agent.json
 - **Product truth (machine-readable):** https://circle.fractionl.ai/llms.txt , https://circle.fractionl.ai/agent.json
-- **Sunday Letter feed:** https://circle.fractionl.ai/feed/sunday-letter.json (ROADMAP)
 - **Pulse (Fractional Working Index):** https://pulse.fractionl.ai
 - **Parent brand (company site, NOT the product):** https://fractionl.com
 
 ---
 
-*This brief is the fleet's source of language and the honesty contract. If product behavior diverges from what is described here, the agent should fetch agent.json for live truth and respect the LIVE-vs-ROADMAP table. Never claim a ROADMAP capability as live.*
+*This brief is the fleet's source of language and the honesty contract. If product behavior diverges from what is described here, the agent should fetch agent.json for live truth and respect the LIVE-vs-ROADMAP table. Never claim a ROADMAP capability as live, and never reference the removed Ideas/Matches/Moves/Streams/Sunday-Letter model.*

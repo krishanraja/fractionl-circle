@@ -30,8 +30,8 @@ export const TIERS: TierDisplay[] = [
     priceIdEnv: null,
     highlighted: false,
     features: [
-      'One full thesis validation',
-      'The complete read and next steps',
+      'One full read of your value prop',
+      'Your plan and next actions',
       'Build your circle by screenshot or CSV',
     ],
     ctaLabel: 'Current plan',
@@ -45,7 +45,7 @@ export const TIERS: TierDisplay[] = [
     priceIdEnv: 'VITE_STRIPE_PRO_MONTHLY_PRICE_ID',
     highlighted: true,
     features: [
-      'Unlimited thesis validations as you evolve',
+      'Unlimited reads as your plan evolves',
       'Real warm reach from your full network',
       'Specific, named next moves',
       'Ongoing market monitoring',

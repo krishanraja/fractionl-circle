@@ -2665,6 +2665,7 @@ export type Database = {
           industry: string | null
           journey_stage: string | null
           last_active_at: string | null
+          linkedin_url: string | null
           motivation_type: string | null
           offer_maturity: string | null
           onboarding_completed: boolean | null
@@ -2699,6 +2700,7 @@ export type Database = {
           industry?: string | null
           journey_stage?: string | null
           last_active_at?: string | null
+          linkedin_url?: string | null
           motivation_type?: string | null
           offer_maturity?: string | null
           onboarding_completed?: boolean | null
@@ -2733,6 +2735,7 @@ export type Database = {
           industry?: string | null
           journey_stage?: string | null
           last_active_at?: string | null
+          linkedin_url?: string | null
           motivation_type?: string | null
           offer_maturity?: string | null
           onboarding_completed?: boolean | null

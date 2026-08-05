@@ -489,7 +489,7 @@ export const ingestSharedContact = async (
 // Reuses the same canonicalize-into-circle_person path as every other source
 // so dedupe by fingerprint just works. Caller picks the source_kind so a
 // screenshot lands as `business_card_photo` and a typed/pasted add as
-// `manual_add` — both are visible in Sources & tools.
+// `manual_add` - both are visible in Sources & tools.
 export interface QuickAddInput {
   name: string;
   email?: string | null;
@@ -508,12 +508,31 @@ export interface QuickAddInput {
   // from ("linkedin", "instagram", "business_card", ...). Drives handle
   // resolution.
   detected_platform?: string | null;
+  // Namespaced intent tags ("met:conference", "brings:capital", ...) chosen in
+  // the confirm step. Unioned onto circle_person.tags after the person is written.
+  tags?: string[] | null;
 }
 
 export interface QuickAddOptions {
   kind: 'manual_add' | 'business_card_photo';
   label: string;
 }
+
+// Union a set of tags onto a circle_person without dropping any it already has.
+// Used by the quick-add flows and the post-save tag step.
+export const addPersonTags = async (personId: string, tags: string[]): Promise<string[]> => {
+  const clean = Array.from(new Set(tags.map((t) => t.trim()).filter(Boolean)));
+  if (!clean.length) return [];
+  const { data } = await supabase
+    .from('circle_person')
+    .select('tags')
+    .eq('id', personId)
+    .maybeSingle();
+  const existing = ((data as { tags: string[] | null } | null)?.tags ?? []);
+  const next = Array.from(new Set([...existing, ...clean]));
+  await supabase.from('circle_person').update({ tags: next }).eq('id', personId);
+  return next;
+};
 
 export const ingestQuickAdd = async (
   userId: string,
@@ -591,9 +610,17 @@ export const ingestQuickAdd = async (
       .limit(1)
       .maybeSingle();
 
+    const circlePersonId = (rawRow as { circle_person_id: string | null } | null)?.circle_person_id ?? null;
+
+    // Apply the chosen intent tags to the canonical person (works for both a new
+    // insert and a merge into an existing contact; unions, never clobbers).
+    if (circlePersonId && input.tags?.length) {
+      await addPersonTags(circlePersonId, input.tags);
+    }
+
     return {
       sourceId,
-      circlePersonId: (rawRow as { circle_person_id: string | null } | null)?.circle_person_id ?? null,
+      circlePersonId,
       result,
     };
   } catch (err) {

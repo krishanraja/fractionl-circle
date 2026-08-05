@@ -1,6 +1,6 @@
-// Shared "who is this user" envelope. Every AI surface (extract-ideas,
-// run-match-engine, generate-sunday-letter) loads this and injects it into the
-// system prompt so output is anchored to the specific fractional operator —
+// Shared "who is this user" envelope. AI surfaces (next-question,
+// rank-inner-circle, the warm digest) load this and inject it into the
+// system prompt so output is anchored to the specific fractional operator -
 // never generic. Wave 1 reads only columns that already exist on user_profiles
 // (no migration). Wave 2 will add motivation/journey/offer-maturity behind a
 // flag.
@@ -22,6 +22,10 @@ export interface ProfileContext {
   journey_stage?: string | null;
   offer_maturity?: string | null;
   target_buyer?: string | null;
+  // The user's own stream-of-consciousness from first-run onboarding (who they
+  // sell to, why them, their objective) - their real words, the raw voice+context
+  // sample every AI surface should hear.
+  first_run_transcript?: string | null;
 }
 
 export async function loadProfileContext(
@@ -30,7 +34,7 @@ export async function loadProfileContext(
 ): Promise<ProfileContext | null> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('full_name, role, business_type, positioning, client_stages, client_verticals, identity_statement, motivation_type, journey_stage, offer_maturity, target_buyer')
+    .select('full_name, role, business_type, positioning, client_stages, client_verticals, identity_statement, motivation_type, journey_stage, offer_maturity, target_buyer, first_run_transcript')
     .eq('id', userId)
     .maybeSingle();
   if (error) {
@@ -60,15 +64,15 @@ const humanize = (slug: string): string =>
 // Builds the prompt fragment. Returns '' when we know nothing, so callers can
 // concatenate unconditionally without leaving an empty header in the prompt.
 const MOTIVATION_NOTE: Record<string, string> = {
-  pushed: 'left corporate involuntarily (layoff/restructure) — likely urgency and a thinner runway; lead with speed-to-pipeline and reassurance, never doom',
-  pulled: 'chose to go independent (burnout/autonomy) — high conviction; can be coached toward a real practice',
-  lifestyle: 'wants a sustainable portfolio life — steady, values fit over volume',
+  pushed: 'left corporate involuntarily (layoff/restructure) - likely urgency and a thinner runway; lead with speed-to-pipeline and reassurance, never doom',
+  pulled: 'chose to go independent (burnout/autonomy) - high conviction; can be coached toward a real practice',
+  lifestyle: 'wants a sustainable portfolio life - steady, values fit over volume',
 };
 
 export function profilePromptBlock(p: ProfileContext | null): string {
   if (!p) return '';
   const lines: string[] = [];
-  // Identity statement leads — it is the single most anchoring line.
+  // Identity statement leads - it is the single most anchoring line.
   if (p.identity_statement) lines.push(`Identity: ${p.identity_statement}`);
   if (p.role) lines.push(`They are a fractional ${ROLE_LABELS[p.role] ?? humanize(p.role)}.`);
   if (p.business_type) lines.push(`Engagement model: ${humanize(p.business_type)}.`);
@@ -85,6 +89,33 @@ export function profilePromptBlock(p: ProfileContext | null): string {
   if (p.motivation_type && MOTIVATION_NOTE[p.motivation_type]) {
     lines.push(`Why they went fractional: ${MOTIVATION_NOTE[p.motivation_type]}.`);
   }
+  if (p.first_run_transcript?.trim()) {
+    lines.push(`In their own words: "${clampTranscript(p.first_run_transcript)}"`);
+  }
   if (!lines.length) return '';
-  return `\n\nABOUT THIS SPECIFIC USER — anchor every suggestion to this; never produce generic, could-be-anyone output:\n- ${lines.join('\n- ')}`;
+  return `\n\nABOUT THIS SPECIFIC USER - anchor every suggestion to this; never produce generic, could-be-anyone output:\n- ${lines.join('\n- ')}`;
+}
+
+// Keep the transcript's opening (where the who/why/goal lives) without letting a
+// long ramble blow up every prompt that carries the envelope.
+const TRANSCRIPT_MAX = 600;
+export function clampTranscript(t: string): string {
+  const s = t.trim().replace(/\s+/g, ' ');
+  return s.length <= TRANSCRIPT_MAX ? s : s.slice(0, TRANSCRIPT_MAX).trimEnd() + '...';
+}
+
+// A one-line plain-text digest of the profile for research prompts (Perplexity),
+// where the full envelope block is too heavy. '' when we know nothing.
+export function profileFactsLine(p: ProfileContext | null): string {
+  if (!p) return '';
+  const bits: string[] = [];
+  if (p.role) bits.push(`fractional ${ROLE_LABELS[p.role] ?? humanize(p.role)}`);
+  if (p.identity_statement) bits.push(p.identity_statement);
+  if (p.target_buyer) bits.push(`sells to ${p.target_buyer}`);
+  if (p.positioning) bits.push(`positions as: ${p.positioning}`);
+  if (p.client_verticals?.length) bits.push(`knows ${p.client_verticals.map(humanize).join(', ')}`);
+  // The user's own onboarding words are the richest first-run signal; feed a clamped
+  // version into the market research too (previously it only reached the structuring step).
+  if (p.first_run_transcript?.trim()) bits.push(`in their words: "${clampTranscript(p.first_run_transcript)}"`);
+  return bits.join('; ');
 }

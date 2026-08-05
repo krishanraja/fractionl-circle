@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
-import ThesisApp from "./pathroom/ThesisApp";
+import CircleApp from "./pathroom/CircleApp";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
@@ -19,6 +19,21 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ConsentBanner } from "./components/compliance/ConsentBanner";
 import { SessionManager } from "./components/compliance/SessionManager";
 import { useConsent } from "./hooks/useConsent";
+import { hideBootSplash } from "@/lib/bootSplash";
+
+/**
+ * Reveal the app (fade the boot splash) for logged-out / public screens, where the
+ * theme is already correct from the pre-paint script. Logged-in screens reveal
+ * themselves once their saved theme is applied - see PreferencesApplier - so the
+ * dark→light settle is never visible. A safety timeout in index.html is the backstop.
+ */
+function BootSplashGate() {
+  const { user, loading } = useAuth();
+  useEffect(() => {
+    if (!loading && !user) hideBootSplash();
+  }, [loading, user]);
+  return null;
+}
 
 // Unlinked design fixtures (lazy so they stay out of the main prod bundle). Not in nav.
 const StartHereMock = lazy(() => import("./preview/StartHereMock"));
@@ -53,7 +68,7 @@ function PrivacyRoute() {
   );
 }
 
-/** Auth gate. Logged out -> AuthPage. Logged in -> the thesis-validation product. */
+/** Auth gate. Logged out -> AuthPage. Logged in -> the circle-first app shell. */
 function AuthenticatedShell() {
   const { user, loading: authLoading } = useAuth();
   const { syncLocalConsents } = useConsent();
@@ -92,7 +107,7 @@ function AuthenticatedShell() {
     <>
       <PreferencesApplier />
       <SessionManager />
-      <ThesisApp />
+      <CircleApp />
       <ConsentBanner />
     </>
   );
@@ -126,6 +141,7 @@ function AppRoutes() {
   return (
     <>
       <AuthHashErrorNotice />
+      <BootSplashGate />
       <Routes>
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />

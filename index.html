@@ -2,9 +2,19 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-    <title>Fractionl | Validate your fractional thesis</title>
-    <meta name="description" content="Fractionl validates a fractional executive's thesis against the real market, in the open, then deconstructs the path to your first retained clients into doable, validated moves." />
+    <!-- Pre-paint theme, as an EXTERNAL same-origin script: the CSP is
+         `script-src 'self'`, so inline scripts are blocked and would silently no-op.
+         Render-blocking (no defer) so it sets the theme class before first paint. -->
+    <script src="/theme-init.js"></script>
+    <style>
+      /* Instant, theme-aware page background so the boot splash never flashes the
+         wrong mode (the bundled CSS that sets --background loads slightly later). */
+      html { background: #F8F6F2; }
+      html.dark { background: #0A0A0B; }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <title>Fractionl | An honest read on whether your idea sells</title>
+    <meta name="description" content="An honest read on whether your idea sells, grounded in the live market and your real network - plus the warm moves to land your first client." />
     <meta name="author" content="Fractionl" />
     <link rel="canonical" href="https://circle.fractionl.ai/" />
 
@@ -27,8 +37,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://circle.fractionl.ai/" />
-    <meta property="og:title" content="Fractionl | Validate your fractional thesis" />
-    <meta property="og:description" content="Validate your fractional thesis against the real market, in the open, then get the deconstructed path to your first retained clients." />
+    <meta property="og:title" content="Fractionl | An honest read on whether your idea sells" />
+    <meta property="og:description" content="An honest read on whether your idea sells, grounded in the live market and your real network - plus the warm moves to land your first client." />
     <meta property="og:image" content="https://circle.fractionl.ai/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -36,8 +46,8 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://circle.fractionl.ai/" />
-    <meta name="twitter:title" content="Fractionl | Validate your fractional thesis" />
-    <meta name="twitter:description" content="Validate your fractional thesis against the real market, then get the path to your first retained clients." />
+    <meta name="twitter:title" content="Fractionl | An honest read on whether your idea sells" />
+    <meta name="twitter:description" content="An honest read on whether your idea sells, grounded in the live market and your real network - plus the warm moves to land your first client." />
     <meta name="twitter:image" content="https://circle.fractionl.ai/og-image.png" />
 
     <!-- Structured data (schema.org) -->
@@ -51,11 +61,11 @@
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
           "url": "https://circle.fractionl.ai",
-          "description": "Fractionl validates a fractional executive's thesis against the real market, in the open, then deconstructs the path to their first retained clients into doable, validated moves.",
+          "description": "Fractionl is a personal circle that warms itself up: drop in anyone you meet - a name, screenshot, link or voice memo - and it remembers who they are and surfaces the right people the moment you need them.",
           "publisher": { "@type": "Organization", "name": "Fractionl" },
           "offers": [
-            { "@type": "Offer", "name": "Free", "description": "One full thesis validation, the read and the path.", "price": "0", "priceCurrency": "USD" },
-            { "@type": "Offer", "name": "Pro", "description": "Unlimited re-validation, warm reach, and market monitoring.", "price": "39", "priceCurrency": "USD" }
+            { "@type": "Offer", "name": "Free", "description": "Capture your whole circle, smart tags, and surface the right people when you need them.", "price": "0", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Pro", "description": "Deep profile enrichment, the strategy deep dive, and warm-reach drafting.", "price": "39", "priceCurrency": "USD" }
           ]
         },
         {
@@ -68,21 +78,27 @@
     }
     </script>
   </head>
-  <body style="background-color:#0A0A0B;">
-    <div id="root">
-      <!-- Instant branded splash, replaced the moment React mounts (no blank flash). -->
-      <div id="boot-splash">
-        <div class="boot-orb"></div>
-      </div>
+  <body>
+    <div id="root"></div>
+    <!-- Branded splash kept OUTSIDE #root so React mounting doesn't drop it. It
+         stays up until the app has applied the resolved theme (or a safety
+         timeout), then fades - so the dark→light theme settle is never seen. -->
+    <div id="boot-splash">
+      <div class="boot-orb"></div>
     </div>
     <style>
-      #boot-splash { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#0A0A0B; }
+      /* Theme-aware splash background (set by the pre-paint script's html.dark). */
+      #boot-splash { position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:#F8F6F2; transition:opacity .3s ease; }
+      html.dark #boot-splash { background:#0A0A0B; }
+      #boot-splash.hide { opacity:0; pointer-events:none; }
       #boot-splash .boot-orb { width:60px; height:60px; border-radius:50%;
         background:radial-gradient(circle, rgba(224,162,60,0.95), rgba(224,162,60,0.22) 48%, transparent 70%);
         animation:bootpulse 1.7s ease-in-out infinite; }
       @keyframes bootpulse { 0%,100%{opacity:.45; transform:scale(.9)} 50%{opacity:1; transform:scale(1.12)} }
       @media (prefers-reduced-motion: reduce) { #boot-splash .boot-orb { animation:none; } }
     </style>
+    <!-- The splash is hidden from the bundle (hideBootSplash) - see main.tsx /
+         PreferencesApplier / BootSplashGate. No inline script: the CSP blocks it. -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
