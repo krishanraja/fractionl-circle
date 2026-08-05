@@ -6,13 +6,18 @@ room) are superseded and live in `docs/_archive/`.*
 
 ## North Star (the one outcome, and the one metric that proves it)
 
+**Canonical since 2026-08-04: [`docs/NORTH_STAR.md`](./NORTH_STAR.md).** Read that first. It is the
+ratified version and it wins over any restatement here or anywhere else.
+
 **The outcome:** a recently independent senior operator turns a scary "can I sell this?" idea into a
 grounded, honest read plus named warm-network moves they actually take toward their first retained client.
 
-**The moat metric:** weekly returning operators who complete a read AND act on at least one warm-reach move
-(a `thesis_runs` row whose `step_progress` advanced AND a `circle_person.last_interaction_at` stamped in the
-same week). Reads without moves are curiosity; moves without reads are noise; the two together, repeated
-weekly, are the product working. Everything in this doc is graded against that outcome and that number.
+**The metric, in one line:** **validated first steps**, the weekly count of users who both complete a
+read AND take their first mapped step within 7 days of it. Reads without moves are curiosity; moves
+without reads are noise; the two together, repeated weekly, are the product working. Everything in
+this doc is graded against that outcome and that number. `NORTH_STAR.md` carries the argument for it,
+what it rules out, and the honest list of what still needs instrumenting before the number can be
+reported rather than estimated.
 
 ## What changed (2026-07-09): Freya + the "make it stronger" overlay
 
@@ -461,7 +466,11 @@ open-web research (Perplexity) + LLM synthesis into the dossier and re-embeds th
 
 Source of truth: `src/lib/tiers.ts` (price labels, feature bullets, Stripe price-id env vars);
 `src/lib/creditPacks.ts` for the one-time credit packs.
-The DB-level tier enum is `free | pro | executive`. Three tiers:
+**One price, one story (owner decision, 2026-08-04):** two tiers are sold, Free and Pro. The
+$79 `executive` / "Chief of Staff" tier was never sold and is removed from the catalogue,
+along with the `VITE_STRIPE_EXEC_*` env vars. The DB-level tier enum still carries its
+historical `free | pro | executive` values, and `getTier()` falls back to Free for any slug
+that is no longer sold, so existing rows and the server-side tier map are unaffected.
 
 - **Free (Freemium), $0:** one full read of where you stand, your plan and next moves, build
   your circle by screenshot or CSV. No paywall on first value.
@@ -470,10 +479,6 @@ The DB-level tier enum is `free | pro | executive`. Three tiers:
   Stripe Price object must be set to $39 in the production Stripe mode; the app reads
   `VITE_STRIPE_PRO_MONTHLY_PRICE_ID`.) Pro is the highlighted CTA tier; the in-app gate copy
   quotes "$39 a month".
-- **Chief of Staff (`executive`), $79/mo:** unlimited reads and warm reach, a weekly brief on
-  your network and market, external signal feeds (RFPs, job changes, trends), cross-user market
-  intelligence, priority compute + white-glove concierge onboarding. Reads
-  `VITE_STRIPE_EXEC_MONTHLY_PRICE_ID`.
 
 In the product flow, free users get one full pass and the read; the deepening tools (re-reads,
 the path, warm reach, ongoing monitoring) are Pro. `ThesisApp.tsx` opens the Pro gate when a

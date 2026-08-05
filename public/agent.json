@@ -1,81 +1,90 @@
 {
-  "schema": "https://circle.fractionl.ai/agent.schema.json",
-  "version": "2026-05-30",
-  "product": "Circle by Fractionl",
-  "pitch": "Talk to it once. It turns what you said into Ideas, cross-references your Ideas against everyone you know overnight, and drops a hand-drafted Move on the right person while you sleep.",
-  "category": "relationship-to-revenue engine for portfolio operators",
+  "version": "2026-08-04",
+  "product": "Fractionl",
+  "domain": "circle.fractionl.ai",
+  "one_liner": "The thesis-validation engine for fractional executives.",
+  "pitch": "You bring your idea for how you want to fractionalize, what you want to offer and to whom. Fractionl validates that idea against the real market, in the open, then turns it into named warm-network moves toward your first retained client.",
+  "category": "thesis validation and warm-network go-to-market engine for independent operators",
+  "supersedes": "Any description of Circle as a relationship-to-revenue engine, an overnight hand-drafted Move, a 14-day trial, or $30 / $79 tiers describes a retired product and is wrong.",
   "icp": {
-    "primary": "Fractional CMO / CFO / CTO / COO / CHRO",
-    "profile": "15+ years experience, ex-VP or C-suite, $150K to $1.5M annually across 2 to 7 concurrent retainers, whose relationships and sellable ideas live in their head. Mobile during the day, desktop on Sunday for planning.",
-    "secondary": [
-      "Independent strategy advisors and boutique consultants",
-      "Thought-leader operators (author, keynote speaker, workshop facilitator)",
-      "Year-1 emerging fractionals"
-    ],
-    "anti_icp": "In-house SDR / outbound BDR sales teams (3+ seats). Circle is a single-operator product, not a Salesforce/HubSpot replacement for enterprise sales orgs."
+    "primary": "Ex-VP, ex-SVP and ex-C-suite operators going fractional: CFO, CMO, COO, CRO, CTO, CHRO.",
+    "profile": "15+ years of experience, 0 to 18 months into independence. Deep capability, no experience generating their own demand, usually no defined offer or ICP yet. That window is both the danger zone and the buying window.",
+    "anti_icp": "In-house sales teams, agencies buying seats, and anyone shopping for a CRM. Fractionl is a single-operator product about one venture."
   },
-  "magic_moment": "Talk for about 90 seconds, get sellable Ideas, and wake to a hand-drafted Move on the right person.",
+  "shape": {
+    "summary": "Two halves in one mobile-first app, read as one product.",
+    "plan": "Reads the live market against what you want to offer and shows where you stand: a strength score from 0 to 100, banded evidence-backed signals, and your next moves.",
+    "circle": "Your warm network. The people who can help you sell, kept warm over time, with the drafts to actually reach them."
+  },
+  "flow": [
+    "Start here: read-first onboarding. A bit about you is the only required input; your people and an admired business are optional sharpeners, never a wall in front of the value.",
+    "Guided dialogue: one question at a time, with a sufficiency judge that pushes back on a thin idea and names what is missing before spending a research call.",
+    "The ember is your strength score: the brand mark is a gauge fed by the real 0 to 100 score, dim when the read is thin.",
+    "See how it lands: live web research runs in the open, roughly 20 seconds, with low-confidence findings flagged rather than faked.",
+    "Value Prop, the read: a scorecard shown as bands with evidence and a confidence mark, never fake precise numbers.",
+    "Make it stronger: its own screen, with Freya. Screenshot a business you admire, voice a concern and have it researched, voice an idea to fold in, or answer the single highest-leverage question.",
+    "Your next action: the path to a first retained client as a timeline, where the primary button performs the move rather than just ticking it.",
+    "Reach out: the people going quiet, each with a grounded pre-written draft and one tap into your own email or LinkedIn.",
+    "The circle: add people by screenshot, typing, pasting, Google or Microsoft contacts sync, or the LinkedIn Connections CSV, then search your whole network semantically with cited evidence."
+  ],
   "tiers": [
     {
       "slug": "free",
-      "name": "Freemium",
-      "tagline": "Try the magic.",
+      "name": "Free",
+      "tagline": "See where you stand.",
       "price_monthly_usd": 0,
       "price_label": "Free",
-      "stripe_price_id": null,
-      "highlighted": false
+      "highlighted": false,
+      "includes": [
+        "One full read of where you stand",
+        "Your plan and next moves",
+        "Build your circle by screenshot or CSV"
+      ]
     },
     {
       "slug": "pro",
-      "name": "Operator",
-      "tagline": "Help me run.",
-      "price_monthly_usd": 30,
-      "price_label": "$30",
-      "stripe_price_id": null,
-      "highlighted": true
-    },
-    {
-      "slug": "executive",
-      "name": "Chief of Staff",
-      "tagline": "Help me scale.",
-      "price_monthly_usd": 79,
-      "price_label": "$79",
-      "stripe_price_id": null,
-      "highlighted": false
+      "name": "Pro",
+      "tagline": "Build the whole portfolio.",
+      "price_monthly_usd": 39,
+      "price_label": "$39",
+      "highlighted": true,
+      "includes": [
+        "Unlimited reads as your plan evolves",
+        "Real warm reach from your full network",
+        "Specific, named next moves",
+        "Ongoing market monitoring"
+      ]
     }
   ],
+  "credit_packs": {
+    "what": "Optional one-time top-ups that fund max-effort deep research on a single person in your network. A top-up, not a tier. Nothing requires them.",
+    "credits_per_deep_dive": 20,
+    "packs": [
+      { "slug": "starter", "name": "Starter", "credits": 120, "price_label": "$15" },
+      { "slug": "pro", "name": "Pro", "credits": 650, "price_label": "$70" },
+      { "slug": "scale", "name": "Scale", "credits": 3000, "price_label": "$280" }
+    ]
+  },
   "current_offer": {
-    "type": "trial",
-    "description": "New accounts trial Operator features for 14 days, then revert to Freemium unless upgraded.",
+    "type": "none",
+    "description": "No trial. Free is genuinely free and there is no paywall on first value. Pro is $39 per month, and it is the only subscription price.",
     "promo_codes_enabled": true
   },
   "stripe_account": "fractionl_ai",
-  "status": {
-    "live": [
-      "voice onboarding to Ideas",
-      "Match Engine drafts a Move (currently via a manual action, not yet automatic overnight)",
-      "Sunday Letter (text on Operator+; 90-second audio on Chief of Staff)",
-      "Circle capture (LinkedIn CSV, Google/Microsoft contacts, browser extension, screenshot-to-contact, voice) + LLM dedupe on Operator+",
-      "three Stripe tiers + checkout"
-    ],
-    "roadmap": [
-      "automatic overnight match + push (today it is a manual button; the PWA has no push)",
-      "people seeded from the onboarding voice note",
-      "trigger layer (job-change / funding / news signals)",
-      "voice fingerprint",
-      "one-tap real send (Gmail/Outlook draft or LinkedIn composer)",
-      "public Signal share posts",
-      "anonymous live-mic demo on the landing page",
-      "SSG marketing surface and the move of the authed app to /app"
-    ]
-  },
+  "honesty": [
+    "Scores are bands with evidence and a confidence mark, never invented precision, and the product says so when a read is thin.",
+    "Every claim about a person in your network must cite a real field. An inferred warm route with no cited evidence is dropped rather than guessed.",
+    "An empty circle honestly reads warm reach as low. That is the earned reason to build it, not a bug.",
+    "Ongoing market monitoring on Pro is still being built out. The live market instrument is real; a per-user re-validation schedule is not shipped yet.",
+    "Signing in lands you straight on the product. There is no separate marketing site at this domain."
+  ],
   "urls": {
-    "marketing": "https://circle.fractionl.ai",
-    "app": "https://circle.fractionl.ai/app",
-    "pricing": "https://circle.fractionl.ai/pricing",
-    "signup": "https://circle.fractionl.ai/app",
-    "sunday_letter_feed": "https://circle.fractionl.ai/feed/sunday-letter.json",
+    "product": "https://circle.fractionl.ai/",
+    "sign_in": "https://circle.fractionl.ai/auth",
+    "privacy": "https://circle.fractionl.ai/privacy",
+    "terms": "https://circle.fractionl.ai/terms",
     "llms_txt": "https://circle.fractionl.ai/llms.txt",
     "agent_json": "https://circle.fractionl.ai/agent.json"
-  }
+  },
+  "routes_that_do_not_exist": ["/app", "/pricing"]
 }

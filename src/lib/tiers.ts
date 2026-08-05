@@ -1,7 +1,10 @@
-// Tier catalogue for the Circle / Fractionl redesign.
-// DB-level tier enum is `free | pro | executive`; display-level naming is
-// Freemium / Operator / Chief of Staff. This file is the single source of
-// truth for price labels, feature bullets, and Stripe price ID env vars.
+// Tier catalogue for Fractionl.
+// One price, one story: Free and Pro at $39/mo. The legacy $79 'executive'
+// tier was retired on 2026-08-04 (nothing read it; only getPriceId('pro') is
+// called). The DB enum still carries the historical 'executive' value, so
+// SubscriptionTier keeps it and getTier() falls back to Free for any slug that
+// is no longer sold. This file is the single source of truth for price labels,
+// feature bullets, and Stripe price ID env vars.
 
 import type { SubscriptionTier } from '@/hooks/useSubscription';
 
@@ -10,7 +13,7 @@ export interface TierDisplay {
   name: string;                   // User-facing tier name.
   tagline: string;
   priceMonthly: number;           // 0 for free.
-  priceMonthlyLabel: string;      // "$30" etc.
+  priceMonthlyLabel: string;      // "$39" etc.
   priceIdEnv: string | null;      // import.meta.env key for Stripe price ID.
   highlighted: boolean;           // Primary CTA tier.
   features: string[];
@@ -48,23 +51,6 @@ export const TIERS: TierDisplay[] = [
       'Ongoing market monitoring',
     ],
     ctaLabel: 'Upgrade to Pro',
-  },
-  {
-    slug: 'executive',
-    name: 'Chief of Staff',
-    tagline: 'Help me scale.',
-    priceMonthly: 79,
-    priceMonthlyLabel: '$79',
-    priceIdEnv: 'VITE_STRIPE_EXEC_MONTHLY_PRICE_ID',
-    highlighted: false,
-    features: [
-      'Unlimited reads and warm reach',
-      'Your Monday chief-of-staff brief: your value prop, your market, the week\'s decision',
-      'External signal feeds (RFPs, job changes, trends) - coming',
-      'Cross-user market intelligence - coming',
-      'Priority compute, white-glove concierge onboarding',
-    ],
-    ctaLabel: 'Upgrade to Chief of Staff',
   },
 ];
 

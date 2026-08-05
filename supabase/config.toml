@@ -53,6 +53,12 @@ verify_jwt = true
 [functions.emit-lifecycle]
 verify_jwt = true
 
+# Public by design: anonymous visitors have no JWT, so the top-of-funnel
+# 'landed' event can only be recorded by an unauthenticated endpoint. It accepts
+# anonymous events only and holds no user identity.
+[functions.track-event]
+verify_jwt = false
+
 # On-demand warm-digest preview (user JWT).
 [functions.warm-digest]
 verify_jwt = true
