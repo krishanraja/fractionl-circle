@@ -27,7 +27,8 @@ In **APIs & Services → Library**, enable:
   live - see `supabase-custom-domain.md` - `fractionl.ai` alone is correct.)
 - Save.
 
-On the **Scopes** step, add these and nothing else (non-restricted only):
+On the **Scopes** step, add these (matches `GOOGLE_BASE_SCOPES` in
+`supabase/functions/_shared/googleOauth.ts`, plus the calendar scope):
 
 ```
 openid
@@ -35,12 +36,20 @@ email
 profile
 https://www.googleapis.com/auth/contacts.readonly
 https://www.googleapis.com/auth/contacts.other.readonly
+https://www.googleapis.com/auth/gmail.readonly
+https://www.googleapis.com/auth/gmail.send
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
 
-Do **not** add `gmail.readonly` or any other restricted scope - that triggers
-Google's annual CASA audit (~$15k, 4–8 weeks). We do not currently use any
-restricted scopes.
+> **Correction (2026-08-09):** this doc previously said "we do not use any restricted scopes" - that
+> was wrong. `gmail.readonly` and `gmail.send` **are** in the base scope set the app requests today,
+> even though no code in this repo currently calls the Gmail API (only People API and Calendar API are
+> used - see `docs/PRODUCT.md`). Restricted scopes require Google's annual CASA audit (~$15k, 4–8
+> weeks) before the OAuth app can be published for the general public; until that happens (or the
+> unused scopes are removed - a product/eng call, not documented here as decided), the app must stay
+> in Google's **Testing mode**, limited to the test users you add below. `docs/google-oauth-verification.md`
+> has a matching footnote. If you're setting this up fresh and don't need Gmail access, ask before
+> requesting these two scopes - they currently buy nothing and block publishing.
 
 Add test users (any Gmail accounts you'll sign in with) until the app is
 published.
@@ -117,6 +126,11 @@ directly with no user token. State validation in the callback covers auth.
 ## Publishing (later)
 
 To let non-test-users connect, submit the OAuth consent screen for
-verification. Since we only use non-restricted + sensitive scopes, this is
-Google's lighter-weight "brand verification" - a few screenshots and a demo
-video, typically a few days' turnaround.
+verification. **As long as `gmail.readonly` / `gmail.send` stay in the requested
+scope set, this is a restricted-scope submission and requires the CASA security
+audit (~$15k, 4–8 weeks)** - not the lighter "brand verification" path. Drop the
+two unused Gmail scopes first if the goal is just to publish the
+contacts/calendar connect flow: with only `contacts.readonly`,
+`contacts.other.readonly`, and `calendar.events.readonly` (all non-restricted /
+sensitive), publishing goes through Google's lighter-weight brand verification -
+a few screenshots and a demo video, typically a few days' turnaround.

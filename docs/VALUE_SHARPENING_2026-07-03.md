@@ -1,5 +1,13 @@
 # Value sharpening: the chief of staff that remembers (2026-07-03)
 
+> **Superseded on pricing (2026-08-04):** this doc's "chief of staff" framing and the $79 `executive`
+> tier it builds toward (see "move 6" below) were later fully retired - that tier was never sold and
+> no longer exists in `src/lib/tiers.ts`. The metric this doc was optimising toward has also been
+> superseded by `docs/NORTH_STAR.md`'s "validated first steps." Kept as a historical decision record;
+> the shipped mechanics it describes (context loading, the decision log, the sparring partner,
+> editable drafts) are still live and accurately described in `docs/PRODUCT.md`. Do not use the
+> pricing/tier framing here.
+
 > Strategy + decision record for the sharpening pass driven by the Mindmaker evidence corpus
 > *"How a Non-AI-Native Business Leader Becomes an AI-Native Operator"* (July 2026). The question
 > it answers: how does that corpus sharpen Circle's existing value - without interrupting the

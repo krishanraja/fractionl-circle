@@ -1,18 +1,25 @@
-# Circle - Subprocessors
+# Fractionl (Circle) - Subprocessors
 
-**Last reviewed:** 2026-06-02. This is the list of third parties that may process personal data on Circle's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing - some are conditional on features a given user enables.
+**Last reviewed:** 2026-08-09. This is the list of third parties that may process personal data on Fractionl's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing - some are conditional on features a given user enables or a key being configured.
 
 | Subprocessor | Purpose | Personal data processed | Region | DPA |
 |---|---|---|---|---|
 | **Supabase** (AWS) | Database, auth, edge functions, storage | All app data, account identifiers | AWS `us-east-1` (USA) | Required - Supabase offers a DPA |
 | **Vercel** | Web hosting, CDN, edge delivery | IP addresses, request metadata | Global edge / USA | Required - Vercel DPA |
-| **OpenAI** (API) | Idea extraction, match drafting, voice transcription (`gpt-4o-mini`) | Voice transcripts, idea text, contact names/titles sent in prompts | USA | Required - OpenAI API DPA; API data not used for training. Consider zero-retention endpoint for sensitive text |
-| **Stripe** | Subscription billing | Name, email, billing/payment data | USA/global | Required - Stripe DPA |
-| **Resend** | Transactional email | Email address, message content | USA | Required - Resend DPA |
-| **Google** (OAuth / Gmail API) | Contact & calendar sync **for users who connect it** | OAuth tokens, contacts, message metadata | USA/global | Conditional on user connection; Google API Services User Data Policy applies |
-| **Microsoft** (OAuth / Graph) | Contact & mail sync **for users who connect it** | OAuth tokens, contacts, message metadata | USA/global | Conditional on user connection |
+| **Perplexity** (API) | Live market research for the read (`validate-thesis`) and the voiced "concern" strengthener (`strengthen-plan`) | The user's idea/offer text, profile facts sent as research context | USA | Required - Perplexity API DPA; confirm training/retention posture |
+| **OpenAI** (API) | Voice transcription (Whisper), person-search embeddings (`text-embedding-3-small`), person dedupe, vision fallback (screenshot/business-card parsing), LLM fallback in the provider chain | Voice transcripts, idea/offer text, contact names/titles/notes sent in prompts or embedded | USA | Required - OpenAI API DPA; API data not used for training. Consider a zero-retention endpoint for sensitive text |
+| **Anthropic** (API) | Preferred vision model for screenshot-to-contact and LinkedIn enrichment (`claude-haiku-4-5`) | Screenshot images / extracted profile text sent for parsing | USA | Required - Anthropic API DPA |
+| **Google Gemini**, via the Lovable AI Gateway | Sufficiency judging (`judge-thesis`), vision parsing (`extract-admire`, `extract-contact`), inner-circle ranking, insight generation - also the LLM fallback when OpenAI/Anthropic are unavailable | Idea/offer text, profile facts, screenshot-derived text | USA/global (gateway-routed) | Required - confirm the Lovable Gateway's DPA covers pass-through to Google |
+| **Stripe** | Subscription billing + one-time credit-pack purchases | Name, email, billing/payment data | USA/global | Required - Stripe DPA |
+| **Resend** | Transactional email (the weekly "keep your circle warm" digest, chief-of-staff brief where applicable, re-engagement sweep) | Email address, message content (including contact names in the digest) | USA | Required - Resend DPA |
+| **Twilio** | SMS delivery (`send-sms`) and phone-number lookup enrichment (`contact-enrich`) **for users/features that use it** | Phone numbers, SMS content | USA/global | Required - Twilio DPA; conditional on the feature being used |
+| **Apollo.io** | Email/LinkedIn contact enrichment (`contact-enrich`, `enrich-linkedin`) **when `APOLLO_API_KEY` is configured** | Contact email, name, company - looked up against Apollo's dataset | USA | Required - Apollo DPA; conditional on the key being set |
+| **Clearbit** (HubSpot) | Email-based contact enrichment fallback (`contact-enrich`) **when `CLEARBIT_API_KEY` is configured** | Contact email - looked up against Clearbit's dataset | USA | Required - Clearbit DPA; conditional on the key being set |
+| **Google** (OAuth: People API, Calendar API; Custom Search for LinkedIn lookup) | Contact & calendar sync, LinkedIn profile search **for users who connect it** | OAuth tokens, contacts, calendar metadata, search queries | USA/global | Conditional on user connection; Google API Services User Data Policy applies |
+| **Microsoft** (OAuth / Graph) | Contact & calendar sync **for users who connect it** | OAuth tokens, contacts, calendar metadata | USA/global | Conditional on user connection |
 
 ## Notes
 - **Data residency:** the production database is in `us-east-1` (USA). For EU data subjects this is an international transfer requiring an appropriate safeguard (SCCs) - disclose in the privacy policy.
-- **No data sale:** Circle does not sell or share personal data for cross-context behavioural advertising (relevant to CCPA/CPRA).
-- **Roadmap enrichment vendors** (Apollo, People Data Labs, BuiltWith, Exa) are **not** wired into Circle today. If/when the demand-graph enrichment ships, add each here with a DPA before going live, because they introduce third-party personal data (the user's network).
+- **No data sale:** Fractionl does not sell or share personal data for cross-context behavioural advertising (relevant to CCPA/CPRA).
+- **Google scope note (needs owner confirmation, not resolved by this pass):** the Google OAuth client requests `gmail.readonly` and `gmail.send` as part of its default (non-feature-flagged) scope set (`supabase/functions/_shared/googleOauth.ts`), even though no code in this repo calls the Gmail API - only the People API and Calendar API are used. Because these are Google-restricted scopes, the OAuth app must stay in Google's Testing mode (test users only) rather than published, per `docs/google-oauth-verification.md`'s own footnote. This subprocessor list and `docs/privacy-policy.md` describe only the contact/calendar processing the app actually performs; if the unused Gmail scopes are intentional (e.g. reserved for a near-term feature), document why here, otherwise they should be dropped from the requested scope set.
+- **Enrichment vendors previously called "roadmap, not wired in"** (Apollo, Clearbit) are corrected above - both are live, conditional on an API key being set. Enrichment vendors genuinely not integrated as of this review: People Data Labs, BuiltWith, Exa. Add any of these here with a DPA before wiring them in, because they introduce third-party personal data (the user's network).

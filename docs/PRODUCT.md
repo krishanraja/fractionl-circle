@@ -1,6 +1,7 @@
 # Fractionl: warm Circle + Plan
 
-*Canonical product doc. Last updated 2026-07-09 (Freya + the strengthener overlay). This is the source of truth for what
+*Canonical product doc. Last updated 2026-08-09 (doc reconciliation pass; content current through the
+2026-08-04 pricing simplification and agent-facing product truth rewrite). This is the source of truth for what
 the product is today. Earlier strategy docs (the Circle CRM and the Path Room decision
 room) are superseded and live in `docs/_archive/`.*
 
@@ -560,14 +561,25 @@ locked user reaches a deep phase.
 
 **Edge functions** (`supabase/functions/`). Canonical live set for the Plan + Circle product:
 `validate-thesis`, `judge-thesis`, `next-question`, `strengthen-plan`, `market-pulse`, `extract-admire`,
-`extract-contact`, `enrich-linkedin`, `suggest-tags`, `generate-signals`, `rank-inner-circle`,
-`warm-digest`, `compute-warmth`, `cron-reengage`, `send-push`, `emit-lifecycle`, the
-`sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`, `merge-persons`, `contact-enrich`,
-`delete-account`, `audit-log`, `transcribe`. The legacy match/sunday-letter functions
-(`cron-match-engine`, `run-match-engine`, `cron-sunday-letter`, `generate-sunday-letter`,
-`sunday-letter-feed`, `decision-engine`, `extract-ideas`, `log-move-sent`, `log-win`,
-`parse-onboarding`) and the `_shared` match/sunday-letter cores were **removed** this cycle.
-Key ones:
+`extract-contact`, `extract-identity`, `extract-read`, `enrich-linkedin`, `enrich-max`, `suggest-tags`,
+`generate-signals`, `generate-user-insights`, `rank-inner-circle`, `search-network`, `embed-circle`,
+`cron-embed-circle`, `warm-digest`, `compute-warmth`, `cron-reengage`, `cron-warm-digest`, `send-push`,
+`send-sms`, `emit-lifecycle`, `track-event` (public, `verify_jwt = false`; records an anonymous `landed`
+event from the browser via the server-held `ATTRIBUTION_INGEST_SECRET`, added 2026-08-04 to close the
+top of the acquisition funnel - see `AGENT_BRIEFING.md` §10 for the full attribution contract), the
+`sync-*` / `cron-sync-*` / `oauth-*` / `stripe-*` sets, `dedupe-circle`,
+`merge-persons`, `resolve-contact`, `contact-enrich`, `linkedin-search`, `extension-ingest`,
+`parse-screenshot`, `parse-contact-image`, `parse-voice-contact`, `parse-voice-log`, `parse-voice-seed`,
+`notify-concierge-event`, `delete-account`, `audit-log`, `transcribe`. Two functions are deployed but
+not called by any current frontend surface: `demo-extract` (a rate-limited, unauthenticated "anonymous
+live-mic demo" endpoint for logged-out visitors - real and safety-hardened, but nothing in `src/`
+invokes it today, so treat the landing-page voice demo as not live until it's wired up) and
+`test-google-secret` (explicitly disabled in source - kept as a 404-avoidance stub after a prior
+security issue). The legacy
+match/sunday-letter functions (`cron-match-engine`, `run-match-engine`, `cron-sunday-letter`,
+`generate-sunday-letter`, `sunday-letter-feed`, `decision-engine`, `extract-ideas`, `log-move-sent`,
+`log-win`, `parse-onboarding`) and the `_shared` match/sunday-letter cores were removed in the 2026-06-29
+cycle and no longer exist in source. Key ones:
 - `validate-thesis` - live Perplexity research, then provider-fallback LLM structuring into
   the scorecard + steps; reads the circle for warm reach AND `thesis_inspiration` to sharpen
   "Your edge"; persists each run. Folds unapplied `thesis_answers` into the next read.
@@ -629,10 +641,15 @@ tier enforcement lives in `validate-thesis` (free = one read to 402) and `search
 read error). Email auto-confirm is on at the Supabase Auth level (signup returns a live session).
 
 **Secrets** (Supabase function secrets): `PERPLEXITY_API_KEY`, `GOOGLE_API_KEY`,
-`LOVABLE_API_KEY` (LLM), `RESEND_API_KEY` (digest email), `VAPID_*` (web push), `CRON_SECRET`
+`LOVABLE_API_KEY` (LLM), `ANTHROPIC_API_KEY` (vision, preferred) / `OPENAI_API_KEY` (vision + embeddings
+fallback), `RESEND_API_KEY` (digest email), `VAPID_*` (web push), `CRON_SECRET`
 (cron auth), `APP_URL`, Google/Microsoft OAuth client id/secret; `STRIPE_SECRET_KEY` + the
-price-id Vercel envs for checkout. Two off-by-default flags gate native calendar write
-(`GOOGLE_CALENDAR_WRITE_ENABLED`, `WARM_DIGEST_NATIVE_CALENDAR`).
+price-id Vercel envs for checkout; `STRIPE_CREDIT_PACKS` (price→credits map); `ATTRIBUTION_INGEST_SECRET`
+(server-side header for `track-event`'s forward to the Mindmaker OS warehouse - the browser never holds
+it). Two off-by-default flags gate native calendar write
+(`GOOGLE_CALENDAR_WRITE_ENABLED`, `WARM_DIGEST_NATIVE_CALENDAR`). Optional, feature-conditional:
+`APOLLO_API_KEY` / `CLEARBIT_API_KEY` (contact enrichment), `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`
+(phone lookup + SMS).
 
 **Scheduled jobs** (pg_cron, see `supabase/cron_setup.sql`). The live cron set is six jobs:
 `cron-sync-google` (nightly 06:00 UTC) and `cron-sync-microsoft` (07:00) contact+calendar
@@ -710,7 +727,10 @@ Driven by the AI-native operator evidence corpus; full strategy + decision recor
 
 **Second wave, same day (the chief-of-staff tranche):**
 
-- **The Monday chief-of-staff brief (the $79 tier's first bullet, now LIVE).** Executive
+- **The Monday chief-of-staff brief (the $79 tier's first bullet, now LIVE).** *(Superseded
+  2026-08-04: the $79 `executive` tier this was gated to was retired - see "Pricing" above. The
+  brief's code is still live and unchanged; it just has no purchasable tier gating access to it
+  today.)* Executive
   subscribers' Monday email leads with where they stand (the same 0-100 as Home, computed
   server-side by `_shared/sharpness.ts` - a deliberate port of `src/pathroom/sharpness.ts`,
   kept honest by a parity unit test), their market this week (deterministic Pulse numbers via

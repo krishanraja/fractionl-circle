@@ -1,6 +1,8 @@
 # The Fractional Executive - ICP & Archetype (deep reference)
 
-> A grounded profile of the recently independent senior leader who has decided to test fractional executive work. This is the canonical "who is the buyer, deeply" reference behind the concise operational ICP in [DOCS.md § 3](../DOCS.md#3-icp--who-circle-is-for) and the fleet pitch brief in [AGENT_BRIEFING.md § 2](../AGENT_BRIEFING.md). Those two are the quick-reference; this is the depth - motivations, psychology, the buying-trigger window, and the market data underneath.
+**Last updated:** 2026-08-09 (verified against current branding; no factual changes to the market research below).
+
+> A grounded profile of the recently independent senior leader who has decided to test fractional executive work. This is the canonical "who is the buyer, deeply" reference behind the concise operational ICP in [AGENT_BRIEFING.md § 2](../AGENT_BRIEFING.md) and the machine-readable `icp` block in `public/agent.json`. DOCS.md is superseded (see its own changelog); AGENT_BRIEFING.md is the current quick-reference, this is the depth - motivations, psychology, the buying-trigger window, and the market data underneath.
 
 Built for Circle/Pulse positioning, outbound targeting, and product-wedge decisions. Compiled from 2025–2026 published research (see [Sources](#sources--further-reading)).
 
@@ -184,12 +186,13 @@ An ICP for a fractional is not a company profile. It is the intersection of: the
 
 ---
 
-## What this means for Circle
+## What this means for Fractionl
 
-This is the exact wound Circle sits in. The fractional is a product with deep capability and no distribution; Circle is the operating system for the business-of-one they did not know they had to build.
+This is the exact wound Fractionl sits in. The fractional is a product with deep capability and no distribution; Fractionl is the operating system for the business-of-one they did not know they had to build.
 
-- **Circle (relationship moves)** answers *"your network is your only channel and you are not working it systematically."*
-- **Pulse (attribution)** answers *"you have no idea which of your scattered efforts produced the last client, so you cannot repeat it."*
+- **Fractionl's Circle tab (the warm network)** answers *"your network is your only channel and you are not working it systematically."*
+- **Fractionl's Plan tab (the grounded read)** answers *"I have an idea for what to sell but no honest read on whether it's real."*
+- **Pulse** (the sister product at pulse.fractionl.ai, the free Fractional Working Index) answers *"you have no idea which of your scattered efforts produced the last client, so you cannot repeat it"* and feeds Fractionl's live market read - see `AGENT_BRIEFING.md` §8.
 
 We are not selling a CRM. We are selling the operating system for the business-of-one.
 

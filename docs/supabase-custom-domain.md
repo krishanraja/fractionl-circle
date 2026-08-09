@@ -1,5 +1,11 @@
 # Supabase custom auth domain - branding the Google sign-in screen
 
+*Verified 2026-08-09: the setup steps below are internally consistent with the current code
+(`src/integrations/supabase/client.ts`, `_shared/googleOauth.ts` both read `VITE_SUPABASE_URL` /
+`SUPABASE_URL`). Whether the custom domain has actually been cut over in production is a live
+deployment fact this docs-only review cannot confirm from source - check the live consent screen
+per the "Verify" section below before relying on this being done.*
+
 ## Why
 
 When a user taps **Sign in with Google**, Google's consent screen reads:

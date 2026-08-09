@@ -31,7 +31,8 @@ Copy the **Application (client) ID**.
 ## 3. API permissions
 
 **API permissions** → **Add a permission** → **Microsoft Graph** →
-**Delegated permissions** → add **only**:
+**Delegated permissions** → add (matches `MS_SCOPES` in
+`supabase/functions/_shared/microsoftOauth.ts`):
 
 ```
 openid
@@ -41,10 +42,18 @@ offline_access
 User.Read
 Contacts.Read
 Calendars.Read
+Mail.Read
+Mail.Send
 ```
 
-Do **not** add `Mail.Read` or any `Mail.*` scope. We deliberately stay out
-of mail bodies (parallel to Google's restricted Gmail scope).
+> **Correction (2026-08-09):** this doc previously said not to add `Mail.Read`/`Mail.Send`, parallel to
+> avoiding Google's restricted Gmail scope. That's no longer what the code does - `MS_SCOPES` requests
+> both today. As with the Google Gmail scopes (see `docs/google-oauth-setup.md`), no code in this repo
+> currently reads or sends mail via Microsoft Graph; `sync-microsoft` / `cron-sync-microsoft` only pull
+> contacts and calendar events. Unlike Gmail scopes, these are standard delegated Microsoft Graph
+> permissions and don't require admin consent or an equivalent of Google's CASA audit, so they don't
+> block publishing the app - but they're still unused scope overreach worth a product/eng decision to
+> keep or drop.
 
 You typically don't need admin consent for these - they're standard user
 scopes.

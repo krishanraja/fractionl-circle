@@ -61,4 +61,9 @@ draft is delivered as a one-tap pre-filled `mailto:` link in the email, which
 needs no scope. The code path for native drafts is intentionally not built yet.
 
 (Note: the OAuth app already requests `gmail.send`/`gmail.readonly` in Testing
-mode for test users only; going public with those is the same CASA gate.)
+mode for test users only; going public with those is the same CASA gate. As of
+2026-08-09 no code in this repo actually calls the Gmail API with that grant -
+see the correction in `docs/google-oauth-setup.md` and the open item in
+`SECURITY.md`. If Gmail access isn't on the near-term roadmap, dropping those
+two scopes lets the contacts/calendar flow publish now via the lighter
+brand-verification path instead of waiting on CASA.)

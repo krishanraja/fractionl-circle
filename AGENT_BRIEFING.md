@@ -3,11 +3,11 @@
 This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, and revenue agents) reads to autonomously sell and market Circle. It is self-contained: an agent should never need to read the codebase. It encodes everything needed to pitch, plus a hard LIVE-vs-ROADMAP rule so the fleet never overclaims.
 
 **Canonical domain:** circle.fractionl.ai (NOT fractionl.com, which is the company site).
-**Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json
+**Product-truth URLs (always fetch these for current pricing/offer before pitching):** https://circle.fractionl.ai/llms.txt and https://circle.fractionl.ai/agent.json - these are regenerated from the same source (`src/lib/tiers.ts`, `docs/NORTH_STAR.md`) and are the fastest way to catch drift in this brief.
 **Stripe account:** fractionl_ai
-**Last verified against repo (2026-07-03):** README.md, docs/PRODUCT.md, src/lib/tiers.ts, src/pathroom/{CircleApp,StartHere,copy,ThesisApp,ReturnSurface}.tsx, docs/VALUE_SHARPENING_2026-07-03.md.
+**Last verified against repo (2026-08-09):** README.md, docs/PRODUCT.md, docs/NORTH_STAR.md, docs/icp-archetype.md, src/lib/tiers.ts, src/lib/creditPacks.ts, public/llms.txt, public/agent.json.
 
-> **Important - the product changed.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter). That whole model was removed. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it.
+> **Important - the product changed twice.** Circle is no longer the "Circle CRM" generation (Ideas → Matches → Moves → Streams → Sunday Letter) - that whole model was removed 2026-06-29. Today Circle is two halves in one mobile-first app: **Circle** (your warm network) and **Plan** (read the live market against what you want to offer, then your next moves). Any older copy referencing Ideas, the Match Engine, Moves, Streams, or the Sunday Letter is dead - do not use it. Then, on 2026-08-04, the **$79 "Chief of Staff" tier was killed entirely** - it was never sold. Two tiers exist today: **Free** and **Pro ($39/mo)**. Do not quote $30, $79, "Chief of Staff", "Operator", or a 14-day trial - none of that exists.
 
 ---
 
@@ -26,12 +26,14 @@ This is the canonical brief the Mindmaker OS fleet (prospecting, content, PR, an
 > This section is the tight pitch-ready ICP. For the deep archetype - motivations that predict buying (Pushed / Pulled / Lifestyle), the psychology, the month-2-to-6 buying window, and the commercial wedge - the canonical reference is `docs/icp-archetype.md` in the repo.
 
 ### Primary ICP: the fractional executive
-- **Who:** Fractional CMO / CFO / CTO / COO / CHRO. 15+ years experience, ex-VP or C-suite from high-growth companies.
+- **Who:** Ex-VP, ex-SVP, and ex-C-suite operators going fractional: CFO, CMO, COO, CRO, CTO, CHRO. 15+ years experience.
+- **Recency of transition (the sharpest filter):** **0 to 18 months into independence.** Deep capability, no experience generating their own demand, usually no defined offer or ICP yet - that window is both the danger zone and the buying window. After ~18 months they've either built a system or quit back to corporate.
 - **Revenue:** $150K to $1.5M annually across 2 to 7 concurrent retainers.
 - **Working pattern:** Mobile during the day (between client meetings), desktop on Sunday for planning.
 - **Core pain:** "I have an idea for what to offer and a network that could buy it, but no honest read on whether it is real, and no system that keeps me in front of the right people." Warm revenue is lost because no system survives the next client call.
 - **Buying trigger:** A missed referral, a warm lead that went cold, a slow quarter that surfaced an empty pipeline, or a new offer they are unsure is real.
 - **What Circle replaces:** The spreadsheet, Apple Notes, the part of HubSpot they hate, calendar reminders that never fire, and the generic ChatGPT answer that does not know their network.
+- **Deep archetype:** the buying-trigger window (catch them in month 2-6, not month 0), the Pushed/Pulled/Lifestyle motivation segments, and the commercial wedge (lead with fractional CMOs/CROs first) are in `docs/icp-archetype.md` - read it before running a targeted campaign.
 
 ### Secondary ICPs
 - **Independent strategy advisor / boutique consultant.** Retainers, project work, speaking gigs. Pain: pipeline is invisible until a deal hits the bank, and they are not sure which offer to lean into. Replaces: unread LinkedIn DMs, calendar reminders that do not fire.
@@ -77,16 +79,17 @@ You tell Circle who you want to sell to and why you, in a few plain words, and i
 
 ## 4. Pricing, tiers, and the current offer
 
-Always confirm live prices and the current offer from https://circle.fractionl.ai/agent.json before quoting. Source of truth in repo: `src/lib/tiers.ts` (DB tier enum: `free | pro | executive`).
+Always confirm live prices and the current offer from https://circle.fractionl.ai/agent.json before quoting. Source of truth in repo: `src/lib/tiers.ts`.
+
+**One price, one story (owner decision, 2026-08-04): two tiers are sold, Free and Pro.** The $79 `executive` / "Chief of Staff" tier was never sold and is removed from the catalogue - do not pitch it, and do not promise a weekly brief, priority compute, external signal feeds, or cross-user market intelligence as anything you can sell today. The DB tier enum still carries the historical `free | pro | executive` values for old rows, but `executive` is not a purchasable product.
 
 | Tier | Price | Tagline | What it unlocks |
 |---|---|---|---|
-| **Freemium** | $0 | Try the magic. | One full read of where you stand; your plan and next moves; build your circle by screenshot or CSV. |
+| **Free** | $0 | Try the magic. | One full read of where you stand; your plan and next moves; build your circle by screenshot or CSV. No paywall on first value. |
 | **Pro** | $39/mo | Build the whole portfolio. | Unlimited reads as your plan evolves; real warm reach from your full network; specific, named next moves; ongoing market monitoring. |
-| **Chief of Staff** (`executive`) | $79/mo | Help me scale. | Unlimited reads and warm reach; the Monday chief-of-staff brief (where you stand, your market this week, the week's decision, plus the people going quiet); priority compute and white-glove concierge onboarding. External signal feeds and cross-user market intelligence are COMING - never pitch them as live. |
 
-- **Pro is the highlighted / primary CTA tier.** Free gives one full read with no paywall on first value; the deepening tools (re-reads, the path, warm reach, ongoing monitoring) are Pro.
-- **Stripe account:** fractionl_ai (three subscription tiers plus checkout are live).
+- **Pro is the highlighted / primary CTA tier and the only paid tier.** There is no trial.
+- **Stripe account:** fractionl_ai (Free + Pro checkout live; the old $30/$79 price objects are retired).
 - **Credit packs (one-time, on top of any tier):** Starter 120 credits / $15 · Pro 650 / $70 · Scale 3000 / $280. Credits fund max-effort "10/10" enrichment (live open-web research on a person, 20 credits per deep dive). Source of truth: `src/lib/creditPacks.ts` + `src/lib/creditCosts.ts`; server maps price→credits via the `STRIPE_CREDIT_PACKS` secret so a purchase can never be inflated client-side.
 
 ---
@@ -220,17 +223,17 @@ The single hard rule: pitch the grounded read, the plan, and the living warm net
 | Circle warm network + weekly "keep your circle warm" digest (email with one-tap `mailto:` drafts + an `.ics` calendar hold) | LIVE | Claim freely. |
 | In-app return surface ("what's waiting": people going quiet, decisions to fold in) | LIVE | Claim freely. |
 | Circle capture: LinkedIn CSV, CRM/sheet, Google/Microsoft contacts sync, screenshot-to-contact (vision) | LIVE | Claim freely. |
-| Three Stripe tiers + checkout (account fractionl_ai) | LIVE | Claim freely. |
+| Two Stripe tiers (Free, Pro) + checkout (account fractionl_ai) | LIVE | Claim freely. |
 | One box on the Circle home: say what you're working on (surfaces your inner circle) OR who - or the kind of person - you're looking for (searches your whole network). Type it or voice-note it. | LIVE | Claim freely. |
 | Intelligent people-search over your whole network: semantic (meaning-based) + keyword retrieval returns real people, each with the actual fact that matched and a confidence - plus evidence-backed "warm route" (second-degree) inferences grounded in a person's OWN history (e.g. "was at Accel, a warm way into that fund"), never an invented relationship. | LIVE | Claim freely, including the honesty (nothing invented; every match cites a real fact). |
 | "Drop a contact" pinned in the top nav + a warm-reach bell/drawer (people going quiet, one-tap reach) | LIVE | Claim freely. |
 | Credit packs (one-time top-ups, on top of the subscription) that fund max-effort "10/10" enrichment - live open-web research synthesised into the contact's dossier - spent per deep dive; every match stays honest and cited. | LIVE | Claim freely. Credits are optional top-ups; the core search works on already-connected data without them. |
 | Weekly re-engagement EMAIL + WEB PUSH sweep (`cron-reengage`) | LIVE (2026-07-03: Resend + VAPID keys verified set, cron active Mondays 15:00 UTC; every send lands a `delivery_log` row) | Claim carefully: a drifted user (5-21 days quiet) with something genuinely waiting gets a short email/push. Never claim real-time or per-event push. |
-| The Monday chief-of-staff brief for the $79 tier: where you stand (the same 0-100 as Home), your market this week (honest Pulse numbers), this week's one decision question, plus the people going quiet | LIVE | Claim freely for the Chief of Staff tier. It is composed only from the product's own state - never invented figures. |
+| The Monday chief-of-staff brief (where you stand, your market this week, the week's decision, plus the people going quiet) - the code is live and composed only from the product's own state, but it was gated to the $79 `executive` tier, which is no longer sold | NOT SELLABLE (code live, tier retired 2026-08-04) | Do not pitch this as something a prospect can buy. Nobody can purchase access to it today - only Free and Pro exist. |
 | Editable reach-out drafts + the voice loop (edits are remembered and future drafts converge on the user's own voice) | LIVE | Claim freely, plainly: "edit the draft before sending; it learns how you write." |
 | Native one-tap SEND (Gmail/Outlook draft injected, or LinkedIn composer) | ROADMAP | Do not claim; today it is a pre-filled draft + the user sends. |
 | Native calendar-write holds (vs the `.ics` attachment) | ROADMAP (behind off-by-default flags, pending sensitive-scope verification) | Do not claim; today the digest ships an `.ics` hold. |
-| External signal feeds (RFPs, job changes, trends) and cross-user market intelligence | ROADMAP (appears in Chief of Staff tier copy as the vision) | Do not claim as live behavior. |
+| External signal feeds (RFPs, job changes, trends) and cross-user market intelligence | ROADMAP, and not tied to any tier you can currently sell (it was `executive`-tier vision copy; that tier is retired) | Do not claim as live behavior, and do not imply upgrading to a paid tier unlocks it. |
 | Anything from the retired model: voice-to-Ideas, the Match Engine, drafted Moves, Streams, the Sunday Letter | REMOVED | NEVER mention. This generation no longer exists. |
 
 **Approved promise line (safe everywhere):** "Give Circle your real people, your taste, and your goal - and it shows you where you stand and your next moves." Do not append "automatically, pushed to your phone."

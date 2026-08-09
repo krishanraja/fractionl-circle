@@ -1,7 +1,10 @@
 # Re-engagement & web push - ops guide
 
 *Verified accurate against `supabase/functions/cron-reengage/index.ts`,
-`supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29.*
+`supabase/cron_setup.sql`, and `src/pathroom/ReturnSurface.tsx` on 2026-06-29;
+re-verified 2026-08-09, no drift found. (The cron set has since grown a `cron-embed-circle` job at
+07:45 UTC, after warmth and before the digest/reengage jobs described here - see `docs/PRODUCT.md` for
+the full schedule; it doesn't change anything in this doc.)*
 
 > **Status update (2026-07-03): BOTH CHANNELS ARE LIVE.** `RESEND_API_KEY` and
 > all `VAPID_*` secrets were verified set in the production project and every

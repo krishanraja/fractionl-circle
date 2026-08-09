@@ -17,9 +17,14 @@ Email **security@fractionl.ai**. Please include steps to reproduce and impact. W
 - **Change management:** all changes via pull request with typecheck + build gates.
 
 ## Known hardening items (tracked, not yet shipped)
-1. **Encrypt OAuth tokens at rest** (application-layer AES-GCM, key in Supabase Vault). `oauth_tokens` currently holds 0 rows.
+1. **Encrypt OAuth tokens at rest** (application-layer AES-GCM, key in Supabase Vault). Google/Microsoft
+   sync has been a live feature for months, so treat `oauth_tokens` as holding real user tokens in
+   plaintext today - the earlier "currently holds 0 rows" note is stale and unverified.
 2. Raise password minimum length to ≥ 8 and require reauthentication on password change.
 3. Enable Point-in-Time Recovery (PITR) on the production database.
+4. **Unused Gmail scope overreach:** the Google OAuth client requests `gmail.readonly` / `gmail.send`
+   with no code path that uses them (see `COMPLIANCE.md`). Drop the unused scopes or document why
+   they're requested.
 
 ## Out of scope
 - **HIPAA:** Circle does not process Protected Health Information. It is not a HIPAA-covered system. Do not represent it as HIPAA compliant.

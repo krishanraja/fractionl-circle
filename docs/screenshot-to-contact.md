@@ -1,5 +1,8 @@
 # Screenshot → Contact
 
+*Verified accurate against `supabase/functions/parse-screenshot/index.ts` and
+`src/lib/circleIngest.ts` on 2026-08-09.*
+
 One-gesture contact capture. The user takes a screenshot of a profile (LinkedIn, Instagram, Contacts, business card), shares it into Circle, and the parsed person flows through the standard Phase-1 ingestion pipeline - same fingerprint dedupe as LinkedIn CSV, Google Contacts, browser extension.
 
 Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual desktop curl path for testing.
@@ -10,7 +13,7 @@ Three transports: Android (Web Share Target), iOS (Apple Shortcut), and a manual
 
 1. User takes a screenshot of a profile on their phone.
 2. Screenshot is shared into Circle via the OS share sheet (Android) or an Apple Shortcut (iOS).
-3. `parse-screenshot` edge function runs vision LLM on the image (Claude Haiku 4.5 → GPT-4o fallback) and extracts name / headline / company / title / location / handle / profile_url / email / phone.
+3. `parse-screenshot` edge function runs vision LLM on the image (Claude Haiku 4.5 → GPT-4o-mini fallback) and extracts name / headline / company / title / location / handle / profile_url / email / phone.
 4. Parsed payload is handed to `ingestSharedContact` in `src/lib/circleIngest.ts` - the same function every Circle ingest path uses. A `person_raw` row is written; fingerprint dedupe collapses it into a canonical `circle_person` row (or merges into an existing one).
 5. User lands on `/share-contact` (`src/pages/ShareContact.tsx`), confirms / edits, taps Save.
 

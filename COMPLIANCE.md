@@ -1,7 +1,7 @@
-# Circle - Compliance Posture
+# Fractionl (Circle) - Compliance Posture
 
-**Last reviewed:** 2026-06-02
-**Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
+**Last reviewed:** 2026-08-09
+**Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Fractionl does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
 ---
 
@@ -26,6 +26,14 @@
 - Supabase Auth with TOTP MFA available, refresh-token rotation on, HIBP leaked-password protection on.
 - Edge functions take user identity from the verified JWT, never the request body.
 - Session hygiene: a 30-minute inactivity auto-logout (`SessionManager.tsx`) is the default. Users may opt into "Keep me signed in on this device" at sign-in (`src/lib/rememberMe.ts`), which disables the idle logout on that device only; the default (auto-logout on) stands for anyone who does not opt in.
+- **Open item, flagged not fixed:** the Google OAuth connect flow requests `gmail.readonly` and
+  `gmail.send` in its default scope set (`supabase/functions/_shared/googleOauth.ts`), even though no
+  code in this repo calls the Gmail API - only Google People API (contacts) and Calendar API are used.
+  This is unused scope overreach: it forces the OAuth app to stay in Google's Testing mode (blocking a
+  public launch of Google connect without the CASA restricted-scope audit) and is inconsistent with
+  `docs/google-oauth-setup.md`'s prior claim that "we do not currently use any restricted scopes" (now
+  corrected) and with the "no email body scanning" claims elsewhere in this repo's docs. Product/eng
+  should decide whether to drop the unused scopes or document an intended use.
 
 ### Data subject rights (GDPR Art. 15 / 17 / 20)
 - `export_user_data(uuid)` - complete JSON export across the full user-owned surface + profile. Self-only.
@@ -35,7 +43,14 @@
 
 ### Encryption
 - In transit: TLS enforced (HSTS preload header). At rest: Supabase/AWS volume encryption.
-- **Open item:** OAuth access/refresh tokens are stored unencrypted at the application layer. Tracked as the top remaining hardening item (`oauth_tokens` currently holds 0 rows). Plan: AES-GCM application-layer encryption with a key in Supabase Vault.
+- **Open item:** OAuth access/refresh tokens are stored unencrypted at the application layer
+  (`oauth_tokens.access_token` / `refresh_token`, confirmed in `oauth-google-callback` /
+  `oauth-microsoft-callback`, no hashing or encryption step). This is still the top remaining
+  hardening item. Google/Microsoft contact sync has been a live, marketed feature since well before
+  this review, so the earlier "`oauth_tokens` currently holds 0 rows" claim is almost certainly stale
+  and unverifiable from source alone - confirm the live row count before quoting it, and treat real
+  user OAuth tokens as at risk in plaintext until this ships. Plan: AES-GCM application-layer
+  encryption with a key in Supabase Vault.
 
 ### Audit logging & retention
 - `security_audit_log` (7-yr legal hold), `user_consents` (7-yr), `data_subject_requests` (7-yr).
