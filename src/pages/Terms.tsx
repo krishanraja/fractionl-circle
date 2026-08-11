@@ -60,7 +60,7 @@ export default function Terms() {
 
           <footer className="legal-support">
             <span>Questions?</span>
-            <a href="mailto:support@fractionl.ai">support@fractionl.ai</a>
+            <a className="inline-flex min-h-11 items-center" href="mailto:support@fractionl.ai">support@fractionl.ai</a>
           </footer>
         </article>
       </div>
