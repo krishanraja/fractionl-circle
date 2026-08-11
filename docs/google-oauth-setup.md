@@ -92,7 +92,7 @@ directly with no user token. State validation in the callback covers auth.
 
 ## 7. Smoke test
 
-1. Open the app → **Circle** → **Add a source** → **Connect Google**.
+1. Open Circle's main screen, choose **Add a source**, then **Connect Google**.
 2. You should land on Google's consent screen with the scopes listed above.
 3. Accept. You'll be redirected to
    `https://circle.fractionl.ai/?oauth=google&status=ok`.
@@ -108,7 +108,7 @@ directly with no user token. State validation in the callback covers auth.
   what Google is seeing. Double-check the project ref.
 - **`error=access_denied`** - user tapped Cancel on the consent screen.
 - **`unknown_state`** after callback - the one-time state from `oauth_states`
-  was already consumed or never inserted. Try again from the Circle tab.
+  was already consumed or never inserted. Try again from Circle's main screen.
 - **`No google source - reconnect first.`** from sync-google - the callback
   didn't get to the "create source" step. Check edge function logs.
 - **Audience errors** - your OAuth consent screen is still in testing and

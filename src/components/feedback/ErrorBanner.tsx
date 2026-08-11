@@ -63,7 +63,7 @@ export const ErrorBanner = ({
                   variant="ghost"
                   size="sm"
                   onClick={onRetry}
-                  className="h-7 px-2"
+                  className="h-11 px-3"
                 >
                   <RefreshCw className="w-3.5 h-3.5 mr-1" />
                   Retry
@@ -74,7 +74,8 @@ export const ErrorBanner = ({
                   variant="ghost"
                   size="sm"
                   onClick={onDismiss}
-                  className="h-7 w-7 p-0"
+                  className="h-11 w-11 p-0"
+                  aria-label="Dismiss message"
                 >
                   <X className="w-4 h-4" />
                 </Button>

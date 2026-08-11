@@ -1,5 +1,9 @@
 # Value sharpening: the chief of staff that remembers (2026-07-03)
 
+> Historical decision record. The Plan and thesis surfaces described below are
+> not part of Circle's current navigation. See `docs/PRODUCT.md` for current
+> product truth.
+
 > Strategy + decision record for the sharpening pass driven by the Mindmaker evidence corpus
 > *"How a Non-AI-Native Business Leader Becomes an AI-Native Operator"* (July 2026). The question
 > it answers: how does that corpus sharpen Circle's existing value - without interrupting the

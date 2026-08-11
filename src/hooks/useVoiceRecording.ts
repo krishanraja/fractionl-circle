@@ -110,19 +110,43 @@ export const useVoiceRecording = (
     }
   }, [silenceTimeout, onSilenceDetected]);
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    setIsPaused(false);
+    setWaveformData(new Array(20).fill(0.1));
+  }, []);
+
   const startRecording = useCallback(async () => {
     try {
       setError(null);
       chunksRef.current = [];
 
       // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      let permissionTimedOut = false;
+      const mediaRequest = navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
         } 
       });
+      // Browsers can leave a permission request open forever. Stop waiting after
+      // a clear window and dispose a stream if the user answers after that point.
+      void mediaRequest.then((lateStream) => {
+        if (permissionTimedOut) lateStream.getTracks().forEach((track) => track.stop());
+      }).catch(() => {});
+      let permissionTimer = 0;
+      const permissionTimeout = new Promise<never>((_, reject) => {
+        permissionTimer = window.setTimeout(() => {
+          permissionTimedOut = true;
+          reject(new DOMException('Microphone permission timed out', 'TimeoutError'));
+        }, 12_000);
+      });
+      const stream = await Promise.race([mediaRequest, permissionTimeout])
+        .finally(() => window.clearTimeout(permissionTimer));
       streamRef.current = stream;
 
       // Set up audio context for waveform analysis
@@ -193,16 +217,7 @@ export const useVoiceRecording = (
       }
       cleanup();
     }
-  }, [cleanup, maxDuration, updateWaveform]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-    }
-    setIsRecording(false);
-    setIsPaused(false);
-    setWaveformData(new Array(20).fill(0.1));
-  }, []);
+  }, [cleanup, maxDuration, stopRecording, updateWaveform]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {

@@ -6,7 +6,8 @@ export function registerServiceWorker() {
   if (typeof window === 'undefined') return;
   if (!('serviceWorker' in navigator)) return;
   // Only register in production builds or when explicitly served.
-  if (location.hostname === 'localhost' && !import.meta.env.PROD) {
+  const loopback = ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
+  if (loopback && !import.meta.env.PROD) {
     return;
   }
   window.addEventListener('load', () => {
@@ -25,16 +26,23 @@ export async function readSharedScreenshot(): Promise<{
   meta: { text?: string; url?: string; title?: string } | null;
 }> {
   if (!('serviceWorker' in navigator)) return { blob: null, meta: null };
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 1200)),
+  ]);
+  if (!reg) return { blob: null, meta: null };
   if (!reg.active) return { blob: null, meta: null };
 
   return new Promise((resolve) => {
     const channel = new MessageChannel();
+    const timeout = window.setTimeout(
+      () => resolve({ blob: null, meta: null }),
+      3000,
+    );
     channel.port1.onmessage = (event) => {
+      window.clearTimeout(timeout);
       resolve(event.data || { blob: null, meta: null });
     };
     reg.active!.postMessage({ type: 'READ_SHARED' }, [channel.port2]);
-    // Fallback in case the SW doesn't respond
-    setTimeout(() => resolve({ blob: null, meta: null }), 3000);
   });
 }

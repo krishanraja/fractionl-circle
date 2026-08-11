@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>Circle Front Door r1</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --upper: #e8e7e1;
+      --plane: #faf9f5;
+      --ink: #11120f;
+      --muted: #686960;
+      --quiet: #92938b;
+      --line: rgba(17, 18, 15, .18);
+      --signal: #5547f5;
+      --signal-soft: #e4e1ff;
+      --plane-height: 58vh;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 0;
+      min-height: 100%;
+      margin: 0;
+      background: var(--upper);
+      color: var(--ink);
+      font-family: "Segoe UI Variable Text", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body { overflow-x: hidden; overflow-y: auto; }
+
+    button,
+    input,
+    textarea { font: inherit; }
+
+    button { color: inherit; }
+
+    .world {
+      position: relative;
+      width: 100%;
+      min-height: 100dvh;
+      overflow: visible;
+      isolation: isolate;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 20;
+      height: 72px;
+      border-bottom: 1px solid rgba(17, 18, 15, .11);
+    }
+
+    .topbar-inner,
+    .hero-inner,
+    .plane-inner {
+      width: min(1180px, calc(100% - 56px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 640;
+      letter-spacing: -.03em;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 26px;
+      height: 26px;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+    }
+
+    .brand-mark::before { inset: 1px 5px 5px 1px; }
+
+    .brand-mark::after {
+      inset: 8px 0 0 8px;
+      border-color: var(--signal);
+      background: var(--signal-soft);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .text-action,
+    .solid-action {
+      min-height: 44px;
+      border: 0;
+      padding: 0 16px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 620;
+    }
+
+    .text-action { border-bottom: 1px solid transparent; }
+    .text-action:hover { border-bottom-color: var(--ink); }
+
+    .solid-action {
+      min-width: 136px;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .hero {
+      position: relative;
+      min-height: clamp(230px, 34vh, 330px);
+      z-index: 1;
+    }
+
+    .hero-inner {
+      min-height: inherit;
+      display: grid;
+      grid-template-columns: minmax(0, 760px) 1fr;
+      align-items: center;
+      gap: 44px;
+    }
+
+    .hero h1 {
+      max-width: 760px;
+      margin: 0;
+      font-family: "Segoe UI Variable Display", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(48px, 6.6vw, 86px);
+      line-height: .94;
+      letter-spacing: -.071em;
+      font-weight: 565;
+    }
+
+    .hero h1 span { display: block; white-space: nowrap; }
+
+    .hero-side {
+      align-self: center;
+      max-width: 330px;
+      padding-left: 22px;
+      border-left: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+      letter-spacing: -.01em;
+    }
+
+    .plane {
+      position: relative;
+      z-index: 10;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: auto;
+      min-height: 0;
+      border-top: 1px solid var(--ink);
+      background: var(--plane);
+    }
+
+    .seam {
+      position: absolute;
+      top: -1px;
+      right: 0;
+      left: 0;
+      height: 3px;
+      overflow: hidden;
+    }
+
+    .seam::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 68%;
+      background: var(--signal);
+      transition: width .58s cubic-bezier(.2, .82, .2, 1);
+    }
+
+    .seam-point {
+      position: absolute;
+      z-index: 2;
+      top: -8px;
+      left: 68%;
+      width: 15px;
+      height: 15px;
+      border: 3px solid var(--plane);
+      border-radius: 50%;
+      background: var(--signal);
+      transform: translateX(-50%);
+      transition: left .58s cubic-bezier(.2, .82, .2, 1);
+    }
+
+    .plane-inner {
+      height: auto;
+      display: grid;
+      grid-template-rows: auto auto;
+    }
+
+    .proof {
+      min-height: clamp(280px, 36vh, 390px);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .proof-part {
+      min-width: 0;
+      padding: 32px 30px 25px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .proof-part:first-child { padding-left: 0; }
+    .proof-part:last-child { padding-right: 0; border-right: 0; }
+
+    .eyebrow {
+      color: var(--quiet);
+      font-size: 10px;
+      font-weight: 670;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .proof-main {
+      margin-top: 15px;
+      font-family: "Segoe UI Variable Display", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(22px, 2.25vw, 33px);
+      line-height: 1.08;
+      letter-spacing: -.042em;
+      font-weight: 510;
+    }
+
+    .proof-part:last-child .proof-main {
+      max-width: 420px;
+      font-size: clamp(25px, 2.5vw, 37px);
+    }
+
+    .proof-detail {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .proof-reason {
+      margin-top: 16px;
+      padding-top: 13px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .proof-boundary { display: block; margin-top: 13px; }
+
+    .quiet-join {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      font-weight: 620;
+    }
+
+    .quiet-join span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 0 5px var(--signal-soft);
+    }
+
+    .entry {
+      position: relative;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr) 172px;
+      gap: 28px;
+      align-items: stretch;
+      min-height: 132px;
+    }
+
+    .stage { display: flex; align-items: center; gap: 10px; }
+    .stage-number {
+      width: 28px; height: 28px; flex: 0 0 28px; border: 1px solid var(--line); border-radius: 50%;
+      display: grid; place-items: center; color: var(--signal); font-size: 11px; font-weight: 700;
+    }
+    .visual-card, .work-card, .question, .answer { border: 1px solid var(--line); background: rgba(255,255,255,.42); }
+    .visual-card { margin-top: 22px; padding: 16px; border-top: 3px solid var(--signal); }
+    .person-row, .answer { min-width: 0; display: flex; align-items: center; gap: 12px; }
+    .person-row > div, .answer > div { min-width: 0; }
+    .person-row strong, .person-row small, .work-card strong, .work-card small, .answer strong, .answer small { display: block; }
+    .person-row strong, .answer strong { font-size: 18px; letter-spacing: -.035em; }
+    .person-row small, .work-card small, .answer small { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .avatar {
+      width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--signal-soft); color: var(--signal); font-size: 10px; font-weight: 760;
+    }
+    .tags { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .tags span { min-height: 26px; border: 1px solid var(--line); padding: 0 9px; display: inline-flex; align-items: center; color: var(--muted); font-size: 9px; }
+    .link-map { min-width: 0; margin-top: 34px; display: flex; align-items: center; }
+    .map-line { position: relative; min-width: 22px; height: 1px; flex: 1 1 44px; background: var(--line); }
+    .map-line i { position: absolute; inset: 50% auto auto 50%; width: 7px; height: 7px; border-radius: 50%; background: var(--signal); transform: translate(-50%,-50%); }
+    .work-card { min-width: 0; padding: 12px; border-left: 3px solid var(--signal); }
+    .work-card strong { font-size: 12px; overflow-wrap: anywhere; }
+    .moment { margin-top: 22px; }
+    .question { max-width: 290px; padding: 12px 14px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .moment-line { width: 1px; height: 20px; margin-left: 23px; background: var(--signal); }
+    .answer { max-width: 290px; padding: 10px 12px; border-color: var(--signal); }
+
+    .entry-label {
+      padding: 22px 0 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .entry-label strong {
+      font-size: 14px;
+      letter-spacing: -.01em;
+    }
+
+    .entry-label small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .composer {
+      min-width: 0;
+      padding: 16px 0 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: 1fr auto;
+      column-gap: 12px;
+      align-items: center;
+    }
+
+    .composer textarea {
+      width: 100%;
+      height: 54px;
+      min-height: 54px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      padding: 7px 0;
+      resize: none;
+      overflow: hidden;
+      background: transparent;
+      color: var(--ink);
+      outline: 0;
+      font-family: "Segoe UI Variable Display", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(20px, 2vw, 27px);
+      line-height: 1.25;
+      letter-spacing: -.032em;
+    }
+
+    .composer textarea::placeholder { color: #8b8c84; opacity: 1; }
+    .composer textarea:focus { border-bottom-color: var(--signal); }
+
+    .source-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .source-action {
+      min-width: 58px;
+      min-height: 48px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 590;
+    }
+
+    .source-action svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+    .source-action[data-live="true"] { color: var(--signal); }
+
+    .helper {
+      grid-column: 1 / -1;
+      min-height: 17px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .entry-submit {
+      margin: 14px 0;
+      border: 0;
+      padding: 17px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 620;
+      letter-spacing: -.02em;
+    }
+
+    .entry-submit svg { align-self: flex-end; width: 27px; height: 27px; color: #a99fff; fill: none; stroke: currentColor; stroke-width: 1.5; }
+
+    .auth {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: none;
+      grid-template-columns: 220px minmax(0, 1fr) 172px;
+      gap: 28px;
+      align-items: center;
+      background: var(--plane);
+    }
+
+    .world[data-mode="auth"] .auth { display: grid; }
+
+    .auth-copy strong {
+      display: block;
+      font-size: 14px;
+      letter-spacing: -.01em;
+    }
+
+    .auth-copy small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .auth-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .auth-button,
+    .auth-back {
+      min-height: 52px;
+      border: 1px solid var(--line);
+      background: transparent;
+      cursor: pointer;
+      font-weight: 610;
+    }
+
+    .auth-button.primary { border-color: var(--signal); background: var(--signal); color: #fff; }
+    .auth-back { border: 0; text-decoration: underline; text-underline-offset: 4px; }
+
+    .world button:focus-visible,
+    .world textarea:focus-visible {
+      outline: 3px solid rgba(85, 71, 245, .55);
+      outline-offset: 3px;
+    }
+
+    .world button:active { transform: scale(.985); }
+
+    @media (max-width: 720px) {
+      :root { --plane-height: 66vh; }
+      body { overflow: hidden; }
+      .topbar { height: 62px; }
+      .topbar-inner,
+      .hero-inner,
+      .plane-inner { width: calc(100% - 32px); }
+      .text-action { padding: 0 6px; }
+      .solid-action { display: none; }
+
+      .hero { inset: 62px 0 var(--plane-height); }
+      .hero-inner { display: flex; align-items: center; }
+      .hero h1 { max-width: 360px; font-size: clamp(38px, 11.6vw, 52px); }
+      .hero-side { display: none; }
+
+      .plane { min-height: 0; }
+      .seam::before { width: 58%; }
+      .seam-point { left: 58%; }
+      .plane-inner { grid-template-rows: 1fr 190px; }
+
+      .proof {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+      }
+
+      .proof-part {
+        padding: 15px 0 12px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        display: block;
+      }
+
+      .proof-part:first-child { padding-left: 0; }
+      .proof-part:last-child { padding: 17px 0 12px; border-bottom: 0; }
+      .proof-main,
+      .proof-part:last-child .proof-main { margin-top: 5px; font-size: clamp(19px, 5.6vw, 24px); line-height: 1.02; }
+      .proof-detail { margin-top: 4px; font-size: 10px; }
+      .proof-part:first-child > .proof-detail { display: none; }
+      .quiet-join { margin-top: 7px; font-size: 10px; }
+      .proof-reason { margin-top: 7px; padding-top: 7px; font-size: 10px; line-height: 1.32; }
+      .proof-boundary { margin-top: 7px; }
+
+      .entry {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr 58px;
+        gap: 0;
+      }
+
+      .entry-label {
+        grid-column: 1 / -1;
+        padding: 12px 0 2px;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .entry-label small { font-size: 9px; }
+      .composer {
+        padding: 3px 0 6px;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: 48px 42px;
+        column-gap: 8px;
+      }
+      .composer textarea { grid-column: 1 / -1; height: 48px; min-height: 48px; font-size: 19px; }
+      .source-actions { justify-content: flex-start; }
+      .source-action { min-width: 48px; min-height: 44px; }
+      .source-action span { display: none; }
+      .helper { grid-column: 2; min-height: 14px; align-self: center; font-size: 9px; text-align: right; }
+      .entry-submit {
+        height: 58px;
+        margin: 0;
+        padding: 0 16px;
+        flex-direction: row;
+        align-items: center;
+        font-size: 13px;
+      }
+      .entry-submit svg { align-self: auto; margin-left: auto; width: 24px; height: 24px; }
+
+      .auth {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 8px;
+        padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+      }
+
+      .auth-copy { padding-right: 68px; }
+      .auth-options { grid-template-columns: 1fr 1fr; gap: 7px; }
+      .auth-button { min-height: 48px; }
+      .auth-back { position: absolute; top: 8px; right: 0; width: 64px; min-height: 44px; }
+    }
+
+    @media (max-width: 380px) {
+      .topbar-inner,
+      .hero-inner,
+      .plane-inner { width: calc(100% - 24px); }
+      .hero h1 { font-size: 39px; }
+      .plane-inner { grid-template-rows: 1fr 190px; }
+      .proof-part { padding: 10px 0 8px; }
+      .proof-main,
+      .proof-part:last-child .proof-main { font-size: 19px; }
+      .helper { display: none; }
+    }
+
+    @media (max-height: 620px) and (max-width: 720px) {
+      :root { --plane-height: 76vh; }
+      .hero h1 { font-size: 34px; }
+      .proof-part { padding-top: 9px; padding-bottom: 8px; }
+      .proof-detail { display: none; }
+      .proof-reason { display: block; }
+      .proof-boundary { display: none !important; }
+    }
+
+    @media (max-width: 900px) {
+      body { overflow-x: hidden; overflow-y: auto; }
+      .topbar-inner, .hero-inner, .plane-inner { width: calc(100% - 32px); }
+      .plane-inner { grid-template-rows: auto auto; }
+      .hero { inset: auto; min-height: clamp(190px, 30vh, 280px); }
+      .hero-inner { display: flex; align-items: center; }
+      .hero h1 { max-width: none; font-size: clamp(40px, 7.2vw, 62px); }
+      .hero-side { display: none; }
+      .proof { grid-template-columns: 1fr; grid-template-rows: auto; min-height: 0; }
+      .proof-part { padding: 18px 0; border-right: 0; border-bottom: 1px solid var(--line); display: block; }
+      .proof-part:last-child { padding: 18px 0; border-bottom: 0; }
+      .stage { margin-bottom: 10px; }
+      .visual-card, .link-map, .moment { margin-top: 0; }
+      .link-map, .question, .answer { max-width: 390px; }
+      .proof-detail, .quiet-join, .proof-reason { margin-top: 10px; }
+      .entry { grid-template-columns: 1fr; grid-template-rows: auto; gap: 0; min-height: 0; padding: 14px 0; }
+      .entry-label { padding: 0 0 7px; flex-direction: row; align-items: baseline; flex-wrap: wrap; }
+      .composer { padding: 0 0 10px; }
+      .entry-submit { min-height: 58px; margin: 0; padding: 0 16px; flex-direction: row; align-items: center; }
+      .entry-submit svg { align-self: auto; margin-left: auto; width: 24px; height: 24px; }
+      .auth { position: relative; grid-template-columns: 1fr; gap: 9px; padding: 14px 0; }
+      .auth-back { position: static; width: auto; }
+    }
+
+    @media (max-width: 560px) {
+      .topbar { height: 62px; }
+      .solid-action { display: none; }
+      .hero { min-height: clamp(150px, 27vh, 220px); }
+      .hero h1 { font-size: clamp(27px, 7.2vw, 34px); line-height: .98; letter-spacing: -.06em; }
+      .proof-part { padding: 14px 0; }
+      .stage-number { width: 24px; height: 24px; flex-basis: 24px; }
+      .visual-card { padding: 10px; }
+      .person-row strong, .answer strong { font-size: 16px; }
+      .avatar { width: 38px; height: 38px; flex-basis: 38px; }
+      .tags { margin-top: 9px; }
+      .tags span { min-height: 22px; }
+      .link-map { max-width: 330px; }
+      .work-card { padding: 9px 10px; }
+      .question { padding: 9px 11px; }
+      .moment-line { height: 12px; margin-left: 19px; }
+      .answer { padding: 8px 10px; }
+      .composer { grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
+      .composer textarea { grid-column: 1; height: 50px; min-height: 50px; font-size: 18px; }
+      .source-actions { justify-content: flex-start; }
+      .helper { grid-column: 1; text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .world *,
+      .world *::before,
+      .world *::after { transition: none !important; scroll-behavior: auto !important; }
+      .world button:active { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="world" id="world" data-mode="proof">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand" aria-label="Circle">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>Circle</span>
+        </div>
+        <nav class="top-actions" aria-label="Account">
+          <button class="text-action" type="button" data-auth>Sign in</button>
+          <button class="solid-action" type="button" data-auth>Start with one clue</button>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-inner">
+        <h1 id="hero-title"><span>One clue now.</span><span>The right person later.</span></h1>
+        <p class="hero-side">Drop anything you remember. Circle keeps the clues together and brings someone back when they may help.</p>
+      </div>
+    </section>
+
+    <section class="plane" aria-label="How Circle works">
+      <div class="seam" aria-hidden="true"></div>
+      <div class="seam-point" aria-hidden="true"></div>
+      <div class="plane-inner">
+        <div class="proof" aria-label="Example">
+          <article class="proof-part">
+            <div class="stage"><div class="stage-number" aria-hidden="true">1</div><div class="eyebrow">You add one clue</div></div>
+            <div class="visual-card">
+              <div class="person-row"><span class="avatar" aria-hidden="true">MC</span><div><strong>Maya Chen</strong><small>Met at HealthTech North</small></div></div>
+              <div class="tags"><span>Hospital pricing</span><span>Voice note</span></div>
+            </div>
+            <div class="proof-detail">Type, speak, add a photo, or choose a contact.</div>
+          </article>
+
+          <article class="proof-part">
+            <div class="stage"><div class="stage-number" aria-hidden="true">2</div><div class="eyebrow">Circle connects it</div></div>
+            <div class="link-map"><span class="avatar" aria-hidden="true">MC</span><span class="map-line" aria-hidden="true"><i></i></span><div class="work-card"><strong>Commercial lead</strong><small>Health software</small></div></div>
+            <div class="quiet-join"><span aria-hidden="true"></span>One person. Clues kept together.</div>
+          </article>
+
+          <article class="proof-part">
+            <div class="stage"><div class="stage-number" aria-hidden="true">3</div><div class="eyebrow">Circle brings her back</div></div>
+            <div class="moment"><div class="question">Who knows if hospitals would pay?</div><div class="moment-line" aria-hidden="true"></div><div class="answer"><span class="avatar" aria-hidden="true">MC</span><div><small>Start with</small><strong>Maya Chen</strong></div></div></div>
+            <div class="proof-reason">From your note and one public work detail. Her interest and time are unknown.</div>
+          </article>
+        </div>
+
+        <div class="entry">
+          <div class="entry-label">
+            <strong>Start with one clue</strong>
+            <small>Nothing is saved until you join.</small>
+          </div>
+          <div class="composer">
+            <textarea id="clue" aria-label="A clue about someone" placeholder="A name, link, email, or anything you remember"></textarea>
+            <div class="source-actions" aria-label="Ways to add a clue">
+              <button class="source-action" id="voice" type="button" aria-label="Speak a clue" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="12" rx="4"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"></path></svg>
+                <span>Speak</span>
+              </button>
+              <button class="source-action" type="button" aria-label="Add a photo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m4 17 5-4 3 3 2-2 6 5"></path></svg>
+                <span>Photo</span>
+              </button>
+              <button class="source-action" type="button" aria-label="Add a contact">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3 20c0-4 2-6 6-6s6 2 6 6M18 8v6M15 11h6"></path></svg>
+                <span>Contact</span>
+              </button>
+            </div>
+            <div class="helper" id="helper">Type, speak, or attach a clue. You stay in control.</div>
+          </div>
+          <button class="entry-submit" type="button" id="start">
+            <span>Keep this person close</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"></path></svg>
+          </button>
+
+          <div class="auth" aria-live="polite">
+            <div class="auth-copy">
+              <strong>Keep this person close.</strong>
+              <small>Your clue will be ready after you join.</small>
+            </div>
+            <div class="auth-options">
+              <button class="auth-button primary" type="button">Continue with Google</button>
+              <button class="auth-button" type="button">Continue with email</button>
+            </div>
+            <button class="auth-back" id="back" type="button">Go back</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const world = document.getElementById('world');
+    const clue = document.getElementById('clue');
+    const helper = document.getElementById('helper');
+    const voice = document.getElementById('voice');
+    const start = document.getElementById('start');
+    const back = document.getElementById('back');
+
+    document.querySelectorAll('[data-auth]').forEach((button) => {
+      button.addEventListener('click', () => {
+        world.dataset.mode = 'auth';
+      });
+    });
+
+    start.addEventListener('click', () => {
+      world.dataset.mode = 'auth';
+    });
+
+    back.addEventListener('click', () => {
+      world.dataset.mode = 'proof';
+      clue.focus();
+    });
+
+    voice.addEventListener('click', () => {
+      const isLive = voice.dataset.live === 'true';
+      voice.dataset.live = String(!isLive);
+      voice.setAttribute('aria-pressed', String(!isLive));
+      helper.textContent = isLive ? 'Type, speak, or attach a clue. You stay in control.' : 'Listening only while this is on. Tap again to stop.';
+      if (!isLive) clue.placeholder = 'Say who you met and anything you remember';
+      else clue.placeholder = 'A name, link, email, or anything you remember';
+    });
+
+    clue.addEventListener('input', () => {
+      helper.textContent = clue.value.trim() ? 'That is enough to start. Add more only if it helps.' : 'Type, speak, or attach a clue. You stay in control.';
+    });
+  </script>
+</body>
+</html>

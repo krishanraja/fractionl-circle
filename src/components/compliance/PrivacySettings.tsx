@@ -10,13 +10,13 @@ import { useDataPrivacy } from '@/hooks/useDataPrivacy';
 import { toast } from 'sonner';
 
 const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; required?: boolean }[] = [
-  { type: 'essential', label: 'Essential Services', description: 'Core app functionality - authentication, data storage, and session management.', required: true },
-  { type: 'analytics', label: 'Usage Analytics', description: 'Behavioral analytics to improve features and user experience.' },
-  { type: 'ai_processing', label: 'AI Processing', description: 'Send business data to AI services (OpenAI) for insights, briefings, and strategy analysis.' },
-  { type: 'voice_recording', label: 'Voice Recording & Transcription', description: 'Record and transcribe voice for activity logging and contact creation.' },
-  { type: 'third_party_sharing', label: 'Contact Enrichment', description: 'Share contact data with enrichment providers (Apollo, Clearbit, Twilio).' },
-  { type: 'data_export', label: 'Third-Party Export', description: 'Export data to Google Sheets and other external services.' },
-  { type: 'marketing', label: 'Marketing Communications', description: 'Product updates, tips, and feature announcements.' },
+  { type: 'essential', label: 'Keep Circle working', description: 'Sign-in, storage, security, and the basic app.', required: true },
+  { type: 'analytics', label: 'Usage analytics', description: 'Help us see what works and what needs fixing.' },
+  { type: 'ai_processing', label: 'AI help', description: 'Use AI providers for research, transcription, and suggestions you ask for.' },
+  { type: 'voice_recording', label: 'Voice input', description: 'Record and turn your voice into text when you tap the microphone.' },
+  { type: 'third_party_sharing', label: 'Contact details', description: 'Use trusted data providers to fill gaps in a contact.' },
+  { type: 'data_export', label: 'Send data elsewhere', description: 'Export your data to Google Sheets or another service you choose.' },
+  { type: 'marketing', label: 'Product emails', description: 'Get product news, tips, and feature updates.' },
 ];
 
 export function PrivacySettings() {
@@ -55,22 +55,21 @@ export function PrivacySettings() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="privacy-settings">
       {/* Consent Preferences */}
-      <Card>
+      <Card className="privacy-card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">Data Processing Preferences</CardTitle>
           </div>
           <CardDescription>
-            Control how your data is used. Changes take effect immediately.
-            These controls support your GDPR and CCPA data-subject rights.
+            Turn optional uses on or off. Changes apply right away.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {CONSENT_OPTIONS.map(opt => (
-            <div key={opt.type} className="flex items-center justify-between gap-4">
+            <div key={opt.type} className="privacy-option">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{opt.label}</span>
@@ -91,22 +90,22 @@ export function PrivacySettings() {
       </Card>
 
       {/* Data Rights */}
-      <Card>
+      <Card className="privacy-card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg">Your Data Rights</CardTitle>
           </div>
           <CardDescription>
-            Under GDPR and CCPA, you have the right to access, export, and delete your data.
+            Download what Circle keeps or delete your account and data.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Export Data */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="privacy-right">
             <div>
-              <p className="text-sm font-medium">Export Your Data</p>
-              <p className="text-xs text-muted-foreground">Download all your data as a portable JSON file (GDPR Art. 20).</p>
+              <p className="text-sm font-medium">Download your data</p>
+              <p className="text-xs text-muted-foreground">Get a copy of everything Circle keeps for you.</p>
             </div>
             <Button
               size="sm"
@@ -122,12 +121,11 @@ export function PrivacySettings() {
           <Separator />
 
           {/* Delete Account */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="privacy-right">
             <div>
-              <p className="text-sm font-medium text-destructive">Delete All Data</p>
+              <p className="text-sm font-medium text-destructive">Delete your account</p>
               <p className="text-xs text-muted-foreground">
-                Permanently erase your account and all associated data (GDPR Art. 17).
-                This action cannot be undone.
+                Permanently erase your account, people, clues, plans, and settings. This cannot be undone.
               </p>
             </div>
             <AlertDialog>
@@ -139,11 +137,9 @@ export function PrivacySettings() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete everything?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete your account and all associated data including
-                    clients, contacts, activity logs, AI conversations, revenue data, and preferences.
-                    This action cannot be undone.
+                    This permanently deletes your Circle account and all data tied to it. You cannot undo this.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -163,7 +159,7 @@ export function PrivacySettings() {
 
       {/* Request History */}
       {requests.length > 0 && (
-        <Card>
+        <Card className="privacy-card">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />

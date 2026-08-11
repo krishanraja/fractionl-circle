@@ -1,25 +1,40 @@
 # Security Policy - Circle
 
+Last reviewed: 2026-08-10.
+
 ## Reporting a vulnerability
-Email **security@fractionl.ai**. Please include steps to reproduce and impact. We aim to acknowledge within 2 business days. Do not publicly disclose before we've had a chance to remediate. See also `/.well-known/security.txt`.
+
+Email **security@fractionl.ai** with steps to reproduce and likely impact. We aim to acknowledge a report within two business days. Do not disclose publicly before the team has had a reasonable chance to remediate. See `/.well-known/security.txt` when available.
 
 ## Supported surface
-- Web app: `circle.fractionl.ai` (Vercel)
-- API: Supabase edge functions + Postgres (project `ksyuwacuigshvcyptlhe`)
 
-## Security controls (summary)
-- **Auth:** Supabase Auth, TOTP MFA available, refresh-token rotation, HIBP leaked-password protection.
-- **Authorization:** Row-Level Security on all tables; edge functions derive identity from the verified JWT only.
-- **Transport:** TLS enforced; HSTS with preload.
-- **Headers:** CSP, X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy, Permissions-Policy (`vercel.json`).
-- **Payments:** Stripe webhooks are signature-verified and idempotent.
-- **Privacy:** complete data export & erasure (`export_user_data` / `erase_user_data` / `delete-account`); retention enforcement cron.
-- **Change management:** all changes via pull request with typecheck + build gates.
+- Web app: `circle.fractionl.ai` on Vercel
+- API and data: Supabase Edge Functions and Postgres, project `ksyuwacuigshvcyptlhe`
 
-## Known hardening items (tracked, not yet shipped)
-1. **Encrypt OAuth tokens at rest** (application-layer AES-GCM, key in Supabase Vault). `oauth_tokens` currently holds 0 rows.
-2. Raise password minimum length to ≥ 8 and require reauthentication on password change.
-3. Enable Point-in-Time Recovery (PITR) on the production database.
+## Current controls
+
+- Authentication: Supabase Auth, refresh-token rotation, leaked-password protection, and TOTP MFA where enabled.
+- Authorization: row-level security on public data tables; Edge Functions derive identity from verified JWTs rather than request-body user IDs.
+- Transport: TLS and HSTS.
+- Browser: CSP, frame denial, content-type protection, referrer policy, and permissions policy in `vercel.json`.
+- Payments: Stripe webhook signature verification and idempotency ledger.
+- Privacy: export and erasure discover every erasable public `user_id` table after migration `20260811014533_extend_dsar_coverage.sql`; `delete-account` also removes the auth identity.
+- Sessions: 30-minute inactivity sign-out by default, with an explicit keep-signed-in choice on the device.
+- Change management: source changes move through a branch, checks, preview, and verified production revision.
+
+## Known hardening work
+
+1. Encrypt OAuth access and refresh tokens at the application layer with a key held outside the database rows.
+2. Remove unused Gmail OAuth scopes or document, verify, and obtain review for the intended Gmail feature.
+3. Require at least an eight-character password and reauthentication for sensitive account changes.
+4. Enable Point-in-Time Recovery for the production database.
+5. Keep legal documents, DPAs, provider retention settings, and breach procedures current with counsel.
+6. Drop or repair the orphaned `get_user_google_tokens`, `verify_token_integrity`, and `log_token_access` functions. Production schema lint reports that they still reference `sheets_integrations`, which was intentionally removed by the 2026-03-07 cleanup migration. Active Circle source does not call them.
+
+## Credential exposure
+
+Treat any credential pasted into chat, logs, documents, source, screenshots, or shell history as exposed. Do not reuse or move it. Revoke and replace it through the authoritative provider surface, update known consumers through secure configuration, verify the old value fails, and scan the repository without printing matches.
 
 ## Out of scope
-- **HIPAA:** Circle does not process Protected Health Information. It is not a HIPAA-covered system. Do not represent it as HIPAA compliant.
+
+Circle is not designed to process Protected Health Information and is not represented as HIPAA compliant. SOC 2 and ISO 27001 controls are not certifications; only an independent audit can support those claims.

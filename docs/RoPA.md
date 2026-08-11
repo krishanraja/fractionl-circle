@@ -1,29 +1,56 @@
 # Records of Processing Activities (RoPA) - GDPR Art. 30
 
-**Last reviewed:** 2026-06-02. **Status: DRAFT - for counsel review.** Derived from the live data model. The authoritative machine list of user-owned tables is `_dsar_user_tables()` in migration `20260602000002_compliance_hardening.sql`.
+Last reviewed: 2026-08-10. Status: draft for counsel review.
 
-**Controller:** fractionl (Circle). **Contact:** privacy@fractionl.ai
+**Controller:** Fractionl / Circle
+**Contact:** privacy@fractionl.ai
+
+This record reflects the active Circle capture/recall product plus personal data that can remain from older product generations. Product truth: `docs/PRODUCT.md`. Processor truth: `SUBPROCESSORS.md`.
 
 ## Processing activities
 
-| Activity | Personal data | Data subjects | Lawful basis | Retention | Where |
+| Activity | Personal data | Data subjects | Basis to confirm | Retention | Main locations |
 |---|---|---|---|---|---|
-| Account & auth | email, name, avatar, auth identifiers | Users | Contract | Life of account | `user_profiles`, Supabase Auth |
-| Idea capture & matching | voice transcripts, idea text | Users | Contract | Life of account | `ideas`, `activity_logs`, `matches`, `moves` |
-| Network / Circle | **third-party** names, emails, phones, LinkedIn, company, title | Users' contacts | Legitimate interest | Life of account / until erased | `circle_person`, `person_raw`, `talent_*` |
-| Revenue & streams | client names, amounts | Users | Contract | Life of account | `clients`, `revenue_entries`, `streams`, `ledger_entries` |
-| Connected mail/calendar | OAuth tokens, contacts, message metadata | Users who connect | Consent | Until disconnect / erasure | `oauth_tokens`, `sources` |
-| Consent records | consent choices, IP, timestamp | Users | Legal obligation | 7 years | `user_consents` |
-| Security audit | actions, IP, timestamp | Users | Legal obligation / legitimate interest | 7 years | `security_audit_log` |
-| Product analytics | behaviour events, session data | Users | Legitimate interest | 90 days (auto-purged) | `user_behavior_logs`, `user_sessions` |
-| Billing | name, email, payment metadata | Paying users | Contract | Per Stripe / tax law | Stripe, `subscriptions` |
-| Marketing attribution | UTM, anonymous id | Visitors | Legitimate interest / consent | Life of account | `user_attribution` |
+| Account and auth | email, name, avatar, auth identifiers, optional profile/link | Users | Contract | Life of account | Supabase Auth, `user_profiles` |
+| Contact capture and recall | third-party names, email, phone, links, company, role, location, notes, meeting context, dossier, embeddings | Users' professional contacts | Legitimate interest | Life of account or until erased | `circle_person`, `person_raw`, `sources`, `signals` |
+| Voice and photo parsing | voice audio/transcript, shared or uploaded contact images, extracted fields | Users and their contacts | Contract and consent | Raw media is not intentionally persisted by parsing functions; resulting clue follows account retention | Edge Functions, configured AI providers, contact tables |
+| Person requests and idea matching | request/idea text, ranked saved-person evidence | Users and their contacts | Contract | Life of account where stored | `the_read`, contact records, provider requests |
+| Optional connected accounts | OAuth tokens, contacts, calendar metadata | Users who connect Google/Microsoft and their contacts | Consent | Until disconnect or erasure | `oauth_tokens`, `sources` |
+| Contact enrichment | name, email, phone, company, social/profile links | Users' contacts | Legitimate interest | Result follows contact retention | Conditional providers in `SUBPROCESSORS.md` |
+| Notifications and transactional messages | user email/phone, push subscription, message content | Users | Consent or contract | Until unsubscribe/erasure or operational retention | `push_subscriptions`, `delivery_log`, Resend/Twilio when used |
+| Historical Plan/thesis records | offer/idea text, answers, admired-business inputs, decisions, draft edits | Existing users | Contract | Life of account or until erased | `thesis_runs`, `thesis_answers`, `thesis_inspiration`, `decision_ledger`, `draft_edits`, `compounding_events` |
+| Consent | consent choices, IP, timestamp | Users | Legal obligation | Seven years | `user_consents` |
+| Security audit and DSAR | actions, IP, timestamps, request status | Users | Legal obligation and legitimate interest | Seven years | `security_audit_log`, `data_subject_requests` |
+| Product analytics | behaviour and session events | Users | Consent or legitimate interest | 90 days where purge policy applies | `user_behavior_logs`, `user_sessions`, `feature_usage`, `usage_tracking` |
+| Billing and credits | name, email, payment metadata, subscription, credit balance/ledger | Paying users | Contract and legal obligation | Per tax/payment law | Stripe, `subscriptions`, `credit_balance`, `credit_ledger` |
+| Marketing attribution | UTM/campaign data, anonymous and later user attribution IDs | Visitors and users | Consent or legitimate interest | Per attribution policy | `user_attribution`, external warehouse event for anonymous landing |
 
-## Special category data
-None intended. **No health, biometric, or PHI data is processed** (HIPAA out of scope).
+Counsel must confirm every lawful basis and retention period before publication.
 
-## Third-party processing of contact data - note
-Circle stores personal data about the user's *network* (third parties who are not Circle users). The lawful basis is the user's legitimate interest in managing their professional relationships; contacts are not marketed to by Circle. This must be disclosed in the privacy policy and is erasable on request.
+## Special-category data
+
+None is intended. Circle is not designed to process health, biometric, or protected health information. Users can place arbitrary text in notes, so policy and support procedures must address accidental entry rather than claiming technical impossibility.
+
+## Third-party contact data
+
+Circle stores professional information about people who are not Circle users. It may generate embeddings or dossier summaries to support recall. The user controls capture and action; Circle does not market to those contacts or contact them automatically.
+
+## Export and erasure coverage
+
+Migration `20260811014533_extend_dsar_coverage.sql` updates `_dsar_user_tables()` to discover every live public base table that contains erasable `user_id` data. `export_user_data()` and `erase_user_data()` consume that result, so schema differences and future user-owned tables do not silently fall out of coverage. `user_profiles` is handled separately because its user key is `id`.
+
+The three intentionally retained tables are:
+
+- `data_subject_requests`
+- `security_audit_log`
+- `user_consents`
+
+They remain under the documented legal-hold policy. The server-side `delete-account` function runs erasure and then removes the Supabase Auth user.
+
+## Legacy data
+
+Older Ideas, Matches, Moves, Streams, Plan/thesis, client/revenue, and generic-template tables still exist. Some are no longer used by active navigation, but any rows remain personal data at rest. They stay in the DSAR coverage list until an authorised retention sweep removes the tables or data.
 
 ## International transfers
-Production data resides in AWS `us-east-1` (USA). EU transfers rely on SCCs - confirm with counsel.
+
+Production data resides in AWS `us-east-1` through Supabase. Other providers may process in the USA or globally. Appropriate safeguards, including SCCs where needed, must be confirmed with counsel and each provider agreement.

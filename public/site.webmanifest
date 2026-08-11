@@ -1,7 +1,7 @@
 {
   "name": "Circle by Fractionl",
   "short_name": "Circle",
-  "description": "The relationship-to-revenue engine for fractional executives. Talk once, get sellable Ideas, and a hand-drafted Move on the right person.",
+  "description": "Save one clue about a person. Circle brings them back when they can help.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -21,8 +21,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#241B14",
-  "background_color": "#F5EFE6",
+  "theme_color": "#11120F",
+  "background_color": "#FAF9F5",
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "/",

@@ -121,10 +121,11 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- Re-engagement: weekly "come back - here's what's waiting" sweep. Mondays at
+-- Re-engagement: weekly quiet-contact reminder. Mondays at
 -- 15:00 UTC, i.e. AFTER the warm digest (13:00) so a drifted user gets the
--- warm-circle nudge first and this only reaches those who still have something
--- genuinely waiting. Inert until Resend/VAPID keys are set.
+-- warm-circle nudge first. This reaches only users with saved people whose last
+-- recorded interaction is more than 30 days old. Inert until Resend/VAPID keys
+-- are set.
 -- ---------------------------------------------------------------------------
 select cron.schedule(
   'cron-reengage',

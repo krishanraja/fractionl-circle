@@ -1,0 +1,108 @@
+.circle-system {
+  --circle-upper: #e8e7e1;
+  --circle-plane: #faf9f5;
+  --circle-paper: var(--circle-plane);
+  --circle-surface: var(--circle-upper);
+  --circle-ink: #11120f;
+  --circle-muted: #686960;
+  --circle-quiet: #92938b;
+  --circle-line: rgba(17, 18, 15, 0.18);
+  --circle-line-strong: rgba(17, 18, 15, 0.3);
+  --circle-signal: #5547f5;
+  --circle-accent: var(--circle-signal);
+  --circle-signal-soft: #e4e1ff;
+  --circle-success: #187642;
+  --circle-gutter: clamp(16px, 4vw, 56px);
+  --circle-content: 1180px;
+  min-width: 0;
+  color: var(--circle-ink);
+  color-scheme: light;
+  font-family: "Segoe UI Variable Text", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.circle-system *,
+.circle-system *::before,
+.circle-system *::after { box-sizing: border-box; }
+
+.circle-system button,
+.circle-system input,
+.circle-system textarea { font: inherit; }
+
+.circle-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--circle-ink);
+  font-size: 18px;
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+
+.circle-brand-mark {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+}
+
+.circle-brand-mark::before,
+.circle-brand-mark::after {
+  content: "";
+  position: absolute;
+  border: 1.5px solid var(--circle-ink);
+  border-radius: 50%;
+}
+
+.circle-brand-mark::before { inset: 1px 5px 5px 1px; }
+
+.circle-brand-mark::after {
+  inset: 8px 0 0 8px;
+  border-color: var(--circle-signal);
+  background: var(--circle-signal-soft);
+}
+
+.circle-whisper-button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--circle-line);
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.circle-whisper-button svg { width: 17px; height: 17px; stroke-width: 1.8; }
+.circle-whisper-button[data-recording="true"] { color: var(--circle-signal); border-color: var(--circle-signal); }
+.circle-whisper-button:disabled { cursor: default; opacity: 0.55; }
+.circle-whisper-spin { animation: circle-spin 0.8s linear infinite; }
+
+.circle-system button:focus-visible,
+.circle-system input:focus-visible,
+.circle-system textarea:focus-visible,
+.circle-system a:focus-visible {
+  outline: 3px solid rgba(85, 71, 245, 0.55);
+  outline-offset: 3px;
+}
+
+.circle-system button:active { transform: scale(0.985); }
+
+@keyframes circle-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .circle-system *,
+  .circle-system *::before,
+  .circle-system *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .circle-system button:active { transform: none; }
+}

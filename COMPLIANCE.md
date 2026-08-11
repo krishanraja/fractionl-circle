@@ -1,6 +1,6 @@
 # Circle - Compliance Posture
 
-**Last reviewed:** 2026-06-02
+**Last reviewed:** 2026-08-10
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
 ---
@@ -9,7 +9,7 @@
 
 | Framework | Honest status | What it would take to claim more |
 |---|---|---|
-| **GDPR** | Technical data-subject rights (access, export, erasure) implemented and complete; consent + audit logging in place. Legal docs (privacy policy, DPA, RoPA) are **drafts pending counsel**. | Counsel-reviewed published privacy policy, signed DPAs with subprocessors, appointed contact, breach-notification process. |
+| **GDPR** | Technical access, export, and erasure discover every live public table with erasable `user_id` data after migration `20260811014533_extend_dsar_coverage.sql`; consent and audit logging exist. Legal documents remain drafts pending counsel. | Verify the migration in each environment, then complete counsel review, DPAs, appointed contact, and breach-notification process. |
 | **CCPA/CPRA** | Same technical rights satisfy access/deletion/opt-out. | Published "Do Not Sell/Share" notice + privacy policy (Circle does not sell data). |
 | **SOC 2 (Type II)** | A subset of Trust Services Criteria controls are implemented (access control, encryption in transit, audit logging, change management via PRs). **Not audited. Not certified.** | An independent CPA audit over a 6–12 month observation window, written policies, security training, evidence collection (Vanta/Drata/Secureframe). |
 | **ISO 27001** | Several Annex A controls map to existing practice. **No ISMS. Not certified.** | A documented ISMS + Stage 1/2 audit by an accredited certification body. |
@@ -31,7 +31,7 @@
 - `export_user_data(uuid)` - complete JSON export across the full user-owned surface + profile. Self-only.
 - `erase_user_data(uuid)` - deletes every user-owned row across the full surface, anonymises the profile, retains only the three legal-obligation records (`data_subject_requests`, `security_audit_log`, `user_consents`).
 - `delete-account` edge function - runs erasure **and** removes the auth identity, server-side.
-- Coverage is driven by `_dsar_user_tables()` so it stays correct as tables are added. See `docs/RoPA.md`.
+- Coverage is driven by `_dsar_user_tables()`. The 2026-08-10 migration discovers every live public base table with a `user_id` column and excludes only the three documented legal-hold tables. This prevents schema-history drift and covers future user-owned tables by default. See `docs/RoPA.md`.
 
 ### Encryption
 - In transit: TLS enforced (HSTS preload header). At rest: Supabase/AWS volume encryption.
@@ -52,4 +52,4 @@
 1. Engage counsel to finalise `docs/privacy-policy.md` and a customer DPA.
 2. If pursuing SOC 2 / ISO: adopt a compliance-automation platform and schedule an audit.
 3. Sign/obtain DPAs with every subprocessor in `SUBPROCESSORS.md`.
-4. Rotate any credentials shared in plaintext; enable Supabase PITR for the production project.
+4. Rotate any credentials shared in plaintext through the authoritative provider surfaces; enable Supabase PITR for the production project.

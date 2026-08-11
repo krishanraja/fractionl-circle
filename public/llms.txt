@@ -1,64 +1,60 @@
-# Fractionl (circle.fractionl.ai)
+# Circle by Fractionl
 
-> Fractionl is the thesis-validation engine for fractional executives. You bring your idea for how you want to fractionalize, what you want to offer and to whom. It validates that idea against the real market, in the open, then turns it into named warm-network moves toward your first retained client.
+> Save any clue about a person. Circle joins the details quietly and brings back the right person when they can help.
 
-It is not an answer machine. It goes and checks, it is honest about what it cannot confirm, and it turns a scary idea into moves you can start this week.
-
-Last updated 2026-08-04. This file is the machine-readable truth for what the product is today. Anything describing a "relationship-to-revenue engine", an overnight hand-drafted "Move", a 14-day trial, or $30 / $79 tiers describes a retired product and is wrong.
+Last updated 2026-08-10. This file describes the active product at circle.fractionl.ai. Older descriptions of a two-tab Plan/Circle product, a relationship-to-revenue engine, overnight drafted Moves, or $30/$79 tiers are retired.
 
 ## Who it is for
 
-Ex-VP, ex-SVP and ex-C-suite operators (CFO, CMO, COO, CRO, CTO, CHRO) with 15+ years of experience, 0 to 18 months into independence. That window is both the danger zone and the buying window: deep capability, no experience generating their own demand, and usually no defined offer or ICP yet.
+Fractional executives and independent operators who meet useful people across client work, events, introductions, social profiles, and phone contacts, but do not want to maintain a CRM.
 
-Not for: in-house sales teams, agencies buying seats, or anyone shopping for a CRM. Fractionl is a single-operator product about one venture.
+Not for sales teams that need deal stages, seat management, pipeline administration, or automated outreach.
 
-## What it is
+## What it does
 
-Two halves in one mobile-first app, read as one product.
+1. Accepts a name, link, email, note, voice clue, photo, supported device contact, or Android PWA share.
+2. Preserves the raw clue and asks only for a missing name. Where the user met the person is optional.
+3. Uses the existing ingestion, fingerprint, and dedupe pipeline to keep one grounded person.
+4. Finds a directly named saved person without an LLM or paid search dependency.
+5. Uses provider-backed search or ranking for broader requests when available.
+6. Recovers from provider failure with local matching over saved name, title, company, tags, notes, and dossier evidence.
+7. Shows why the person matched and never sends a message automatically.
 
-- **Plan.** Reads the live market against what you want to offer and shows where you stand: a strength score from 0 to 100, banded and evidence-backed signals, and your next moves.
-- **Circle.** Your warm network. The people who can help you sell, kept warm over time, with the drafts to actually reach them.
+The signed-out root is a visual front door. The signed-in root is one adaptive working plane for `Keep clue` or `Find`. There is no active Plan tab or CRM dashboard.
 
-Signed in, a returning user lands in the two-tab shell. A brand-new user lands in the gated Start here onboarding.
+## Inputs
 
-## How it works
+- text, pasted links, email, phone, and notes
+- voice through a user-tapped Whisper control
+- profile and business-card photos
+- supported device contacts
+- Android PWA share target for images, text, titles, and URLs
 
-1. **Start here.** First run is read-first. A bit about you is the only required input (who you want to sell to, why you, what you are aiming at; a stream of consciousness is fine). Your people and a business you admire are optional sharpeners, offered before and after the read, never a wall in front of the value.
-2. **The guided dialogue.** For returning users and new ideas, one question at a time. A sufficiency judge reads what you want to offer and pushes back on thin input ("marketing services" is not enough), naming exactly what is missing. It is a soft block: it nudges up to twice, then runs anyway and is honest that the read will be a sketch.
-3. **The ember is your strength score.** The brand mark in the top nav is a gauge fed by the real 0 to 100 strength score. Dim when the read is thin or low-confidence, bright as the graded dimensions get stronger. It is the number you push toward 100.
-4. **See how it lands.** Live web research runs in the open, roughly 20 seconds: reading your background, sizing demand against supply, scanning where buyers complain, checking competition, mapping your network, weighing pricing. Low-confidence findings are flagged, not faked.
-5. **Value Prop, the read.** A scorecard shown as bands with evidence and a confidence mark, never fake precise numbers. Is it a real opportunity (demand, burning need, crowding scored as risk, what makes you different) and can you win it fast (fit to you, warm reach, credibility), plus honest flags on income ramp, scope, pricing band and productization.
-6. **Make it stronger.** Its own screen, never crammed onto the read, and the only place the coach question appears. The AI on it is Freya. Four ways in: screenshot a business you admire, voice a concern and have it researched live, voice an idea or evolution and have it folded into what makes you different, or answer Freya's single highest-leverage question. Re-reading is an explicit choice because it spends a live research call.
-7. **Your next action.** The path to a first retained client as a timeline with your circle woven in. The primary button performs the move rather than just ticking it: the warm-reach step opens Reach out, offer and positioning steps open Make it stronger. Step progress persists.
-8. **Reach out.** The few people in your circle going quiet, each with a grounded pre-written draft and one tap to open it in your own email or LinkedIn. Acting stamps the interaction so warmth recovers.
-9. **The circle.** Add people by screenshot (a LinkedIn or Instagram profile, or a business card), type or paste a name, sync Google or Microsoft contacts, or upload the LinkedIn Connections CSV export. One box on the Circle home does double duty: say what you are working on and it surfaces who in your inner circle matters for that direction, or describe the kind of person you are looking for and it searches your whole network semantically, citing the fact that matched.
+Native iOS share-sheet intake and an official Apple Shortcut are not shipped. Do not place a long-lived Supabase token in a Shortcut or URL.
+
+## Trust rules
+
+- A name is the only required save field.
+- Nothing saves until the user taps the save action.
+- The raw clue is preserved.
+- Uncertainty and correction stay visible.
+- Match reasons come from saved evidence.
+- Circle never claims interest, availability, or relationship strength without evidence.
+- Circle never sends a message automatically.
+- Exact saved-name recall remains available when provider-backed paths fail.
 
 ## Pricing
 
-Stripe account: fractionl_ai.
+The current code catalogue contains Free and Pro. Pro is listed at $39 per month in `src/lib/tiers.ts`. Do not quote a trial, $30 plan, or $79 plan. Wider network search may be plan-gated; exact recall of a person the user already saved is not.
 
-- **Free:** one full read of where you stand, your plan and next moves, build your circle by screenshot or CSV. No paywall on first value.
-- **Pro, $39 per month:** unlimited reads as your plan evolves, real warm reach from your full network, specific named next moves, ongoing market monitoring.
+## Routes
 
-One subscription price. There is no trial, no $30 tier and no $79 tier. Do not quote any other subscription price.
-
-Separately, optional one-time credit packs fund max-effort deep research on a single person in your network (20 credits per deep dive): Starter 120 credits for $15, Pro 650 credits for $70, Scale 3000 credits for $280. Credits are a top-up, not a tier, and nothing requires them.
-
-## Honesty notes
-
-- Scores are bands with evidence and a confidence mark. The product never invents precision, and it says so when a read is thin.
-- Every claim about a person in your network must cite a real field. An inferred warm route with no cited evidence is dropped rather than guessed.
-- An empty circle honestly reads warm reach as low. That is the earned reason to build it, not a bug.
-- Ongoing market monitoring on Pro is still being built out. The live market instrument is real; a per-user re-validation schedule is not shipped yet.
-- Signing in lands you straight on the product. There is no separate marketing site at this domain, and no separate /app or /pricing page.
-
-## Links
-
-These are the only routes that resolve. Do not link anything else.
-
-- Product and sign-in: https://circle.fractionl.ai/
-- Sign in or create an account: https://circle.fractionl.ai/auth
+- Product and front door: https://circle.fractionl.ai/
+- Sign in: https://circle.fractionl.ai/auth
+- Share-contact landing: https://circle.fractionl.ai/share-contact
 - Privacy: https://circle.fractionl.ai/privacy
 - Terms: https://circle.fractionl.ai/terms
-- Machine-readable product truth: https://circle.fractionl.ai/agent.json
+- Machine-readable summary: https://circle.fractionl.ai/agent.json
 - This file: https://circle.fractionl.ai/llms.txt
+
+Unlinked `/preview/*` routes are design fixtures, not current product features.

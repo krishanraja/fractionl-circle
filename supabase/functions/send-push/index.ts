@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
 
   const notification = JSON.stringify({
     title: payload.title || 'Circle',
-    body: payload.body || 'Your moves are ready.',
+    body: payload.body || 'Someone in your circle may be useful.',
     url: payload.url || 'https://circle.fractionl.ai/',
   });
 

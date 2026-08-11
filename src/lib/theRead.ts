@@ -77,7 +77,126 @@ export interface BoxResult {
   upgrade?: boolean;
 }
 
+// Exact-name lookup stays available even when semantic whole-network search is
+// plan-gated. This is the basic promise of saving someone: if the user names
+// that person, Circle can bring them back without an LLM or paid search.
+async function findSavedPersonByExactName(query: string): Promise<NetworkMatch[]> {
+  const normalizedQuery = query.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  if (!normalizedQuery) return [];
+
+  const { data, error } = await supabase
+    .from('circle_person')
+    .select('id, display_name, title, company')
+    .order('updated_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  const exact = (data ?? [])
+    .filter((person) => {
+      const name = person.display_name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      return name.length >= 3 && (` ${normalizedQuery} `).includes(` ${name} `);
+    })
+    .sort((a, b) => b.display_name.length - a.display_name.length)
+    .slice(0, 1);
+
+  return exact.map((person) => ({
+    id: person.id,
+    name: person.display_name,
+    title: person.title,
+    company: person.company,
+    why: `You saved ${person.display_name} in Circle.`,
+    degree: 'first' as const,
+    matched_on: 'saved name',
+    confidence: 1,
+    evidence: [],
+  }));
+}
+
+const LOCAL_SEARCH_STOPWORDS = new Set([
+  'the', 'and', 'for', 'with', 'that', 'this', 'from', 'into', 'who', 'find', 'someone',
+  'person', 'help', 'could', 'would', 'about', 'testing', 'test', 'idea', 'tool', 'teams',
+  'team', 'build', 'building', 'want', 'need', 'have', 'work', 'working',
+]);
+
+async function findSavedPeopleByKeywords(query: string): Promise<NetworkMatch[]> {
+  const tokens = query.toLowerCase().split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 2 && !LOCAL_SEARCH_STOPWORDS.has(token));
+  if (!tokens.length) return [];
+
+  const { data, error } = await supabase
+    .from('circle_person')
+    .select('id, display_name, title, company, tags, note, dossier')
+    .order('updated_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+
+  return (data ?? [])
+    .map((person) => {
+      const detail = [
+        person.display_name,
+        person.title,
+        person.company,
+        ...(person.tags ?? []),
+        person.note,
+        person.dossier ? JSON.stringify(person.dossier).slice(0, 4_000) : null,
+      ].filter(Boolean).join(' ').toLowerCase();
+      const matched = tokens.filter((token) => detail.includes(token));
+      return { person, matched };
+    })
+    .filter(({ matched }) => matched.length > 0)
+    .sort((a, b) => b.matched.length - a.matched.length)
+    .slice(0, 6)
+    .map(({ person, matched }) => ({
+      id: person.id,
+      name: person.display_name,
+      title: person.title,
+      company: person.company,
+      why: `Your saved details connect ${person.display_name} to ${matched.slice(0, 2).join(' and ')}.`,
+      degree: 'first' as const,
+      matched_on: matched.slice(0, 2).join(', '),
+      confidence: Math.min(0.82, 0.56 + (matched.length * 0.08)),
+      evidence: [],
+    }));
+}
+
+function isClearlyWorkingOn(text: string): boolean {
+  const normalized = text.toLowerCase().replace(/[’']/g, "'");
+  const asksToFind = /\b(who|find|someone|person|intro|introduction|looking for|know anyone)\b/.test(normalized);
+  if (asksToFind) return false;
+  const ownsDirection = /\b(i am|i'm|i want|i need|my|we are|we're|our|working on)\b/.test(normalized);
+  const ideaLanguage = /\b(test|testing|validate|validating|build|building|launch|launching|idea|offer|service|product|tool|business|pricing)\b/.test(normalized);
+  return ownsDirection && ideaLanguage;
+}
+
 export async function runBoxQuery(text: string): Promise<BoxResult> {
+  // Resolve a directly named saved person locally first. It is faster, works
+  // offline from the LLM search path, and keeps a basic saved-contact lookup
+  // available regardless of plan or provider health.
+  const exact = await findSavedPersonByExactName(text);
+  if (exact.length) return { intent: 'find_people', found: exact };
+
+  if (isClearlyWorkingOn(text)) {
+    try {
+      await setReadFromText(text);
+      const ranked = await rankInnerCircle();
+      if (ranked.length) return { intent: 'working_on', working: ranked };
+    } catch {
+      // Provider or function failure falls through to a transparent local rank.
+    }
+    const local = await findSavedPeopleByKeywords(text);
+    return {
+      intent: 'working_on',
+      working: local.map((person) => ({
+        id: person.id,
+        name: person.name,
+        title: person.title,
+        company: person.company,
+        role: 'PROOF',
+        why: person.why,
+      })),
+    };
+  }
+
   const { data, error } = await supabase.functions.invoke('search-network', { body: { query: text } });
   if (error) {
     // Full-network search is Pro. The server replies 402 with code
@@ -85,11 +204,17 @@ export async function runBoxQuery(text: string): Promise<BoxResult> {
     // is on error.context. Detect it and let the box render an upgrade prompt
     // instead of throwing or mis-routing to the working_on path.
     try {
-      const body = await (error as { context?: { json?: () => Promise<{ code?: string }> } }).context?.json?.();
+      const context = (error as { context?: { status?: number; clone?: () => { json?: () => Promise<{ code?: string }> }; json?: () => Promise<{ code?: string }> } }).context;
+      if (context?.status === 402) {
+        return { intent: 'find_people', found: [], upgrade: true };
+      }
+      const body = await (context?.clone?.().json?.() ?? context?.json?.());
       if (body?.code === 'upgrade_required') {
         return { intent: 'find_people', found: [], upgrade: true };
       }
-    } catch { /* fall through to throw */ }
+    } catch { /* fall through to local recovery */ }
+    const local = await findSavedPeopleByKeywords(text);
+    if (local.length) return { intent: 'find_people', found: local };
     throw error;
   }
   const intent = (data as { intent?: string } | null)?.intent;
