@@ -1,8 +1,8 @@
 # Circle by Fractionl
 
-> Save any clue about a person. Circle joins the details quietly and brings back the right person when they can help.
+> Remember anyone, think through an idea, and find the right person when they can help.
 
-Last updated 2026-08-10. This file describes the active product at circle.fractionl.ai. Older descriptions of a two-tab Plan/Circle product, a relationship-to-revenue engine, overnight drafted Moves, or $30/$79 tiers are retired.
+Last updated 2026-08-11. This file describes the active product at circle.fractionl.ai. Older descriptions of the one-plane Hinge UI, a relationship-to-revenue engine, overnight drafted Moves, or $30/$79 tiers are retired.
 
 ## Who it is for
 
@@ -12,15 +12,15 @@ Not for sales teams that need deal stages, seat management, pipeline administrat
 
 ## What it does
 
-1. Accepts a name, link, email, note, voice clue, photo, supported device contact, or Android PWA share.
-2. Preserves the raw clue and asks only for a missing name. Where the user met the person is optional.
-3. Uses the existing ingestion, fingerprint, and dedupe pipeline to keep one grounded person.
-4. Finds a directly named saved person without an LLM or paid search dependency.
-5. Uses provider-backed search or ranking for broader requests when available.
-6. Recovers from provider failure with local matching over saved name, title, company, tags, notes, and dossier evidence.
-7. Shows why the person matched and never sends a message automatically.
+1. People: browse everyone, ask who could help, add one person, or bring in contacts from LinkedIn/CRM files, Google, and Microsoft.
+2. Ideas: start with a rough thought, revisit saved ideas, use the existing validation journey, and surface relevant people.
+3. You: reach profile, connected contacts, reminders, appearance, privacy, and account settings.
+4. Preserves raw contact input and uses the existing ingestion, fingerprint, and dedupe pipeline.
+5. Finds a directly named saved person without an LLM or paid search dependency.
+6. Recovers from provider failure with local matching over saved evidence.
+7. Shows why a person matched and never sends a message automatically.
 
-The signed-out root is a visual front door. The signed-in root is one adaptive working plane for `Keep clue` or `Find`. There is no active Plan tab or CRM dashboard.
+The signed-out root is a visual front door. The signed-in root is the People, Ideas, and You workspace. There is no CRM dashboard and no requirement to learn product vocabulary.
 
 ## Inputs
 
@@ -36,7 +36,7 @@ Native iOS share-sheet intake and an official Apple Shortcut are not shipped. Do
 
 - A name is the only required save field.
 - Nothing saves until the user taps the save action.
-- The raw clue is preserved.
+- The raw input is preserved.
 - Uncertainty and correction stay visible.
 - Match reasons come from saved evidence.
 - Circle never claims interest, availability, or relationship strength without evidence.

@@ -127,3 +127,14 @@ Append-only record. A decision is locked only after Krish approves the named ren
 - Completed recovery: exact-name recall and idea-led local evidence ranking keep the core promise available when a paid or provider-backed path fails.
 - Verification: 74 tests, TypeScript, lint with zero errors, production build, diff check, secret scan, authenticated persistence, and the 320px through 1440px responsive range passed.
 - Production boundary: preview and production must use the exact committed artifact. Current production deployment `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5` remains the rollback point until post-release readback passes.
+
+## Restored workspace composition, 2026-08-11
+
+- Exact correction: the one-plane release hid established contact browsing, profile/settings, and business-idea validation. The user asked to bring them back in a radically simple way and explicitly prohibited duplicate design systems, UI, fonts, data pipelines, or architecture.
+- Approval: the restored People / Ideas / You composition was approved, with the instruction to inspect and reuse what existed before the re-skin.
+- Product spine: **People** is the daily home; **Ideas** is the place to riff, validate, revisit, and surface relevant people; **You** is the stable home for profile, connections, reminders, privacy, and account.
+- Reuse decision: `CirclePeopleList`, `WorkingOnInput`, ingestion/dedupe/enrichment, `ThesisApp`, validation/journey/warm-reach, `ProfileSettingsSheet`, and Google/Microsoft source components remain the implementations. The workspace is composition and navigation, not a parallel product.
+- Visual decision: `circle-system.css` remains the token source. `circle-workspace.css` adds layout only. Existing deep-flow variables map to the same Circle palette and system font.
+- Language decision: user-facing `clue`, `thesis`, and `enrichment` become `person`, `idea`, and `find more details`. Internal database/function names remain unchanged to avoid data-pipeline churn.
+- Fit proof: signed-in desktop and Pixel 7 E2E caught and fixed a legacy `.thx *` reset that removed workspace padding. Public and signed-in checks now pass without horizontal overflow; hero line grouping remains explicit.
+- Test ownership: Playwright specs now preserve the public comprehension and People → Ideas → You story as a repeatable repository quality gate.

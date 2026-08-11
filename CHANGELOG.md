@@ -6,6 +6,17 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 
 ## Unreleased
 
+### Changed
+
+- Restored the existing People, idea-validation, and profile/settings capabilities through one consistent **People / Ideas / You** workspace.
+- Added complete contact browsing, visible add/import paths, recent idea reopen, and a first-class profile destination without replacing the existing ingestion or idea pipelines.
+- Replaced user-facing `clue`, `thesis`, and `enrichment` jargon with plain descriptions while retaining internal schema and function names.
+- Reused the approved Circle tokens across the workspace, overlays, public front door, and existing deep flows.
+
+### Quality
+
+- Added Playwright coverage for the public front door and the signed-in People → Ideas → You story at desktop and mobile viewports, including horizontal-overflow assertions.
+
 ### Documentation
 
 - Added deterministic documentation checks, complete local setup, repository

@@ -34,5 +34,7 @@ supabase/.temp/
 # local resume ledger (not shipped)
 _STATE.md
 e2e-tmp/
+test-results/
+playwright-report/
 .vercel
 .env*

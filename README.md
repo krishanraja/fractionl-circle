@@ -1,18 +1,18 @@
 # Circle by Fractionl
 
-Circle keeps any clue about a person, joins the details quietly, and brings back the right person when they can help.
+Circle remembers the people you meet, helps you think through business ideas, and brings the right person back when they can help.
 
 Live product: [circle.fractionl.ai](https://circle.fractionl.ai)
 
-Last reviewed: 2026-08-10.
+Last reviewed: 2026-08-11.
 
 ## The user flow
 
-1. Add a name, link, email, note, voice clue, photo, supported device contact, or Android share.
-2. Check only what Circle could not know. Add where you met if it matters.
-3. Tap `Keep clue` once.
-4. Later, ask for a named or described person, or describe an idea you are testing.
-5. Circle returns a grounded saved person and explains which saved facts matched.
+1. Open **People** and add anyone from a name, link, email, note, voice memo, photo, supported device contact, Android share, LinkedIn/CRM file, Google, or Microsoft.
+2. Add where you met or any detail you remember. Circle handles joining, dedupe, and enrichment behind the scenes.
+3. Browse or search everyone at any time, or ask for the kind of person you need in plain English.
+4. Open **Ideas** to talk through a business idea, revisit earlier ideas, and find the people worth speaking to.
+5. Open **You** for profile, connected contacts, reminders, appearance, privacy, and account settings.
 
 Dedupe, enrichment, provider recovery, and evidence ranking stay behind the scenes. Circle never sends a message automatically and never invents relationship facts.
 
@@ -40,16 +40,17 @@ The terminal prints the local Vite URL. Use only a designated test account and s
 ```powershell
 npm run docs:check
 npm run test:run
+npm run test:e2e
 npm exec -- tsc --noEmit
 npm run lint
 npm run build
 ```
 
-The release contract also includes browser checks at 320px through 1440px, direct-route refreshes, an authenticated save and recall, validation recovery, microphone denial/timeout recovery, and a repository secret scan.
+`npm run test:e2e` needs `E2E_EMAIL` and `E2E_PASSWORD` for a designated test account. It runs the public front door and the signed-in People → Ideas → You story on desktop and mobile. The release contract also includes direct-route refreshes, authenticated save and recall, microphone denial/timeout recovery, and a repository secret scan.
 
 ## Current routes
 
-- `/` - public front door when signed out; Circle capture and recall when signed in
+- `/` - public front door when signed out; the People, Ideas, and You workspace when signed in
 - `/auth` - sign in and account creation
 - `/share-contact` - Android PWA share-target landing and manual recovery
 - `/privacy` - privacy controls when signed in; clear sign-in gate otherwise

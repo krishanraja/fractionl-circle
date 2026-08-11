@@ -1,12 +1,10 @@
 # Microsoft contacts and calendar OAuth setup
 
-Status: conditional backend runbook. The connector components and Edge
-Functions remain in source, but the current Hinge shell does not mount the
-`Add a source` interface. Users cannot start this connection from the active
-product.
+Status: active connector runbook. The **People → Bring in contacts → Connect
+Microsoft** path mounts the existing connector and Edge Functions.
 
-Do not deploy or publish this integration from this document alone. Restore and
-verify a supported product entry point first.
+Do not deploy or publish this integration from this document alone. Provider
+changes still require preview verification and release approval.
 
 ## 1. Register an app
 
@@ -91,13 +89,9 @@ only the `x-cron-secret` header.
 
 ## 6. Availability gate and smoke test
 
-On the current release, stop before OAuth. `src/pathroom/CircleApp.tsx` mounts
-only the Hinge surface, and that surface does not expose `AddSourceSheet`.
-Opening a callback directly is not a valid test.
+The product entry point is active. Opening a callback directly is still not a valid test.
 
-When a reviewed product entry point returns:
-
-1. Open the app → **Circle** → **Add a source** → **Connect Microsoft**.
+1. Open **People** → **Bring in contacts** → **Connect Microsoft**.
 2. Microsoft consent screen lists the scopes from step 3.
 3. Accept. You'll be redirected to `https://circle.fractionl.ai/?oauth=microsoft&status=ok`.
 4. Toast: "Microsoft connected. Importing contacts + calendar…".

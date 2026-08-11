@@ -1,8 +1,8 @@
 # Google contacts and calendar OAuth setup
 
-Status: conditional backend runbook. The connector components and Edge Functions remain in source, but the current Hinge shell does not mount the `Add a source` interface. Users cannot start this connection from the active product.
+Status: active connector runbook. The **People → Bring in contacts → Connect Google** path mounts the existing connector and Edge Functions.
 
-Do not deploy, publish, or widen OAuth access from this document alone. Restore and verify a supported product entry point first.
+Do not deploy, publish, or widen OAuth access from this document alone. Changes still require provider configuration, preview verification, and release approval.
 
 This runbook records the intended Google Cloud setup for the `Connect Google` source.
 
@@ -102,13 +102,9 @@ directly with no user token. State validation in the callback covers auth.
 
 ## 7. Availability gate and smoke test
 
-On the current release, stop before OAuth. `src/pathroom/CircleApp.tsx` mounts
-only the Hinge surface, and that surface does not expose `AddSourceSheet`.
-Opening a callback directly is not a valid test.
+The product entry point is active. Opening a callback directly is still not a valid test.
 
-When a reviewed product entry point returns:
-
-1. Open Circle's main screen, choose **Add a source**, then **Connect Google**.
+1. Open **People**, choose **Bring in contacts**, then **Connect Google**.
 2. You should land on Google's consent screen with the scopes listed above.
 3. Accept. You'll be redirected to
    `https://circle.fractionl.ai/?oauth=google&status=ok`.

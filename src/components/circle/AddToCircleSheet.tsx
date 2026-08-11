@@ -41,6 +41,8 @@ interface AddToCircleSheetProps {
   onOpenChange: (open: boolean) => void;
   onAdded?: (result: IngestResult) => void;
   onConnectSourceClick?: () => void;
+  /** Carries a public-front-door note into the existing paste/review path. */
+  initialText?: string;
 }
 
 const SheetBody = ({
@@ -68,15 +70,15 @@ const SheetBody = ({
     <div className="sheetwrap" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
         <div className="ovl">Add someone</div>
-        <div className="h" style={{ marginTop: 6 }}>Add to your circle</div>
-        <div className="sub">Whatever you've got - a name, screenshot, link, voice memo.</div>
+        <div className="h" style={{ marginTop: 6 }}>Add someone</div>
+        <div className="sub">Use whatever you have: a name, photo, link, or voice note.</div>
       </div>
 
       {clipboardHint && (
         <button className="modetile" style={{ minHeight: 0, flexDirection: 'row', alignItems: 'center', gap: 9 }} onClick={onUseClipboard}>
           <Sparkles size={16} style={{ color: 'var(--thx-accent)', flex: '0 0 auto' }} />
           <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--thx-hi)', lineHeight: 1.35 }}>
-            Use clipboard - <span style={{ color: 'var(--thx-mid)' }}>{clipboardHint}</span>
+            Use what you copied: <span style={{ color: 'var(--thx-mid)' }}>{clipboardHint}</span>
           </span>
           <span
             role="button"
@@ -122,7 +124,7 @@ const SheetBody = ({
 
       {onConnectSourceClick && (
         <button className="ghostbtn" style={{ width: '100%', justifyContent: 'space-between' }} onClick={onConnectSourceClick}>
-          <span>Or connect a source for a bigger import</span>
+          <span>Bring in more contacts</span>
           <ChevronRight size={15} />
         </button>
       )}
@@ -137,9 +139,11 @@ export const AddToCircleSheet = ({
   onOpenChange,
   onAdded,
   onConnectSourceClick,
+  initialText,
 }: AddToCircleSheetProps) => {
   const isMobile = useIsMobile();
   const [mode, setModeState] = useState<Mode>('image');
+  const [pastePrefill, setPastePrefill] = useState<string | undefined>(undefined);
 
   const setMode = useCallback((m: Mode) => {
     setModeState(m);
@@ -150,6 +154,11 @@ export const AddToCircleSheet = ({
   // Subsequent opens: remember the last-used mode (Apple Camera-style).
   useEffect(() => {
     if (!open) return;
+    if (initialText?.trim()) {
+      setModeState('paste');
+      setPastePrefill(initialText);
+      return;
+    }
     let next: Mode = 'image';
     try {
       const stored = sessionStorage.getItem(LAST_MODE_KEY);
@@ -158,7 +167,7 @@ export const AddToCircleSheet = ({
       }
     } catch { /* no-op */ }
     setModeState(next);
-  }, [open]);
+  }, [open, initialText]);
 
   // Clipboard sniff: if the user has copied a LinkedIn URL / @-handle / email
   // address, surface a "Use clipboard" pill. The sheet-open is a user gesture
@@ -181,7 +190,6 @@ export const AddToCircleSheet = ({
     return () => { cancelled = true; };
   }, [open]);
 
-  const [pastePrefill, setPastePrefill] = useState<string | undefined>(undefined);
   const handleUseClipboard = useCallback(() => {
     if (!clipboardText) return;
     haptics.tap();
@@ -195,13 +203,13 @@ export const AddToCircleSheet = ({
   }, []);
 
   // Don't carry the prefill into the next open.
-  useEffect(() => { if (!open) setPastePrefill(undefined); }, [open]);
+  useEffect(() => { if (!open && !initialText) setPastePrefill(undefined); }, [open, initialText]);
 
   const wrappedOnAdded = useCallback((result: IngestResult) => {
     const bits: string[] = [];
     if (result.circleNew) bits.push(`${result.circleNew} new`);
     if (result.circleMerged) bits.push(`${result.circleMerged} merged`);
-    toast.success(bits.length ? bits.join(' · ') : 'Added to your Circle');
+    toast.success(bits.length ? bits.join(' · ') : 'Person added');
     onAdded?.(result);
   }, [onAdded]);
 
@@ -224,8 +232,8 @@ export const AddToCircleSheet = ({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[92vh]">
-          <DrawerTitle className="sr-only">Add to your circle</DrawerTitle>
+        <DrawerContent className="circle-system max-h-[92vh]">
+          <DrawerTitle className="sr-only">Add someone</DrawerTitle>
           <div className="thx overflow-y-auto pb-safe-bottom" style={{ background: 'var(--thx-bg)' }}>{body}</div>
         </DrawerContent>
       </Drawer>
@@ -234,8 +242,8 @@ export const AddToCircleSheet = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        <DialogTitle className="sr-only">Add to your circle</DialogTitle>
+      <DialogContent className="circle-system sm:max-w-lg p-0 overflow-hidden">
+        <DialogTitle className="sr-only">Add someone</DialogTitle>
         <div className="thx max-h-[80vh] overflow-y-auto" style={{ background: 'var(--thx-bg)' }}>{body}</div>
       </DialogContent>
     </Dialog>

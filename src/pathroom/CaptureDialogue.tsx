@@ -35,7 +35,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
 
   const fuel = BASE + (thesis ? F_THESIS : 0) + (step === 'ready' && log.some((t) => t.kicker === 'your background') ? F_BG : 0);
   const fuels = [
-    { k: 'Thesis', on: !!thesis }, { k: 'Background', on: log.some((t) => t.kicker === 'your background') },
+    { k: 'Idea', on: !!thesis }, { k: 'Background', on: log.some((t) => t.kicker === 'your background') },
     { k: 'LinkedIn', on: false, hint: 'after read' }, { k: 'Businesses you admire', on: false, hint: 'after read' }, { k: 'Your circle', on: false, hint: 'after read' },
   ];
 
@@ -87,7 +87,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     push([{ role: 'you', text: t, kicker: 'what you do' }]);
     setPending(`Fractional ${t.replace(/^i\s+/i, '').replace(/\.$/, '')}, offered to the people who already need it.`);
     setInput(''); setStep('confirm');
-    setHead('Let me play that back.'); setSub('Here is a first cut of your thesis. We will sharpen it as we go.');
+    setHead('Let me play that back.'); setSub('Here is a first cut of your idea. We will make it clearer as we go.');
   }
 
   function submitBackground(text: string) {
@@ -95,7 +95,7 @@ export default function CaptureDialogue({ onJudge, onComplete }: {
     if (t) push([{ role: 'you', text: t, kicker: 'your background' }]);
     setStep('ready'); setInput('');
     setHead(thin ? 'Ready when you are.' : 'Good. That gives us something real to test.');
-    setSub(thin ? 'The read will be a sketch until you sharpen the thesis.' : 'Next we check it against live demand, your buyers, the crowding, and what makes you different.');
+    setSub(thin ? 'The read will be a sketch until you make the idea more specific.' : 'Next we check it against live demand, your buyers, the crowding, and what makes you different.');
     setBgFinal(t); // complete is triggered by the CTA on the ready step
   }
 

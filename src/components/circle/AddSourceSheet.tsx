@@ -120,7 +120,7 @@ export const AddSourceSheet = ({ open, onOpenChange, onIngested }: AddSourceShee
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={handleOpenChange}>
-        <DrawerContent className="max-h-[92vh]">
+        <DrawerContent className="circle-system max-h-[92vh]">
           <DrawerTitle className="sr-only">Add a source</DrawerTitle>
           <div className="overflow-y-auto pb-safe-bottom">
             {body}
@@ -132,7 +132,7 @@ export const AddSourceSheet = ({ open, onOpenChange, onIngested }: AddSourceShee
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+      <DialogContent className="circle-system sm:max-w-lg p-0 overflow-hidden">
         <DialogTitle className="sr-only">Add a source</DialogTitle>
         <div className="max-h-[80vh] overflow-y-auto">
           {body}

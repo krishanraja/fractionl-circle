@@ -13,6 +13,26 @@ function stripEmDash<T>(v: T): T {
 }
 
 export interface RunFull { id: string; result: Scorecard; stepProgress: number[]; thesis: string; background: string }
+export interface RecentRun { id: string; thesis: string; read: string; createdAt: string }
+
+type RunRow = {
+  id: string;
+  result: Scorecard;
+  step_progress: unknown;
+  thesis: string | null;
+  background: string | null;
+};
+
+const toRunFull = (row: RunRow | null): RunFull | null => {
+  if (!row?.result) return null;
+  return {
+    id: row.id,
+    result: row.result,
+    stepProgress: Array.isArray(row.step_progress) ? (row.step_progress as number[]) : [],
+    thesis: row.thesis || '',
+    background: row.background || '',
+  };
+};
 
 // The latest saved run, with its id, the thesis/background that produced it, and step
 // progress (the journey loop and re-runs read this back).
@@ -24,9 +44,34 @@ export async function getLatestRunFull(userId: string): Promise<RunFull | null> 
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-  const r = data as { id: string; result: Scorecard; step_progress: unknown; thesis: string | null; background: string | null } | null;
-  if (!r?.result) return null;
-  return { id: r.id, result: r.result, stepProgress: Array.isArray(r.step_progress) ? (r.step_progress as number[]) : [], thesis: r.thesis || '', background: r.background || '' };
+  return toRunFull(data as RunRow | null);
+}
+
+export async function getRunFull(userId: string, runId: string): Promise<RunFull | null> {
+  const { data } = await supabase
+    .from('thesis_runs')
+    .select('id, result, step_progress, thesis, background')
+    .eq('user_id', userId)
+    .eq('id', runId)
+    .maybeSingle();
+  return toRunFull(data as RunRow | null);
+}
+
+export async function getRecentRuns(userId: string, limit = 12): Promise<RecentRun[]> {
+  const { data, error } = await supabase
+    .from('thesis_runs')
+    .select('id, thesis, result, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return ((data as Array<{ id: string; thesis: string | null; result: Scorecard | null; created_at: string }> | null) ?? [])
+    .map((row) => ({
+      id: row.id,
+      thesis: row.thesis?.trim() || '',
+      read: row.result?.read?.trim() || '',
+      createdAt: row.created_at,
+    }));
 }
 
 // Mark which journey steps are done, on the latest run.
