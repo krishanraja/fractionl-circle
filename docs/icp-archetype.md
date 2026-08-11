@@ -1,6 +1,6 @@
 # The Fractional Executive - ICP & Archetype (deep reference)
 
-> Historical research record. The market figures and the older Circle/Pulse framing below have not been reverified for the current release. Do not cite them externally. Use [docs/PRODUCT.md](PRODUCT.md#primary-user) for product truth and [AGENT_BRIEFING.md](../AGENT_BRIEFING.md#who-it-is-for) for approved public claims.
+> Historical research record. The market figures and the older Circle/Pulse framing below have not been reverified for the current release. Do not cite them externally. Use [docs/PRODUCT.md](PRODUCT.md#primary-user) for product truth and [AGENT_BRIEFING.md](../AGENT_BRIEFING.md#working-audience) for approved public claims.
 
 Compiled from 2025-2026 published research for earlier positioning work. It remains useful as qualitative background, not as current market evidence.
 

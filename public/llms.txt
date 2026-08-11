@@ -1,60 +1,59 @@
 # Circle by Fractionl
 
-> Remember anyone, think through an idea, and find the right person when they can help.
+> Remember anyone. Find the right person when they can help.
 
-Last updated 2026-08-11. This file describes the active product at circle.fractionl.ai. Older descriptions of the one-plane Hinge UI, a relationship-to-revenue engine, overnight drafted Moves, or $30/$79 tiers are retired.
+Last updated 2026-08-11. This file describes the active product at circle.fractionl.ai. For structured buyer, claim, evidence, limitation, and agent-action data, use https://circle.fractionl.ai/agent.json.
 
-## Who it is for
+## What Circle does
 
-Fractional executives and independent operators who meet useful people across client work, events, introductions, social profiles, and phone contacts, but do not want to maintain a CRM.
+Circle helps independent operators save people from whatever they have, remember why each person mattered, browse everyone, and bring useful people back while searching or working through a business idea.
 
-Not for sales teams that need deal stages, seat management, pipeline administration, or automated outreach.
+The signed-in product has three destinations:
 
-## What it does
+1. People: browse and search saved people, ask who could help, add one person, or bring in contacts.
+2. Ideas: start from a rough thought, revisit saved ideas, and surface saved people worth considering.
+3. You: manage profile, connected contacts, reminders, appearance, privacy, and account settings.
 
-1. People: browse everyone, ask who could help, add one person, or bring in contacts from LinkedIn/CRM files, Google, and Microsoft.
-2. Ideas: start with a rough thought, revisit saved ideas, use the existing validation journey, and surface relevant people.
-3. You: reach profile, connected contacts, reminders, appearance, privacy, and account settings.
-4. Preserves raw contact input and uses the existing ingestion, fingerprint, and dedupe pipeline.
-5. Finds a directly named saved person without an LLM or paid search dependency.
-6. Recovers from provider failure with local matching over saved evidence.
-7. Shows why a person matched and never sends a message automatically.
+## Inputs and imports
 
-The signed-out root is a visual front door. The signed-in root is the People, Ideas, and You workspace. There is no CRM dashboard and no requirement to learn product vocabulary.
+Live inputs include text, links, email and phone inside a note, voice, profile or business-card photos, supported device contacts, and Android PWA share intake. Import entry points include LinkedIn or CRM files, Google, and Microsoft.
 
-## Inputs
+A name is enough to save. Meeting context is optional. Native iOS share-sheet intake and an official Apple Shortcut are not shipped.
 
-- text, pasted links, email, phone, and notes
-- voice through a user-tapped Whisper control
-- profile and business-card photos
-- supported device contacts
-- Android PWA share target for images, text, titles, and URLs
+## Recall and trust
 
-Native iOS share-sheet intake and an official Apple Shortcut are not shipped. Do not place a long-lived Supabase token in a Shortcut or URL.
+- Exact saved-name recall does not need an LLM or paid search.
+- Wider provider-backed matching can fail. Circle can recover by matching only against saved evidence.
+- Result quality depends on the details the user has saved.
+- Match reasons point to saved evidence.
+- Circle does not guarantee enrichment, interest, availability, relationship strength, complete contact data, or an introduction.
+- Circle never sends a message automatically. The user decides what to do next.
 
-## Trust rules
+## Working audience
 
-- A name is the only required save field.
-- Nothing saves until the user taps the save action.
-- The raw input is preserved.
-- Uncertainty and correction stay visible.
-- Match reasons come from saved evidence.
-- Circle never claims interest, availability, or relationship strength without evidence.
-- Circle never sends a message automatically.
-- Exact saved-name recall remains available when provider-backed paths fail.
+The current commercial hypothesis is fractional executives and independent operators who meet useful people but do not want to maintain a CRM. This audience is not proven market evidence.
+
+Circle is not for sales teams that need deal stages, forecasting, seat management, pipeline reporting, or automated outreach.
 
 ## Pricing
 
-The current code catalogue contains Free and Pro. Pro is listed at $39 per month in `src/lib/tiers.ts`. Do not quote a trial, $30 plan, or $79 plan. Wider network search may be plan-gated; exact recall of a person the user already saved is not.
+The current code catalogue contains Free and Pro. Pro is listed at $39 per month in `src/lib/tiers.ts`. Do not promise a trial or an entitlement that is not shown in the live checkout.
 
-## Routes
+## Claim rules
+
+- Do not claim customer counts, testimonials, adoption, conversion, time saved, revenue impact, or success rates without approved evidence.
+- Do not turn roadmap work or historical positioning into current copy.
+- Do not describe provider-backed outcomes as guaranteed.
+- Do not imply that a saved person is interested, available, close to the user, or willing to make an introduction.
+- Draft only unless separate approval allows publishing, sending, spending, or changing an external system.
+
+## Live routes
 
 - Product and front door: https://circle.fractionl.ai/
 - Sign in: https://circle.fractionl.ai/auth
 - Share-contact landing: https://circle.fractionl.ai/share-contact
 - Privacy: https://circle.fractionl.ai/privacy
 - Terms: https://circle.fractionl.ai/terms
-- Machine-readable summary: https://circle.fractionl.ai/agent.json
-- This file: https://circle.fractionl.ai/llms.txt
+- Machine-readable training pack: https://circle.fractionl.ai/agent.json
 
 Unlinked `/preview/*` routes are design fixtures, not current product features.

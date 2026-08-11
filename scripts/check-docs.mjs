@@ -24,11 +24,16 @@ const requiredFiles = [
   'CONTRIBUTING.md',
   'LICENSE.md',
   'CHANGELOG.md',
+  'AGENT_BRIEFING.md',
   '.github/CODEOWNERS',
   '.github/PULL_REQUEST_TEMPLATE.md',
   '.env.example',
   'docs/local-development.md',
+  'docs/PRODUCT.md',
+  'docs/MARKETING_AND_SALES.md',
   'docs/legal/README.md',
+  'public/agent.json',
+  'public/llms.txt',
 ];
 
 for (const file of requiredFiles) {
@@ -105,6 +110,135 @@ for (const markdownFile of markdownFiles) {
         errors.push(`${markdownFile}: missing heading #${rawAnchor} in ${decodedPath || markdownFile}`);
       }
     }
+  }
+}
+
+const corePromise = 'Remember anyone. Find the right person when they can help.';
+const product = readFileSync(join(root, 'docs/PRODUCT.md'), 'utf8');
+const briefing = readFileSync(join(root, 'AGENT_BRIEFING.md'), 'utf8');
+const goToMarket = readFileSync(join(root, 'docs/MARKETING_AND_SALES.md'), 'utf8');
+const llms = readFileSync(join(root, 'public/llms.txt'), 'utf8');
+const appSource = readFileSync(join(root, 'src/App.tsx'), 'utf8');
+const tiersSource = readFileSync(join(root, 'src/lib/tiers.ts'), 'utf8');
+const indexHtml = readFileSync(join(root, 'index.html'), 'utf8');
+
+for (const [file, content] of [
+  ['docs/PRODUCT.md', product],
+  ['AGENT_BRIEFING.md', briefing],
+  ['docs/MARKETING_AND_SALES.md', goToMarket],
+  ['public/llms.txt', llms],
+]) {
+  if (!content.includes(corePromise)) {
+    errors.push(`${file} does not contain the canonical product promise`);
+  }
+}
+
+for (const heading of [
+  '## Training contract',
+  '## Working buyer hypothesis',
+  '## Pain and changed belief',
+  '## Approved claims and evidence',
+  '## Product limits to disclose',
+  '## Objection handling',
+  '## Sales conversation protocol',
+  '## Agent operating rules',
+  '## Refresh protocol',
+]) {
+  if (!goToMarket.includes(heading)) {
+    errors.push(`docs/MARKETING_AND_SALES.md is missing ${heading}`);
+  }
+}
+
+let agent;
+try {
+  agent = JSON.parse(readFileSync(join(root, 'public/agent.json'), 'utf8'));
+} catch (error) {
+  errors.push(`public/agent.json is not valid JSON: ${error.message}`);
+}
+
+if (agent) {
+  if (agent.promise !== corePromise) {
+    errors.push('public/agent.json promise does not match the canonical product promise');
+  }
+
+  for (const field of [
+    'source_of_truth',
+    'claim_classes',
+    'buyer',
+    'message',
+    'live',
+    'trust',
+    'limits',
+    'pricing',
+    'approved_claims',
+    'prohibited_claims',
+    'agent_rules',
+    'urls',
+    'refresh_triggers',
+  ]) {
+    if (agent[field] === undefined) {
+      errors.push(`public/agent.json is missing ${field}`);
+    }
+  }
+
+  for (const [key, value] of Object.entries(agent.urls || {})) {
+    if (['llms_txt', 'agent_json'].includes(key)) continue;
+    let path;
+    try {
+      path = new URL(value).pathname;
+    } catch {
+      errors.push(`public/agent.json urls.${key} is not a valid URL`);
+      continue;
+    }
+
+    const sourcePath = path === '/' ? '/' : path.replace(/\/$/, '');
+    if (!appSource.includes(`path="${sourcePath}"`)) {
+      errors.push(`public/agent.json urls.${key} points to ${path}, which is not declared in src/App.tsx`);
+    }
+  }
+
+  const tierPrice = (slug) => {
+    const match = tiersSource.match(new RegExp(`slug: '${slug}'[\\s\\S]*?priceMonthly: (\\d+)`));
+    return match ? Number(match[1]) : null;
+  };
+  const freePrice = tierPrice('free');
+  const proPrice = tierPrice('pro');
+
+  if (freePrice === null || proPrice === null) {
+    errors.push('Could not read Free and Pro prices from src/lib/tiers.ts');
+  } else {
+    if (agent.pricing?.free_monthly !== freePrice) {
+      errors.push(`public/agent.json Free price does not match src/lib/tiers.ts (${freePrice})`);
+    }
+    if (agent.pricing?.free !== freePrice) {
+      errors.push(`public/agent.json compatibility Free price does not match src/lib/tiers.ts (${freePrice})`);
+    }
+    if (agent.pricing?.pro_monthly !== proPrice) {
+      errors.push(`public/agent.json Pro price does not match src/lib/tiers.ts (${proPrice})`);
+    }
+    if (agent.pricing?.pro_monthly_usd !== proPrice) {
+      errors.push(`public/agent.json compatibility Pro price does not match src/lib/tiers.ts (${proPrice})`);
+    }
+    if (!llms.includes(`Pro is listed at $${proPrice} per month`)) {
+      errors.push('public/llms.txt Pro price does not match src/lib/tiers.ts');
+    }
+    if (!indexHtml.includes(`"name": "Pro"`) || !indexHtml.includes(`"price": "${proPrice}"`)) {
+      errors.push('index.html structured-data Pro price does not match src/lib/tiers.ts');
+    }
+  }
+}
+
+for (const file of [
+  'README.md',
+  'DOCS.md',
+  'AGENT_BRIEFING.md',
+  'docs/PRODUCT.md',
+  'docs/MARKETING_AND_SALES.md',
+  'public/llms.txt',
+]) {
+  const content = readFileSync(join(root, file), 'utf8');
+  if (/[—]|â|Ã|�/.test(content)) {
+    errors.push(`${file} contains an em dash or mangled text encoding`);
   }
 }
 

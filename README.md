@@ -75,10 +75,13 @@ Routes under `/preview/*` are unlinked design fixtures. They are not product nav
 - [docs/local-development.md](docs/local-development.md) - local setup, environment boundaries, and troubleshooting
 - [DOCS.md](DOCS.md) - contributor and operator index
 - [AGENT_BRIEFING.md](AGENT_BRIEFING.md) - current public-facing facts and claim boundaries
+- [docs/MARKETING_AND_SALES.md](docs/MARKETING_AND_SALES.md) - source-backed training guide for human and autonomous go-to-market agents
 - [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - Android share intake and iOS status
 - [COMPLIANCE.md](COMPLIANCE.md), [SUBPROCESSORS.md](SUBPROCESSORS.md), [docs/RoPA.md](docs/RoPA.md) - privacy and compliance records
 - [docs/legal/README.md](docs/legal/README.md) - legal-document status and publication gates
 - `docs/_archive/` and `_upgrade/` - historical material only; never use them as current product truth
+
+Marketing and sales agents should start with `AGENT_BRIEFING.md`, then read `docs/MARKETING_AND_SALES.md`. Product facts come from `docs/PRODUCT.md`; buyer and message statements marked as hypotheses must not be presented as proven market evidence.
 
 ## Release model
 

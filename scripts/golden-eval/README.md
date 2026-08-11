@@ -1,5 +1,7 @@
 # Golden-set eval for the read
 
+Status: active internal regression tool for the idea engine. It is not a customer-facing product flow. It creates and deletes a test user through a service-role key, so running it against any shared or production project requires exact approval.
+
 A fixed set of ICP-derived profiles run through the real `validate-thesis` edge function,
 to catch honesty and discrimination regressions before they ship. Born from the 2026-07-04
 audit, which found the read inflated Demand/Burning-need to `strong/high` regardless of how

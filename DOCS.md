@@ -10,9 +10,10 @@ This file is the map, not a second product specification. Use [docs/PRODUCT.md](
 2. `docs/PRODUCT.md`
 3. `docs/NORTH_STAR.md`
 4. Current source and tests
-5. `AGENT_BRIEFING.md` for public-facing facts
-6. Dated decision and compliance records
-7. `docs/_archive/` and `_upgrade/` for history only
+5. `docs/MARKETING_AND_SALES.md` for commercial training, approved claims, and evidence boundaries
+6. `AGENT_BRIEFING.md` for the public-facing fast start
+7. Dated decision and compliance records
+8. `docs/_archive/` and `_upgrade/` for history only
 
 Historical documents can explain why a choice was made. They cannot define what the live product does.
 
@@ -90,6 +91,7 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 - `docs/PRODUCT.md` - product and implementation truth
 - `docs/NORTH_STAR.md` - outcome and metric
 - `AGENT_BRIEFING.md` - approved public-facing facts and claim boundaries
+- `docs/MARKETING_AND_SALES.md` - canonical marketing and sales training guide, including buyer hypotheses and claim evidence
 - `docs/DELIVERY_STATE.md` - verification, release, and rollback state
 - `docs/DESIGN_DECISIONS.md` - approved design record
 
@@ -98,6 +100,7 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 - `docs/screenshot-to-contact.md` - Android share target and iOS status
 - `docs/supabase-custom-domain.md` - custom domain setup
 - `docs/reengagement-and-push.md` - background re-engagement systems
+- `scripts/golden-eval/README.md` - service-role-gated honesty regression test for the active idea engine; never run against production without exact approval
 
 ### Contact integrations
 
@@ -129,6 +132,7 @@ Historical files remain for traceability and may contain retired product languag
 - `CONTRIBUTING.md` - branch, test, documentation, and pull-request rules
 - `LICENSE.md` - current rights status
 - `CHANGELOG.md` - user-visible release history
+- `public/agent.json` and `public/llms.txt` - deployed autonomous-agent training surfaces generated from the canonical product and commercial guides
 - `.github/CODEOWNERS` and `.github/PULL_REQUEST_TEMPLATE.md` - review ownership and evidence checklist
 
 ## Documentation rules
@@ -141,4 +145,4 @@ Historical files remain for traceability and may contain retired product languag
 - Do not quote a price or entitlement unless it matches `src/lib/tiers.ts` and the live checkout.
 - Do not claim a provider-backed result without a working runtime path and an honest fallback.
 - Update the public `llms.txt`, `agent.json`, metadata, and social card whenever the product promise changes.
-- Run `npm run docs:check` before every pull request. It verifies files, relative links, heading anchors, environment-variable coverage, governance files, and unresolved placeholder tokens.
+- Run `npm run docs:check` before every pull request. It verifies files, relative links, heading anchors, environment-variable coverage, governance files, the product promise, active routes, pricing parity, agent-training structure, machine-readable metadata, and unresolved placeholder tokens.

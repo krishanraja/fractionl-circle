@@ -1,6 +1,6 @@
 # Fractionl Circle design decisions
 
-Append-only record. A decision is locked only after Krish approves the named rendered revision.
+Append-only record. Read it chronologically: later entries supersede earlier ones. A decision is locked only after Krish approves the named rendered revision. [PRODUCT.md](PRODUCT.md) defines the current product; this file preserves how the design reached that state.
 
 ## Open direction, 2026-08-10
 
@@ -78,7 +78,7 @@ Append-only record. A decision is locked only after Krish approves the named ren
 ## Whole-product consistency brief, 2026-08-10
 
 - Exact request: "make sure the entire app looks visually consistent, right now if doesnt feel that way on the front door etc, the product marketing page is not very inspiring, and also this should be voice input enabled everywhere with whispr."
-- Classification: new material front-door surface plus a product-wide interaction-system requirement. Hinge r1 remains the locked visual and behavioral source of truth.
+- Classification at that point: new material front-door surface plus a product-wide interaction-system requirement. Hinge r1 remained the locked visual and behavioral source until the later restored-workspace composition superseded the one-plane product shell.
 - Visual contract: the same warm upper field, pale working plane, fine dark rules, violet signal, Circle mark, typographic hierarchy, square actions, visible uncertainty, and calm state changes carry from the product to the front door and account handoff.
 - Language contract: explain one concrete loop in words a 12-year-old understands. The visitor sees clue saved, details joined quietly, and one person useful later. No product category pitch, feature grid, or internal terms.
 - Voice contract: every product field that accepts a natural-language clue, question, note, or answer gets the same optional voice control. Email, password, account, consent, file, and other structured or sensitive fields stay typed or native. Microphone permission appears only after a deliberate tap. Type and attachment paths remain complete fallbacks.

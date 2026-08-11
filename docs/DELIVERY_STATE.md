@@ -23,12 +23,13 @@ Last verified: 2026-08-11
 - Public consistency closeout: pull request `#147`; exact-head preview `dpl_84kJWFVRDcVQDeYWgRGTAqvzKAzU` was READY, authenticated metadata readback passed, and every required GitHub check passed.
 - Verified unified-workspace production deployment: `dpl_Ewz4aZPeCHaQ5je9g7CPM6c3KQot`, READY and live from application commit `8959f49d18685993af352da4c3738ad063b90dfe`.
 - Release documentation closeout: pull request `#148`.
+- Current production deployment resolved on 2026-08-11: `dpl_8JopYirGxDULcxR4vVYe9eQs8pS8`, READY, from the documentation closeout on `main` at `3e0c920bfcddeeb4ded40c7af735aa9833c5666f`.
 - Production URL: `https://circle.fractionl.ai`
 - Previous release baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Production baseline before the unified workspace: `dpl_FTV9maqNCp7yBayZQFSiWCWWBLnB` (READY on 2026-08-11).
 - Rollback result: not used. Both production promotions passed live verification; resolve the active production deployment again before any future release.
 - Supabase project: `ksyuwacuigshvcyptlhe`
-- Backend release: migration `20260811014533_extend_dsar_coverage.sql` is applied; a post-release dry run reports the remote database is up to date. `cron-reengage` is ACTIVE at version 11 and `send-push` is ACTIVE at version 17. No function was invoked manually and no notification was sent during release verification.
+- Backend release: migration `20260811014533_extend_dsar_coverage.sql` is applied. Read-only verification on 2026-08-11 confirmed `cron-reengage` ACTIVE at version 11, `send-push` ACTIVE at version 17, and the target migration present in both histories. The wider migration histories are not identical: several older local migrations have no remote history row. Do not describe the whole remote database as up to date until that historical drift is reconciled. No function was invoked manually and no notification was sent during release verification.
 
 ## Current unified workspace release
 
@@ -75,6 +76,7 @@ Last verified: 2026-08-11
 - The iOS Shortcut transport described in `docs/screenshot-to-contact.md` is not shipped. iOS users can still paste, type, speak, or add a photo inside Circle.
 - A real microphone transcription could not run inside the controlled browser because it cannot grant hardware access. The permission, recording, transcription, and error states are covered by component tests; final hardware proof should use one real phone after production promotion.
 - Post-migration schema lint is clean for the repaired export and erasure functions. It still reports three pre-existing orphaned Google Sheets token functions that reference the intentionally removed `sheets_integrations` table; active Circle source does not call them, and their cleanup is recorded in `SECURITY.md` rather than folded into this release.
+- Supabase migration history contains several older local-only rows even though the approved DSAR migration is present remotely. Treat each future migration as an exact, reviewed target and reconcile history separately before relying on a global `up to date` claim.
 
 ## External state and cleanup
 

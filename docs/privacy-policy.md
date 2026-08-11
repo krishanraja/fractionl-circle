@@ -18,7 +18,7 @@ Circle is a personal contact-memory and recall service for fractional executives
 ## 2. What we collect
 
 - Account details: name, email, avatar, authentication identifiers, and optional profile information.
-- Contact clues: names, email addresses, phone numbers, social/profile links, company, role, location, notes, where the user met someone, and other context the user chooses to save.
+- Saved contact details: names, email addresses, phone numbers, social/profile links, company, role, location, notes, where the user met someone, and other context the user chooses to save.
 - Media and voice: photos shared for contact parsing and voice recordings or transcripts created after the user taps the microphone.
 - Requests: natural-language person requests and idea statements used to find relevant saved people.
 - Optional connections: Google or Microsoft contacts and calendar data when the user connects an account.
@@ -42,7 +42,7 @@ Fractionl does not sell personal data or share it for cross-context behavioural 
 
 ## 6. AI and enrichment
 
-Circle may send contact clues, profile text, voice audio/transcripts, screenshots, or idea/request text to configured AI and research providers to parse, transcribe, enrich, search, or rank saved people. Wider provider-backed paths can fail; exact-name recall and grounded local matching use saved evidence.
+Circle may send saved contact details, profile text, voice audio/transcripts, screenshots, or idea/request text to configured AI and research providers to parse, transcribe, enrich, search, or rank saved people. Wider provider-backed paths can fail; exact-name recall and grounded local matching use saved evidence.
 
 Provider training, retention, and zero-retention settings must be confirmed against current agreements before this draft is published.
 
