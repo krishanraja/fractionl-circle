@@ -1,6 +1,10 @@
-# Google OAuth setup (Phase 5)
+# Google contacts and calendar OAuth setup
 
-One-time Google Cloud Console setup for the `Connect Google` source.
+Status: conditional backend runbook. The connector components and Edge Functions remain in source, but the current Hinge shell does not mount the `Add a source` interface. Users cannot start this connection from the active product.
+
+Do not deploy, publish, or widen OAuth access from this document alone. Restore and verify a supported product entry point first.
+
+This runbook records the intended Google Cloud setup for the `Connect Google` source.
 
 ## 1. Create or pick a project
 
@@ -27,7 +31,7 @@ In **APIs & Services → Library**, enable:
   live - see `supabase-custom-domain.md` - `fractionl.ai` alone is correct.)
 - Save.
 
-On the **Scopes** step, add these and nothing else (non-restricted only):
+The intended contacts and calendar scope set is:
 
 ```
 openid
@@ -38,9 +42,12 @@ https://www.googleapis.com/auth/contacts.other.readonly
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
 
-Do **not** add `gmail.readonly` or any other restricted scope - that triggers
-Google's annual CASA audit (~$15k, 4–8 weeks). We do not currently use any
-restricted scopes.
+Current source still requests `gmail.readonly` and `gmail.send` in
+`supabase/functions/_shared/googleOauth.ts`, although the active product does
+not use Gmail bodies. This is a known security and verification gap. Remove
+those unused scopes before publishing the connector. Do not configure or
+promote the OAuth app from the intended list above while runtime source still
+requests a different set.
 
 Add test users (any Gmail accounts you'll sign in with) until the app is
 published.
@@ -79,7 +86,10 @@ be set. If not:
 supabase secrets set APP_URL=https://circle.fractionl.ai
 ```
 
-## 6. Deploy the three Phase 5 functions
+## 6. Deploy the connector functions
+
+Deployment is a production mutation. Run these commands only for an approved
+backend release with a named project, rollback source, and readback.
 
 ```
 supabase functions deploy oauth-google-start
@@ -90,7 +100,13 @@ supabase functions deploy sync-google
 `oauth-google-callback` must deploy with `--no-verify-jwt` - Google calls it
 directly with no user token. State validation in the callback covers auth.
 
-## 7. Smoke test
+## 7. Availability gate and smoke test
+
+On the current release, stop before OAuth. `src/pathroom/CircleApp.tsx` mounts
+only the Hinge surface, and that surface does not expose `AddSourceSheet`.
+Opening a callback directly is not a valid test.
+
+When a reviewed product entry point returns:
 
 1. Open Circle's main screen, choose **Add a source**, then **Connect Google**.
 2. You should land on Google's consent screen with the scopes listed above.
@@ -114,9 +130,11 @@ directly with no user token. State validation in the callback covers auth.
 - **Audience errors** - your OAuth consent screen is still in testing and
   your Google account isn't in the test users list. Add it.
 
-## Publishing (later)
+## Publishing gate
 
-To let non-test-users connect, submit the OAuth consent screen for
-verification. Since we only use non-restricted + sensitive scopes, this is
-Google's lighter-weight "brand verification" - a few screenshots and a demo
-video, typically a few days' turnaround.
+Do not submit for public verification until all three conditions hold:
+
+1. the active product exposes a reviewed connection entry point;
+2. runtime source requests only the approved scopes;
+3. the full connect, sync, disconnect, and token-erasure flow passes with a
+   designated test account.

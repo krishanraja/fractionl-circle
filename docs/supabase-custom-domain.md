@@ -19,7 +19,7 @@ domain**. Once live, the screen reads *"to continue to auth.circle.fractionl.ai"
 > the edge-function "Connect Google" contact-import flow documented in
 > `google-oauth-setup.md`. The custom domain moves **both** onto our domain.
 
-## What changes in code (already done on this branch)
+## Current code
 
 - **`.env.example`** documents `VITE_SUPABASE_URL` pointing at the custom domain.
 - **`supabase/config.toml`** lists the production site URL / redirect URLs.
@@ -73,8 +73,10 @@ Do the same redirect-URI swap for the **edge-function** OAuth client in
 2. The consent screen now reads **"to continue to auth.circle.fractionl.ai"**
    with the `Fractionl` app name + logo, no unverified-app warning.
 3. Complete sign-in → you land back in the app, session valid.
-4. Confirm **Circle → Add a source → Connect Google** (the edge-function flow)
-   still completes end-to-end on the new callback host.
+4. Confirm the built-in Google sign-in returns to Circle with a valid session.
+5. Defer the separate `Connect Google` source-flow check until the active
+   product mounts a reviewed source-connection entry point. Do not call the
+   callback directly as a substitute.
 
 ## Rollback
 Point `VITE_SUPABASE_URL` back at `https://ksyuwacuigshvcyptlhe.supabase.co`,

@@ -33,15 +33,19 @@ Older Plan, thesis, journey, and cockpit components remain in source but are not
 ## Development
 
 ```powershell
-npm install
+npm ci
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Use Node.js 20 or newer. CI currently runs Node.js 20. Local Supabase and Vercel settings belong in ignored environment files or authenticated provider sessions. Never add credentials to documentation, source, screenshots, commands, or test fixtures.
+Use Node.js 20 or newer. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env.local` before startup. The app does not fall back to an implicit project. See [docs/local-development.md](docs/local-development.md) for the safe test boundary and troubleshooting.
+
+CI runs Node.js 20. Local Supabase and Vercel settings belong in ignored environment files or authenticated provider sessions. Never add credentials to documentation, source, screenshots, commands, or test fixtures.
 
 ## Quality gate
 
 ```powershell
+npm run docs:check
 npm run test:run
 npm exec -- tsc --noEmit
 npm run lint
@@ -78,20 +82,24 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 ### Canonical
 
 - `README.md` - quick developer entry
+- `docs/local-development.md` - complete local setup and environment boundary
 - `docs/PRODUCT.md` - product and implementation truth
 - `docs/NORTH_STAR.md` - outcome and metric
 - `AGENT_BRIEFING.md` - approved public-facing facts and claim boundaries
 - `docs/DELIVERY_STATE.md` - verification, release, and rollback state
 - `docs/DESIGN_DECISIONS.md` - approved design record
 
-### Operations
+### Active operations
 
 - `docs/screenshot-to-contact.md` - Android share target and iOS status
-- `docs/google-oauth-setup.md` and `docs/microsoft-oauth-setup.md` - provider setup
-- `docs/google-oauth-verification.md` - Google verification pack
 - `docs/supabase-custom-domain.md` - custom domain setup
 - `docs/reengagement-and-push.md` - background re-engagement systems
-- `extension/README.md` - optional browser extension
+
+### Conditional or deferred integrations
+
+- `docs/google-oauth-setup.md` and `docs/microsoft-oauth-setup.md` - backend connector setup; the current Hinge shell does not expose the source-connection entry point
+- `docs/google-oauth-verification.md` - deferred Calendar-write verification pack; do not enable its flags while the connector UI is unavailable
+- `extension/README.md` - extension source record; pairing is unavailable in the current shell
 
 ### Privacy and security
 
@@ -100,14 +108,24 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 - `SUBPROCESSORS.md`
 - `docs/privacy-policy.md`
 - `docs/RoPA.md`
+- `docs/legal/README.md` - publication state, blockers, and owners
 
 ### Historical
 
 - `docs/_archive/`
 - `_upgrade/`
+- `docs/VALUE_SHARPENING_2026-07-03.md`
+- `docs/icp-archetype.md`
 - dated root audit reports
 
 Historical files remain for traceability and may contain retired product language. Their directory or dated filename is the warning label.
+
+### Repository governance
+
+- `CONTRIBUTING.md` - branch, test, documentation, and pull-request rules
+- `LICENSE.md` - current rights status
+- `CHANGELOG.md` - user-visible release history
+- `.github/CODEOWNERS` and `.github/PULL_REQUEST_TEMPLATE.md` - review ownership and evidence checklist
 
 ## Documentation rules
 
@@ -119,3 +137,4 @@ Historical files remain for traceability and may contain retired product languag
 - Do not quote a price or entitlement unless it matches `src/lib/tiers.ts` and the live checkout.
 - Do not claim a provider-backed result without a working runtime path and an honest fallback.
 - Update the public `llms.txt`, `agent.json`, metadata, and social card whenever the product promise changes.
+- Run `npm run docs:check` before every pull request. It verifies files, relative links, heading anchors, environment-variable coverage, governance files, and unresolved placeholder tokens.

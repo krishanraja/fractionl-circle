@@ -9,7 +9,7 @@ Ordering is by **leverage-per-effort**, not by chronological lineup.
 ## Currently in production (the active surface)
 
 ### Phase-1 ontology (the data model)
-Sources → Person → Idea × Person → Match → Move → Stream. Replaces the legacy clients / opportunities / activity_logs CRM model. Migration `20260418000001_redesign_phase_1_ontology.sql`. See [DOCS.md § Phase-1 ontology](../DOCS.md#7-the-phase-1-ontology).
+Sources → Person → Idea × Person → Match → Move → Stream. Replaces the legacy clients / opportunities / activity_logs CRM model. Migration `20260418000001_redesign_phase_1_ontology.sql`. See the [current product data and trust model](../PRODUCT.md#data-and-trust) before using this historical record.
 
 ### Voice onboarding (FirstVoice)
 90-second hold-to-talk → Whisper transcription → gpt-4o-mini extracts 3 sellable Ideas. The first artefact a user sees in <2 minutes. `src/components/onboarding/FirstVoice.tsx`.

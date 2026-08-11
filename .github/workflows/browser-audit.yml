@@ -17,6 +17,11 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
+      - run: npm run docs:check
+      - run: npm run test:run
+      - run: npm exec -- tsc --noEmit
+      - run: npm run lint
+      - run: npm run build
       - run: npx playwright install chromium
       - name: Production smoke
         env:

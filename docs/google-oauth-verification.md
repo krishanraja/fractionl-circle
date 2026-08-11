@@ -1,13 +1,17 @@
 # Google OAuth verification - calendar write (warm-reach holds)
 
+Status: deferred verification pack. Do not enable either flag or submit this
+pack while the current Hinge shell lacks the Google source-connection entry
+point. This file records a possible future release, not active product behavior.
+
 Goal: let the weekly warm-reach digest write a recurring hold **straight onto the
 user's Google Calendar** instead of attaching an `.ics` file. That needs the
 `calendar.events` (write) scope, which is a **sensitive** scope - it requires
 Google's lighter brand verification (screenshots + a short demo video, ~days, no
 cost), **not** the restricted-scope CASA audit.
 
-The code is already shipped behind two flags that are **off**, so today's behavior
-(an `.ics` attachment) is unchanged until you finish the steps below and flip them.
+The dormant function code is behind two flags that default off. Flag presence
+does not make this a supported current user flow.
 
 ## The two flags (Supabase edge-function secrets)
 
@@ -43,6 +47,10 @@ Both default off. Set them only **after** verification clears.
 
 ### Demo video script (~60–90s, screen recording)
 
+The current product cannot record this script because it does not expose
+`Add a source`. Resume only after that entry point returns and passes a
+designated-account connection test.
+
 1. Sign in at `https://circle.fractionl.ai`, open **Circle → Add a source →
    Connect Google**. Show the consent screen listing the calendar scope; accept.
 2. Trigger the warm-reach digest (or show the weekly email already received).
@@ -60,5 +68,6 @@ pursuing this until the digest has proven it drives reconnects. Until then the
 draft is delivered as a one-tap pre-filled `mailto:` link in the email, which
 needs no scope. The code path for native drafts is intentionally not built yet.
 
-(Note: the OAuth app already requests `gmail.send`/`gmail.readonly` in Testing
-mode for test users only; going public with those is the same CASA gate.)
+Current source requests `gmail.send` and `gmail.readonly`. Remove those
+unused scopes before any public OAuth submission. Do not normalize a test-only
+scope mismatch into production configuration.

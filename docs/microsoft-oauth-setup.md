@@ -1,7 +1,12 @@
-# Microsoft Graph OAuth setup (Phase 5b)
+# Microsoft contacts and calendar OAuth setup
 
-One-time Azure AD setup for the `Connect Microsoft` source. Mirrors the
-Google setup; same token storage, same callback shape, same user UX.
+Status: conditional backend runbook. The connector components and Edge
+Functions remain in source, but the current Hinge shell does not mount the
+`Add a source` interface. Users cannot start this connection from the active
+product.
+
+Do not deploy or publish this integration from this document alone. Restore and
+verify a supported product entry point first.
 
 ## 1. Register an app
 
@@ -14,9 +19,10 @@ Google setup; same token storage, same callback shape, same user UX.
   edge functions.
 - Redirect URI: **Web** →
   ```
-  https://<PROJECT_REF>.supabase.co/functions/v1/oauth-microsoft-callback
+  https://auth.circle.fractionl.ai/functions/v1/oauth-microsoft-callback
   ```
-  For you: `https://ksyuwacuigshvcyptlhe.supabase.co/functions/v1/oauth-microsoft-callback`.
+- Keep the raw Supabase callback only as a temporary rollback URI while the
+  custom domain is active.
 - Register.
 
 Copy the **Application (client) ID**.
@@ -67,6 +73,9 @@ work as a fallback; new setups should use the verbose names above.
 
 ## 5. Deploy the four functions
 
+Deployment is a production mutation. Run these commands only for an approved
+backend release with a named project, rollback source, and readback.
+
 ```
 supabase functions deploy oauth-microsoft-start
 supabase functions deploy oauth-microsoft-callback --no-verify-jwt
@@ -80,7 +89,13 @@ Microsoft hits it directly. State validation in the callback is the auth.
 `cron-sync-microsoft` ships `--no-verify-jwt` so pg_net can call it with
 only the `x-cron-secret` header.
 
-## 6. Smoke test
+## 6. Availability gate and smoke test
+
+On the current release, stop before OAuth. `src/pathroom/CircleApp.tsx` mounts
+only the Hinge surface, and that surface does not expose `AddSourceSheet`.
+Opening a callback directly is not a valid test.
+
+When a reviewed product entry point returns:
 
 1. Open the app → **Circle** → **Add a source** → **Connect Microsoft**.
 2. Microsoft consent screen lists the scopes from step 3.
