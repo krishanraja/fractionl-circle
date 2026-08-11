@@ -13,14 +13,14 @@ Last verified: 2026-08-10
 ## Release truth
 
 - Repository: `krishanraja/fractionl-circle`
-- Release pull request: `#142`, from `codex/circle-hinge-release` to `main`
-- Verified product commit: `86cf62e`; documentation and backend-safety changes are carried by the same release pull request and verified again at its final head.
+- Product release: pull request `#142` merged to `main` as `d9ca79cbee2482984ac87f9f3c1ade449bd91cb8`.
+- Installed-app copy correction: pull request `#143` merged to `main` as `0540073a4086f49277647dec5deb79045eeafa4d`.
+- Verified production deployment: `dpl_GquLpN47xnJTLBSmRy59dcZ4uUxF`, READY and serving the `circle.fractionl.ai` alias from commit `0540073a4086f49277647dec5deb79045eeafa4d`.
 - Production URL: `https://circle.fractionl.ai`
 - Pre-release production baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
-- Pre-release baseline commit: `70817d2d51a070f9dee48e91deab9daafcbc8ac2`
-- Rollback point: the pre-release production baseline above remains the known-good recovery target for this release.
+- Rollback result: not used. The pre-release baseline remains the known-good recovery target for this release.
 - Supabase project: `ksyuwacuigshvcyptlhe`
-- Backend release: migration `20260811014533_extend_dsar_coverage.sql` expands export and erasure coverage to every current erasable `user_id` table. `cron-reengage` now surfaces only quiet saved people, and `send-push` uses current Circle language. No schedule, secret, or user row is changed by the release.
+- Backend release: migration `20260811014533_extend_dsar_coverage.sql` is applied; a post-release dry run reports the remote database is up to date. `cron-reengage` is ACTIVE at version 11 and `send-push` is ACTIVE at version 17. No function was invoked manually and no notification was sent during release verification.
 
 ## What is complete
 
@@ -50,6 +50,10 @@ Last verified: 2026-08-10
 - Authenticated persistence: synthetic contact `Circle E2e Aug10 2034z` and meeting context `Codex E2E Lab` survived refresh and exact-name retrieval.
 - Idea recovery: when remote ranking failed, the app surfaced a saved person using only stored title, company, tags, notes, and dossier evidence.
 - Microphone recovery: a stalled permission prompt changes to `Opening...`, times out after 12 seconds, releases any late stream, and returns a clear type-instead path.
+- Post-merge route readback: `/`, `/share-contact`, `/privacy`, and `/terms` passed on the final production deployment at mobile and desktop widths with no horizontal overflow, console errors, or interactive target below 44px.
+- Post-merge recall readback: exact-name recall returned `Circle E2e Aug10 2034z`; the idea prompt `Who could help me with a Codex E2E Lab idea?` returned the same person with the stored `met:Codex E2E Lab` tag as its reason.
+- Production asset readback: `sw.js`, `site.webmanifest`, `llms.txt`, and `agent.json` returned HTTP 200. The installed-app push fallback uses current Circle language.
+- Production observability: Vercel reported no error or fatal logs and no runtime error clusters for the final application deployment during the verification window.
 
 ## Known non-blockers
 
