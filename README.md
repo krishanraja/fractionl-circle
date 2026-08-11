@@ -1,67 +1,71 @@
-# Fractionl
+# Circle by Fractionl
 
-**Two halves in one mobile-first app for people building a business off their network.**
-**Circle** is your warm network - the people who can help you sell. **Plan** reads the live
-market against what you want to offer and shows where you stand (a strength score 0–100 with
-banded, evidence-backed signals) plus your next moves.
+Circle keeps any clue about a person, joins the details quietly, and brings back the right person when they can help.
 
-Live: https://circle.fractionl.ai
+Live product: [circle.fractionl.ai](https://circle.fractionl.ai)
 
-Full product, architecture, and run/deploy: **[docs/PRODUCT.md](docs/PRODUCT.md)**.
+## The user flow
 
-> **Note (2026-06-29):** the older "Circle CRM" generation (Ideas → Matches → Moves →
-> Streams → Sunday Letter) has been removed. Docs are being kept honest to the shipped
-> product; if you find a stale reference to that model, trust the code and the dated notes
-> in `docs/PRODUCT.md`.
+1. Add a name, link, email, note, voice clue, photo, supported device contact, or Android share.
+2. Check only what Circle could not know. Add where you met if it matters.
+3. Tap `Keep clue` once.
+4. Later, ask for a named or described person, or describe an idea you are testing.
+5. Circle returns a grounded saved person and explains which saved facts matched.
 
-## What it does (60 seconds)
+Dedupe, enrichment, provider recovery, and evidence ranking stay behind the scenes. Circle never sends a message automatically and never invents relationship facts.
 
-1. **Start here (first run).** A brand-new user (no plan yet) is held in a warm, gated
-   onboarding (`src/pathroom/StartHere.tsx`), read-first: it unlocks **See how it lands** as soon
-   as you give a few plain words about who you want to sell to, why you, and your current
-   objective. Your people (who could help you sell) and a business you admire are optional
-   sharpeners, offered here and again after the read, not a wall in front of it. Why: a one-box
-   "type an idea → AI report" reads as a generic LLM wrapper, so the read is grounded in the
-   uniquely-yours about-you; an empty circle honestly reads warm-reach as LOW, the earned reason
-   to add your people next (fast via LinkedIn CSV, CRM/sheet, or instant Google/Microsoft contacts
-   sync). Your typed words persist locally so an OAuth contacts-sync redirect never loses them.
-2. **Plan.** The read runs live market research and returns **where you stand**: a strength
-   score (0–100) and honest, banded signals with evidence (never fake numbers), plus a
-   **make it stronger** coach that asks the single highest-leverage decision next, and a
-   living, action-first path of next moves.
-3. **Circle.** Your warm network stays alive on its own: a weekly "keep your circle warm"
-   digest surfaces who to reconnect with, and a **return surface** on the Circle landing shows
-   what's waiting for you when you come back (people going quiet, decisions to fold in).
+## Local development
 
-Free gives one full read with no paywall on first value. Pro ($39/mo) is unlimited reads,
-real warm reach from your full network, named next moves, and ongoing market monitoring.
+Requirements: Node.js 20 or newer and npm.
 
-## Quick start
-
-```
+```powershell
 npm install
-npm run dev      # local dev
-npm run build    # the CI gate
+npm run dev
 ```
+
+The default Vite URL is printed in the terminal. A configured local release session may use a different port.
+
+## Verification
+
+```powershell
+npm run test:run
+npm exec -- tsc --noEmit
+npm run lint
+npm run build
+```
+
+The release contract also includes browser checks at 320px through 1440px, direct-route refreshes, an authenticated save and recall, validation recovery, microphone denial/timeout recovery, and a repository secret scan.
+
+## Current routes
+
+- `/` - public front door when signed out; Circle capture and recall when signed in
+- `/auth` - sign in and account creation
+- `/share-contact` - Android PWA share-target landing and manual recovery
+- `/privacy` - privacy controls when signed in; clear sign-in gate otherwise
+- `/terms` - public terms
+
+Routes under `/preview/*` are unlinked design fixtures. They are not product navigation.
 
 ## Stack
 
-Vite + React + TypeScript + Tailwind + shadcn/Radix, Supabase (Postgres / RLS / edge
-functions), Perplexity (live research) + Gemini (vision) + a provider-fallback LLM,
-Stripe, Vercel.
+- React 18, TypeScript, Vite, Tailwind, Radix, and shadcn-compatible primitives
+- Supabase Auth, Postgres with row-level security, and Edge Functions
+- Vercel Git deployments
+- OpenAI Whisper through the deployed `transcribe` function
+- Existing provider-backed parsing, enrichment, and search functions with grounded local recovery for the core recall promise
 
-## Docs
+## Documentation
 
-- [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and architecture (source of truth).
-- [AGENT_BRIEFING.md](AGENT_BRIEFING.md) - the sales/marketing brief, with a LIVE-vs-ROADMAP discipline.
-- [docs/icp-archetype.md](docs/icp-archetype.md) - the ICP.
-- [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - the vision capture.
-- `docs/google-oauth-setup.md`, `docs/microsoft-oauth-setup.md`, `docs/supabase-custom-domain.md` - ops setup.
-- [docs/reengagement-and-push.md](docs/reengagement-and-push.md) - the re-engagement sweep + email/web-push setup.
-- `docs/google-oauth-verification.md` - the calendar-write sensitive-scope submission pack (native warm-reach holds).
-- `docs/privacy-policy.md`, `docs/RoPA.md` - legal and compliance.
-- `docs/_archive/` - superseded strategy (the earlier Circle CRM and the Path Room decision room), kept for history.
+- [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and implementation truth
+- [docs/NORTH_STAR.md](docs/NORTH_STAR.md) - the outcome and metric
+- [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) - release evidence and rollback contract
+- [docs/DESIGN_DECISIONS.md](docs/DESIGN_DECISIONS.md) - approved design trace and artifact hashes
+- [DOCS.md](DOCS.md) - contributor and operator index
+- [AGENT_BRIEFING.md](AGENT_BRIEFING.md) - current public-facing facts and claim boundaries
+- [docs/screenshot-to-contact.md](docs/screenshot-to-contact.md) - Android share intake and iOS status
+- [COMPLIANCE.md](COMPLIANCE.md), [SUBPROCESSORS.md](SUBPROCESSORS.md), [docs/RoPA.md](docs/RoPA.md) - privacy and compliance records
+- `docs/_archive/` and `_upgrade/` - historical material only; never use them as current product truth
 
-> Plain-language vocabulary (Plan / your idea / see how it lands / where you stand / make it
-> stronger) has a single source of truth: `src/pathroom/copy.ts`. Code symbols may still say
-> "thesis" internally; only what the user reads is renamed.
+## Release model
+
+Feature branches create Vercel previews. A release is merged to `main` only after tests, build, responsive browser checks, preview readback, and rollback identification pass. Production is then verified by source revision and user-visible behavior, not by deployment status alone.

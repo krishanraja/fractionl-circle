@@ -2,9 +2,9 @@
 
 Circle can accept a person from the phone share sheet, then use the same contact-ingestion and dedupe path as every other capture method.
 
-## Shipped in this release candidate
+## Android PWA share target
 
-The Android PWA share target is implemented on `codex/circle-hinge-release` and is not production truth until that branch is released.
+The Android PWA share target shipped with release pull request `#142`.
 
 1. `public/site.webmanifest` registers `/share-contact` for shared images, text, titles, and links.
 2. `public/sw.js` keeps the one-shot share payload in the Cache API and opens `/share-contact?pending=1`.
@@ -17,7 +17,7 @@ If parsing fails, Circle keeps the raw clue and opens the same editable form. A 
 
 ## Android test
 
-After the candidate is deployed:
+On the live product:
 
 1. Install Circle from Android Chrome.
 2. Take a screenshot of a profile or open a contact link.

@@ -13,14 +13,14 @@ Last verified: 2026-08-10
 ## Release truth
 
 - Repository: `krishanraja/fractionl-circle`
-- Branch: `codex/circle-hinge-release`
-- Verified product commit: `86cf62e`
+- Release pull request: `#142`, from `codex/circle-hinge-release` to `main`
+- Verified product commit: `86cf62e`; documentation and backend-safety changes are carried by the same release pull request and verified again at its final head.
 - Production URL: `https://circle.fractionl.ai`
-- Current production deployment: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
-- Current production commit: `70817d2d51a070f9dee48e91deab9daafcbc8ac2`
-- Rollback point: the current production deployment above remains untouched until the candidate is promoted and remains available for immediate rollback.
+- Pre-release production baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
+- Pre-release baseline commit: `70817d2d51a070f9dee48e91deab9daafcbc8ac2`
+- Rollback point: the pre-release production baseline above remains the known-good recovery target for this release.
 - Supabase project: `ksyuwacuigshvcyptlhe`
-- Backend release: no Supabase function or database change is required for this UI release. Deployed function source was compared with local source; observed provider failures are handled by deterministic client recovery.
+- Backend release: migration `20260811014533_extend_dsar_coverage.sql` expands export and erasure coverage to every current erasable `user_id` table. `cron-reengage` now surfaces only quiet saved people, and `send-push` uses current Circle language. No schedule, secret, or user row is changed by the release.
 
 ## What is complete
 
@@ -32,6 +32,8 @@ Last verified: 2026-08-10
 - Whole-app consistency: shared brand, colour, type, spacing, focus, and control sizing across home, auth, settings, privacy, terms, and share intake.
 - Voice: shared Whisper input on all free-form clue, ask, meeting, and positioning fields. Structured and sensitive fields remain typed or native.
 - PWA repair: `/share-contact` now exists, the service worker preserves the one-shot share payload, and direct or failed shares fall back to an editable manual form.
+- Privacy repair: export and erasure discover the live erasable `user_id` surface, with only the three documented legal-hold tables retained separately.
+- Re-engagement repair: the weekly sweep no longer reads or describes retired Plan decisions. It contacts no one unless the existing cron runs and a saved person qualifies as quiet.
 
 ## Verification evidence
 
@@ -41,6 +43,8 @@ Last verified: 2026-08-10
 - Production build: passed with Vite 5.4.21.
 - Diff quality: `git diff --check` passed.
 - Secret scan: no GitHub, Supabase, or Vercel access-token pattern exists in tracked or new repository files.
+- DSAR schema comparison: every current local erasable `user_id` table is discoverable by the catalog rule; the release also tolerates production schema-history drift instead of naming missing tables.
+- Background function comparison: the pre-release production source was downloaded before changes; no production notification was invoked during verification.
 - Responsive browser range: 320, 360, 390, 430, 600, 720, 820, 1024, 1280, and 1440 widths across public, auth, capture, saved, ask, result, share, privacy, and terms states.
 - Mobile legal/privacy readback: zero horizontal overflow at 390px; standalone controls meet the 44px floor.
 - Authenticated persistence: synthetic contact `Circle E2e Aug10 2034z` and meeting context `Codex E2E Lab` survived refresh and exact-name retrieval.
@@ -60,6 +64,6 @@ Last verified: 2026-08-10
 - Existing authenticated provider sessions were used. Access tokens pasted into chat were not used, copied, logged, or stored and should be revoked and replaced.
 - Local provider configuration remains git-ignored. No secret value was read into release evidence.
 
-## Next release action
+## Release procedure
 
-Push `codex/circle-hinge-release`, open a draft pull request, wait for the Vercel preview for the exact commit, run preview readback, then promote that exact verified deployment to production. Keep `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5` as the rollback target.
+The release head must pass local checks and an exact-SHA Vercel preview before it moves to `main`. After `main` deploys, verify the live source revision, public routes, authenticated primary task, PWA assets, and runtime errors. If a primary or adjacent route fails, restore `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5` and diagnose from the failed production revision.
