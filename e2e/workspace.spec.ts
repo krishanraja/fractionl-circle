@@ -42,6 +42,9 @@ async function attachScreen(page: Page, testInfo: TestInfo, name: string) {
 
 test('the restored app keeps People, Ideas, and You one tap away', async ({ page }, testInfo) => {
   await signIn(page);
+  const brand = page.locator('.circle-workspace .circle-brand:visible').first();
+  await expect(brand).toHaveAttribute('aria-label', 'Circle by Fractionl');
+  await expect(brand.locator('.circle-brand-parent-icon')).toBeVisible();
   await expect(page.getByText('Tell Circle what you need')).toBeVisible();
   await expect(page.getByRole('button', { name: /Add one person/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Bring in contacts/i })).toBeVisible();

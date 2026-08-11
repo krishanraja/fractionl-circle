@@ -177,7 +177,7 @@ const WelcomeContent = ({
     >
       <header className="circle-auth-header">
         <div className="circle-auth-header-inner">
-          <CircleBrand />
+          <CircleBrand signature="wordmark" />
           <nav className="circle-auth-actions" aria-label="Account">
             <button className="circle-auth-link" type="button" onClick={onSignInClick}>Sign in</button>
             <button className="circle-auth-start" type="button" onClick={startWithClue}>Add someone</button>
@@ -349,11 +349,6 @@ const SignInContent = ({
     className="w-full max-w-sm mx-auto space-y-6"
   >
     <div className="text-center">
-      <img 
-        src="/brand/fractionl-wordmark.png" 
-        alt="Circle" 
-        className="h-8 mx-auto mb-4"
-      />
       <h1 className="text-title-2 text-foreground mb-1">Welcome back</h1>
       <p className="text-caption text-foreground-secondary">
         Sign in to continue
@@ -470,11 +465,6 @@ const ForgotPasswordContent = ({
     className="w-full max-w-sm mx-auto space-y-6"
   >
     <div className="text-center">
-      <img
-        src="/brand/fractionl-wordmark.png"
-        alt="Circle"
-        className="h-8 mx-auto mb-4"
-      />
       <h1 className="text-title-2 text-foreground mb-1">Reset your password</h1>
       <p className="text-caption text-foreground-secondary">
         We will email you a link to choose a new password
@@ -555,11 +545,6 @@ const SignUpContent = ({
     className="w-full max-w-sm mx-auto space-y-6"
   >
     <div className="text-center">
-      <img 
-        src="/brand/fractionl-wordmark.png" 
-        alt="Circle" 
-        className="h-8 mx-auto mb-4"
-      />
       <h1 className="text-title-2 text-foreground mb-1">Create your account</h1>
       <p className="text-caption text-foreground-secondary">
         {email}
@@ -927,7 +912,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
           >
             <header className="circle-auth-header">
               <div className="circle-auth-header-inner">
-                <CircleBrand />
+                <CircleBrand signature="wordmark" />
                 <button className="circle-auth-link" type="button" onClick={handleSetModeWelcome}>Back</button>
               </div>
             </header>

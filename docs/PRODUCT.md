@@ -34,6 +34,8 @@ The signed-out root shows one concrete loop: a person is added, details join qui
 
 Voice, photo, and device-contact actions explain that joining comes first. They do not request microphone or contact permission on the public page.
 
+The public and account surfaces show the full Fractionl wordmark as the parent identity. Inside the signed-in workspace, Circle remains primary and the Fractionl icon becomes a quiet ownership seal. Browser, installed-app, and notification icons use the same Fractionl favicon artwork. A Fractionl-derived bronze is reserved for that ownership signature; violet remains Circle's only action signal.
+
 ### People
 
 The signed-in root is a three-destination workspace. **People** is the default and daily home. It keeps ask-by-meaning, quick add, source import, and the complete contact list on one calm surface. Users can browse and search everyone at any time.
@@ -134,6 +136,7 @@ Core trust rules:
 - `src/lib/circleIngest.ts` owns the shared ingestion path.
 - `src/lib/theRead.ts` owns intent routing, provider calls, exact-name recall, and grounded recovery.
 - `src/components/circle/WhisperButton.tsx` owns the reusable voice interaction.
+- `src/components/circle/CircleBrand.tsx` owns the responsive Circle and Fractionl lockups; `public/brand/` owns the approved wordmark and icon artwork.
 - `src/pathroom/circle-system.css` owns the shared visual tokens. `circle-workspace.css` owns only workspace layout. Existing deep-flow styles read the same tokens.
 
 `HingeCircle.tsx`, its test, and historical mocks remain for traceability but are not mounted. Do not delete or rebuild the existing ingestion, idea, settings, connector, or data-pipeline systems merely because the shell changed.

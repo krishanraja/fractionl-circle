@@ -34,6 +34,14 @@ const requiredFiles = [
   'docs/legal/README.md',
   'public/agent.json',
   'public/llms.txt',
+  'public/brand/fractionl-wordmark.png',
+  'public/brand/fractionl-icon.png',
+  'public/favicon.ico',
+  'public/favicon.png',
+  'public/favicon-64.png',
+  'public/apple-touch-icon.png',
+  'public/android-chrome-192x192.png',
+  'public/android-chrome-512x512.png',
 ];
 
 for (const file of requiredFiles) {
@@ -121,6 +129,40 @@ const llms = readFileSync(join(root, 'public/llms.txt'), 'utf8');
 const appSource = readFileSync(join(root, 'src/App.tsx'), 'utf8');
 const tiersSource = readFileSync(join(root, 'src/lib/tiers.ts'), 'utf8');
 const indexHtml = readFileSync(join(root, 'index.html'), 'utf8');
+const circleBrandSource = readFileSync(join(root, 'src/components/circle/CircleBrand.tsx'), 'utf8');
+const circleSystem = readFileSync(join(root, 'src/pathroom/circle-system.css'), 'utf8');
+const ogGenerator = readFileSync(join(root, 'scripts/generate-og-image.mjs'), 'utf8');
+const manifest = JSON.parse(readFileSync(join(root, 'public/site.webmanifest'), 'utf8'));
+
+for (const [file, content, expectedAsset] of [
+  ['src/pathroom/circle-system.css', circleSystem, '/brand/fractionl-wordmark.png'],
+  ['src/pathroom/circle-system.css', circleSystem, '/brand/fractionl-icon.png'],
+  ['scripts/generate-og-image.mjs', ogGenerator, 'fractionl-wordmark.png'],
+]) {
+  if (!content.includes(expectedAsset)) {
+    errors.push(`${file} does not reference ${expectedAsset}`);
+  }
+}
+
+if (!circleBrandSource.includes("signature = 'icon'")) {
+  errors.push('CircleBrand does not default to the compact Fractionl icon signature');
+}
+
+const htmlThemeColor = indexHtml.match(/<meta name="theme-color" content="([^"]+)"/i)?.[1];
+const tileColor = indexHtml.match(/<meta name="msapplication-TileColor" content="([^"]+)"/i)?.[1];
+if (!htmlThemeColor || htmlThemeColor !== manifest.theme_color) {
+  errors.push('index.html theme color does not match public/site.webmanifest');
+}
+if (!tileColor || tileColor !== manifest.theme_color) {
+  errors.push('index.html tile color does not match public/site.webmanifest');
+}
+
+for (const icon of manifest.icons || []) {
+  const iconPath = icon.src?.replace(/^\//, '');
+  if (!iconPath || !existsSync(join(root, 'public', iconPath))) {
+    errors.push(`public/site.webmanifest references missing icon ${icon.src || '(empty)'}`);
+  }
+}
 
 for (const [file, content] of [
   ['docs/PRODUCT.md', product],

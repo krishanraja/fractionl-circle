@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { ErrorBanner } from '@/components/feedback';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { CircleBrand } from '@/components/circle/CircleBrand';
+import '@/pathroom/circle-system.css';
 
 interface SetNewPasswordScreenProps {
   onComplete: () => void;
@@ -43,17 +45,15 @@ export const SetNewPasswordScreen = ({ onComplete }: SetNewPasswordScreenProps) 
   }, [password, onComplete]);
 
   return (
-    <div className="w-full max-w-sm mx-auto space-y-6">
+    <div className="circle-system w-full max-w-sm mx-auto space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <img
-          src="/brand/fractionl-wordmark.png"
-          alt="Circle"
-          className="h-8 mx-auto mb-4"
-        />
+        <div className="mb-4 flex justify-center">
+          <CircleBrand signature="wordmark" />
+        </div>
         <h1 className="text-title-2 text-foreground mb-1">Set a new password</h1>
         <p className="text-caption text-foreground-secondary">
           Choose a new password for your account
