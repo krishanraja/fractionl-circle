@@ -13,7 +13,7 @@ The Android PWA share target shipped with release pull request `#142`.
 5. The user checks simple editable fields, optionally adds where they met, and taps `Save person` once.
 6. `ingestSharedContact` writes through the existing raw-person and fingerprint-dedupe pipeline.
 
-If parsing fails, Circle keeps the raw clue and opens the same editable form. A name is the only required field.
+If parsing fails, Circle keeps the original input and opens the same editable form. A name is the only required field.
 
 ## Android test
 
@@ -23,7 +23,7 @@ On the live product:
 2. Take a screenshot of a profile or open a contact link.
 3. Choose Share, then Circle.
 4. Confirm `/share-contact` opens with the available details.
-5. Edit anything uncertain, optionally add where you met, then keep the clue.
+5. Edit anything uncertain, optionally add where you met, then save the person.
 6. Return to Circle and find the saved person by exact name.
 
 The PWA must be installed before Circle can appear in the Android share sheet.
@@ -46,14 +46,14 @@ A future iOS Shortcut should use a short-lived, revocable handoff created by Cir
 - A shared image leaves the device only after the user chooses Circle.
 - `parse-screenshot` returns parsed fields and does not intentionally persist the raw image.
 - The user sees and can edit the fields before saving.
-- The raw clue is preserved for recovery and provenance.
+- The original input is preserved for recovery and provenance.
 - Existing Supabase row-level security limits saved people to the signed-in user.
 - Circle does not send a message or contact the person automatically.
 
 ## Recovery
 
 - Share missing: open `/share-contact` and add the name manually.
-- Photo unclear: correct the fields or keep only the name and raw clue.
-- Meeting context fails after the person saves: Circle says the person is safe and reports only the missing detail.
+- Photo unclear: correct the fields or keep only the name and original input.
+- Meeting context fails after the person saves: Circle says the person is saved and reports only the missing detail.
 - Microphone unavailable: type or paste instead.
 - Stale PWA service worker: update or reinstall the PWA, then share again.

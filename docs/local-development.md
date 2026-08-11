@@ -95,7 +95,7 @@ All unprefixed variables are server-side references. Do not place real server se
 | Startup reports missing Supabase configuration | One of the two required Vite values is empty | Set both values in `.env.local`, then restart Vite |
 | Sign-in returns to the wrong host | The OAuth provider does not allow the local callback | Use an approved local redirect or test the deployed preview |
 | Port differs from an old screenshot or command | Vite selected the next free port | Use the URL printed in the current terminal |
-| Microphone input cannot start | Browser or operating-system permission is blocked | Grant permission on the local origin or type the clue |
+| Microphone input cannot start | Browser or operating-system permission is blocked | Grant permission on the local origin or type the note |
 | UI looks stale after an environment change | Vite variables are baked at startup | Stop and restart Vite; rebuild before judging a deployed artifact |
 
 ## Backend work

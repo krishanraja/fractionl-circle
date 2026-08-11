@@ -6,6 +6,12 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 
 ## 2026-08-11
 
+### Agent-ready documentation
+
+- Added one source-backed marketing and sales operating guide with a working buyer hypothesis, qualification rules, message hierarchy, objections, approved claims, evidence links, product limits, and external-action boundaries.
+- Expanded `agent.json` and `llms.txt` into aligned training surfaces for autonomous agents while keeping product truth, commercial hypotheses, and retired claims distinct.
+- Extended the documentation check to detect drift in the core promise, routes, pricing, required training sections, and machine-readable metadata.
+
 ### Changed
 
 - Restored the existing People, idea-validation, and profile/settings capabilities through one consistent **People / Ideas / You** workspace.

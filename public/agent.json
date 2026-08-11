@@ -1,51 +1,185 @@
 {
+  "schema_version": "1.0",
   "version": "2026-08-11",
   "product": "Circle by Fractionl",
   "domain": "circle.fractionl.ai",
-  "one_liner": "Remember anyone, think through an idea, and find the right person when they can help.",
-  "category": "personal contact memory and grounded relationship recall for independent operators",
-  "supersedes": "Descriptions of the one-plane Hinge UI, a relationship-to-revenue engine, overnight drafted Moves, or $30/$79 tiers are retired.",
-  "primary_user": "Fractional executives and independent operators who meet useful people but do not want to maintain a CRM.",
-  "anti_icp": "Sales teams needing deal stages, seat management, pipeline administration, or automated outreach.",
+  "promise": "Remember anyone. Find the right person when they can help.",
+  "one_liner": "Remember anyone. Find the right person when they can help.",
+  "description": "Circle helps independent operators save people from whatever they have, remember why each person mattered, browse everyone, and bring useful people back while searching or working through a business idea.",
+  "category": "personal contact memory for independent operators",
+  "supersedes": "Older descriptions of a one-plane capture interface, relationship-to-revenue engine, overnight drafted actions, or $30/$79 tiers are retired.",
+  "primary_user": "Fractional executives and independent operators who meet useful people but do not want to maintain a CRM. This is a commercial hypothesis, not proven market evidence.",
+  "anti_icp": "Sales teams needing deal stages, forecasting, seat management, pipeline reporting, or automated outreach.",
+  "source_of_truth": {
+    "product": "docs/PRODUCT.md",
+    "marketing_and_sales": "docs/MARKETING_AND_SALES.md",
+    "release_evidence": "docs/DELIVERY_STATE.md",
+    "pricing": "src/lib/tiers.ts",
+    "public_briefing": "AGENT_BRIEFING.md"
+  },
+  "claim_classes": {
+    "verified_product_fact": "Supported by current source and verified release evidence.",
+    "commercial_hypothesis": "Useful for targeting or drafting, but not proven market evidence.",
+    "retired_or_unverified": "Must not be presented as current or factual."
+  },
+  "buyer": {
+    "status": "commercial_hypothesis",
+    "primary": "Fractional executives and independent operators who meet useful people but do not want to maintain a CRM.",
+    "painful_moment": "A useful person is already somewhere in the operator's world, but the operator cannot remember the name, context, or relevance when a real need appears.",
+    "current_workarounds": [
+      "phone contacts",
+      "LinkedIn",
+      "screenshots",
+      "inboxes",
+      "notes",
+      "spreadsheets",
+      "memory"
+    ],
+    "qualifying_signals": [
+      "Relationship context is spread across several places.",
+      "The user wants to save someone quickly without maintaining a formal record.",
+      "The user needs to find people while working through a business idea.",
+      "The user needs personal recall rather than team pipeline management."
+    ],
+    "disqualifying_signals": [
+      "Needs deal stages, forecasting, territories, seat controls, or manager reporting.",
+      "Wants bulk automated outreach or automatic introductions.",
+      "Requires guaranteed enrichment or web-wide people search.",
+      "Requires native iOS share-sheet intake today."
+    ]
+  },
+  "message": {
+    "changed_belief": "Keeping a useful network searchable does not have to require disciplined CRM upkeep. One imperfect note can preserve the context and make a person findable later.",
+    "hierarchy": [
+      "Outcome: remember anyone and find the right person later.",
+      "Ease: add whatever you have; a name is enough to save.",
+      "Context: add where you met or why they mattered if useful.",
+      "Use: browse everyone, ask who could help, or work through an idea.",
+      "Trust: see why someone matched and remain in control of every contact action."
+    ],
+    "approved_one_sentence": "Circle helps independent operators save people from whatever they have and find the right saved person when they can help.",
+    "approved_short_description": "Add a name, note, link, voice memo, or photo. Circle keeps the details together, lets you browse everyone, and brings useful people back when you search or work through an idea. You see why someone matched, and you decide what happens next.",
+    "approved_cta": "Start with one person you do not want to forget.",
+    "do_not_lead_with": [
+      "AI",
+      "dedupe",
+      "enrichment",
+      "providers",
+      "schemas",
+      "internal idea-engine names"
+    ]
+  },
   "active_flow": [
     "People: browse everyone, ask who could help, add one person, or bring in contacts.",
     "Ideas: start from a rough thought or reopen an earlier idea.",
     "You: manage profile, connected contacts, reminders, privacy, and account settings.",
-    "Circle preserves raw contact input and uses the existing dedupe pipeline.",
+    "Circle preserves original contact input and uses the existing dedupe pipeline.",
     "Circle returns saved people with reasons grounded in stored evidence."
   ],
   "live": [
     "People, Ideas, and You workspace",
-    "Text, link, email, voice, photo, supported device-contact, and Android PWA share intake",
-    "Optional meeting-context tag and complete contact browsing",
-    "LinkedIn/CRM file, Google, and Microsoft import entry points",
+    "Complete saved-person browsing and search",
+    "Text, link, email, phone inside a note, voice, photo, supported device-contact, and Android PWA share intake",
+    "Optional meeting-context detail",
+    "LinkedIn or CRM file, Google, and Microsoft import entry points",
     "Recent idea history, new idea capture, and exact-run reopen",
     "Exact saved-name recall without an LLM or paid search dependency",
-    "Provider-backed broader search and idea ranking with grounded local recovery",
-    "Evidence-based match reasons",
-    "User-controlled contact actions"
-  ],
-  "not_shipped": [
-    "Native iOS share-sheet intake or an official Apple Shortcut",
-    "Automatic messages or introductions",
-    "Guaranteed enrichment or provider availability",
-    "Guaranteed interest, availability, or relationship strength",
-    "The retired one-plane Hinge UI",
-    "A trial, $30 plan, or $79 plan"
+    "Provider-backed broader matching and idea ranking with grounded local recovery",
+    "Match reasons based on saved evidence",
+    "User-controlled contact actions",
+    "Profile, connected contacts, reminders, appearance, privacy, and account settings"
   ],
   "trust": [
     "Nothing saves until the user taps the save action.",
-    "Raw contact input is preserved.",
+    "A name is the minimum save field.",
+    "Original contact input is preserved.",
     "Uncertainty and correction remain visible.",
     "Match reasons use saved evidence.",
     "Exact saved-name recall degrades independently of remote AI providers.",
     "Circle never sends a message automatically."
   ],
+  "limits": [
+    "Native iOS share-sheet intake and an official Apple Shortcut are not shipped.",
+    "Enrichment, broader semantic search, and idea ranking may depend on providers and can fail.",
+    "Sparse saved details can produce a limited local result.",
+    "Circle does not guarantee interest, availability, relationship strength, complete contact data, or an introduction.",
+    "The useful-recall North Star funnel is not fully instrumented.",
+    "This training pack does not claim a trial or a verified checkout conversion path."
+  ],
+  "not_shipped": [
+    "Native iOS share-sheet intake or an official Apple Shortcut",
+    "Automatic messages or introductions",
+    "Guaranteed enrichment or provider availability",
+    "Guaranteed interest, availability, relationship strength, complete contact data, or an introduction",
+    "A publicly advertised trial, $30 plan, or $79 plan"
+  ],
   "pricing": {
+    "status": "verified_in_code_catalogue",
     "source": "src/lib/tiers.ts",
+    "currency": "USD",
     "free": 0,
+    "free_monthly": 0,
+    "pro_monthly": 39,
     "pro_monthly_usd": 39,
-    "note": "Wider network search may be plan-gated. Exact recall of a person already saved is not."
+    "safe_wording": "The current code catalogue contains Free and Pro, with Pro listed at $39 per month.",
+    "boundary": "Do not promise a trial or an entitlement that is not shown in the live checkout."
+  },
+  "approved_claims": [
+    {
+      "claim": "Browse or search everyone you have saved.",
+      "status": "verified_product_fact",
+      "evidence": ["src/components/circle/CirclePeopleList.tsx", "src/pathroom/WorkingOnInput.tsx", "docs/DELIVERY_STATE.md"]
+    },
+    {
+      "claim": "Start with a name. Add more only if you want to.",
+      "status": "verified_product_fact",
+      "evidence": ["src/components/circle/AddToCircleSheet.tsx", "src/pages/ShareContact.tsx"]
+    },
+    {
+      "claim": "Exact saved-name recall does not need an LLM or paid search.",
+      "status": "verified_product_fact",
+      "scope": "Exact normalized name lookup for a person already saved.",
+      "evidence": ["src/lib/theRead.ts", "docs/DELIVERY_STATE.md"]
+    },
+    {
+      "claim": "When wider search is unavailable, Circle can still match against details you saved.",
+      "status": "verified_product_fact",
+      "scope": "Grounded local recovery; result quality depends on saved evidence.",
+      "evidence": ["src/lib/theRead.ts", "docs/DELIVERY_STATE.md"]
+    },
+    {
+      "claim": "Work through an idea and surface saved people worth considering.",
+      "status": "verified_product_fact",
+      "scope": "Provider-backed ranking may fail; grounded local recovery remains available.",
+      "evidence": ["src/pathroom/ThesisApp.tsx", "src/pathroom/thesisData.ts", "docs/DELIVERY_STATE.md"]
+    },
+    {
+      "claim": "You decide whether and how to contact someone.",
+      "status": "verified_product_fact",
+      "evidence": ["docs/PRODUCT.md", "src/components/circle/ContactButton.tsx"]
+    }
+  ],
+  "prohibited_claims": [
+    "Customer counts, testimonials, adoption, conversion, time saved, revenue impact, or success rates without approved evidence.",
+    "Guaranteed enrichment, provider availability, contact completeness, interest, availability, relationship strength, or introductions.",
+    "Automatic messages, introductions, outreach, or market monitoring as a proven outcome.",
+    "A native iOS share target, official Apple Shortcut, publicly advertised trial, $30 plan, or $79 plan.",
+    "The retired one-plane capture interface or older relationship-to-revenue positioning as the current product."
+  ],
+  "agent_rules": {
+    "allowed_without_external_action": [
+      "Qualify prospects against the documented signals.",
+      "Draft marketing and sales material from approved claims.",
+      "Link each material claim to evidence.",
+      "Flag stale copy, missing evidence, or a product mismatch."
+    ],
+    "requires_separate_approval": [
+      "Publishing or scheduling content",
+      "Sending a message or contacting a person",
+      "Buying media or spending money",
+      "Changing pricing, discounts, product data, or an external system"
+    ],
+    "privacy": "Do not scrape, upload, reveal, or repurpose private contact data without explicit authority and a valid purpose."
   },
   "urls": {
     "product": "https://circle.fractionl.ai/",
@@ -56,5 +190,13 @@
     "llms_txt": "https://circle.fractionl.ai/llms.txt",
     "agent_json": "https://circle.fractionl.ai/agent.json"
   },
-  "unlinked_fixtures": "/preview/*"
+  "unlinked_fixtures": "/preview/*",
+  "refresh_triggers": [
+    "Primary user or positioning changes",
+    "Live input, route, destination, or trust rule changes",
+    "Pricing or entitlement changes",
+    "iOS share, provider search, import, or automatic-action availability changes",
+    "Customer evidence or North Star instrumentation changes",
+    "Public promise or metadata changes"
+  ]
 }

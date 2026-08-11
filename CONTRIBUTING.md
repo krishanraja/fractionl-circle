@@ -7,8 +7,9 @@ rules, and release evidence.
 
 1. Read [docs/PRODUCT.md](docs/PRODUCT.md).
 2. Read [DOCS.md](DOCS.md) for the source-of-truth order and product map.
-3. Follow [docs/local-development.md](docs/local-development.md).
-4. Open an issue or agree the change with the repository owner when it changes
+3. Read [docs/MARKETING_AND_SALES.md](docs/MARKETING_AND_SALES.md) before changing positioning, public claims, pricing copy, or agent training data.
+4. Follow [docs/local-development.md](docs/local-development.md).
+5. Open an issue or agree the change with the repository owner when it changes
    product behavior, data, billing, OAuth scopes, legal wording, or a provider.
 
 Never include credentials, private user data, production exports, cookies,
@@ -46,6 +47,8 @@ Update the smallest canonical set:
 - Primary outcome or metric: `docs/NORTH_STAR.md`
 - Public claims: `AGENT_BRIEFING.md`, `public/llms.txt`, and
   `public/agent.json`
+- Marketing, sales, buyer hypotheses, objections, and claim evidence:
+  `docs/MARKETING_AND_SALES.md`
 - Operations: the relevant runbook and `DOCS.md`
 - Release evidence: `docs/DELIVERY_STATE.md`
 - User-visible release history: `CHANGELOG.md`

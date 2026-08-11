@@ -18,7 +18,7 @@ They need to:
 - add where or why they met without filling a record;
 - trust that sparse or messy notes are not lost;
 - retrieve a named or described person without learning product vocabulary;
-- see why a person matched before acting.
+- see why a person matched before acting;
 - revisit and strengthen earlier business ideas without starting over;
 - reach profile, connections, reminders, privacy, and account settings without leaving the product.
 
@@ -68,7 +68,7 @@ The interface says `idea`, `plan`, `people`, and `details`; database and functio
 
 The user sees editable fields and taps `Save person` once. If parsing fails, Circle keeps the raw input and asks only for the missing name. If meeting context fails after the person saves, the interface says the person is saved and reports only the unsaved detail.
 
-iOS does not yet ship an Apple Shortcut. Current iOS paths are paste, voice, in-app photo, and a supported device-contact picker. Never place a long-lived Supabase token in a Shortcut or URL.
+iOS does not yet ship an Apple Shortcut. Current iOS paths are paste, voice, and in-app photo. A device-contact picker appears only when the browser exposes the required API. Never place a long-lived Supabase token in a Shortcut or URL.
 
 ### Find someone
 
@@ -142,7 +142,9 @@ Core trust rules:
 
 `src/lib/tiers.ts` remains the code source for Free and Pro billing labels. The active Circle surface keeps exact saved-name recall available without a paid or LLM dependency. A plan gate may limit wider network search, but it cannot block the basic promise of finding a person the user already saved.
 
-Do not advertise a trial, a $30 plan, a $79 plan, or an automatic outreach service. Those belong to retired product generations.
+The existing subscription backend gives a newly created account a 14-day internal `trialing` status and treats an active trial as Pro for feature gates. The current public catalogue does not advertise that trial. Do not promise a trial, a $30 plan, a $79 plan, or an automatic outreach service. The price catalogue and the live checkout must agree before public pricing changes.
+
+Buyer definition, positioning, sales language, objection handling, and public claim evidence live in [MARKETING_AND_SALES.md](MARKETING_AND_SALES.md). That guide labels the primary audience and pain as commercial hypotheses. Do not turn them into measured market facts without new evidence.
 
 ## Verification contract
 
