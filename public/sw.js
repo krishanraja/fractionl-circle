@@ -86,7 +86,7 @@ self.addEventListener('push', (event) => {
 
   const title = payload.title || 'Circle';
   const options = {
-    body: payload.body || 'Your moves are ready.',
+    body: payload.body || 'Someone in your circle may be useful.',
     data: { url: payload.url || '/' },
     icon: '/android-chrome-192x192.png',
     badge: '/android-chrome-192x192.png',
