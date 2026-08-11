@@ -402,6 +402,7 @@ export interface SharedContactInput {
   headline?: string | null;
   profile_url?: string | null;
   platform?: string | null;
+  notes?: string | null;
 }
 
 // Public: ingest a single person captured via the OS share sheet
@@ -457,6 +458,7 @@ export const ingestSharedContact = async (
         location: input.location ?? null,
         headline: input.headline ?? null,
         platform: input.platform ?? null,
+        notes: input.notes ?? null,
       },
       external_id: linkedin ?? input.profile_url ?? null,
       handles: Object.keys(handles).length ? handles : undefined,
@@ -523,14 +525,16 @@ export interface QuickAddOptions {
 export const addPersonTags = async (personId: string, tags: string[]): Promise<string[]> => {
   const clean = Array.from(new Set(tags.map((t) => t.trim()).filter(Boolean)));
   if (!clean.length) return [];
-  const { data } = await supabase
+  const { data, error: readError } = await supabase
     .from('circle_person')
     .select('tags')
     .eq('id', personId)
     .maybeSingle();
+  if (readError) throw readError;
   const existing = ((data as { tags: string[] | null } | null)?.tags ?? []);
   const next = Array.from(new Set([...existing, ...clean]));
-  await supabase.from('circle_person').update({ tags: next }).eq('id', personId);
+  const { error: updateError } = await supabase.from('circle_person').update({ tags: next }).eq('id', personId);
+  if (updateError) throw updateError;
   return next;
 };
 

@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { useInstallPrompt, isIOS } from '@/hooks/useInstallPrompt';
 import { useWebPush } from '@/hooks/useWebPush';
 import { Download } from 'lucide-react';
+import { WhisperButton } from '@/components/circle/WhisperButton';
 
 // Gated behind a build flag AND runtime push support. Inert until the VAPID
 // keys are configured (VITE_VAPID_PUBLIC_KEY is read inside useWebPush).
@@ -286,8 +287,8 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
     }
   }, [nameValue, updateProfile]);
 
-  const savePositioning = useCallback(async () => {
-    const trimmed = positioning.trim();
+  const savePositioning = useCallback(async (nextValue = positioning) => {
+    const trimmed = nextValue.trim();
     const prev = (profile?.positioning ?? '').trim();
     if (trimmed === prev) return;
     try {
@@ -418,7 +419,7 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85dvh]">
+      <DrawerContent className="circle-system max-h-[85dvh]">
         <DrawerHeader className="text-left pb-0">
           <DrawerTitle className="font-display text-xl">Profile & Settings</DrawerTitle>
           <DrawerDescription>Manage your account, appearance, and preferences.</DrawerDescription>
@@ -505,15 +506,29 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
             <label className="text-xs font-medium text-foreground-muted mb-1 block">
               Positioning
             </label>
-            <Input
-              value={positioning}
-              onChange={(e) => setPositioning(e.target.value)}
-              placeholder="e.g. Helping Series A–C SaaS scale demand gen"
-              className="h-9 text-sm"
-              onBlur={() => void savePositioning()}
-            />
+            <div className="relative">
+              <Input
+                value={positioning}
+                onChange={(e) => setPositioning(e.target.value)}
+                placeholder="Helping Series A to C SaaS teams grow"
+                className="h-11 pr-12 text-sm"
+                onBlur={() => void savePositioning()}
+              />
+              <WhisperButton
+                className="circle-profile-voice absolute right-0 top-0 h-11 w-11 border-0"
+                showText={false}
+                idleLabel="Add positioning by voice"
+                onTranscript={(transcript) => {
+                  setPositioning(transcript);
+                  void savePositioning(transcript);
+                }}
+                onError={(message) => {
+                  if (message) toast.error(message);
+                }}
+              />
+            </div>
             <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
-              Optional. Your LinkedIn headline, in one line - we use it to flavor AI suggestions.
+              Optional. Circle uses this to make suggestions fit you.
             </p>
           </div>
 
@@ -525,11 +540,11 @@ export function ProfileSettingsSheet({ open, onOpenChange }: ProfileSettingsShee
               value={linkedin}
               onChange={(e) => setLinkedin(e.target.value)}
               placeholder="linkedin.com/in/your-profile"
-              className="h-9 text-sm"
+              className="h-11 text-sm"
               onBlur={() => void saveLinkedin()}
             />
             <p className="text-[11px] text-foreground-muted mt-1 leading-relaxed">
-              Optional. Your own profile - it sharpens your plan's fit and credibility. This is you, not a contact.
+              Optional. This helps Circle make better suggestions for you.
             </p>
           </div>
 

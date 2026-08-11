@@ -1,19 +1,23 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ErrorBanner } from '@/components/feedback';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowUpRight, ContactRound, Eye, EyeOff, Image as ImageIcon, Loader2, Mic } from 'lucide-react';
 import { AuthLegalFooter } from '@/components/auth/AuthLegalFooter';
+import { CircleBrand } from '@/components/circle/CircleBrand';
+import { PENDING_CLUE_KEY, readPendingClue } from '@/lib/pendingClue';
 import { setRememberMe } from '@/lib/rememberMe';
+import '@/pathroom/circle-system.css';
+import '@/components/auth/auth-page.css';
 
 // "Remember me on this device" - opts out of the 30-min inactivity auto-logout, so a
 // returning user stays signed in until they sign out or clear their site data. Shared
 // by the welcome and sign-in surfaces so the choice reads the same in both.
 const RememberMeToggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
-  <label className="flex items-center gap-3 cursor-pointer select-none text-caption text-foreground-secondary">
+  <label className="min-h-11 flex items-center gap-3 cursor-pointer select-none text-caption text-foreground-secondary">
     <input
       type="checkbox"
       checked={checked}
@@ -121,7 +125,7 @@ interface SignUpContentProps {
   onBackClick: () => void;
 }
 
-// Module-level component: WelcomeContent
+// The front door demonstrates the whole Circle loop before asking for an account.
 const WelcomeContent = ({
   email,
   onEmailChange,
@@ -133,100 +137,189 @@ const WelcomeContent = ({
   onDismissError,
   rememberMe,
   onRememberMeChange,
-}: WelcomeContentProps) => (
-  <motion.div
-    key="welcome"
-    variants={fadeInUpVariants}
-    initial="initial"
-    animate="animate"
-    exit="exit"
-    transition={fadeInUpTransition}
-    className="w-full max-w-sm mx-auto space-y-8"
-  >
-    {/* Logo */}
-    <div className="text-center">
-      <img 
-        src="/brand/fractionl-wordmark.png" 
-        alt="Fractionl"
-        className="h-12 mx-auto mb-6"
-      />
-      <h1 className="text-title-1 text-foreground mb-2">Is your idea worth selling?</h1>
-      <p className="text-body text-foreground-secondary">
-        An honest read on whether your idea sells, grounded in the live market and your real network - plus the warm moves to land your first client.
-      </p>
-    </div>
+}: WelcomeContentProps) => {
+  const clueRef = useRef<HTMLTextAreaElement>(null);
+  const [showJoin, setShowJoin] = useState(false);
+  const [helper, setHelper] = useState('Type, speak, or attach a clue. You stay in control.');
+  const [clue, setClue] = useState(readPendingClue);
 
-    {/* Email Input */}
-    <div className="space-y-4">
-      <div className="relative">
-        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-secondary" />
-        <Input
-          type="email"
-          placeholder="you@company.com"
-          value={email}
-          onChange={(e) => onEmailChange(e.target.value)}
-          className="h-14 pl-12 text-body bg-input border-border"
-          autoComplete="email"
-        />
-      </div>
-      
-      <Button 
-        onClick={onContinue}
-        disabled={!email.trim()}
-        className="w-full h-14 text-body font-semibold btn-touch"
-      >
-        Continue
-        <ArrowRight className="w-5 h-5 ml-2" />
-      </Button>
-    </div>
+  useEffect(() => {
+    try {
+      if (clue.trim()) window.sessionStorage.setItem(PENDING_CLUE_KEY, clue);
+      else window.sessionStorage.removeItem(PENDING_CLUE_KEY);
+    } catch {
+      // The field still works when browser storage is unavailable.
+    }
+  }, [clue]);
 
-    {/* Divider */}
-    <div className="flex items-center gap-4">
-      <div className="flex-1 h-px bg-border" />
-      <span className="text-caption text-foreground-secondary">or</span>
-      <div className="flex-1 h-px bg-border" />
-    </div>
+  const openJoin = useCallback((message?: string) => {
+    if (message) setHelper(message);
+    setShowJoin(true);
+  }, []);
 
-    {/* Google Sign In */}
-    <Button 
-      variant="outline"
-      onClick={onGoogleSignIn}
-      disabled={googleLoading}
-      className="w-full h-14 text-body font-medium"
+  const startWithClue = useCallback(() => {
+    if (!clue.trim()) {
+      clueRef.current?.focus();
+      setHelper('Add one clue first. A name is enough.');
+      return;
+    }
+    openJoin();
+  }, [clue, openJoin]);
+
+  return (
+    <motion.div
+      key="welcome"
+      variants={fadeInUpVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={fadeInUpTransition}
     >
-      {googleLoading ? (
-        <Loader2 className="w-5 h-5 animate-spin" />
-      ) : (
-        <>
-          <GoogleIcon />
-          Continue with Google
-        </>
-      )}
-    </Button>
+      <header className="circle-auth-header">
+        <div className="circle-auth-header-inner">
+          <CircleBrand />
+          <nav className="circle-auth-actions" aria-label="Account">
+            <button className="circle-auth-link" type="button" onClick={onSignInClick}>Sign in</button>
+            <button className="circle-auth-start" type="button" onClick={startWithClue}>Start with one clue</button>
+          </nav>
+        </div>
+      </header>
 
-    {/* Remember me - opts out of the inactivity auto-logout on this device */}
-    <RememberMeToggle checked={rememberMe} onChange={onRememberMeChange} />
+      <section className="circle-front-hero" aria-labelledby="circle-front-title">
+        <div className="circle-front-hero-inner">
+          <h1 className="circle-front-title" id="circle-front-title">
+            <span>One clue now.</span>
+            <span>The right person later.</span>
+          </h1>
+          <p className="circle-front-intro">Drop anything you remember. Circle keeps the clues together and brings someone back when they may help.</p>
+        </div>
+      </section>
 
-    {/* Sign In Link */}
-    <p className="text-center text-body text-foreground-secondary">
-      Already have an account?{' '}
-      <button 
-        onClick={onSignInClick}
-        className="text-primary font-medium hover:underline"
-      >
-        Sign in
-      </button>
-    </p>
+      <section className="circle-front-plane" aria-label="How Circle works">
+        <div className="circle-front-seam" aria-hidden="true" />
+        <div className="circle-front-seam-point" aria-hidden="true" />
+        <div className="circle-front-plane-inner">
+          <div className="circle-front-proof" aria-label="Example">
+            <article className="circle-front-proof-part">
+              <div className="circle-front-stage">
+                <div className="circle-front-stage-number" aria-hidden="true">1</div>
+                <div className="circle-front-eyebrow">You add one clue</div>
+              </div>
+              <div className="circle-front-clue-card">
+                <div className="circle-front-person-row">
+                  <span className="circle-front-avatar" aria-hidden="true">MC</span>
+                  <div><strong>Maya Chen</strong><small>Met at HealthTech North</small></div>
+                </div>
+                <div className="circle-front-tags" aria-label="Saved details">
+                  <span>Hospital pricing</span><span>Voice note</span>
+                </div>
+              </div>
+              <div className="circle-front-detail">Type, speak, add a photo, or choose a contact.</div>
+            </article>
 
-    {/* Error */}
-    <ErrorBanner
-      show={!!error}
-      title={error?.title || ''}
-      message={error?.message}
-      onDismiss={onDismissError}
-    />
-  </motion.div>
-);
+            <article className="circle-front-proof-part">
+              <div className="circle-front-stage">
+                <div className="circle-front-stage-number" aria-hidden="true">2</div>
+                <div className="circle-front-eyebrow">Circle connects it</div>
+              </div>
+              <div className="circle-front-link-map" aria-label="Maya's clues are joined to one person">
+                <span className="circle-front-map-node circle-front-avatar" aria-hidden="true">MC</span>
+                <span className="circle-front-map-line" aria-hidden="true"><i /></span>
+                <div className="circle-front-work-card"><strong>Commercial lead</strong><small>Health software</small></div>
+              </div>
+              <div className="circle-front-join-signal">One person. Clues kept together.</div>
+            </article>
+
+            <article className="circle-front-proof-part">
+              <div className="circle-front-stage">
+                <div className="circle-front-stage-number" aria-hidden="true">3</div>
+                <div className="circle-front-eyebrow">Circle brings her back</div>
+              </div>
+              <div className="circle-front-moment">
+                <div className="circle-front-question">Who knows if hospitals would pay?</div>
+                <div className="circle-front-moment-line" aria-hidden="true" />
+                <div className="circle-front-answer">
+                  <span className="circle-front-avatar" aria-hidden="true">MC</span>
+                  <div><small>Start with</small><strong>Maya Chen</strong></div>
+                </div>
+              </div>
+              <div className="circle-front-reason">From your note and one public work detail. Her interest and time are unknown.</div>
+            </article>
+          </div>
+
+          {showJoin ? (
+            <div className="circle-front-join" aria-live="polite">
+              <div className="circle-front-join-copy">
+                <strong>{clue.trim() ? 'Keep this clue close.' : 'Start with Circle.'}</strong>
+                <small>{clue.trim() ? 'Your clue stays ready while you join.' : 'You can add your first clue after you join.'}</small>
+              </div>
+              <div className="circle-front-join-form">
+                <input
+                  className="circle-front-email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(event) => onEmailChange(event.target.value)}
+                  autoComplete="email"
+                  aria-label="Email"
+                />
+                <button className="circle-front-continue" type="button" disabled={!email.trim()} onClick={onContinue}>Continue</button>
+                <div className="circle-front-remember">
+                  <RememberMeToggle checked={rememberMe} onChange={onRememberMeChange} />
+                </div>
+                <div className="circle-front-error">
+                  <ErrorBanner show={Boolean(error)} title={error?.title ?? ''} message={error?.message} onDismiss={onDismissError} />
+                </div>
+              </div>
+              <div className="circle-front-join-actions">
+                <button className="circle-front-google" type="button" onClick={onGoogleSignIn} disabled={googleLoading}>
+                  {googleLoading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <><GoogleIcon />Continue with Google</>}
+                </button>
+                <button className="circle-front-back" type="button" onClick={() => setShowJoin(false)}>Go back</button>
+              </div>
+            </div>
+          ) : (
+            <div className="circle-front-entry">
+              <div className="circle-front-entry-copy">
+                <strong>Start with one clue</strong>
+                <small>Nothing is saved until you join.</small>
+              </div>
+              <div className="circle-front-composer">
+                <textarea
+                  ref={clueRef}
+                  value={clue}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    setClue(next);
+                    setHelper(next.trim() ? 'That is enough to start. Add more only if it helps.' : 'Type, speak, or attach a clue. You stay in control.');
+                  }}
+                  aria-label="A clue about someone"
+                  placeholder="A name, link, email, or anything you remember"
+                />
+                <div className="circle-front-source-actions" aria-label="Ways to add a clue">
+                  <button className="circle-front-source" type="button" aria-label="Speak a clue after joining" onClick={() => openJoin('Join first, then speak. Nothing is sent yet.')}>
+                    <Mic aria-hidden="true" /><span>Speak</span>
+                  </button>
+                  <button className="circle-front-source" type="button" aria-label="Add a photo after joining" onClick={() => openJoin('Join first, then add a photo. Nothing is sent yet.')}>
+                    <ImageIcon aria-hidden="true" /><span>Photo</span>
+                  </button>
+                  <button className="circle-front-source" type="button" aria-label="Add a contact after joining" onClick={() => openJoin('Join first, then choose a contact. Nothing is sent yet.')}>
+                    <ContactRound aria-hidden="true" /><span>Contact</span>
+                  </button>
+                </div>
+                <div className="circle-front-helper">{helper}</div>
+              </div>
+              <button className="circle-front-submit" type="button" onClick={startWithClue}>
+                <span>Keep this person close</span>
+                <ArrowUpRight aria-hidden="true" />
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+    </motion.div>
+  );
+};
 
 // Module-level component: SignInContent
 const SignInContent = ({
@@ -297,7 +390,8 @@ const SignInContent = ({
           <button
             type="button"
             onClick={onTogglePassword}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground-secondary hover:text-foreground"
+            className="absolute right-0 top-1/2 h-11 w-11 -translate-y-1/2 grid place-items-center text-foreground-secondary hover:text-foreground"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -306,7 +400,7 @@ const SignInContent = ({
           <button
             type="button"
             onClick={onForgotPasswordClick}
-            className="text-caption text-primary font-medium hover:underline"
+            className="min-h-11 px-1 inline-flex items-center text-caption text-primary font-medium hover:underline"
           >
             Forgot password?
           </button>
@@ -348,7 +442,7 @@ const SignInContent = ({
       Don't have an account?{' '}
       <button 
         onClick={onSignUpClick}
-        className="text-primary font-medium hover:underline"
+        className="min-h-11 px-1 inline-flex items-center text-primary font-medium hover:underline"
       >
         Sign up
       </button>
@@ -430,7 +524,7 @@ const ForgotPasswordContent = ({
     <button
       type="button"
       onClick={onBackToSignIn}
-      className="w-full text-center text-caption text-foreground-secondary hover:text-foreground"
+      className="w-full min-h-11 text-center text-caption text-foreground-secondary hover:text-foreground"
     >
       ← Back to sign in
     </button>
@@ -491,7 +585,8 @@ const SignUpContent = ({
           <button
             type="button"
             onClick={onTogglePassword}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground-secondary hover:text-foreground"
+            className="absolute right-0 top-1/2 h-11 w-11 -translate-y-1/2 grid place-items-center text-foreground-secondary hover:text-foreground"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -530,7 +625,7 @@ const SignUpContent = ({
 
     <button 
       onClick={onBackClick}
-      className="w-full text-center text-caption text-foreground-secondary hover:text-foreground"
+      className="w-full min-h-11 text-center text-caption text-foreground-secondary hover:text-foreground"
     >
       ← Use a different email
     </button>
@@ -566,15 +661,12 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
   }, []);
 
   const handleGoogleSignIn = useCallback(async () => {
-    console.log('[AuthPage] handleGoogleSignIn called');
     setGoogleLoading(true);
     clearMessages();
     
     const redirectUrl = `${window.location.origin}/`;
-    console.log('[AuthPage] Google OAuth redirect URL:', redirectUrl);
     
     try {
-      console.log('[AuthPage] Calling supabase.auth.signInWithOAuth...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -582,24 +674,15 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
         },
       });
 
-      console.log('[AuthPage] OAuth response - data:', data);
-      console.log('[AuthPage] OAuth response - error:', error);
-
       if (error) {
-        console.error('[AuthPage] Google sign in error:', error);
         setError({ title: 'Google sign in failed', message: error.message });
       } else if (!data?.url) {
-        console.error('[AuthPage] No OAuth URL returned - provider may not be configured');
         setError({ 
           title: 'Google sign in failed', 
           message: 'Google authentication is not configured. Please contact support.' 
         });
-      } else {
-        console.log('[AuthPage] OAuth URL received, redirecting to:', data.url);
-        // The redirect should happen automatically, but log if we get here
       }
-    } catch (err) {
-      console.error('[AuthPage] Unexpected error during Google sign in:', err);
+    } catch {
       setError({ title: 'Google sign in failed', message: 'An unexpected error occurred' });
     } finally {
       setGoogleLoading(false);
@@ -628,7 +711,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
         // email wall (which previously stranded ~45% of signups). If auto-confirm
         // is ever turned back off, data.session is null and we fall back below.
       } else {
-        setSuccessMessage('Check your email to confirm your account. Once you\'re in, we\'ll turn who you know into a plan for your next clients.');
+        setSuccessMessage('Check your email to confirm your account. Your first clue will be waiting.');
       }
     } catch (_err) {
       setError({ title: 'Sign up failed', message: 'An unexpected error occurred' });
@@ -817,14 +900,50 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     handleSetModeForgot,
   ]);
 
+  const flowHeading = mode === 'signin'
+    ? 'Welcome back.'
+    : mode === 'forgot'
+      ? 'Get back in.'
+      : 'Keep the people who matter.';
+  const flowCopy = mode === 'signin'
+    ? 'Sign in and pick up exactly where you left off.'
+    : mode === 'forgot'
+      ? 'We will send one safe link to your email.'
+      : 'Your first clue will be waiting when your account is ready.';
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 safe-top safe-bottom">
-      <div className="w-full max-w-sm flex-1 flex flex-col justify-center">
-        <AnimatePresence mode="wait">
-          {content}
-        </AnimatePresence>
-      </div>
-      <AuthLegalFooter />
+    <div className="circle-system circle-auth-page">
+      <AnimatePresence mode="wait">
+        {mode === 'welcome' ? (
+          content
+        ) : (
+          <motion.div
+            key={`flow-${mode}`}
+            variants={fadeInUpVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={fadeInUpTransition}
+          >
+            <header className="circle-auth-header">
+              <div className="circle-auth-header-inner">
+                <CircleBrand />
+                <button className="circle-auth-link" type="button" onClick={handleSetModeWelcome}>Back</button>
+              </div>
+            </header>
+            <main className="circle-auth-flow">
+              <div className="circle-auth-flow-inner">
+                <div className="circle-auth-flow-message">
+                  <h1>{flowHeading}</h1>
+                  <p>{flowCopy}</p>
+                </div>
+                <div className="circle-auth-flow-panel">{content}</div>
+              </div>
+            </main>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="circle-auth-legal"><AuthLegalFooter /></div>
     </div>
   );
 };

@@ -61,9 +61,9 @@ async function handleShareTarget(request) {
     );
 
     // Redirect the user into the React app.
-    return Response.redirect('/share-contact?pending=1', 303);
+    return Response.redirect(new URL('/share-contact?pending=1', request.url).toString(), 303);
   } catch (err) {
-    return Response.redirect('/share-contact?error=1', 303);
+    return Response.redirect(new URL('/share-contact?error=1', request.url).toString(), 303);
   }
 }
 
@@ -130,19 +130,21 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Expose the cached blob to the client via a message channel.
-self.addEventListener('message', async (event) => {
+self.addEventListener('message', (event) => {
   if (event.data?.type === 'READ_SHARED') {
-    const cache = await caches.open(SHARE_CACHE);
-    const fileRes = await cache.match(SHARE_KEY);
-    const metaRes = await cache.match(`${SHARE_KEY}_meta`);
+    event.waitUntil((async () => {
+      const cache = await caches.open(SHARE_CACHE);
+      const fileRes = await cache.match(SHARE_KEY);
+      const metaRes = await cache.match(`${SHARE_KEY}_meta`);
 
-    const blob = fileRes ? await fileRes.blob() : null;
-    const meta = metaRes ? await metaRes.json() : null;
+      const blob = fileRes ? await fileRes.blob() : null;
+      const meta = metaRes ? await metaRes.json() : null;
 
-    event.ports[0]?.postMessage({ blob, meta });
+      event.ports[0]?.postMessage({ blob, meta });
 
-    // Clear after read - one-shot.
-    if (fileRes) await cache.delete(SHARE_KEY);
-    if (metaRes) await cache.delete(`${SHARE_KEY}_meta`);
+      // Clear after read - one-shot.
+      if (fileRes) await cache.delete(SHARE_KEY);
+      if (metaRes) await cache.delete(`${SHARE_KEY}_meta`);
+    })());
   }
 });

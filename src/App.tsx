@@ -12,6 +12,7 @@ import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import CircleApp from "./pathroom/CircleApp";
 import { PrivacySignInPrompt } from "./pages/PrivacySignInPrompt";
+import ShareContact from "./pages/ShareContact";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { AuthPage } from "./components/AuthPage";
 import { PageLoader } from "./components/ui/loading-spinner";
@@ -64,6 +65,24 @@ function PrivacyRoute() {
       <PreferencesApplier />
       <SessionManager />
       <Privacy />
+    </>
+  );
+}
+
+/**
+ * OS share-target landing. The service worker keeps the shared clue until an
+ * authenticated user reaches this route, so signing in never loses the share.
+ */
+function ShareContactRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader message="Loading..." />;
+  if (!user) return <AuthPage onAuthenticated={() => {}} />;
+  return (
+    <>
+      <PreferencesApplier />
+      <SessionManager />
+      <ShareContact />
+      <ConsentBanner />
     </>
   );
 }
@@ -146,6 +165,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyRoute />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/auth" element={<AuthRoute />} />
+        <Route path="/share-contact" element={<ShareContactRoute />} />
         <Route path="/preview/start" element={<Suspense fallback={null}><StartHereMock /></Suspense>} />
         <Route path="/preview/sharpen" element={<Suspense fallback={null}><SharpenMock /></Suspense>} />
         <Route path="/preview/journey" element={<Suspense fallback={null}><JourneyMock /></Suspense>} />
@@ -164,7 +184,7 @@ const App = () => {
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <Toaster />
               <AppRoutes />
             </BrowserRouter>
