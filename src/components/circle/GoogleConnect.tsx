@@ -43,8 +43,8 @@ export const GoogleConnect = () => {
           <li>Your Calendar events for the last 90 days - to know who you've met and how recently.</li>
         </ul>
         <p className="mt-2">
-          We do <span className="font-medium">not</span> read email bodies. If you want Gmail body scanning
-          for signature enrichment, that requires Google's separate CASA audit - not part of this.
+          We do <span className="font-medium">not</span> read email bodies. Finding contacts in email
+          signatures needs Google's separate CASA audit and is not part of this connection.
         </p>
       </div>
 

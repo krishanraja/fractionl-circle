@@ -1,7 +1,7 @@
 {
   "name": "Circle by Fractionl",
   "short_name": "Circle",
-  "description": "Save one clue about a person. Circle brings them back when they can help.",
+  "description": "Remember anyone and find the right person when they can help.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

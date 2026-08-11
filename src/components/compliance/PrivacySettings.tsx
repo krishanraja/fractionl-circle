@@ -125,7 +125,7 @@ export function PrivacySettings() {
             <div>
               <p className="text-sm font-medium text-destructive">Delete your account</p>
               <p className="text-xs text-muted-foreground">
-                Permanently erase your account, people, clues, plans, and settings. This cannot be undone.
+                Permanently erase your account, people, ideas, and settings. This cannot be undone.
               </p>
             </div>
             <AlertDialog>

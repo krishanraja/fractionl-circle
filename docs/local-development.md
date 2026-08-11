@@ -69,6 +69,8 @@ npm run build
 
 For signed-in E2E, set `E2E_EMAIL` and `E2E_PASSWORD` to the designated test account in the current shell. `npm run test:e2e` runs Chromium at desktop and Pixel-sized mobile viewports. It never saves a contact, sends a message, or changes preferences. A passing build proves compilation, not the user journey.
 
+Run `npm run generate:og` after changing the public promise or Circle visual system. It rebuilds `public/og-image.png` locally from the repository template; review and commit the generated image with the source change.
+
 ## Environment variables
 
 `.env.example` is the complete variable catalogue.
