@@ -15,7 +15,8 @@ Last verified: 2026-08-10
 - Repository: `krishanraja/fractionl-circle`
 - Product release: pull request `#142` merged to `main` as `d9ca79cbee2482984ac87f9f3c1ade449bd91cb8`.
 - Installed-app copy correction: pull request `#143` merged to `main` as `0540073a4086f49277647dec5deb79045eeafa4d`.
-- Verified production deployment: `dpl_GquLpN47xnJTLBSmRy59dcZ4uUxF`, READY and serving the `circle.fractionl.ai` alias from commit `0540073a4086f49277647dec5deb79045eeafa4d`.
+- Verified application release deployment: `dpl_GquLpN47xnJTLBSmRy59dcZ4uUxF`, READY and verified from application commit `0540073a4086f49277647dec5deb79045eeafa4d`.
+- Documentation closeout: pull request `#144` merged as `90ccad37af37278a8858f058253d387b421f88c0`. Resolve the current production deployment live before any future release action; a static deployment ID is evidence for this release, not a permanent pointer.
 - Production URL: `https://circle.fractionl.ai`
 - Pre-release production baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Rollback result: not used. The pre-release baseline remains the known-good recovery target for this release.

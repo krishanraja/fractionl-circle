@@ -1,11 +1,14 @@
-# Privacy Policy - Circle by Fractionl (DRAFT)
+# Privacy Policy - Circle by Fractionl
 
-> Status: draft, not legal advice. Counsel must review and finalise this document before publication. Placeholders are marked `[PLACEHOLDER]`.
+> Publication state: internal draft, blocked. This file is not the published
+> privacy notice and is not legal advice. The current user-facing privacy route
+> is `https://circle.fractionl.ai/privacy`. See [docs/legal/README.md](legal/README.md)
+> for the publication checklist.
 
 Last product review: 2026-08-10.
 
-**Effective date:** [PLACEHOLDER]
-**Controller:** Fractionl [legal entity and address]
+**Effective date:** Not assigned while this draft is unpublished
+**Controller:** Legal entity and address pending owner and counsel confirmation
 **Contact:** privacy@fractionl.ai
 
 ## 1. Who we are
@@ -65,8 +68,12 @@ See `SECURITY.md`. Current controls include TLS, security headers, Supabase Auth
 
 ## 11. Children
 
-The service is not directed to people under 16. [COUNSEL TO CONFIRM]
+The service is not directed to children. Counsel must confirm the final age
+threshold and jurisdiction-specific wording before publication.
 
 ## 12. Changes and contact
 
-Material changes will be posted with a new effective date. Questions: privacy@fractionl.ai. [EU REPRESENTATIVE OR DPO IF REQUIRED]
+Material changes will be posted with a new effective date. Questions about the
+current product can be sent to privacy@fractionl.ai. Owner and counsel must
+confirm whether Circle needs an EU representative or Data Protection Officer
+before publishing this draft.

@@ -1,5 +1,10 @@
 # Circle - LinkedIn Capture
 
+Status: source artifact, not a complete current user flow. The extension code
+and ingestion function remain in the repository, but the active Hinge shell
+does not expose extension pairing. You can inspect or develop the extension,
+but a new user cannot pair it from the current product.
+
 Chrome / Arc browser extension that captures LinkedIn profiles into your
 Circle as you browse them. Runs client-side in your own authenticated
 LinkedIn session - no server-side scraping, no background crawling, only
@@ -46,8 +51,13 @@ This writes `16.png`, `48.png`, and `128.png` in pure Node (no deps).
 
 ## Pair it with your Circle account
 
-1. Open the Circle web app → **Circle** tab → **Add a source** → **Connect
-   browser extension**.
+This flow is deferred until the active product exposes `ExtensionPair` or an
+equivalent reviewed settings entry. Do not manufacture or paste a pairing token
+from storage, logs, or a privileged backend.
+
+When pairing returns:
+
+1. Open the reviewed extension-pairing entry in Circle.
 2. Copy the pairing token (a long base64 string).
 3. Click the Circle extension icon in your toolbar.
 4. Paste the token into the popup. Hit **Connect**.

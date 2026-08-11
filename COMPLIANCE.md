@@ -3,6 +3,9 @@
 **Last reviewed:** 2026-08-10
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
+Legal publication status and unresolved decisions are tracked in
+[docs/legal/README.md](docs/legal/README.md).
+
 ---
 
 ## TL;DR - what is and isn't true today
@@ -49,7 +52,8 @@
 ---
 
 ## Owner action required (not codeable)
-1. Engage counsel to finalise `docs/privacy-policy.md` and a customer DPA.
+1. Complete the owner and counsel decisions in `docs/legal/README.md`, then
+   finalise `docs/privacy-policy.md` and a customer DPA.
 2. If pursuing SOC 2 / ISO: adopt a compliance-automation platform and schedule an audit.
 3. Sign/obtain DPAs with every subprocessor in `SUBPROCESSORS.md`.
 4. Rotate any credentials shared in plaintext through the authoritative provider surfaces; enable Supabase PITR for the production project.
