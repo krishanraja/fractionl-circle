@@ -4,7 +4,7 @@ This file records user-visible and operator-visible releases. Product truth
 lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md).
 
-## Unreleased
+## 2026-08-11
 
 ### Changed
 
@@ -25,6 +25,13 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 - Added deterministic documentation checks, complete local setup, repository
   governance, legal publication gates, and explicit status for conditional
   integrations.
+
+### Release record
+
+- Unified workspace: [pull request #146](https://github.com/krishanraja/fractionl-circle/pull/146)
+- Public language and typography closeout: [pull request #147](https://github.com/krishanraja/fractionl-circle/pull/147)
+- Release documentation closeout: [pull request #148](https://github.com/krishanraja/fractionl-circle/pull/148)
+- Verified production deployment: `dpl_Ewz4aZPeCHaQ5je9g7CPM6c3KQot`
 
 ## 2026-08-10
 
