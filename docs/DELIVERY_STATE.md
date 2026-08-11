@@ -23,7 +23,8 @@ Last verified: 2026-08-11
 - Public consistency closeout: pull request `#147`; exact-head preview `dpl_84kJWFVRDcVQDeYWgRGTAqvzKAzU` was READY, authenticated metadata readback passed, and every required GitHub check passed.
 - Verified unified-workspace production deployment: `dpl_Ewz4aZPeCHaQ5je9g7CPM6c3KQot`, READY and live from application commit `8959f49d18685993af352da4c3738ad063b90dfe`.
 - Release documentation closeout: pull request `#148`.
-- Current production deployment resolved on 2026-08-11: `dpl_8JopYirGxDULcxR4vVYe9eQs8pS8`, READY, from the documentation closeout on `main` at `3e0c920bfcddeeb4ded40c7af735aa9833c5666f`.
+- Documentation baseline before the agent-training release: `dpl_8JopYirGxDULcxR4vVYe9eQs8pS8`, READY, from pull request `#148` on `main` at `3e0c920bfcddeeb4ded40c7af735aa9833c5666f`.
+- Agent-ready documentation release: pull request `#149` merged to `main` as `92f11e549cf3452c84efde35a3ce6c0a66d32dac`; production deployment `dpl_DwBjYGzsANsGPm83t6khYrjEw4hw` was READY and live from that exact revision. Resolve the active production deployment live before future release work rather than treating this dated evidence as a permanent pointer.
 - Production URL: `https://circle.fractionl.ai`
 - Previous release baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Production baseline before the unified workspace: `dpl_FTV9maqNCp7yBayZQFSiWCWWBLnB` (READY on 2026-08-11).

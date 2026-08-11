@@ -37,6 +37,7 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 - Unified workspace: [pull request #146](https://github.com/krishanraja/fractionl-circle/pull/146)
 - Public language and typography closeout: [pull request #147](https://github.com/krishanraja/fractionl-circle/pull/147)
 - Release documentation closeout: [pull request #148](https://github.com/krishanraja/fractionl-circle/pull/148)
+- Agent-ready marketing and sales documentation: [pull request #149](https://github.com/krishanraja/fractionl-circle/pull/149)
 - Verified production deployment: `dpl_Ewz4aZPeCHaQ5je9g7CPM6c3KQot`
 
 ## 2026-08-10
