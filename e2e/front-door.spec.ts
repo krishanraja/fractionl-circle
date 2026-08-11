@@ -3,6 +3,9 @@ import { expect, test } from '@playwright/test';
 test('the front door explains Circle without product jargon or layout leaks', async ({ page }, testInfo) => {
   await page.goto('/');
 
+  await expect(page).toHaveTitle('Circle by Fractionl | Remember anyone. Find the right person later.');
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', 'Add a name, photo, link, or voice note. Circle keeps the details together and brings back the right person when they can help.');
+  await expect(page.locator('link[href*="fonts."]')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Remember anyone. Find the right person later.' })).toBeVisible();
   await expect(page.getByText('Add a name, photo, link, or voice note.')).toHaveCount(1);
   await expect(page.getByText('You add someone')).toBeVisible();

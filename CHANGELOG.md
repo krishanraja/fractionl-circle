@@ -12,10 +12,13 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 - Added complete contact browsing, visible add/import paths, recent idea reopen, and a first-class profile destination without replacing the existing ingestion or idea pipelines.
 - Replaced user-facing `clue`, `thesis`, and `enrichment` jargon with plain descriptions while retaining internal schema and function names.
 - Reused the approved Circle tokens across the workspace, overlays, public front door, and existing deep flows.
+- Removed the retired Satoshi/Archivo font layer so product, marketing, legal, settings, and recovery screens use one native system family.
+- Aligned browser, social, structured-data, installed-app, consent, privacy, and credit-purchase copy with the plain-English product promise.
 
 ### Quality
 
 - Added Playwright coverage for the public front door and the signed-in People → Ideas → You story at desktop and mobile viewports, including horizontal-overflow assertions.
+- Added a deterministic `npm run generate:og` task so the social image stays visually and verbally aligned with the live front door.
 
 ### Documentation
 

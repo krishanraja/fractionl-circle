@@ -11,7 +11,7 @@ const CONSENT_OPTIONS: { type: ConsentType; label: string; description: string; 
   { type: 'analytics', label: 'Analytics', description: 'Usage analytics to improve your experience.' },
   { type: 'ai_processing', label: 'AI Processing', description: 'Send data to AI services for insights, briefings, and voice parsing.' },
   { type: 'voice_recording', label: 'Voice Recording', description: 'Record and transcribe voice input for activity logging and contact creation.' },
-  { type: 'third_party_sharing', label: 'Contact Enrichment', description: 'Enrich contacts via third-party services (Apollo, Clearbit, Twilio).' },
+  { type: 'third_party_sharing', label: 'Find contact details', description: 'Use Apollo, Clearbit, or Twilio to find contact details.' },
   { type: 'data_export', label: 'Data Export', description: 'Export your data to Google Sheets or download as files.' },
   { type: 'marketing', label: 'Marketing', description: 'Receive product updates and tips.' },
 ];

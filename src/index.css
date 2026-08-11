@@ -2,20 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Archivo (Expanded) - the brand display face. Self-hosted variable font
-   (SIL OFL, free for commercial use; see public/fonts/Archivo-OFL.txt). Used
-   only for big page headers (.text-display), set in expanded width + uppercase
-   with wide tracking so headings read as a confident, squared wordmark -
-   without every card title looking like the logo. */
-@font-face {
-  font-family: 'Archivo Variable';
-  src: url('/fonts/archivo-variable.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Circle Design System - The Night-Shift Chief of Staff
    A sealed cream letter on a dark walnut desk.
    Two materials (Ink Walnut + Correspondence cream), three warm inks,
@@ -85,9 +71,9 @@
     --transition-normal: 250ms;
     --transition-slow: 400ms;
 
-    /* Typography - Archivo Expanded display (brand), Satoshi body */
-    --font-display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
-    --font-body: 'Satoshi', 'Inter', system-ui, -apple-system, sans-serif;
+    /* One typography system across product, marketing, legal, and recovery UI. */
+    --font-display: 'Segoe UI Variable Display', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Segoe UI Variable Text', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
     /* Mobile Layout */
     --header-height: 3.5rem;
@@ -269,9 +255,7 @@
   }
 
   /* Typography Scale - Premium */
-  /* Big brand header - the ONLY place the display face is used. Archivo set in
-     expanded width, uppercase, with wide tracking reads as a squared,
-     architectural wordmark - professional, not poster. */
+  /* Big brand header uses the same native family at display scale. */
   .text-display {
     font-family: var(--font-display);
     font-size: 2.25rem;
@@ -282,9 +266,7 @@
     text-transform: uppercase;
   }
 
-  /* Long, full-sentence display headers (marketing hero, onboarding) keep the
-     Archivo voice but stay sentence-case with tighter tracking so a whole
-     sentence doesn't shout. */
+  /* Long, full-sentence display headers stay sentence-case and balanced. */
   .text-display-sentence {
     font-family: var(--font-display);
     font-size: 2.25rem;
@@ -295,8 +277,7 @@
     text-transform: none;
   }
 
-  /* Card / section titles now use the body face (Satoshi) so they don't all
-     read like the logo. */
+  /* Card and section titles use the text cut of the same family. */
   .text-title-1 {
     font-family: var(--font-body);
     font-size: 1.5rem;

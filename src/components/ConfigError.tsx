@@ -39,7 +39,7 @@ export function ConfigError() {
         justifyContent: 'center',
         padding: '24px',
         fontFamily:
-          "'Satoshi', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+          "'Segoe UI Variable Text', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
       <div

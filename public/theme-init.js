@@ -95,7 +95,7 @@
     wrap.style.cssText = 'position:fixed;inset:0;z-index:100000;display:flex;' +
       'align-items:center;justify-content:center;padding:24px;text-align:center;' +
       'background:' + bg + ';color:' + fg + ';' +
-      "font-family:'Satoshi',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;";
+      "font-family:'Segoe UI Variable Text','SF Pro Text',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;";
 
     var card = document.createElement('div');
     card.style.cssText = 'max-width:400px;width:100%;';

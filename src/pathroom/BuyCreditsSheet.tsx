@@ -38,7 +38,7 @@ export default function BuyCreditsSheet({ open, onOpenChange }: BuyCreditsSheetP
       <SheetContent side="right" className="thx w-full sm:max-w-md p-0 overflow-y-auto" style={{ background: 'var(--thx-bg)' }}>
         <SheetTitle className="sr-only">Buy credits</SheetTitle>
         <SheetDescription className="sr-only">
-          Top up credits to run the max-effort enrichment that searches every source.
+          Top up credits to run a deeper search across every available source.
         </SheetDescription>
 
         <div className="wrap" style={{ padding: '20px 18px calc(24px + env(safe-area-inset-bottom))' }}>
@@ -47,8 +47,8 @@ export default function BuyCreditsSheet({ open, onOpenChange }: BuyCreditsSheetP
           </div>
           <div className="h" style={{ marginTop: 10, fontSize: 20 }}>Go deeper on anyone</div>
           <div className="sub">
-            Credits fund the 10/10 enrichment - live web research across every source we can reach - so the
-            right person surfaces even when your data is thin. {DEEP_ENRICH_CREDITS} credits per deep dive.
+            Credits pay for a deeper web search across the sources Circle can reach. This can find useful
+            people even when your saved details are thin. {DEEP_ENRICH_CREDITS} credits per deep search.
           </div>
 
           <div className="sub" style={{ marginTop: 12, color: C.hi }}>
