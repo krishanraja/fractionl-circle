@@ -1,18 +1,30 @@
-# Circle - Subprocessors
+# Circle by Fractionl - subprocessors
 
-**Last reviewed:** 2026-06-02. This is the list of third parties that may process personal data on Circle's behalf. Publish a customer-facing version of this list (GDPR Art. 28) and keep a signed DPA on file for each. Verify each entry before publishing - some are conditional on features a given user enables.
+Last reviewed: 2026-08-10. Draft for counsel and owner verification.
 
-| Subprocessor | Purpose | Personal data processed | Region | DPA |
-|---|---|---|---|---|
-| **Supabase** (AWS) | Database, auth, edge functions, storage | All app data, account identifiers | AWS `us-east-1` (USA) | Required - Supabase offers a DPA |
-| **Vercel** | Web hosting, CDN, edge delivery | IP addresses, request metadata | Global edge / USA | Required - Vercel DPA |
-| **OpenAI** (API) | Idea extraction, match drafting, voice transcription (`gpt-4o-mini`) | Voice transcripts, idea text, contact names/titles sent in prompts | USA | Required - OpenAI API DPA; API data not used for training. Consider zero-retention endpoint for sensitive text |
-| **Stripe** | Subscription billing | Name, email, billing/payment data | USA/global | Required - Stripe DPA |
-| **Resend** | Transactional email | Email address, message content | USA | Required - Resend DPA |
-| **Google** (OAuth / Gmail API) | Contact & calendar sync **for users who connect it** | OAuth tokens, contacts, message metadata | USA/global | Conditional on user connection; Google API Services User Data Policy applies |
-| **Microsoft** (OAuth / Graph) | Contact & mail sync **for users who connect it** | OAuth tokens, contacts, message metadata | USA/global | Conditional on user connection |
+This list describes providers that may process personal data for Circle. Conditional providers process data only when the relevant feature is used and its key or connection is configured. Keep a current DPA and processing purpose for every active provider before publishing a customer-facing list.
 
-## Notes
-- **Data residency:** the production database is in `us-east-1` (USA). For EU data subjects this is an international transfer requiring an appropriate safeguard (SCCs) - disclose in the privacy policy.
-- **No data sale:** Circle does not sell or share personal data for cross-context behavioural advertising (relevant to CCPA/CPRA).
-- **Roadmap enrichment vendors** (Apollo, People Data Labs, BuiltWith, Exa) are **not** wired into Circle today. If/when the demand-graph enrichment ships, add each here with a DPA before going live, because they introduce third-party personal data (the user's network).
+| Provider | Purpose | Data that may be processed | Region / status |
+|---|---|---|---|
+| Supabase on AWS | Database, authentication, Edge Functions, storage | Account and app data | `us-east-1`, USA |
+| Vercel | Web hosting, CDN, deployment, request delivery | IP and request metadata | Global edge / USA |
+| OpenAI API | Whisper transcription, embeddings, dedupe/LLM fallback, vision fallback | Voice audio/transcript, contact and request text, screenshot content | USA; confirm current DPA and retention settings |
+| Anthropic API | Preferred screenshot/contact vision parsing when configured | Screenshot images and extracted contact context | USA; conditional |
+| Google Gemini through the Lovable AI Gateway | Contact parsing, ranking, and other configured LLM fallback paths | Contact, request, idea, and screenshot-derived text | Gateway-routed; confirm DPA chain |
+| Perplexity API | Live research used by configured idea/read paths | User idea/request and selected profile context | USA; conditional |
+| Apollo.io | Contact enrichment | Contact name, email, company, and profile identifiers | Conditional on configured key |
+| Clearbit / HubSpot | Email-based enrichment fallback | Contact email and returned profile fields | Conditional on configured key |
+| Twilio | SMS delivery and phone lookup | Phone number and SMS content | Conditional on feature use |
+| Google | OAuth contacts/calendar and Custom Search | OAuth tokens, contacts, calendar metadata, search queries | Conditional on connection/configuration |
+| Microsoft Graph | OAuth contacts/calendar | OAuth tokens, contacts, calendar metadata | Conditional on connection |
+| Stripe | Subscription and credit-pack billing | Name, email, payment and billing metadata | USA/global |
+| Resend | Transactional and re-engagement email | User email and message content, which may include contact names | USA; conditional on message path |
+
+## Current notes
+
+- Fractionl does not sell personal data or share it for cross-context behavioural advertising.
+- The production database is in the United States. EU/UK transfers require an appropriate safeguard.
+- Google OAuth currently requests Gmail scopes even though current source uses contacts/calendar rather than Gmail. Remove unused scopes or document and verify the intended Gmail feature before moving the OAuth app beyond test users.
+- Apollo and Clearbit are live conditional integrations, not roadmap placeholders.
+- People Data Labs, BuiltWith, and Exa are not integrated in current source. Add them here and complete provider review before any future wiring.
+- Provider API data-use and retention settings can change. Confirm them against current agreements before publishing this draft.
