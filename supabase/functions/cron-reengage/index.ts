@@ -1,11 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 
-// Weekly "come back - here's what's waiting" re-engagement sweep. Service-role
-// auth via CRON_SECRET. It finds people who onboarded but have drifted (active
-// 5–21 days ago - inactive but not abandoned) and, only when there is something
-// genuinely waiting for them, nudges them back into the app:
-//   - an email (Resend) in plain, warm language naming what's waiting;
+// Weekly re-engagement sweep. Service-role auth via CRON_SECRET. It finds
+// people who onboarded but have drifted (active 5 to 21 days ago) and nudges
+// them only when someone they saved has gone quiet:
+//   - an email (Resend) in plain language naming what is useful;
 //   - a Web Push ping for users who keep the app installed.
 //
 // Inert by design: if Resend is unconfigured email is skipped and counted (push
@@ -28,49 +27,41 @@ const MIN_INACTIVE_DAYS = 5;
 const MAX_INACTIVE_DAYS = 21;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// ── helpers ────────────────────────────────────────────────────────────────
+// Helpers
 
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 interface Hooks {
-  quiet: number;   // circle people going quiet (no touch in 30+ days)
-  banked: number;  // decisions made but not yet folded into a fresh read
+  quiet: number; // people with no recorded interaction in 30+ days
 }
 
 // Plain-language lines for what's genuinely waiting. No jargon by design.
 const hookLines = (h: Hooks): string[] => {
   const lines: string[] = [];
-  if (h.quiet > 0) {
-    lines.push(h.quiet === 1
-      ? `1 person in your circle is going quiet.`
-      : `${h.quiet} people in your circle are going quiet.`);
-  }
-  if (h.banked > 0) {
-    lines.push(h.banked === 1
-      ? `1 decision is waiting - see how your plan lands again.`
-      : `${h.banked} decisions are waiting - see how your plan lands again.`);
-  }
+  if (h.quiet > 0) lines.push(h.quiet === 1
+    ? `1 person you saved is going quiet.`
+    : `${h.quiet} people you saved are going quiet.`);
   return lines;
 };
 
 const subjectFor = (h: Hooks): string =>
-  h.quiet > 0 ? `Your circle's getting cold` : `A few decisions are waiting for you`;
+  h.quiet === 1 ? `One person worth remembering` : `${h.quiet} people worth remembering`;
 
 const pushBodyFor = (h: Hooks): string => {
   const lines = hookLines(h);
-  return lines.length ? lines.join(' ') : `A few things are waiting for you.`;
+  return lines.length ? lines.join(' ') : `Someone in your circle may be useful.`;
 };
 
 const buildEmailHtml = (lines: string[]): string => `
 <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
-  <h1 style="font-size:22px;margin:0 0 4px">Here's what's waiting</h1>
-  <p style="font-size:14px;color:#666;margin:0 0 20px">It has been a little while. A few small things are worth a look - they will not take long.</p>
+  <h1 style="font-size:22px;margin:0 0 4px">Someone worth remembering</h1>
+  <p style="font-size:14px;color:#666;margin:0 0 20px">Circle kept the clue. A quick look may help.</p>
   <div style="border:1px solid #eee;border-radius:12px;padding:16px;margin:0 0 14px">
     ${lines.map((l) => `<div style="font-size:15px;color:#333;margin:0 0 10px">${esc(l)}</div>`).join('')}
-    <a href="${esc(APP_URL)}/" style="display:inline-block;background:#E0982A;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;margin-top:4px">Open your circle →</a>
+    <a href="${esc(APP_URL)}/" style="display:inline-block;background:#5b4bff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:999px;font-weight:600;margin-top:4px">Open Circle</a>
   </div>
-  <p style="font-size:12px;color:#999;margin-top:20px">You are getting this because a few things were worth a hello. <a href="${esc(APP_URL)}" style="color:#9a6a16">Open your circle</a> · manage this email in settings.</p>
+  <p style="font-size:12px;color:#777;margin-top:20px">You are getting this because someone you saved may be useful. <a href="${esc(APP_URL)}" style="color:#5b4bff">Open Circle</a> or manage this email in settings.</p>
 </div>`;
 
 async function sendReengageEmail(to: string, subject: string, lines: string[]): Promise<boolean> {
@@ -99,7 +90,7 @@ async function firePush(userId: string, h: Hooks): Promise<void> {
       headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: userId,
-        title: `A few people worth a hello`,
+        title: `Someone worth remembering`,
         body: pushBodyFor(h),
         url: `${APP_URL}/`,
       }),
@@ -173,7 +164,7 @@ Deno.serve(async (req) => {
         .eq('user_id', userId)
         .maybeSingle();
 
-      // Compute the "what's waiting" hooks with cheap counts.
+      // Count people whose last recorded interaction is more than 30 days old.
       const { count: quietCount } = await admin
         .from('circle_person')
         .select('id', { count: 'exact', head: true })
@@ -181,17 +172,10 @@ Deno.serve(async (req) => {
         .not('last_interaction_at', 'is', null)
         .lt('last_interaction_at', quietBefore);
 
-      const { count: bankedCount } = await admin
-        .from('thesis_answers')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('status', 'answered')
-        .is('applied_at', null);
-
-      const hooks: Hooks = { quiet: quietCount ?? 0, banked: bankedCount ?? 0 };
+      const hooks: Hooks = { quiet: quietCount ?? 0 };
 
       // Never send an empty nudge.
-      if (hooks.quiet === 0 && hooks.banked === 0) { skippedNoHooks++; continue; }
+      if (hooks.quiet === 0) { skippedNoHooks++; continue; }
 
       // Push reaches app users with a subscription, gated by browser_notifications.
       if (!prefs || prefs.browser_notifications !== false) {
