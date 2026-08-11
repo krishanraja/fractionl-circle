@@ -140,3 +140,12 @@ Append-only record. Read it chronologically: later entries supersede earlier one
 - Language decision: user-facing `clue`, `thesis`, and `enrichment` become `person`, `idea`, and `find more details`. Internal database/function names remain unchanged to avoid data-pipeline churn.
 - Fit proof: signed-in desktop and Pixel 7 E2E caught and fixed a legacy `.thx *` reset that removed workspace padding. Public and signed-in checks now pass without horizontal overflow; hero line grouping remains explicit.
 - Test ownership: Playwright specs now preserve the public comprehension and People → Ideas → You story as a repeatable repository quality gate.
+
+## Fractionl ownership signature, 2026-08-11
+
+- Request: incorporate the existing Fractionl wordmark, then carry the Fractionl icon and favicon through the product elegantly and consistently.
+- Classification: routine brand extension inside the approved Circle layout and interaction system. No new design system, product hierarchy, font, or data path is introduced.
+- Identity rule: Circle stays primary. Acquisition and account surfaces show the full Fractionl wordmark. Signed-in and utility surfaces use the Fractionl icon as a compact ownership seal.
+- Colour rule: violet remains the only action signal. The original Fractionl amber is mapped to a restrained bronze on light Circle surfaces so it reads clearly without competing with actions.
+- Asset rule: `public/brand/fractionl-wordmark.png` and `public/brand/fractionl-icon.png` remain the artwork sources. The wordmark and icon are rendered as colour-adaptive masks; favicon, Apple touch, Android, manifest, notification, and social surfaces use the same Fractionl identity.
+- Fit rule: the parent signature may not increase the public header width beyond the existing Circle lockup at narrow sizes, clip in the workspace rail, or crowd the mobile action group.

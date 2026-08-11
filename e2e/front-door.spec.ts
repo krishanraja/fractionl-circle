@@ -6,6 +6,9 @@ test('the front door explains Circle without product jargon or layout leaks', as
   await expect(page).toHaveTitle('Circle by Fractionl | Remember anyone. Find the right person later.');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', 'Add a name, photo, link, or voice note. Circle keeps the details together and brings back the right person when they can help.');
   await expect(page.locator('link[href*="fonts."]')).toHaveCount(0);
+  const brand = page.locator('.circle-auth-header .circle-brand');
+  await expect(brand).toHaveAttribute('aria-label', 'Circle by Fractionl');
+  await expect(brand.locator('.circle-brand-wordmark')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Remember anyone. Find the right person later.' })).toBeVisible();
   await expect(page.getByText('Add a name, photo, link, or voice note.')).toHaveCount(1);
   await expect(page.getByText('You add someone')).toBeVisible();
@@ -21,8 +24,16 @@ test('the front door explains Circle without product jargon or layout leaks', as
   await expect(page.getByText('Add one person first. A name is enough.')).toBeVisible();
   await expect(page.getByLabel('What do you remember about them?')).toBeFocused();
 
-  await testInfo.attach('front-door', {
-    body: await page.screenshot({ fullPage: true }),
-    contentType: 'image/png',
-  });
+  const frontDoorScreenshot = testInfo.outputPath('front-door.png');
+  await page.screenshot({ fullPage: true, path: frontDoorScreenshot });
+  await testInfo.attach('front-door', { path: frontDoorScreenshot, contentType: 'image/png' });
+
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  const accountBrand = page.locator('.circle-auth-header .circle-brand:visible');
+  await expect(accountBrand).toHaveAttribute('aria-label', 'Circle by Fractionl');
+  await expect(accountBrand.locator('.circle-brand-wordmark')).toBeVisible();
+  const accountScreenshot = testInfo.outputPath('account.png');
+  await page.screenshot({ fullPage: true, path: accountScreenshot });
+  await testInfo.attach('account', { path: accountScreenshot, contentType: 'image/png' });
 });

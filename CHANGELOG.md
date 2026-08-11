@@ -14,6 +14,8 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 
 ### Changed
 
+- Integrated the approved Fractionl wordmark into public and account moments, then carried the Fractionl icon through the signed-in Circle lockup, favicon, installed-app, notification, and social surfaces.
+- Kept violet as Circle's action signal and used a restrained bronze only for the Fractionl ownership signature.
 - Restored the existing People, idea-validation, and profile/settings capabilities through one consistent **People / Ideas / You** workspace.
 - Added complete contact browsing, visible add/import paths, recent idea reopen, and a first-class profile destination without replacing the existing ingestion or idea pipelines.
 - Replaced user-facing `clue`, `thesis`, and `enrichment` jargon with plain descriptions while retaining internal schema and function names.

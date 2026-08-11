@@ -577,6 +577,7 @@
 
 .circle-auth-flow-panel button { border-radius: 0 !important; }
 .circle-auth-flow-panel form > button[type="submit"] { background: var(--circle-ink) !important; color: #fff !important; }
+.circle-auth-flow-panel .text-primary { color: var(--circle-parent); }
 
 .circle-auth-legal {
   padding: 0 var(--circle-gutter) 20px;
