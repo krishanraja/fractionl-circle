@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Circle moments v1</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #171b18;
+      --paper: #f3f0e8;
+      --sheet: #fffdf6;
+      --quiet: #62685f;
+      --line: #d6d2c8;
+      --blue: #2458e6;
+      --blue-soft: #dce5ff;
+      --lime: #d9ff68;
+      --good: #17643a;
+      --shadow: 0 24px 70px rgba(29, 31, 28, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(36, 88, 230, .11), transparent 26rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      width: min(100%, 1180px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 24px 28px 40px;
+    }
+
+    .topbar {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(23, 27, 24, .18);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 820;
+      letter-spacing: -.035em;
+      font-size: 21px;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--lime);
+      font-size: 19px;
+      line-height: 1;
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .count { color: var(--quiet); font-size: 13px; font-weight: 700; }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(340px, .88fr);
+      gap: clamp(48px, 7vw, 96px);
+      padding: clamp(56px, 8vw, 100px) 0 24px;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .kicker::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 6px var(--blue-soft);
+    }
+
+    h1 {
+      max-width: 680px;
+      margin: 0;
+      font-size: clamp(48px, 7vw, 86px);
+      line-height: .92;
+      letter-spacing: -.072em;
+      font-weight: 850;
+    }
+
+    .lead {
+      max-width: 570px;
+      margin: 24px 0 0;
+      color: #444a43;
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.45;
+      letter-spacing: -.018em;
+    }
+
+    .capture {
+      position: relative;
+      margin-top: 42px;
+      padding: 18px;
+      border: 2px solid var(--ink);
+      border-radius: 24px;
+      background: var(--sheet);
+      box-shadow: 8px 8px 0 var(--ink);
+    }
+
+    .capture-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 2px 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .saved-first {
+      color: var(--quiet);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .capture-input {
+      width: 100%;
+      min-height: 58px;
+      border: 1px solid #a8aca5;
+      border-radius: 14px;
+      padding: 0 17px;
+      background: #fff;
+      color: var(--ink);
+      outline: 0;
+      font-size: 16px;
+    }
+
+    .capture-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(36, 88, 230, .18);
+    }
+
+    .save-button {
+      min-width: 92px;
+      min-height: 58px;
+      border: 0;
+      border-radius: 14px;
+      padding: 0 20px;
+      background: var(--blue);
+      color: white;
+      cursor: pointer;
+      font-weight: 820;
+      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .2);
+    }
+
+    .save-button:hover { background: #1749d0; }
+    .save-button:focus-visible, .tool:focus-visible, .ask:focus-visible, .small-button:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    .tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tool {
+      min-height: 44px;
+      border: 1px solid #b7bbb3;
+      border-radius: 999px;
+      padding: 0 14px;
+      background: #f7f5ee;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .tool span { margin-right: 6px; }
+
+    .ask {
+      width: 100%;
+      min-height: 62px;
+      margin-top: 24px;
+      border: 0;
+      border-radius: 17px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--ink);
+      color: white;
+      cursor: pointer;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 770;
+    }
+
+    .ask span:last-child { color: var(--lime); font-size: 21px; }
+
+    .timeline-wrap {
+      position: relative;
+      padding-left: 28px;
+    }
+
+    .timeline-wrap::before {
+      content: "";
+      position: absolute;
+      top: 13px;
+      bottom: 10px;
+      left: 6px;
+      width: 2px;
+      background: var(--line);
+    }
+
+    .timeline-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .timeline-heading h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -.02em;
+    }
+
+    .timeline-heading span { color: var(--quiet); font-size: 12px; font-weight: 700; }
+
+    .moment {
+      position: relative;
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255, 253, 246, .72);
+    }
+
+    .moment::before {
+      content: "";
+      position: absolute;
+      left: -28px;
+      top: 24px;
+      width: 12px;
+      height: 12px;
+      border: 3px solid var(--paper);
+      border-radius: 50%;
+      background: var(--ink);
+    }
+
+    .moment.is-live {
+      border-color: var(--blue);
+      background: var(--sheet);
+      box-shadow: var(--shadow);
+    }
+
+    .moment.is-live::before { background: var(--blue); }
+
+    .time {
+      color: var(--quiet);
+      font-size: 11px;
+      font-weight: 820;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .person-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .person-dot {
+      width: 46px;
+      height: 46px;
+      flex: 0 0 auto;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .person-name { font-weight: 840; letter-spacing: -.02em; }
+    .person-clue { margin-top: 2px; color: var(--quiet); font-size: 13px; line-height: 1.35; }
+
+    .status {
+      margin: 16px 0 0;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: #e8f5eb;
+      color: var(--good);
+      font-size: 13px;
+      font-weight: 740;
+    }
+
+    .optional { margin-top: 16px; }
+    .optional label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 820; }
+    .optional input {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid #a8aca5;
+      border-radius: 12px;
+      padding: 0 13px;
+      background: white;
+      outline: 0;
+    }
+    .optional input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(36, 88, 230, .18); }
+
+    .optional-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .small-button {
+      min-height: 44px;
+      border: 1px solid #b7bbb3;
+      border-radius: 999px;
+      padding: 0 15px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 780;
+    }
+
+    .small-button.primary { border-color: var(--ink); background: var(--ink); color: white; }
+
+    .older {
+      padding: 15px 16px;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .older .person-row { margin-top: 8px; }
+    .older .person-dot { width: 36px; height: 36px; border-radius: 50%; background: #e2ded4; color: var(--ink); }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      max-width: 360px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 15px;
+      background: var(--ink);
+      color: white;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+      transition: .2s ease;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 760px) {
+      .app { padding: 12px 17px 110px; }
+      .topbar { min-height: 58px; }
+      .count { display: none; }
+      main { display: block; padding: 42px 0 0; }
+      h1 { max-width: 330px; font-size: clamp(51px, 15vw, 64px); }
+      .lead { max-width: 350px; margin-top: 18px; font-size: 17px; }
+      .capture { margin-top: 30px; padding: 14px; border-radius: 20px; box-shadow: 6px 6px 0 var(--ink); }
+      .saved-first { display: none; }
+      .input-row { grid-template-columns: 1fr; }
+      .save-button { width: 100%; }
+      .tools { display: grid; grid-template-columns: repeat(3, 1fr); }
+      .tool { padding: 0 8px; }
+      .timeline-wrap { margin-top: 56px; padding-left: 23px; }
+      .timeline-wrap::before { left: 4px; }
+      .moment::before { left: -25px; }
+      .moment { padding: 16px; }
+      .optional-actions { justify-content: stretch; }
+      .small-button { flex: 1; }
+      .toast { right: 14px; bottom: 14px; left: 14px; max-width: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">+</span> Circle</div>
+      <div class="top-actions">
+        <span class="count">33 people remembered</span>
+        <button class="avatar" aria-label="Open settings">KR</button>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="page-title">
+        <p class="kicker">Right now</p>
+        <h1 id="page-title">Remember someone.</h1>
+        <p class="lead">Add whatever you have. A name, link, photo, contact, or voice note. Circle will sort out the rest.</p>
+
+        <div class="capture">
+          <div class="capture-label">
+            <span>Add a moment</span>
+            <span class="saved-first">Saved first. Sorted after.</span>
+          </div>
+          <div class="input-row">
+            <input class="capture-input" id="capture-input" value="Maya Chen, met at SaaS Summit" aria-label="Anything you remember about this person" />
+            <button class="save-button" id="save-button">Save</button>
+          </div>
+          <div class="tools" aria-label="Other ways to add someone">
+            <button class="tool" data-tool="photo"><span aria-hidden="true">▣</span>Photo</button>
+            <button class="tool" data-tool="talk"><span aria-hidden="true">●</span>Talk</button>
+            <button class="tool" data-tool="contact"><span aria-hidden="true">◎</span>Contact</button>
+          </div>
+        </div>
+
+        <button class="ask"><span>Who could help with my idea?</span><span aria-hidden="true">→</span></button>
+      </section>
+
+      <aside class="timeline-wrap" aria-label="Saved moments">
+        <div class="timeline-heading">
+          <h2>Today</h2>
+          <span>No jobs to finish</span>
+        </div>
+
+        <article class="moment is-live" id="live-moment">
+          <div class="time">Saved now</div>
+          <div class="person-row">
+            <div class="person-dot" aria-hidden="true">MC</div>
+            <div>
+              <div class="person-name">Maya Chen</div>
+              <div class="person-clue">SaaS Summit · from your note</div>
+            </div>
+          </div>
+          <p class="status">Saved. You can go. We are checking the details.</p>
+          <div class="optional">
+            <label for="context">One quick note, if you want</label>
+            <input id="context" placeholder="Where did you meet, or why remember them?" />
+            <div class="optional-actions">
+              <button class="small-button" id="skip-button">Skip</button>
+              <button class="small-button primary" id="note-button">Add note</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="moment older">
+          <div class="time">9:18 am</div>
+          <div class="person-row">
+            <div class="person-dot" aria-hidden="true">JR</div>
+            <div>
+              <div class="person-name">Jamie Rivera</div>
+              <div class="person-clue">Shared from Contacts · saved</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="moment older">
+          <div class="time">Yesterday</div>
+          <div class="person-row">
+            <div class="person-dot" aria-hidden="true">AL</div>
+            <div>
+              <div class="person-name">Alex Lee</div>
+              <div class="person-clue">Photo of a name tag · saved</div>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const toast = document.querySelector('#toast');
+    let toastTimer;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    document.querySelector('#save-button').addEventListener('click', () => {
+      const input = document.querySelector('#capture-input');
+      if (!input.value.trim()) {
+        input.focus();
+        showToast('Add a name, link, photo, contact, or note.');
+        return;
+      }
+      document.querySelector('#live-moment').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast('Saved. We will sort out the details.');
+    });
+
+    document.querySelectorAll('[data-tool]').forEach((button) => {
+      button.addEventListener('click', () => showToast(`${button.textContent.trim()} is ready to add.`));
+    });
+
+    document.querySelector('#skip-button').addEventListener('click', () => {
+      document.querySelector('.optional').hidden = true;
+      showToast('Done. Circle will keep working in the background.');
+    });
+
+    document.querySelector('#note-button').addEventListener('click', () => {
+      const note = document.querySelector('#context');
+      if (!note.value.trim()) {
+        note.focus();
+        showToast('Write one quick note, or tap Skip.');
+        return;
+      }
+      document.querySelector('.optional').hidden = true;
+      showToast('Note added.');
+    });
+
+    document.querySelector('.ask').addEventListener('click', () => {
+      showToast('Next, Circle will show one person and why they fit.');
+    });
+  </script>
+</body>
+</html>

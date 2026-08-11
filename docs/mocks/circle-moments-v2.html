@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Circle moments v2</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #f5f5f7;
+      --surface: rgba(255, 255, 255, .94);
+      --surface-solid: #ffffff;
+      --ink: #1d1d1f;
+      --secondary: #6e6e73;
+      --tertiary: #98989d;
+      --separator: rgba(60, 60, 67, .16);
+      --fill: rgba(118, 118, 128, .12);
+      --blue: #0a67d9;
+      --blue-pressed: #085bbf;
+      --green: #248a3d;
+      --green-fill: #eaf7ed;
+      --shadow-soft: 0 2px 7px rgba(0, 0, 0, .035), 0 18px 50px rgba(0, 0, 0, .06);
+      --shadow-float: 0 12px 38px rgba(0, 0, 0, .12), 0 2px 8px rgba(0, 0, 0, .05);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-width: 320px; background: var(--canvas); }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    .topbar {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      height: 68px;
+      border-bottom: .5px solid var(--separator);
+      background: rgba(245, 245, 247, .78);
+      backdrop-filter: saturate(180%) blur(22px);
+      -webkit-backdrop-filter: saturate(180%) blur(22px);
+    }
+
+    .topbar-inner {
+      width: min(1120px, calc(100% - 48px));
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -.025em;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: var(--ink);
+      box-shadow: inset 0 0 0 .5px rgba(255,255,255,.16);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .brand-mark::before {
+      width: 12px;
+      height: 12px;
+      top: 5px;
+      left: 5px;
+      border: 1.5px solid white;
+    }
+
+    .brand-mark::after {
+      width: 7px;
+      height: 7px;
+      right: 5px;
+      bottom: 5px;
+      background: #69a8ff;
+      box-shadow: 0 0 0 2px var(--ink);
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+
+    .icon-button,
+    .avatar-button {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .icon-button { background: var(--fill); }
+    .icon-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+    .avatar-button {
+      margin-left: 2px;
+      background: linear-gradient(145deg, #353538, #171719);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: inset 0 0 0 .5px rgba(255,255,255,.22);
+    }
+
+    .layout {
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 58px 0 32px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: clamp(56px, 8vw, 104px);
+      align-items: start;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: clamp(40px, 5vw, 58px);
+      line-height: 1.02;
+      letter-spacing: -.052em;
+      font-weight: 700;
+    }
+
+    .page-subtitle {
+      max-width: 540px;
+      margin: 14px 0 0;
+      color: var(--secondary);
+      font-size: 18px;
+      line-height: 1.45;
+      letter-spacing: -.012em;
+    }
+
+    .primary-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .button {
+      min-height: 48px;
+      border: 0;
+      border-radius: 14px;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 620;
+      letter-spacing: -.01em;
+    }
+
+    .button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .button.primary { background: var(--blue); color: white; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+    .button.primary:hover { background: var(--blue-pressed); }
+    .button.secondary { background: var(--surface-solid); box-shadow: inset 0 0 0 .5px var(--separator); }
+
+    .section-heading {
+      margin: 54px 0 12px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -.025em;
+    }
+
+    .section-heading span { color: var(--tertiary); font-size: 13px; }
+
+    .people-list {
+      overflow: hidden;
+      border-radius: 20px;
+      background: var(--surface-solid);
+      box-shadow: inset 0 0 0 .5px var(--separator), 0 1px 2px rgba(0,0,0,.025);
+    }
+
+    .person-row {
+      min-height: 86px;
+      padding: 15px 18px;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .person-row + .person-row { border-top: .5px solid var(--separator); }
+
+    .person-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: #edf3fd;
+      color: #1d5faf;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    .person-avatar.stone { background: #f0efed; color: #655f57; }
+    .person-name { font-size: 16px; font-weight: 620; letter-spacing: -.016em; }
+    .person-clue { margin-top: 4px; color: var(--secondary); font-size: 13px; line-height: 1.3; }
+
+    .person-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--secondary);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #5e9dec;
+      box-shadow: 0 0 0 4px #edf5ff;
+    }
+
+    .status-dot.ready { background: var(--green); box-shadow: none; }
+
+    .quiet-note {
+      margin: 16px 4px 0;
+      color: var(--tertiary);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .capture-panel {
+      border-radius: 28px;
+      background: var(--surface);
+      box-shadow: var(--shadow-soft), inset 0 0 0 .5px rgba(60,60,67,.13);
+    }
+
+    .panel-head {
+      padding: 24px 24px 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: -.035em;
+      font-weight: 680;
+    }
+
+    .panel-head p {
+      margin: 7px 0 0;
+      color: var(--secondary);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .close-button {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      color: var(--secondary);
+      cursor: pointer;
+    }
+
+    .close-button::before {
+      content: "";
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--fill);
+    }
+
+    .close-button svg { position: relative; width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; }
+
+    .panel-body { padding: 0 24px 24px; }
+
+    .field-label {
+      display: block;
+      margin: 0 0 8px 2px;
+      color: var(--secondary);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .005em;
+    }
+
+    .capture-field {
+      width: 100%;
+      min-height: 96px;
+      resize: none;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      padding: 14px 15px;
+      background: var(--fill);
+      color: var(--ink);
+      outline: 0;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .capture-field:focus,
+    .context-input:focus {
+      border-color: rgba(10, 103, 217, .55);
+      background: var(--surface-solid);
+      box-shadow: 0 0 0 4px rgba(10, 103, 217, .13);
+    }
+
+    .source-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .source-button {
+      min-height: 62px;
+      border: 0;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: var(--fill);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 570;
+    }
+
+    .source-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+    .save-state {
+      min-height: 36px;
+      margin: 17px 2px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .save-state svg { width: 16px; height: 16px; flex: 0 0 auto; fill: none; stroke: var(--green); stroke-width: 2; }
+
+    .panel-footer {
+      padding: 16px 24px calc(20px + env(safe-area-inset-bottom));
+      border-top: .5px solid var(--separator);
+    }
+
+    .panel-footer .button { width: 100%; min-height: 52px; }
+
+    .saved-step { display: none; }
+
+    .saved-mark {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green-fill);
+      color: var(--green);
+    }
+
+    .saved-mark svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+
+    .saved-step h3 {
+      margin: 0;
+      font-size: 27px;
+      line-height: 1.08;
+      letter-spacing: -.042em;
+      font-weight: 680;
+    }
+
+    .saved-step > p { margin: 9px 0 24px; color: var(--secondary); font-size: 14px; line-height: 1.42; }
+
+    .context-wrap { position: relative; }
+    .context-input {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid transparent;
+      border-radius: 15px;
+      padding: 0 48px 0 15px;
+      background: var(--fill);
+      color: var(--ink);
+      outline: 0;
+      font-size: 16px;
+    }
+
+    .mic-button {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      color: var(--blue);
+      cursor: pointer;
+    }
+
+    .mic-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+    .saved-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 9px; margin-top: 14px; }
+    .saved-actions .button { width: 100%; }
+
+    .done-state {
+      display: none;
+      padding: 48px 24px 52px;
+      text-align: center;
+    }
+
+    .done-state .saved-mark { margin: 0 auto 18px; }
+    .done-state h3 { margin: 0; font-size: 24px; letter-spacing: -.035em; }
+    .done-state p { margin: 7px 0 0; color: var(--secondary); font-size: 14px; }
+
+    .glass-dock { display: none; }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid rgba(10, 103, 217, .45);
+      outline-offset: 3px;
+    }
+
+    button:active { transform: scale(.985); }
+
+    @media (max-width: 760px) {
+      .app { padding-bottom: 112px; }
+      .topbar { height: 60px; }
+      .topbar-inner, .layout { width: calc(100% - 32px); }
+      .topbar .brand { font-size: 17px; }
+      .brand-mark { width: 28px; height: 28px; border-radius: 8px; }
+      .icon-button { display: none; }
+      .avatar-button { width: 44px; height: 44px; }
+      .layout { display: flex; flex-direction: column; gap: 38px; padding: 34px 0 20px; }
+      .overview { width: 100%; }
+      .page-title { font-size: 39px; }
+      .page-subtitle { margin-top: 9px; font-size: 16px; }
+      .primary-actions { display: none; }
+      .section-heading { margin-top: 40px; }
+      .person-row { grid-template-columns: 46px minmax(0, 1fr); min-height: 80px; padding: 14px; }
+      .person-avatar { width: 46px; height: 46px; border-radius: 14px; }
+      .person-status { grid-column: 2; margin-top: -8px; }
+      .quiet-note { margin-bottom: 0; }
+      body::before {
+        content: "";
+        position: fixed;
+        z-index: 40;
+        inset: 0;
+        background: rgba(20, 20, 24, .14);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .24s ease;
+      }
+      body.capture-open::before { opacity: 1; pointer-events: auto; }
+      .capture-panel {
+        position: fixed;
+        z-index: 50;
+        right: auto;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        left: 50%;
+        width: min(430px, calc(100% - 16px));
+        border-radius: 28px;
+        box-shadow: var(--shadow-float), inset 0 0 0 .5px rgba(60,60,67,.12);
+        transform: translate(-50%, calc(100% + 18px));
+        opacity: 0;
+        pointer-events: none;
+        transition: transform .34s cubic-bezier(.2,.8,.2,1), opacity .2s ease;
+      }
+      body.capture-open .capture-panel { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+      .panel-head { padding: 22px 20px 16px; }
+      .panel-body { padding: 0 20px 20px; }
+      .panel-footer { padding: 14px 20px calc(18px + env(safe-area-inset-bottom)); }
+      .capture-field { min-height: 82px; }
+      .source-button { min-height: 58px; }
+      .glass-dock {
+        position: fixed;
+        z-index: 30;
+        right: 16px;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        left: 16px;
+        height: 66px;
+        border: .5px solid rgba(255,255,255,.62);
+        border-radius: 23px;
+        padding: 7px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        background: rgba(246, 246, 248, .78);
+        backdrop-filter: saturate(190%) blur(24px);
+        -webkit-backdrop-filter: saturate(190%) blur(24px);
+        box-shadow: 0 12px 34px rgba(0,0,0,.16), inset 0 0 0 .5px rgba(60,60,67,.08);
+      }
+      body.capture-open .glass-dock { display: none; }
+      .dock-button {
+        min-height: 52px;
+        border: 0;
+        border-radius: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: transparent;
+        cursor: pointer;
+        font-weight: 620;
+      }
+      .dock-button.primary { background: var(--ink); color: white; box-shadow: 0 1px 5px rgba(0,0,0,.2); }
+      .dock-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+    }
+
+    @media (max-width: 380px) {
+      .topbar-inner, .layout { width: calc(100% - 24px); }
+      .layout { gap: 30px; }
+      .page-title { font-size: 36px; }
+      .panel-head { padding-right: 16px; padding-left: 16px; }
+      .panel-body { padding-right: 16px; padding-left: 16px; }
+      .panel-footer { padding-right: 16px; padding-left: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+      button:active { transform: none; }
+    }
+  </style>
+</head>
+<body class="capture-open">
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Circle</div>
+        <div class="top-actions">
+          <button class="icon-button" aria-label="Search Circle">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          </button>
+          <button class="avatar-button" aria-label="Open settings">KR</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="overview" aria-labelledby="page-title">
+        <h1 class="page-title" id="page-title">People, remembered.</h1>
+        <p class="page-subtitle">Save anyone in seconds. Circle fills in the details and brings them back when they can help.</p>
+
+        <div class="primary-actions">
+          <button class="button primary" id="open-capture">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Add someone
+          </button>
+          <button class="button secondary">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+            Ask Circle
+          </button>
+        </div>
+
+        <div class="section-heading">
+          <h2>Today</h2>
+          <span>2 people</span>
+        </div>
+
+        <div class="people-list">
+          <article class="person-row">
+            <div class="person-avatar" aria-hidden="true">MC</div>
+            <div>
+              <div class="person-name">Maya Chen</div>
+              <div class="person-clue">SaaS Summit · from your note</div>
+            </div>
+            <div class="person-status"><span class="status-dot"></span>Checking details</div>
+          </article>
+          <article class="person-row">
+            <div class="person-avatar stone" aria-hidden="true">JR</div>
+            <div>
+              <div class="person-name">Jamie Rivera</div>
+              <div class="person-clue">Shared from Contacts</div>
+            </div>
+            <div class="person-status"><span class="status-dot ready"></span>Ready</div>
+          </article>
+        </div>
+        <p class="quiet-note">Nothing to clean up. Circle only asks when it is unsure.</p>
+      </section>
+
+      <aside class="capture-panel" aria-label="Add someone">
+        <div id="capture-step">
+          <div class="panel-head">
+            <div>
+              <h2>Add someone</h2>
+              <p>Drop in whatever you have. Circle sorts the rest.</p>
+            </div>
+            <button class="close-button" id="close-capture" aria-label="Close">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+            </button>
+          </div>
+          <div class="panel-body">
+            <label class="field-label" for="capture-field">Anything you remember</label>
+            <textarea class="capture-field" id="capture-field">Maya Chen, met at SaaS Summit</textarea>
+
+            <div class="source-actions" aria-label="Other ways to add someone">
+              <button class="source-button" data-source="photo">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m5.5 17 4.5-4 3 2.5 2.5-2 3 3"/></svg>
+                Photo
+              </button>
+              <button class="source-button" data-source="talk">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="3.5" width="7" height="11" rx="3.5"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/></svg>
+                Talk
+              </button>
+              <button class="source-button" data-source="contact">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="3"/><circle cx="12" cy="9" r="2.5"/><path d="M7.5 17c.8-2.2 2.3-3.3 4.5-3.3s3.7 1.1 4.5 3.3"/></svg>
+                Contact
+              </button>
+            </div>
+
+            <div class="save-state">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg>
+              Your note is safe. Leave whenever you need to.
+            </div>
+          </div>
+          <div class="panel-footer">
+            <button class="button primary" id="save-button">Save</button>
+          </div>
+        </div>
+
+        <div class="saved-step" id="saved-step">
+          <div class="panel-head">
+            <div></div>
+            <button class="close-button" id="close-saved" aria-label="Close">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+            </button>
+          </div>
+          <div class="panel-body">
+            <div class="saved-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>
+            </div>
+            <h3>Maya is saved.</h3>
+            <p>You can leave now. One detail helps Circle remember why she matters.</p>
+            <label class="field-label" for="context-input">Where did you meet?</label>
+            <div class="context-wrap">
+              <input class="context-input" id="context-input" value="SaaS Summit" />
+              <button class="mic-button" aria-label="Say where you met">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="3.5" width="7" height="11" rx="3.5"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
+              </button>
+            </div>
+            <div class="saved-actions">
+              <button class="button secondary" id="skip-button">Skip</button>
+              <button class="button primary" id="done-button">Done</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="done-state" id="done-state" role="status" aria-live="polite">
+          <div class="saved-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>
+          </div>
+          <h3>All done.</h3>
+          <p>Circle will handle the rest.</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <nav class="glass-dock" aria-label="Main actions">
+    <button class="dock-button primary" id="dock-add">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Add
+    </button>
+    <button class="dock-button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+      Ask
+    </button>
+  </nav>
+
+  <script>
+    const captureStep = document.querySelector('#capture-step');
+    const savedStep = document.querySelector('#saved-step');
+    const doneState = document.querySelector('#done-state');
+    const captureField = document.querySelector('#capture-field');
+
+    function showCapture() {
+      document.body.classList.add('capture-open');
+      captureStep.style.display = 'block';
+      savedStep.style.display = 'none';
+      doneState.style.display = 'none';
+      document.querySelector('.capture-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function showSaved() {
+      if (!captureField.value.trim()) {
+        captureField.focus();
+        return;
+      }
+      captureStep.style.display = 'none';
+      savedStep.style.display = 'block';
+      document.querySelector('#context-input').focus({ preventScroll: true });
+    }
+
+    function showDone() {
+      captureStep.style.display = 'none';
+      savedStep.style.display = 'none';
+      doneState.style.display = 'block';
+      window.setTimeout(() => document.body.classList.remove('capture-open'), 1600);
+    }
+
+    document.querySelector('#save-button').addEventListener('click', showSaved);
+    document.querySelector('#done-button').addEventListener('click', showDone);
+    document.querySelector('#skip-button').addEventListener('click', showDone);
+    document.querySelector('#open-capture').addEventListener('click', showCapture);
+    document.querySelector('#dock-add').addEventListener('click', showCapture);
+    document.querySelector('#close-capture').addEventListener('click', () => document.body.classList.remove('capture-open'));
+    document.querySelector('#close-saved').addEventListener('click', () => document.body.classList.remove('capture-open'));
+    document.querySelectorAll('[data-source]').forEach((button) => {
+      button.addEventListener('click', () => {
+        captureField.value = button.dataset.source === 'photo'
+          ? 'Photo ready to add'
+          : button.dataset.source === 'talk'
+            ? 'Tap again in the real app to speak'
+            : 'Contact ready to add';
+        captureField.focus();
+      });
+    });
+  </script>
+</body>
+</html>

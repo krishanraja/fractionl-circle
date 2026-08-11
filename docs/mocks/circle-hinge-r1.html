@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>Circle Hinge r1</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --upper: #e8e7e1;
+      --plane: #faf9f5;
+      --ink: #11120f;
+      --muted: #686960;
+      --quiet: #92938b;
+      --line: rgba(17, 18, 15, .18);
+      --faint: rgba(17, 18, 15, .07);
+      --signal: #5547f5;
+      --signal-soft: #e4e1ff;
+      --success: #187642;
+      --plane-height: 46vh;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 0;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--upper);
+      color: var(--ink);
+      font-family: "Segoe UI Variable Text", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    textarea,
+    input { font: inherit; }
+
+    button { color: inherit; }
+
+    .world :where(div, section, article, header, p, h1, h2, label) { min-width: 0; }
+    .world :where(p, h1, h2, label, button, input, textarea) { overflow-wrap: anywhere; }
+
+    body[data-state="saved"] { --plane-height: 52vh; }
+    body[data-state="ask"] { --plane-height: 62vh; }
+    body[data-state="result"] { --plane-height: 72vh; }
+
+    .world {
+      position: relative;
+      min-height: 100dvh;
+      isolation: isolate;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 2;
+      height: 72px;
+      border-bottom: 1px solid rgba(17, 18, 15, .11);
+    }
+
+    .topbar-inner {
+      width: min(1180px, calc(100% - 56px));
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 640;
+      letter-spacing: -.03em;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 26px;
+      height: 26px;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+    }
+
+    .brand-mark::before { inset: 1px 5px 5px 1px; }
+    .brand-mark::after {
+      inset: 8px 0 0 8px;
+      border-color: var(--signal);
+      background: var(--signal-soft);
+    }
+
+    .profile-button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(17,18,15,.2);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .upper-stage {
+      position: absolute;
+      z-index: 1;
+      inset: 72px 0 var(--plane-height);
+      transition: bottom .54s cubic-bezier(.2,.82,.2,1);
+    }
+
+    .upper-inner {
+      width: min(1180px, calc(100% - 56px));
+      height: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 40px;
+      transition: opacity .28s ease, transform .44s cubic-bezier(.2,.82,.2,1);
+    }
+
+    body[data-state="saved"] .upper-inner,
+    body[data-state="ask"] .upper-inner,
+    body[data-state="result"] .upper-inner {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .quiet-state {
+      align-self: center;
+      max-width: 560px;
+    }
+
+    .quiet-state h1 {
+      margin: 0;
+      font-family: "Segoe UI Variable Display", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(48px, 7vw, 88px);
+      line-height: .95;
+      letter-spacing: -.072em;
+      font-weight: 570;
+    }
+
+    .quiet-state p {
+      max-width: 450px;
+      margin: 19px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+      letter-spacing: -.01em;
+    }
+
+    .last-saved {
+      min-width: 220px;
+      padding-left: 22px;
+      border-left: 1px solid var(--line);
+    }
+
+    .last-saved-label {
+      color: var(--quiet);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .last-saved-name {
+      margin-top: 9px;
+      font-size: 17px;
+      font-weight: 590;
+      letter-spacing: -.02em;
+    }
+
+    .last-saved-clue {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .plane {
+      position: fixed;
+      z-index: 10;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: var(--plane-height);
+      min-height: 330px;
+      border-top: 1px solid var(--ink);
+      background: var(--plane);
+      transition: height .54s cubic-bezier(.2,.82,.2,1);
+    }
+
+    .seam {
+      position: absolute;
+      top: -1px;
+      right: 0;
+      left: 0;
+      height: 3px;
+      overflow: hidden;
+    }
+
+    .seam::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: min(34vw, 440px);
+      height: 3px;
+      background: var(--signal);
+      transform-origin: left center;
+      transition: width .54s cubic-bezier(.2,.82,.2,1);
+    }
+
+    body[data-state="saved"] .seam::before { width: min(48vw, 680px); background: var(--success); }
+    body[data-state="ask"] .seam::before { width: min(68vw, 940px); }
+    body[data-state="result"] .seam::before { width: 100%; }
+
+    .hinge-point {
+      position: absolute;
+      z-index: 2;
+      top: -8px;
+      left: min(34vw, 440px);
+      width: 15px;
+      height: 15px;
+      border: 3px solid var(--plane);
+      border-radius: 50%;
+      background: var(--signal);
+      transform: translateX(-50%);
+      transition: left .54s cubic-bezier(.2,.82,.2,1), background .2s ease;
+    }
+
+    body[data-state="saved"] .hinge-point { left: min(48vw, 680px); background: var(--success); }
+    body[data-state="ask"] .hinge-point { left: min(68vw, 940px); }
+    body[data-state="result"] .hinge-point { left: calc(100% - 8px); }
+
+    .plane-state {
+      width: min(1180px, calc(100% - 56px));
+      height: 100%;
+      margin: 0 auto;
+      display: none;
+    }
+
+    body[data-state="capture"] .capture-state,
+    body[data-state="saved"] .saved-state,
+    body[data-state="ask"] .ask-state,
+    body[data-state="result"] .result-state { display: grid; }
+
+    .capture-state,
+    .ask-state {
+      grid-template-columns: 220px minmax(0, 1fr) 168px;
+      gap: 36px;
+      align-items: stretch;
+    }
+
+    .intent-column {
+      padding: 34px 0 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .intent-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 640;
+      letter-spacing: -.01em;
+    }
+
+    .intent-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 0 5px var(--signal-soft);
+    }
+
+    .intent-explain {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .correction-button {
+      min-height: 44px;
+      align-self: flex-start;
+      border: 0;
+      border-bottom: 1px solid var(--ink);
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 590;
+    }
+
+    .work-column {
+      min-width: 0;
+      padding: 30px 0 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .work-label {
+      color: var(--quiet);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .work-input {
+      width: 100%;
+      min-height: 110px;
+      margin: 10px 0 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      padding: 0 0 16px;
+      resize: none;
+      background: transparent;
+      color: var(--ink);
+      outline: 0;
+      font-family: "Segoe UI Variable Display", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(29px, 3.1vw, 44px);
+      line-height: 1.12;
+      letter-spacing: -.045em;
+      font-weight: 470;
+    }
+
+    .work-input:focus { border-bottom-color: var(--signal); }
+
+    .source-row {
+      min-height: 56px;
+      margin-top: auto;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .source-button {
+      min-width: 92px;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 560;
+    }
+
+    .source-button svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+
+    .action-column { padding: 18px 0 18px; }
+
+    .primary-action {
+      width: 100%;
+      height: 100%;
+      min-height: 64px;
+      border: 0;
+      border-radius: 0;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      background: var(--ink);
+      color: white;
+      cursor: pointer;
+      text-align: left;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .primary-action .arrow {
+      align-self: flex-end;
+      color: #a99fff;
+      font-size: 32px;
+      font-weight: 300;
+      line-height: 1;
+    }
+
+    .saved-state {
+      grid-template-columns: 220px minmax(0, 1fr) 210px;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .saved-signal {
+      width: 72px;
+      height: 72px;
+      border: 1px solid var(--success);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--success);
+    }
+
+    .saved-signal svg { width: 31px; height: 31px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+
+    .saved-copy h2,
+    .result-person h2 {
+      margin: 0;
+      font-family: "Segoe UI Variable Display", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(42px, 5vw, 66px);
+      line-height: .98;
+      letter-spacing: -.06em;
+      font-weight: 540;
+    }
+
+    .saved-copy > p {
+      margin: 14px 0 28px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .context-line {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .context-line label { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .context-control { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; }
+    .context-voice { min-width: 48px; min-height: 48px; border: 0; display: grid; place-items: center; background: transparent; cursor: pointer; }
+    .context-voice svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+    .context-input {
+      min-width: 0;
+      min-height: 58px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      outline: 0;
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+
+    .saved-actions {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px;
+      height: calc(100% - 36px);
+    }
+
+    .plain-action {
+      min-height: 52px;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 590;
+    }
+
+    .plain-action.primary { border-color: var(--signal); background: var(--signal); color: white; }
+
+    .result-state {
+      grid-template-columns: 220px minmax(0, 1fr) 250px;
+      gap: 36px;
+      align-items: stretch;
+    }
+
+    .result-meta {
+      padding: 34px 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .confidence {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 640;
+    }
+
+    .confidence span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--signal);
+      box-shadow: 0 0 0 5px var(--signal-soft);
+    }
+
+    .evidence-link {
+      min-height: 44px;
+      align-self: flex-start;
+      border: 0;
+      border-bottom: 1px solid var(--ink);
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 590;
+    }
+
+    .result-person {
+      padding: 32px 0 26px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .result-role {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .result-reason {
+      max-width: 680px;
+      margin: 26px 0 0;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: clamp(18px, 2vw, 24px);
+      line-height: 1.35;
+      letter-spacing: -.025em;
+    }
+
+    .result-source {
+      margin-top: auto;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .result-actions {
+      padding: 18px 0;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .result-actions .plain-action.primary { background: var(--ink); border-color: var(--ink); }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(85, 71, 245, .55);
+      outline-offset: 3px;
+    }
+
+    button:active { transform: scale(.985); }
+
+    .sr-status {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      :root { --plane-height: 61dvh; }
+      body[data-state="saved"] { --plane-height: 66dvh; }
+      body[data-state="ask"] { --plane-height: 72dvh; }
+      body[data-state="result"] { --plane-height: 82dvh; }
+
+      .topbar { height: 62px; }
+      .topbar-inner,
+      .upper-inner,
+      .plane-state { width: calc(100% - 32px); }
+      .upper-stage { top: 62px; }
+      .upper-inner { display: block; padding-top: 34px; }
+      .quiet-state h1 { font-size: clamp(42px, 13vw, 56px); }
+      .quiet-state p { margin-top: 12px; font-size: 14px; }
+      .last-saved { margin-top: 24px; padding-left: 14px; }
+      .last-saved-label { font-size: 10px; }
+      .last-saved-name { margin-top: 6px; font-size: 14px; }
+      .last-saved-clue { font-size: 12px; }
+
+      .plane { min-height: 0; }
+      .seam::before { width: 34vw; }
+      .hinge-point { left: 34vw; }
+      body[data-state="saved"] .seam::before { width: 48vw; }
+      body[data-state="saved"] .hinge-point { left: 48vw; }
+      body[data-state="ask"] .seam::before { width: 68vw; }
+      body[data-state="ask"] .hinge-point { left: 68vw; }
+
+      .capture-state,
+      .ask-state {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 0;
+      }
+
+      .intent-column {
+        padding: 24px 0 12px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px 16px;
+      }
+      .intent-explain { grid-column: 1 / -1; margin: 0; font-size: 12px; }
+      .correction-button { grid-column: 2; grid-row: 1; min-height: 44px; }
+
+      .work-column { padding: 4px 0 12px; }
+      .work-input {
+        min-height: 92px;
+        margin-top: 6px;
+        padding-bottom: 10px;
+        font-size: clamp(25px, 8vw, 31px);
+      }
+      .source-row { min-height: 50px; gap: 0; justify-content: space-between; }
+      .source-button {
+        min-width: 0;
+        width: 33.333%;
+        min-height: 48px;
+        border: 0;
+        border-right: 1px solid var(--line);
+        padding: 0 6px;
+      }
+      .source-button:last-child { border-right: 0; }
+      .action-column { padding: 0 0 calc(12px + env(safe-area-inset-bottom)); }
+      .primary-action {
+        height: 62px;
+        min-height: 62px;
+        padding: 0 18px;
+        flex-direction: row;
+        align-items: center;
+      }
+      .primary-action .arrow { align-self: auto; margin-left: auto; font-size: 25px; }
+
+      .saved-state {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 0;
+        padding: 24px 0 calc(12px + env(safe-area-inset-bottom));
+      }
+      .saved-signal { width: 52px; height: 52px; }
+      .saved-signal svg { width: 23px; height: 23px; }
+      .saved-copy { align-self: center; }
+      .saved-copy h2 { font-size: clamp(38px, 11vw, 50px); }
+      .saved-copy > p { margin: 9px 0 18px; }
+      .context-line { grid-template-columns: 1fr; gap: 3px; }
+      .context-input { min-height: 50px; font-size: 17px; }
+      .saved-actions { grid-template-columns: 1fr 1.45fr; grid-template-rows: 58px; height: auto; }
+
+      .result-state {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 0;
+      }
+      .result-meta {
+        padding: 22px 0 8px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+      .evidence-link { min-height: 44px; }
+      .result-person { padding: 10px 0 14px; }
+      .result-person h2 { font-size: clamp(48px, 14vw, 66px); }
+      .result-role { margin-top: 5px; font-size: 13px; }
+      .result-reason { margin-top: 18px; padding-top: 14px; font-size: 18px; }
+      .result-source { margin-top: 12px; }
+      .result-actions {
+        padding: 0 0 calc(12px + env(safe-area-inset-bottom));
+        grid-template-columns: 1fr 1.45fr;
+        grid-template-rows: 58px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .topbar-inner,
+      .upper-inner,
+      .plane-state { width: calc(100% - 24px); }
+      .intent-label { font-size: 12px; }
+      .correction-button { font-size: 12px; }
+      .source-button { font-size: 12px; }
+    }
+
+    @media (max-height: 620px) and (max-width: 900px) {
+      :root { --plane-height: 72dvh; }
+      body[data-state="saved"] { --plane-height: 78dvh; }
+      body[data-state="ask"] { --plane-height: 80dvh; }
+      body[data-state="result"] { --plane-height: 88dvh; }
+      .upper-inner { padding-top: 16px; }
+      .quiet-state p,
+      .last-saved { display: none; }
+      .intent-column { padding-top: 18px; }
+      .work-input { min-height: 70px; }
+      .saved-state { padding-top: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+      button:active { transform: none; }
+    }
+  </style>
+</head>
+<body data-state="capture">
+  <div class="world">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand"><span class="brand-mark" aria-hidden="true"></span>circle</div>
+        <button class="profile-button" aria-label="Open settings">KR</button>
+      </div>
+    </header>
+
+    <section class="upper-stage" aria-label="Circle status">
+      <div class="upper-inner">
+        <div class="quiet-state">
+          <h1>Nothing needs you.</h1>
+          <p>Circle keeps the clues, checks the details, and brings back a person when they can help.</p>
+        </div>
+        <div class="last-saved">
+          <div class="last-saved-label">Last saved</div>
+          <div class="last-saved-name">Jamie Rivera</div>
+          <div class="last-saved-clue">Shared contact · ready</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="plane" aria-label="Circle working plane">
+      <div class="seam" aria-hidden="true"></div>
+      <div class="hinge-point" aria-hidden="true"></div>
+
+      <div class="plane-state capture-state">
+        <div class="intent-column">
+          <div>
+            <div class="intent-label"><span class="intent-dot"></span>Looks like a new person</div>
+            <div class="intent-explain">This is my best read. Nothing saves until you tap Keep.</div>
+          </div>
+          <button class="correction-button" id="to-ask">Find someone instead</button>
+        </div>
+
+        <div class="work-column">
+          <label class="work-label" for="capture-input">Your clue</label>
+          <textarea class="work-input" id="capture-input">Maya Chen, met at SaaS Summit</textarea>
+          <div class="source-row" aria-label="Add another clue">
+            <button class="source-button" data-source="photo">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14"/><circle cx="9" cy="10" r="1.5"/><path d="m5.5 17 4.5-4 3 2.5 2.5-2 3 3"/></svg>
+              Photo
+            </button>
+            <button class="source-button" data-source="talk">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="3.5" width="7" height="11" rx="3.5"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
+              Talk
+            </button>
+            <button class="source-button" data-source="contact">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17"/><circle cx="12" cy="9" r="2.5"/><path d="M7.5 17c.8-2.2 2.3-3.3 4.5-3.3s3.7 1.1 4.5 3.3"/></svg>
+              Contact
+            </button>
+          </div>
+        </div>
+
+        <div class="action-column">
+          <button class="primary-action" id="keep-button"><span>Keep clue</span><span class="arrow" aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+
+      <div class="plane-state ask-state">
+        <div class="intent-column">
+          <div>
+            <div class="intent-label"><span class="intent-dot"></span>Finding one person</div>
+            <div class="intent-explain">Circle will use your saved clues, not a web guess.</div>
+          </div>
+          <button class="correction-button" id="to-capture">Save a clue instead</button>
+        </div>
+
+        <div class="work-column">
+          <label class="work-label" for="ask-input">What do you need?</label>
+          <textarea class="work-input" id="ask-input">Who could help test my pricing idea?</textarea>
+          <div class="source-row" aria-label="Ways to ask">
+            <button class="source-button" id="ask-talk">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="3.5" width="7" height="11" rx="3.5"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
+              Talk
+            </button>
+          </div>
+        </div>
+
+        <div class="action-column">
+          <button class="primary-action" id="find-button"><span>Find</span><span class="arrow" aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+
+      <div class="plane-state saved-state">
+        <div class="saved-signal" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>
+        </div>
+        <div class="saved-copy">
+          <h2>Maya is safe.</h2>
+          <p>Raw clue kept. Circle is checking the details.</p>
+          <div class="context-line">
+            <label for="context-input">Where did you meet?</label>
+            <div class="context-control">
+              <input class="context-input" id="context-input" value="SaaS Summit" />
+              <button class="context-voice" type="button" aria-label="Add where you met by voice">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="saved-actions">
+          <button class="plain-action" id="skip-button">Skip</button>
+          <button class="plain-action primary" id="add-context-button">Add this</button>
+        </div>
+      </div>
+
+      <div class="plane-state result-state">
+        <div class="result-meta">
+          <div class="confidence"><span></span>Strong match</div>
+          <button class="evidence-link" id="back-to-ask">Change the ask</button>
+        </div>
+        <div class="result-person">
+          <h2>Maya Chen</h2>
+          <div class="result-role">Growth lead · subscription products</div>
+          <p class="result-reason">You noted that Maya ran pricing tests for a subscription app.</p>
+          <div class="result-source">From your note saved on March 25</div>
+        </div>
+        <div class="result-actions">
+          <button class="plain-action" id="show-another">Show another</button>
+          <button class="plain-action primary">Use Maya</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="sr-status" id="status" role="status" aria-live="polite"></div>
+
+  <script>
+    const body = document.body;
+    const status = document.querySelector('#status');
+    const captureInput = document.querySelector('#capture-input');
+
+    function setState(next, message) {
+      body.dataset.state = next;
+      status.textContent = message || '';
+    }
+
+    document.querySelector('#to-ask').addEventListener('click', () => setState('ask', 'Ready to find one person.'));
+    document.querySelector('#to-capture').addEventListener('click', () => setState('capture', 'Ready to save a clue.'));
+    document.querySelector('#back-to-ask').addEventListener('click', () => setState('ask', 'You can change what you need.'));
+    document.querySelector('#keep-button').addEventListener('click', () => {
+      if (!captureInput.value.trim()) {
+        captureInput.focus();
+        status.textContent = 'Add one clue first.';
+        return;
+      }
+      setState('saved', 'Maya is saved.');
+    });
+    document.querySelector('#find-button').addEventListener('click', () => setState('result', 'One strong match found.'));
+    document.querySelector('#skip-button').addEventListener('click', () => setState('capture', 'Done. Circle will handle the rest.'));
+    document.querySelector('#add-context-button').addEventListener('click', () => setState('capture', 'Meeting place added.'));
+    document.querySelector('#show-another').addEventListener('click', () => {
+      status.textContent = 'No stronger match found.';
+    });
+    document.querySelectorAll('[data-source]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const source = button.dataset.source;
+        const extra = source === 'photo' ? 'Photo attached' : source === 'talk' ? 'Voice note ready' : 'Contact attached';
+        captureInput.value = `${captureInput.value.trim()}\n${extra}`.trim();
+        captureInput.focus();
+        status.textContent = `${extra}.`;
+      });
+    });
+  </script>
+</body>
+</html>
