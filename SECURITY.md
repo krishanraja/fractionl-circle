@@ -29,6 +29,7 @@ Email **security@fractionl.ai** with steps to reproduce and likely impact. We ai
 3. Require at least an eight-character password and reauthentication for sensitive account changes.
 4. Enable Point-in-Time Recovery for the production database.
 5. Keep legal documents, DPAs, provider retention settings, and breach procedures current with counsel.
+6. Drop or repair the orphaned `get_user_google_tokens`, `verify_token_integrity`, and `log_token_access` functions. Production schema lint reports that they still reference `sheets_integrations`, which was intentionally removed by the 2026-03-07 cleanup migration. Active Circle source does not call them.
 
 ## Credential exposure
 
