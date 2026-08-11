@@ -10,7 +10,7 @@ The Android PWA share target shipped with release pull request `#142`.
 2. `public/sw.js` keeps the one-shot share payload in the Cache API and opens `/share-contact?pending=1`.
 3. `src/pages/ShareContact.tsx` waits for sign-in without consuming the share, then reads the payload.
 4. A photo is sent to `parse-screenshot`. Shared text or a link uses the local shortcut parser first, then `parse-voice-contact` when needed.
-5. The user checks simple editable fields, optionally adds where they met, and taps `Keep clue` once.
+5. The user checks simple editable fields, optionally adds where they met, and taps `Save person` once.
 6. `ingestSharedContact` writes through the existing raw-person and fingerprint-dedupe pipeline.
 
 If parsing fails, Circle keeps the raw clue and opens the same editable form. A name is the only required field.

@@ -77,7 +77,7 @@ export const QuickAddTyped = ({ onDone, onClose }: QuickAddTypedProps) => {
         </span>
         <span className="mono">→</span>
       </button>
-      <p className="ssrc" style={{ textAlign: 'center' }}>Just a name is enough. We'll enrich them as more sources show up.</p>
+      <p className="ssrc" style={{ textAlign: 'center' }}>Just a name is enough. Circle can add more details as they become available.</p>
     </div>
   );
 };

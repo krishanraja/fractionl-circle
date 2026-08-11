@@ -1,12 +1,12 @@
 import { useAppFrame } from '@/hooks/useAppFrame';
-import HingeCircle from './HingeCircle';
+import CircleWorkspace from './CircleWorkspace';
 
 export default function CircleApp() {
   useAppFrame();
 
   return (
     <div className="app-frame">
-      <HingeCircle />
+      <CircleWorkspace />
     </div>
   );
 }

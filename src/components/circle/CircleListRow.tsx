@@ -40,18 +40,18 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
     try {
       const res = await enrichLinkedin(person.id, linkedinUrl);
       if (res.status === 'done') {
-        setSummary(dossierSummary(res.dossier) ?? res.note ?? 'Profile enriched.');
-        toast.success('Profile enriched');
+        setSummary(dossierSummary(res.dossier) ?? res.note ?? 'More details added.');
+        toast.success('More details added');
       } else if (res.status === 'needs_disambiguation') {
         setCandidates(res.candidates);
       } else if (res.status === 'no_keys') {
-        toast('Enrichment isn’t configured yet', { description: 'Add an enrichment source to pull full profiles.' });
+        toast('More details are not available yet', { description: 'Connect a source to look for more information.' });
       } else if (res.status === 'limit') {
-        toast('You’ve used your free profile look-ups this month', {
-          description: `Upgrade to Pro for unlimited profile enrichment (${res.limit}/month on Free).`,
+        toast('You have used your free searches this month', {
+          description: `Upgrade to Pro for unlimited searches (${res.limit} a month on Free).`,
         });
       } else {
-        toast.error('Could not enrich that profile');
+        toast.error('Could not find more details');
       }
     } finally {
       setEnriching(false);
@@ -95,7 +95,7 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
                   {enriching
                     ? <Loader2 size={13} style={{ animation: 'thxspin 0.8s linear infinite' }} />
                     : <Sparkles size={13} />}
-                  {enriching ? 'Enriching' : 'Find full profile'}
+                  {enriching ? 'Looking…' : 'Find more details'}
                 </button>
               </div>
 
@@ -126,10 +126,10 @@ export const CircleListRow = ({ person, raws }: CircleListRowProps) => {
           candidates={candidates}
           onResolved={(res) => {
             if (res.status === 'done') {
-              setSummary(dossierSummary(res.dossier) ?? res.note ?? 'Profile enriched.');
-              toast.success('Profile enriched');
+              setSummary(dossierSummary(res.dossier) ?? res.note ?? 'More details added.');
+              toast.success('More details added');
             } else if (res.status === 'failed') {
-              toast.error('Could not enrich that profile');
+              toast.error('Could not find more details');
             }
             setCandidates(null);
           }}

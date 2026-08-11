@@ -88,7 +88,7 @@ export default function ShareContact() {
       const prefill = readPrefill(params.get('prefill'));
       if (prefill) {
         const next = sharedDraftFromParsed(prefill, 'Shared with Circle');
-        finish(next, next.name ? 'Check the details, then keep the clue.' : 'Add the name, then keep the clue.');
+        finish(next, next.name ? 'Check the details, then save the person.' : 'Add the name, then save the person.');
         return;
       }
 
@@ -113,8 +113,8 @@ export default function ShareContact() {
           finish(
             next,
             next.name
-              ? 'I read the photo. Check the details, then keep the clue.'
-              : 'I kept the photo. Add the name, then keep the clue.',
+              ? 'I read the photo. Check the details, then save the person.'
+              : 'I kept the photo. Add the name, then save the person.',
           );
           return;
         }
@@ -122,7 +122,7 @@ export default function ShareContact() {
         if (metaText) {
           const shortcut = detectContactShortcut(metaText);
           if (shortcut) {
-            finish(shortcut, 'Check the details, then keep the clue.');
+            finish(shortcut, 'Check the details, then save the person.');
             return;
           }
           const { data, error: parseError } = await supabase.functions.invoke('parse-voice-contact', {
@@ -131,7 +131,7 @@ export default function ShareContact() {
           if (parseError) throw parseError;
           const parsed = (data as { parsed?: Record<string, string | null> } | null)?.parsed ?? {};
           const next = sharedDraftFromParsed(parsed, metaText);
-          finish(next, next.name ? 'Check the details, then keep the clue.' : 'Add the name, then keep the clue.');
+          finish(next, next.name ? 'Check the details, then save the person.' : 'Add the name, then save the person.');
           return;
         }
 
@@ -172,12 +172,12 @@ export default function ShareContact() {
       const contextTag = meetingContextTag(meetingContext);
       if (contextTag) {
         if (!circlePersonId) {
-          setDoneMessage('The person is safe. I could not add where you met, so keep that detail for later.');
+          setDoneMessage('The person is saved. I could not add where you met, so keep that detail for later.');
         } else {
           try {
             await addPersonTags(circlePersonId, [contextTag]);
           } catch {
-            setDoneMessage('The person is safe. I could not add where you met, so keep that detail for later.');
+            setDoneMessage('The person is saved. I could not add where you met, so keep that detail for later.');
           }
         }
       }
@@ -195,7 +195,7 @@ export default function ShareContact() {
       <main className="circle-system share-page">
         <div className="share-reading" role="status" aria-live="polite">
           <div className="share-reading-mark" aria-hidden="true"><Loader2 /></div>
-          <h1>Reading your clue.</h1>
+          <h1>Reading what you shared.</h1>
           <p>Nothing is saved yet.</p>
         </div>
       </main>
@@ -209,7 +209,7 @@ export default function ShareContact() {
           <div className="share-done-mark" aria-hidden="true"><Check /></div>
           <div>
             <div className="share-eyebrow">Saved</div>
-            <h1>{draft.name.trim()} is safe.</h1>
+            <h1>{draft.name.trim()} is saved.</h1>
             <p>{doneMessage}</p>
           </div>
           <button className="share-primary" onClick={() => navigate('/')}>
@@ -240,7 +240,7 @@ export default function ShareContact() {
           {previewUrl && (
             <div className="share-preview">
               <img src={previewUrl} alt="Shared contact" />
-              <div><ImageIcon aria-hidden="true" />Photo clue</div>
+              <div><ImageIcon aria-hidden="true" />Contact photo</div>
             </div>
           )}
 
@@ -289,7 +289,7 @@ export default function ShareContact() {
           <div className="share-actions">
             <button className="share-secondary" onClick={() => navigate('/')} disabled={phase === 'saving'}>Cancel</button>
             <button className="share-primary" onClick={() => void handleSave()} disabled={phase === 'saving'}>
-              <span>{phase === 'saving' ? 'Keeping...' : 'Keep clue'}</span>
+              <span>{phase === 'saving' ? 'Saving...' : 'Save person'}</span>
               {phase === 'saving' ? <Loader2 className="share-spin" aria-hidden="true" /> : <ArrowUpRight aria-hidden="true" />}
             </button>
           </div>

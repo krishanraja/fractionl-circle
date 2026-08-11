@@ -22,7 +22,7 @@ import ReachOut from './ReachOut';
 import Home from './Home';
 import { computeSharpness, holdingBack } from './sharpness';
 import {
-  runValidation, getLatestRunFull, getRunCount, getCircle, getInspirationCount,
+  runValidation, getLatestRunFull, getRunFull, getRunCount, getCircle, getInspirationCount,
   judgeThesis, extractAdmire, saveInspiration, saveStepProgress,
   getMarketPulse, getUnrunAnswerCount, getDecisionLog, markDecisionOutcome, getProfileLinkedin,
   type CircleP, type MarketPulse, type DecisionEntry,
@@ -31,7 +31,12 @@ import ThesisCircle from './ThesisCircle';
 
 type Phase = 'loading' | 'signin' | 'capture' | 'thinking' | 'read' | 'sharpen' | 'journey' | 'addpeople' | 'reachout' | 'home' | 'gate';
 
-export default function ThesisApp() {
+interface ThesisAppProps {
+  initialRunId?: string;
+  startFresh?: boolean;
+}
+
+export default function ThesisApp({ initialRunId, startFresh = false }: ThesisAppProps) {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id;
   const { isProOrAbove, openCheckout, loading: subLoading } = useSubscription();
@@ -103,7 +108,12 @@ export default function ThesisApp() {
     // The user's own LinkedIn now lives in Profile & Settings (persisted), so load
     // it here and thread it into every run for the fit/credibility read.
     getProfileLinkedin(userId).then((li) => { if (li) { setLinkedin(li); setLinkedinDone(true); } }).catch(() => {});
-    getLatestRunFull(userId)
+    if (startFresh) {
+      setPhase('capture');
+      return;
+    }
+    const loadRun = initialRunId ? getRunFull(userId, initialRunId) : getLatestRunFull(userId);
+    loadRun
       .then((r) => {
         if (r) {
           setData(r.result); setRunId(r.id); setStepProgress(r.stepProgress); setThesisText(r.thesis); setBackground(r.background);
@@ -113,7 +123,7 @@ export default function ThesisApp() {
         } else setPhase('capture');
       })
       .catch(() => setPhase('capture'));
-  }, [userId, authLoading, subLoading, isProOrAbove]);
+  }, [userId, authLoading, subLoading, isProOrAbove, initialRunId, startFresh]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
@@ -192,7 +202,7 @@ export default function ThesisApp() {
   }, unrunAnswers);
   const fuel = sharp.pending / 100;
   const fuels: FuelRow[] = [
-    { k: 'Thesis', on: !!data }, { k: 'Background', on: !!background }, { k: 'LinkedIn', on: linkedinDone },
+    { k: 'Idea', on: !!data }, { k: 'Background', on: !!background }, { k: 'LinkedIn', on: linkedinDone },
     { k: 'Businesses you admire', on: inspCount > 0 }, { k: 'Your circle', on: circle.length > 0 },
   ];
 

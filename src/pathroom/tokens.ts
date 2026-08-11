@@ -11,5 +11,5 @@ export const C = {
   risk: 'var(--thx-risk)', good: 'var(--thx-good)',
   gold: 'var(--thx-gold)', cool: 'var(--thx-cool)',
 };
-export const FONT = "'Satoshi', system-ui, -apple-system, sans-serif";
+export const FONT = '"Segoe UI Variable Text", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 export const MONO = "'SF Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";

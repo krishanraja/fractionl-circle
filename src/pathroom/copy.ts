@@ -108,16 +108,16 @@ export const dimLabel = (label: string): string => DIMENSION_LABEL[label] ?? lab
 // on (and we surface your inner circle for it), or name who - or the kind of
 // person - you're looking for (and we search your whole network for a real fit).
 export const BOX = {
-  label: 'What are you working on - or who are you looking for?',
+  label: 'Tell Circle what you need',
   // Invite meaning-based search, not just a literal name filter (the semantic engine
   // reaches "Partner at Sequoia" from "a venture fund" by meaning).
-  placeholder: 'A goal, or who you need - try "a VC who could intro me to founders"',
+  placeholder: 'Try “Who knows hospital buyers?” or describe what you are working on',
   voiceHint: 'Tap to talk',
   /** Heading above results when the box was read as a people-search. */
-  foundLabel: 'Who can help',
+  foundLabel: 'People who could help',
   /** Honest empty state for a people-search that found no grounded fit. */
   foundEmpty:
-    "No one in your circle fits that yet - add a few more people or connect a source, and I'll keep looking.",
+    "No one fits that yet. Add more people or connect your contacts, and Circle will keep looking.",
 } as const;
 
 // Warm, shared microcopy used across the onboarding + return surfaces.

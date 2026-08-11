@@ -1,8 +1,6 @@
 # Google OAuth verification - calendar write (warm-reach holds)
 
-Status: deferred verification pack. Do not enable either flag or submit this
-pack while the current Hinge shell lacks the Google source-connection entry
-point. This file records a possible future release, not active product behavior.
+Status: deferred verification pack. The Google source-connection entry point is active, but calendar write remains unapproved. Do not enable either flag or submit this pack without a separately approved provider release.
 
 Goal: let the weekly warm-reach digest write a recurring hold **straight onto the
 user's Google Calendar** instead of attaching an `.ics` file. That needs the
@@ -47,11 +45,9 @@ Both default off. Set them only **after** verification clears.
 
 ### Demo video script (~60–90s, screen recording)
 
-The current product cannot record this script because it does not expose
-`Add a source`. Resume only after that entry point returns and passes a
-designated-account connection test.
+Record this script only after the active connection path passes a designated-account test and the calendar-write release is approved.
 
-1. Sign in at `https://circle.fractionl.ai`, open **Circle → Add a source →
+1. Sign in at `https://circle.fractionl.ai`, open **People → Bring in contacts →
    Connect Google**. Show the consent screen listing the calendar scope; accept.
 2. Trigger the warm-reach digest (or show the weekly email already received).
 3. Open Google Calendar; show the single recurring "Warm reach - keep your circle

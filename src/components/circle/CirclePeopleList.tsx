@@ -74,7 +74,7 @@ export const CirclePeopleList = ({ totalPeople, circleLoading, onQuickAdd, reloa
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, company, or title"
-          aria-label="Search your Circle"
+          aria-label="Search your people"
         />
         {loading && query.length > 0 && <Loader2 size={14} className="mono" style={{ color: 'var(--thx-lo)', animation: 'thxspin 0.8s linear infinite' }} />}
       </div>

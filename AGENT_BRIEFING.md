@@ -1,12 +1,12 @@
 # Circle by Fractionl: agent briefing
 
-Verified against the active product: 2026-08-10.
+Verified against the active product: 2026-08-11.
 
 Use this file for public-facing facts. If a claim is not in the `Live` section, do not present it as shipped.
 
 ## One-line promise
 
-> Keep any clue about a person now. Circle brings back the right person when they can help.
+> Remember anyone, think through an idea, and find the right person when they can help.
 
 ## Who it is for
 
@@ -18,19 +18,24 @@ Do not pitch Circle to sales teams looking for pipeline administration, seat man
 
 ## Magic moment
 
-The user adds one imperfect clue, then later asks for a person or describes an idea. Circle returns a real saved person, shows why they matched, and leaves the user in control of whether to contact them.
+The user adds one imperfect note, then later asks for a person or works through an idea. Circle returns a real saved person, shows why they matched, and leaves the user in control of whether to contact them.
 
 ## Live
 
-- One adaptive signed-in surface for saving a clue or finding a person
+- One signed-in workspace with People, Ideas, and You always one tap away
+- Browse and search the complete contact list at any time
+- Plain-English person and “what I am working on” search
 - Capture by text, link, email, voice, photo, supported device contact, or Android PWA share target
+- LinkedIn/CRM file import plus Google and Microsoft connection entry points
 - Optional `Where did you meet?` context after the person is safe
 - Raw-clue preservation and the existing fingerprint-dedupe pipeline
 - Exact saved-name recall without an LLM or paid search dependency
+- Recent saved ideas, new idea capture, exact-run reopen, and the existing validation/journey/warm-reach engine
 - Provider-backed described-person and idea ranking with grounded local recovery
 - Match reasons based on saved name, title, company, tags, notes, or dossier fields
 - Contact actions only when a saved channel exists
-- Shared voice input on clue, ask, meeting-context, and profile-positioning fields
+- First-class profile/settings destination
+- Shared voice input on notes, ask, meeting-context, idea, and profile-positioning fields
 - Public privacy and terms routes, plus authenticated consent, export, and deletion controls
 - Free and Pro catalogue in `src/lib/tiers.ts`; Pro is listed at $39 per month in code
 
@@ -41,7 +46,7 @@ The user adds one imperfect clue, then later asks for a person or describes an i
 - Guaranteed enrichment or guaranteed AI/provider availability
 - Guaranteed interest, availability, relationship strength, or a warm introduction
 - A trial, a $30 plan, or a $79 plan
-- The retired two-tab Plan/Circle navigation as the current product
+- The retired one-plane Hinge capture UI as the current product
 - Automatic ongoing market monitoring as a proven current user outcome
 
 ## Positioning
@@ -56,17 +61,17 @@ Circle is not LinkedIn or a contact book. Those services store profiles and coor
 
 ### Short description
 
-Save a name, link, email, photo, voice note, or anything you remember. Add where you met if you want. Circle joins the details quietly and brings back the right person when you ask for someone or test an idea.
+Save a name, link, email, photo, voice note, or anything you remember. Browse everyone whenever you want. Ask who could help or talk through an idea, and Circle brings the right people forward.
 
 ### Compact post
 
 Most relationship tools ask you to become a database administrator.
 
-Circle asks for one clue.
+Circle asks for whatever you remember.
 
 A name. A link. A photo. Something you remember from the room.
 
-It keeps the clue, joins what it can, and brings the person back when they can actually help.
+It keeps the details together and brings the person back when they can actually help.
 
 ### Objection: Is it a CRM?
 

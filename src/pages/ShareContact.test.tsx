@@ -66,7 +66,7 @@ describe('ShareContact', () => {
     expect(screen.getByLabelText('Company')).toHaveValue('Northstar Health');
 
     fireEvent.change(screen.getByLabelText('Where did you meet?'), { target: { value: 'HealthTech North' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Keep clue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save person' }));
 
     await waitFor(() => expect(mocks.ingestSharedContact).toHaveBeenCalledWith('user-1', expect.objectContaining({
       name: 'Maya Chen',
@@ -75,7 +75,7 @@ describe('ShareContact', () => {
       notes: 'Maya Chen\nCommercial lead at Northstar Health',
     })));
     expect(mocks.addPersonTags).toHaveBeenCalledWith('person-1', ['met:HealthTech North']);
-    expect(await screen.findByRole('heading', { name: 'Maya Chen is safe.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Maya Chen is saved.' })).toBeInTheDocument();
   });
 
   it('keeps an empty share in place and focuses the missing name', async () => {
@@ -87,7 +87,7 @@ describe('ShareContact', () => {
     );
 
     await screen.findByRole('heading', { name: 'Keep this person.' });
-    fireEvent.click(screen.getByRole('button', { name: 'Keep clue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save person' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent('Add their name first.');
     expect(screen.getByLabelText('Name *')).toHaveFocus();
@@ -104,10 +104,10 @@ describe('ShareContact', () => {
 
     await screen.findByRole('heading', { name: 'Keep this person.' });
     fireEvent.change(screen.getByLabelText('Where did you meet?'), { target: { value: 'HealthTech North' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Keep clue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save person' }));
 
-    expect(await screen.findByRole('heading', { name: 'Maya Chen is safe.' })).toBeInTheDocument();
-    expect(screen.getByText('The person is safe. I could not add where you met, so keep that detail for later.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Maya Chen is saved.' })).toBeInTheDocument();
+    expect(screen.getByText('The person is saved. I could not add where you met, so keep that detail for later.')).toBeInTheDocument();
     expect(mocks.ingestSharedContact).toHaveBeenCalledTimes(1);
   });
 });

@@ -140,7 +140,7 @@ const WelcomeContent = ({
 }: WelcomeContentProps) => {
   const clueRef = useRef<HTMLTextAreaElement>(null);
   const [showJoin, setShowJoin] = useState(false);
-  const [helper, setHelper] = useState('Type, speak, or attach a clue. You stay in control.');
+  const [helper, setHelper] = useState('Type, speak, or add a photo. You stay in control.');
   const [clue, setClue] = useState(readPendingClue);
 
   useEffect(() => {
@@ -160,7 +160,7 @@ const WelcomeContent = ({
   const startWithClue = useCallback(() => {
     if (!clue.trim()) {
       clueRef.current?.focus();
-      setHelper('Add one clue first. A name is enough.');
+      setHelper('Add one person first. A name is enough.');
       return;
     }
     openJoin();
@@ -180,7 +180,7 @@ const WelcomeContent = ({
           <CircleBrand />
           <nav className="circle-auth-actions" aria-label="Account">
             <button className="circle-auth-link" type="button" onClick={onSignInClick}>Sign in</button>
-            <button className="circle-auth-start" type="button" onClick={startWithClue}>Start with one clue</button>
+            <button className="circle-auth-start" type="button" onClick={startWithClue}>Add someone</button>
           </nav>
         </div>
       </header>
@@ -188,10 +188,10 @@ const WelcomeContent = ({
       <section className="circle-front-hero" aria-labelledby="circle-front-title">
         <div className="circle-front-hero-inner">
           <h1 className="circle-front-title" id="circle-front-title">
-            <span>One clue now.</span>
-            <span>The right person later.</span>
+            <span>Remember anyone.</span>
+            <span>Find the right person later.</span>
           </h1>
-          <p className="circle-front-intro">Drop anything you remember. Circle keeps the clues together and brings someone back when they may help.</p>
+          <p className="circle-front-intro">Add a name, photo, link, or voice note. Circle keeps the details together and brings the right person back when they can help.</p>
         </div>
       </section>
 
@@ -203,7 +203,7 @@ const WelcomeContent = ({
             <article className="circle-front-proof-part">
               <div className="circle-front-stage">
                 <div className="circle-front-stage-number" aria-hidden="true">1</div>
-                <div className="circle-front-eyebrow">You add one clue</div>
+                <div className="circle-front-eyebrow">You add someone</div>
               </div>
               <div className="circle-front-clue-card">
                 <div className="circle-front-person-row">
@@ -222,12 +222,12 @@ const WelcomeContent = ({
                 <div className="circle-front-stage-number" aria-hidden="true">2</div>
                 <div className="circle-front-eyebrow">Circle connects it</div>
               </div>
-              <div className="circle-front-link-map" aria-label="Maya's clues are joined to one person">
+              <div className="circle-front-link-map" aria-label="Maya's details are joined to one person">
                 <span className="circle-front-map-node circle-front-avatar" aria-hidden="true">MC</span>
                 <span className="circle-front-map-line" aria-hidden="true"><i /></span>
                 <div className="circle-front-work-card"><strong>Commercial lead</strong><small>Health software</small></div>
               </div>
-              <div className="circle-front-join-signal">One person. Clues kept together.</div>
+              <div className="circle-front-join-signal">One person. Everything you know, together.</div>
             </article>
 
             <article className="circle-front-proof-part">
@@ -250,8 +250,8 @@ const WelcomeContent = ({
           {showJoin ? (
             <div className="circle-front-join" aria-live="polite">
               <div className="circle-front-join-copy">
-                <strong>{clue.trim() ? 'Keep this clue close.' : 'Start with Circle.'}</strong>
-                <small>{clue.trim() ? 'Your clue stays ready while you join.' : 'You can add your first clue after you join.'}</small>
+                <strong>{clue.trim() ? 'Keep this person close.' : 'Start with Circle.'}</strong>
+                <small>{clue.trim() ? 'Your note stays ready while you join.' : 'You can add your first person after you join.'}</small>
               </div>
               <div className="circle-front-join-form">
                 <input
@@ -281,7 +281,7 @@ const WelcomeContent = ({
           ) : (
             <div className="circle-front-entry">
               <div className="circle-front-entry-copy">
-                <strong>Start with one clue</strong>
+                <strong>Add your first person</strong>
                 <small>Nothing is saved until you join.</small>
               </div>
               <div className="circle-front-composer">
@@ -291,13 +291,13 @@ const WelcomeContent = ({
                   onChange={(event) => {
                     const next = event.target.value;
                     setClue(next);
-                    setHelper(next.trim() ? 'That is enough to start. Add more only if it helps.' : 'Type, speak, or attach a clue. You stay in control.');
+                    setHelper(next.trim() ? 'That is enough to start. Add more only if it helps.' : 'Type, speak, or add a photo. You stay in control.');
                   }}
-                  aria-label="A clue about someone"
+                  aria-label="What do you remember about them?"
                   placeholder="A name, link, email, or anything you remember"
                 />
-                <div className="circle-front-source-actions" aria-label="Ways to add a clue">
-                  <button className="circle-front-source" type="button" aria-label="Speak a clue after joining" onClick={() => openJoin('Join first, then speak. Nothing is sent yet.')}>
+                <div className="circle-front-source-actions" aria-label="Ways to add someone">
+                  <button className="circle-front-source" type="button" aria-label="Speak after joining" onClick={() => openJoin('Join first, then speak. Nothing is sent yet.')}>
                     <Mic aria-hidden="true" /><span>Speak</span>
                   </button>
                   <button className="circle-front-source" type="button" aria-label="Add a photo after joining" onClick={() => openJoin('Join first, then add a photo. Nothing is sent yet.')}>
@@ -711,7 +711,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
         // email wall (which previously stranded ~45% of signups). If auto-confirm
         // is ever turned back off, data.session is null and we fall back below.
       } else {
-        setSuccessMessage('Check your email to confirm your account. Your first clue will be waiting.');
+        setSuccessMessage('Check your email to confirm your account. Your first person will be waiting.');
       }
     } catch (_err) {
       setError({ title: 'Sign up failed', message: 'An unexpected error occurred' });
@@ -909,7 +909,7 @@ export const AuthPage = ({ onAuthenticated }: AuthPageProps) => {
     ? 'Sign in and pick up exactly where you left off.'
     : mode === 'forgot'
       ? 'We will send one safe link to your email.'
-      : 'Your first clue will be waiting when your account is ready.';
+      : 'Your first person will be waiting when your account is ready.';
 
   return (
     <div className="circle-system circle-auth-page">

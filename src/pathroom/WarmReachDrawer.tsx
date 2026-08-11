@@ -56,7 +56,7 @@ export default function WarmReachDrawer({ open, onOpenChange, onOpenPlan }: Warm
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="thx w-full sm:max-w-md p-0 overflow-y-auto"
+          className="circle-system thx w-full sm:max-w-md p-0 overflow-y-auto"
         style={{ background: 'var(--thx-bg)' }}
       >
         <SheetTitle className="sr-only">Since you were away</SheetTitle>

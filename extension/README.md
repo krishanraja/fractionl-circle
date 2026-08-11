@@ -1,7 +1,7 @@
 # Circle - LinkedIn Capture
 
 Status: source artifact, not a complete current user flow. The extension code
-and ingestion function remain in the repository, but the active Hinge shell
+and ingestion function remain in the repository, but the active Circle workspace
 does not expose extension pairing. You can inspect or develop the extension,
 but a new user cannot pair it from the current product.
 

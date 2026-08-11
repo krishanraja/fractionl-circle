@@ -1,6 +1,6 @@
 # Circle contributor and operator guide
 
-Last reviewed: 2026-08-10.
+Last reviewed: 2026-08-11.
 
 This file is the map, not a second product specification. Use [docs/PRODUCT.md](docs/PRODUCT.md) for current product truth and [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) for the latest verified release evidence.
 
@@ -20,7 +20,10 @@ Historical documents can explain why a choice was made. They cannot define what 
 
 - Public front door and auth: `src/components/AuthPage.tsx`
 - Authenticated app shell: `src/pathroom/CircleApp.tsx`
-- Active capture and recall surface: `src/pathroom/HingeCircle.tsx`
+- Active workspace: `src/pathroom/CircleWorkspace.tsx`
+- People surface: `src/pathroom/WorkingOnInput.tsx`, `src/components/circle/CirclePeopleList.tsx`, and the existing ingestion components
+- Ideas surface: `src/pathroom/ThesisApp.tsx` and the existing validation, journey, and warm-reach components
+- Profile and settings: `src/components/profile/ProfileSettingsSheet.tsx`
 - Android share intake: `src/pages/ShareContact.tsx`, `public/site.webmanifest`, `public/sw.js`
 - Contact ingestion and dedupe: `src/lib/circleIngest.ts`
 - Ask routing and grounded recovery: `src/lib/theRead.ts`
@@ -28,7 +31,7 @@ Historical documents can explain why a choice was made. They cannot define what 
 - Privacy and terms: `src/pages/Privacy.tsx`, `src/pages/Terms.tsx`
 - Shared visual tokens: `src/pathroom/circle-system.css`
 
-Older Plan, thesis, journey, and cockpit components remain in source but are not mounted by the active shell. Unlinked `/preview/*` routes are fixtures, not product features.
+The existing thesis, journey, reach-out, ingestion, enrichment, profile, and connector components are mounted through the workspace rather than rebuilt. `HingeCircle.tsx` remains as historical implementation evidence but is not mounted. Unlinked `/preview/*` routes are fixtures, not product features.
 
 ## Development
 
@@ -47,6 +50,7 @@ CI runs Node.js 20. Local Supabase and Vercel settings belong in ignored environ
 ```powershell
 npm run docs:check
 npm run test:run
+npm run test:e2e
 npm exec -- tsc --noEmit
 npm run lint
 npm run build
@@ -55,8 +59,8 @@ git diff --check
 
 The browser gate covers:
 
-- first-time comprehension and clue-to-account handoff;
-- signed-in capture, optional meeting context, refresh persistence, and exact-name recall;
+- first-time comprehension and person-to-account handoff;
+- signed-in People, add/import, Ideas, new-idea, You, settings, and exact-name recall paths;
 - described-person and idea recovery when provider calls fail;
 - direct `/share-contact`, `/privacy`, and `/terms` routes;
 - validation, retry, permission denial, and microphone timeout;
@@ -95,10 +99,10 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 - `docs/supabase-custom-domain.md` - custom domain setup
 - `docs/reengagement-and-push.md` - background re-engagement systems
 
-### Conditional or deferred integrations
+### Contact integrations
 
-- `docs/google-oauth-setup.md` and `docs/microsoft-oauth-setup.md` - backend connector setup; the current Hinge shell does not expose the source-connection entry point
-- `docs/google-oauth-verification.md` - deferred Calendar-write verification pack; do not enable its flags while the connector UI is unavailable
+- `docs/google-oauth-setup.md` and `docs/microsoft-oauth-setup.md` - backend connector setup for the active **Bring in contacts** entry point
+- `docs/google-oauth-verification.md` - Calendar-write verification remains separately gated; the read-only connection entry is active
 - `extension/README.md` - extension source record; pairing is unavailable in the current shell
 
 ### Privacy and security

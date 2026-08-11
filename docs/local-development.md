@@ -1,6 +1,6 @@
 # Circle local development
 
-Last verified: 2026-08-10.
+Last verified: 2026-08-11.
 
 This runbook gets a contributor from a clean checkout to a working Circle UI without exposing secrets or touching production operations.
 
@@ -61,12 +61,13 @@ Run the same deterministic checks used by pull requests:
 ```powershell
 npm run docs:check
 npm run test:run
+npm run test:e2e
 npm exec -- tsc --noEmit
 npm run lint
 npm run build
 ```
 
-Then run the relevant browser task from [DOCS.md](../DOCS.md#quality-gate). A passing build proves compilation, not the user journey.
+For signed-in E2E, set `E2E_EMAIL` and `E2E_PASSWORD` to the designated test account in the current shell. `npm run test:e2e` runs Chromium at desktop and Pixel-sized mobile viewports. It never saves a contact, sends a message, or changes preferences. A passing build proves compilation, not the user journey.
 
 ## Environment variables
 
