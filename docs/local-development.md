@@ -1,6 +1,6 @@
 # Circle local development
 
-Last verified: 2026-08-11.
+Last verified: 2026-08-16.
 
 This runbook gets a contributor from a clean checkout to a working Circle UI without exposing secrets or touching production operations.
 

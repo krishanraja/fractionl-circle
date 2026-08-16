@@ -41,6 +41,9 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 - Release documentation closeout: [pull request #148](https://github.com/krishanraja/fractionl-circle/pull/148)
 - Agent-ready marketing and sales documentation: [pull request #149](https://github.com/krishanraja/fractionl-circle/pull/149)
 - Verified production deployment: `dpl_Ewz4aZPeCHaQ5je9g7CPM6c3KQot`
+- Agent-training release record: [pull request #150](https://github.com/krishanraja/fractionl-circle/pull/150)
+- Fractionl brand identity: [pull request #151](https://github.com/krishanraja/fractionl-circle/pull/151). No production deployment evidence has been recorded for this release; see `docs/DELIVERY_STATE.md`.
+- Restored-workspace design mock archived for history: [pull request #152](https://github.com/krishanraja/fractionl-circle/pull/152)
 
 ## 2026-08-10
 

@@ -1,6 +1,6 @@
 # Fractionl Circle delivery state
 
-Last verified: 2026-08-11
+Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-08-16.
 
 ## Product contract
 
@@ -25,6 +25,9 @@ Last verified: 2026-08-11
 - Release documentation closeout: pull request `#148`.
 - Documentation baseline before the agent-training release: `dpl_8JopYirGxDULcxR4vVYe9eQs8pS8`, READY, from pull request `#148` on `main` at `3e0c920bfcddeeb4ded40c7af735aa9833c5666f`.
 - Agent-ready documentation release: pull request `#149` merged to `main` as `92f11e549cf3452c84efde35a3ce6c0a66d32dac`; production deployment `dpl_DwBjYGzsANsGPm83t6khYrjEw4hw` was READY and live from that exact revision. Resolve the active production deployment live before future release work rather than treating this dated evidence as a permanent pointer.
+- Documentation follow-up: pull request `#150` merged to `main` as `a20ec96074760ab0e9a6a471530f0834b1655b51`, recording the `#149` evidence above. No separate deployment.
+- **Fractionl brand identity: pull request `#151` merged to `main` as `509ed94092c829eb3e4a5811ab795774e38fc1f2`.** This shipped real product changes (wordmark/icon across auth, favicon, and social surfaces; see `docs/PRODUCT.md` and the "Fractionl ownership signature" entry in `docs/DESIGN_DECISIONS.md`). No production deployment ID, preview readback, or post-merge route verification for this release is recorded anywhere in this repository. Treat `#151` as released-but-unverified until someone resolves the live Vercel deployment and repeats the readback in the Release procedure below.
+- Design-mock archive: pull request `#152` merged to `main` as `474d4939dad770b7eeb307a9ca63cc9761950b8d`. Docs-only; adds `docs/mocks/circle-restored-r1.html` as a historical artifact. No release verification required.
 - Production URL: `https://circle.fractionl.ai`
 - Previous release baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Production baseline before the unified workspace: `dpl_FTV9maqNCp7yBayZQFSiWCWWBLnB` (READY on 2026-08-11).

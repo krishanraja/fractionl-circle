@@ -1,6 +1,6 @@
 # Re-engagement and web push
 
-Last verified against the deployed design on 2026-08-10.
+Last verified against the deployed design on 2026-08-16.
 
 Circle sends a reminder only when a person the user saved has gone quiet. It
 does not surface retired Plan or thesis concepts.
