@@ -4,6 +4,16 @@ This file records user-visible and operator-visible releases. Product truth
 lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md).
 
+## 2026-08-19
+
+### Fixed
+
+- Front door: the "add your first person" field no longer slices its own text. It rested at a fixed height that could not hold the two lines the prompt wraps onto, so the second line was cut in half by the underline; it now sizes to two full lines and grows with what you type, scrolling only past five lines.
+- Front door: the headline no longer runs over the sentence beside it. "Find the right person later." was set larger than its column and could not wrap, so at desktop widths it overlapped the supporting paragraph; it is now sized to fit and wraps rather than collide.
+- Front door: "Continue with Google" and "Go back" no longer hang past the right edge of the page when joining. Their column was narrower than the button's own minimum width.
+- Front door: "Nothing is saved until you join." now sits on the same line as the note beside the field instead of a few pixels below it.
+- Front door: between 900px and 1060px the field was squeezed narrower than the Speak/Photo/Contact row next to it, wrapping the prompt onto three cramped lines. The field now takes the full column there, with those three below it.
+
 ## 2026-08-11
 
 ### Agent-ready documentation

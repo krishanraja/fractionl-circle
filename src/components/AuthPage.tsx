@@ -152,6 +152,28 @@ const WelcomeContent = ({
     }
   }, [clue]);
 
+  /**
+   * The clue box grows with what is typed instead of clipping it. CSS holds the
+   * resting height (two lines, so the wrapped placeholder is never sliced) and
+   * the cap it stops growing at - past that the box scrolls.
+   */
+  const fitClueToContent = useCallback(() => {
+    const field = clueRef.current;
+    if (!field) return;
+    field.style.height = 'auto';
+    field.style.height = `${field.scrollHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    fitClueToContent();
+  }, [clue, showJoin, fitClueToContent]);
+
+  // A narrower box wraps the same text onto more lines, so re-fit on resize.
+  useEffect(() => {
+    window.addEventListener('resize', fitClueToContent);
+    return () => window.removeEventListener('resize', fitClueToContent);
+  }, [fitClueToContent]);
+
   const openJoin = useCallback((message?: string) => {
     if (message) setHelper(message);
     setShowJoin(true);
