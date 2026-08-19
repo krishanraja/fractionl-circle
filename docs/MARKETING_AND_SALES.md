@@ -1,6 +1,6 @@
 # Circle marketing and sales operating guide
 
-Last verified: 2026-08-11.
+Last verified: 2026-08-16.
 
 This is the commercial training source for human and autonomous agents. It explains how to market and sell the product without inventing evidence. Product capabilities come from [PRODUCT.md](PRODUCT.md). Release proof comes from [DELIVERY_STATE.md](DELIVERY_STATE.md). If this guide conflicts with either, stop using the conflicting claim and follow the higher source.
 

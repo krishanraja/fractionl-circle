@@ -1,6 +1,6 @@
 # Circle - Compliance Posture
 
-**Last reviewed:** 2026-08-10
+**Last reviewed:** 2026-08-16
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
 Legal publication status and unresolved decisions are tracked in

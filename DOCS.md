@@ -1,6 +1,6 @@
 # Circle contributor and operator guide
 
-Last reviewed: 2026-08-11.
+Last reviewed: 2026-08-16.
 
 This file is the map, not a second product specification. Use [docs/PRODUCT.md](docs/PRODUCT.md) for current product truth and [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) for the latest verified release evidence.
 
@@ -121,6 +121,7 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 
 - `docs/_archive/`
 - `_upgrade/`
+- `docs/mocks/` - rendered design artifacts cited by `docs/DESIGN_DECISIONS.md`; not product routes
 - `docs/VALUE_SHARPENING_2026-07-03.md`
 - `docs/icp-archetype.md`
 - dated root audit reports
