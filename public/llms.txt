@@ -16,9 +16,9 @@ The signed-in product has three destinations:
 
 ## Inputs and imports
 
-Live inputs include text, links, email and phone inside a note, voice, profile or business-card photos, supported device contacts, and Android PWA share intake. Import entry points include LinkedIn or CRM files, Google, and Microsoft.
+Live inputs include text, links, email and phone inside a note, voice, profile or business-card photos, and Android PWA share intake. Import entry points include LinkedIn or CRM files, Google, and Microsoft.
 
-A name is enough to save. Meeting context is optional. Native iOS share-sheet intake and an official Apple Shortcut are not shipped.
+A name is enough to save. Meeting context is optional. Native iOS share-sheet intake, an official Apple Shortcut, and device-contact picker import are not shipped.
 
 ## Recall and trust
 

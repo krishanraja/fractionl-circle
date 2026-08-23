@@ -1,6 +1,6 @@
 # Fractionl Circle delivery state
 
-Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-08-16.
+Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-08-23.
 
 ## Product contract
 
@@ -28,6 +28,8 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - Documentation follow-up: pull request `#150` merged to `main` as `a20ec96074760ab0e9a6a471530f0834b1655b51`, recording the `#149` evidence above. No separate deployment.
 - **Fractionl brand identity: pull request `#151` merged to `main` as `509ed94092c829eb3e4a5811ab795774e38fc1f2`.** This shipped real product changes (wordmark/icon across auth, favicon, and social surfaces; see `docs/PRODUCT.md` and the "Fractionl ownership signature" entry in `docs/DESIGN_DECISIONS.md`). No production deployment ID, preview readback, or post-merge route verification for this release is recorded anywhere in this repository. Treat `#151` as released-but-unverified until someone resolves the live Vercel deployment and repeats the readback in the Release procedure below.
 - Design-mock archive: pull request `#152` merged to `main` as `474d4939dad770b7eeb307a9ca63cc9761950b8d`. Docs-only; adds `docs/mocks/circle-restored-r1.html` as a historical artifact. No release verification required.
+- Documentation reconciliation: pull request `#153` merged to `main` as `7cdf4c5bd9f2fdec371731ddedd832224c39b962`, recording the `#150`-`#152` evidence above and bumping review dates across the canonical, compliance, and integration docs. Docs-only; no release verification required.
+- **Front door layout fixes: pull request `#154` merged to `main` as `55f2d5aa90a86ed82177e639a3d0aca53a17ae16`.** Restores the existing fit rule above (no clipped control, overlapping headline, or overflowing button from 320px through 1440px) rather than changing any product claim, route, or price; no product doc needed an edit. `e2e/front-door.spec.ts` and a 22-viewport scripted audit (320-1920px, entry and join states) passed pre-merge. No production deployment ID, preview readback, or post-merge route verification for this release is recorded anywhere in this repository. Treat `#154` as released-but-unverified until someone resolves the live Vercel deployment and repeats the readback in the Release procedure below.
 - Production URL: `https://circle.fractionl.ai`
 - Previous release baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Production baseline before the unified workspace: `dpl_FTV9maqNCp7yBayZQFSiWCWWBLnB` (READY on 2026-08-11).
@@ -42,7 +44,7 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - Ideas: recent saved ideas, new idea capture, exact-run reopen, and the existing validation/journey/warm-reach engine.
 - You: profile summary and direct entry to connections, reminders, appearance, AI preferences, privacy, account, and sign out.
 - Front door and account handoff: one clear visual story in plain language with the pending person note carried through sign-in.
-- Contact intake: text, link, email, voice, photo, supported device contacts, Android PWA share, bulk files, Google, and Microsoft.
+- Contact intake: text, link, email, voice, photo, Android PWA share, bulk files, Google, and Microsoft. (A device-contact-picker path exists in `src/pathroom/hinge.ts` but was never mounted in the active add flow; earlier release evidence that listed it as live was inaccurate.)
 - Meeting context: one optional plain-language field with voice input.
 - Recall: exact saved-name lookup works without an LLM or paid search. Described-person and idea flows recover with grounded local evidence when remote ranking is unavailable.
 - Whole-app consistency: the approved Circle tokens govern the workspace, overlays, deep idea flow, auth, settings, privacy, terms, and share intake. The existing data and feature systems were reused rather than duplicated.
@@ -81,6 +83,7 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - A real microphone transcription could not run inside the controlled browser because it cannot grant hardware access. The permission, recording, transcription, and error states are covered by component tests; final hardware proof should use one real phone after production promotion.
 - Post-migration schema lint is clean for the repaired export and erasure functions. It still reports three pre-existing orphaned Google Sheets token functions that reference the intentionally removed `sheets_integrations` table; active Circle source does not call them, and their cleanup is recorded in `SECURITY.md` rather than folded into this release.
 - Supabase migration history contains several older local-only rows even though the approved DSAR migration is present remotely. Treat each future migration as an exact, reviewed target and reconcile history separately before relying on a global `up to date` claim.
+- The front-door H1 (`src/components/AuthPage.tsx`) reads "Find the right person later.", while the canonical Promise in `docs/PRODUCT.md` and `AGENT_BRIEFING.md` reads "Find the right person when they can help." This wording gap predates this review; resolve it by aligning the front-door copy or updating the canonical Promise, whichever reflects current intent, rather than leaving the two to disagree.
 
 ## External state and cleanup
 

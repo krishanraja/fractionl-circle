@@ -1,6 +1,6 @@
 # Circle contributor and operator guide
 
-Last reviewed: 2026-08-16.
+Last reviewed: 2026-08-23.
 
 This file is the map, not a second product specification. Use [docs/PRODUCT.md](docs/PRODUCT.md) for current product truth and [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) for the latest verified release evidence.
 

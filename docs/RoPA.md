@@ -1,6 +1,6 @@
 # Records of Processing Activities (RoPA) - GDPR Art. 30
 
-Last reviewed: 2026-08-16. Publication state: internal draft for counsel
+Last reviewed: 2026-08-23. Publication state: internal draft for counsel
 review. See [docs/legal/README.md](legal/README.md) for the remaining decisions.
 
 **Controller:** Fractionl / Circle

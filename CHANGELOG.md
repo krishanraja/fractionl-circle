@@ -14,6 +14,15 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 - Front door: "Nothing is saved until you join." now sits on the same line as the note beside the field instead of a few pixels below it.
 - Front door: between 900px and 1060px the field was squeezed narrower than the Speak/Photo/Contact row next to it, wrapping the prompt onto three cramped lines. The field now takes the full column there, with those three below it.
 
+### Documentation
+
+- Recorded the two release-record gaps a full doc-vs-code audit found: `docs/DELIVERY_STATE.md` and this file had stopped at pull request #149 even though the Fractionl brand-identity release (#151, real product changes) and two docs-only pull requests (#150, #152) had merged since. Bumped review dates across the canonical, compliance, and integration docs that were checked against source and found accurate.
+
+### Release record
+
+- Documentation reconciliation: [pull request #153](https://github.com/krishanraja/fractionl-circle/pull/153).
+- Front door layout fixes: [pull request #154](https://github.com/krishanraja/fractionl-circle/pull/154). No production deployment evidence has been recorded for this release; see `docs/DELIVERY_STATE.md`.
+
 ## 2026-08-11
 
 ### Agent-ready documentation

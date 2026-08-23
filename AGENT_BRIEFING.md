@@ -1,6 +1,6 @@
 # Circle by Fractionl: agent briefing
 
-Verified against the active product: 2026-08-16.
+Verified against the active product: 2026-08-23.
 
 This is the fast-start briefing for an autonomous agent. Read [docs/PRODUCT.md](docs/PRODUCT.md) for product truth and [docs/MARKETING_AND_SALES.md](docs/MARKETING_AND_SALES.md) before creating marketing or sales material. Release claims require evidence from [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md).
 
@@ -20,7 +20,7 @@ Do not target sales teams that need deal stages, seat management, pipeline repor
 
 - One signed-in workspace with People, Ideas, and You always one tap away
 - Complete saved-person browsing and search
-- Add by text, link, email, phone inside a note, voice, photo, supported device contact, or Android PWA share
+- Add by text, link, email, phone inside a note, voice, photo, or Android PWA share
 - LinkedIn or CRM file import plus Google and Microsoft connection entry points
 - Optional `Where did you meet?` context
 - Exact saved-name recall without an LLM or paid search dependency
@@ -36,6 +36,7 @@ Do not target sales teams that need deal stages, seat management, pipeline repor
 ## Important limits
 
 - Native iOS share-sheet intake and an official Apple Shortcut are not shipped.
+- Device-contact picker import is not mounted in the active add flow.
 - Enrichment, broader search, and idea ranking may depend on external providers.
 - Sparse saved details can produce a limited local result.
 - Circle does not guarantee interest, availability, relationship strength, complete contact data, or an introduction.

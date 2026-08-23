@@ -5,7 +5,7 @@
 > is `https://circle.fractionl.ai/privacy`. See [docs/legal/README.md](legal/README.md)
 > for the publication checklist.
 
-Last product review: 2026-08-10.
+Last product review: 2026-08-23.
 
 **Effective date:** Not assigned while this draft is unpublished
 **Controller:** Legal entity and address pending owner and counsel confirmation

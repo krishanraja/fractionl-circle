@@ -1,5 +1,7 @@
 # Microsoft contacts and calendar OAuth setup
 
+Last verified against source: 2026-08-23.
+
 Status: active connector runbook. The **People → Bring in contacts → Connect
 Microsoft** path mounts the existing connector and Edge Functions.
 
@@ -47,8 +49,14 @@ Contacts.Read
 Calendars.Read
 ```
 
-Do **not** add `Mail.Read` or any `Mail.*` scope. We deliberately stay out
-of mail bodies (parallel to Google's restricted Gmail scope).
+Current source still requests `Mail.Read` and `Mail.Send` in
+`supabase/functions/_shared/microsoftOauth.ts`, although the active product
+does not use mail bodies or send mail. This is a known security and
+verification gap, parallel to Google's unused `gmail.readonly`/`gmail.send`
+scopes documented in `docs/google-oauth-setup.md`. Remove those unused mail
+scopes from `MS_SCOPES` before publishing the connector. Do not configure or
+promote the OAuth app from the intended list above while runtime source
+still requests a wider set.
 
 You typically don't need admin consent for these - they're standard user
 scopes.

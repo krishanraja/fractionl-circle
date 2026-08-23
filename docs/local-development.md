@@ -1,6 +1,6 @@
 # Circle local development
 
-Last verified: 2026-08-16.
+Last verified: 2026-08-23.
 
 This runbook gets a contributor from a clean checkout to a working Circle UI without exposing secrets or touching production operations.
 
@@ -97,6 +97,7 @@ All unprefixed variables are server-side references. Do not place real server se
 | Port differs from an old screenshot or command | Vite selected the next free port | Use the URL printed in the current terminal |
 | Microphone input cannot start | Browser or operating-system permission is blocked | Grant permission on the local origin or type the note |
 | UI looks stale after an environment change | Vite variables are baked at startup | Stop and restart Vite; rebuild before judging a deployed artifact |
+| Cloud preview sandbox shows "Blocked request" instead of the app | Vite's Host-header allowlist rejects the sandbox's `sb-<id>.vercel.run` hostname by default | `vite.config.ts` allowlists the `.vercel.run` wildcard; pull the current branch and restart Vite |
 
 ## Backend work
 

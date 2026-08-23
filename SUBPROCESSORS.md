@@ -1,6 +1,6 @@
 # Circle by Fractionl - subprocessors
 
-Last reviewed: 2026-08-16. Publication state: internal draft for counsel and
+Last reviewed: 2026-08-23. Publication state: internal draft for counsel and
 owner verification. See [docs/legal/README.md](docs/legal/README.md) for the
 publication gate.
 

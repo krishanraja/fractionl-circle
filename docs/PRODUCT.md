@@ -1,6 +1,6 @@
 # Circle by Fractionl: product truth
 
-Last updated: 2026-08-16. This is the canonical product and implementation description. When an older document disagrees, this file and the rendered `main` deployment win.
+Last updated: 2026-08-23. This is the canonical product and implementation description. When an older document disagrees, this file and the rendered `main` deployment win.
 
 ## Promise
 
@@ -32,7 +32,7 @@ Circle is not a sales-team CRM, bulk data grid, automated outreach engine, or pl
 
 The signed-out root shows one concrete loop: a person is added, details join quietly, and that person returns for a real question. A visitor can type what they remember before joining. The note remains in session storage through the account handoff and appears in the signed-in add flow.
 
-Voice, photo, and device-contact actions explain that joining comes first. They do not request microphone or contact permission on the public page.
+Voice and photo actions explain that joining comes first. They do not request microphone or camera permission on the public page.
 
 The public and account surfaces show the full Fractionl wordmark as the parent identity. Inside the signed-in workspace, Circle remains primary and the Fractionl icon becomes a quiet ownership seal. Browser, installed-app, and notification icons use the same Fractionl favicon artwork. A Fractionl-derived bronze is reserved for that ownership signature; violet remains Circle's only action signal.
 
@@ -47,7 +47,6 @@ Accepted inputs:
 - email addresses and phone numbers inside a note;
 - voice transcription through the shared Whisper control;
 - profile or business-card photos;
-- supported device contacts;
 - Android PWA share-target images, text, titles, and URLs.
 
 A name is the minimum save requirement. Circle preserves the raw input. Where the user met the person is optional and stored as a lightweight tag after the person is saved.
@@ -139,7 +138,7 @@ Core trust rules:
 - `src/components/circle/CircleBrand.tsx` owns the responsive Circle and Fractionl lockups; `public/brand/` owns the approved wordmark and icon artwork.
 - `src/pathroom/circle-system.css` owns the shared visual tokens. `circle-workspace.css` owns only workspace layout. Existing deep-flow styles read the same tokens.
 
-`HingeCircle.tsx`, its test, and historical mocks remain for traceability but are not mounted. Do not delete or rebuild the existing ingestion, idea, settings, connector, or data-pipeline systems merely because the shell changed.
+`HingeCircle.tsx`, its test, and historical mocks remain for traceability but are not mounted. Its device-contact-picker ingestion path (`src/pathroom/hinge.ts`) is not part of the active add flow; the mounted `AddToCircleSheet.tsx` offers only image, paste, voice, and typed input. Do not describe device-contact picking as a live input path until this is remounted. Do not delete or rebuild the existing ingestion, idea, settings, connector, or data-pipeline systems merely because the shell changed.
 
 ## Commercial catalogue
 
