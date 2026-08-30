@@ -1,6 +1,6 @@
 # Circle legal-document status
 
-Last reviewed: 2026-08-16.
+Last reviewed: 2026-08-30.
 
 This index separates implemented product controls from legal drafts. None of
 the internal drafts below should be published or used as legal advice until its

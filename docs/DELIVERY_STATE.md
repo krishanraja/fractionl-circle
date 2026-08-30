@@ -1,6 +1,6 @@
 # Fractionl Circle delivery state
 
-Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-08-16.
+Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-08-30.
 
 ## Product contract
 
@@ -28,6 +28,8 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - Documentation follow-up: pull request `#150` merged to `main` as `a20ec96074760ab0e9a6a471530f0834b1655b51`, recording the `#149` evidence above. No separate deployment.
 - **Fractionl brand identity: pull request `#151` merged to `main` as `509ed94092c829eb3e4a5811ab795774e38fc1f2`.** This shipped real product changes (wordmark/icon across auth, favicon, and social surfaces; see `docs/PRODUCT.md` and the "Fractionl ownership signature" entry in `docs/DESIGN_DECISIONS.md`). No production deployment ID, preview readback, or post-merge route verification for this release is recorded anywhere in this repository. Treat `#151` as released-but-unverified until someone resolves the live Vercel deployment and repeats the readback in the Release procedure below.
 - Design-mock archive: pull request `#152` merged to `main` as `474d4939dad770b7eeb307a9ca63cc9761950b8d`. Docs-only; adds `docs/mocks/circle-restored-r1.html` as a historical artifact. No release verification required.
+- Documentation reconciliation and dev-server config: pull request `#153` merged to `main` as `21510c1` (docs reconciled against released PRs #150-152) plus `7c6a5b7` (Vite dev server now allows `.vercel.run` preview hosts). Docs and local dev config only; no production deployment change.
+- **Front door layout fixes: pull request `#154` merged to `main` as `55f2d5a`.** Corrects five front-door layout faults (clipped "add your first person" field, headline overlapping the supporting paragraph, join-state buttons overflowing their column, a misaligned composer helper line, and cramped wrapping between 900-1060px). No behavior, route, pricing, or data-flow change. Verified locally at the merge commit: `docs:check` passed, `test:run` passed (80 tests, 14 files), `tsc --noEmit` passed with 0 errors, `lint` passed with 0 errors, `build` passed, and the front-door Playwright spec passed at desktop and mobile widths. No production Vercel deployment ID, preview readback, or post-merge route verification for this release is recorded anywhere in this repository. Treat `#154` as released-but-unverified in production until someone resolves the live Vercel deployment and repeats the readback in the Release procedure below.
 - Production URL: `https://circle.fractionl.ai`
 - Previous release baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Production baseline before the unified workspace: `dpl_FTV9maqNCp7yBayZQFSiWCWWBLnB` (READY on 2026-08-11).

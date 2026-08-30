@@ -1,6 +1,6 @@
 # Security Policy - Circle
 
-Last reviewed: 2026-08-16.
+Last reviewed: 2026-08-30.
 
 ## Reporting a vulnerability
 

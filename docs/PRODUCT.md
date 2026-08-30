@@ -1,6 +1,6 @@
 # Circle by Fractionl: product truth
 
-Last updated: 2026-08-16. This is the canonical product and implementation description. When an older document disagrees, this file and the rendered `main` deployment win.
+Last updated: 2026-08-30. This is the canonical product and implementation description. When an older document disagrees, this file and the rendered `main` deployment win.
 
 ## Promise
 
