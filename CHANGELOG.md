@@ -14,6 +14,10 @@ lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 - Front door: "Nothing is saved until you join." now sits on the same line as the note beside the field instead of a few pixels below it.
 - Front door: between 900px and 1060px the field was squeezed narrower than the Speak/Photo/Contact row next to it, wrapping the prompt onto three cramped lines. The field now takes the full column there, with those three below it.
 
+### Release record
+
+- Front-door fit repair: [pull request #154](https://github.com/krishanraja/fractionl-circle/pull/154). No production deployment evidence has been recorded for this release; see `docs/DELIVERY_STATE.md`.
+
 ## 2026-08-11
 
 ### Agent-ready documentation

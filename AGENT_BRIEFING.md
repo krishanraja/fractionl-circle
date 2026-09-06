@@ -1,6 +1,6 @@
 # Circle by Fractionl: agent briefing
 
-Verified against the active product: 2026-08-16.
+Verified against the active product: 2026-09-06.
 
 This is the fast-start briefing for an autonomous agent. Read [docs/PRODUCT.md](docs/PRODUCT.md) for product truth and [docs/MARKETING_AND_SALES.md](docs/MARKETING_AND_SALES.md) before creating marketing or sales material. Release claims require evidence from [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md).
 

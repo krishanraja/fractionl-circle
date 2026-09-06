@@ -4,7 +4,7 @@ Circle remembers the people you meet, helps you think through business ideas, an
 
 Live product: [circle.fractionl.ai](https://circle.fractionl.ai)
 
-Last reviewed: 2026-08-16.
+Last reviewed: 2026-09-06.
 
 ## The user flow
 
