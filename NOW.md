@@ -54,7 +54,6 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 - There is no active roadmap. `docs/_archive/roadmap.md` is the only one in the repo and it is archived. This file does not invent one.
 - Waiting on Krish: is Circle parked, retired, or resuming? The lifecycle stays `dormant` until he says. If retired: `lifecycle: archived` here and a line in `AGENT_BRIEFING.md` and the truth files. If resuming: the first job is the full Release-procedure readback for #151 and #154 and a fresh `tsc` baseline.
 - Waiting on Krish: whether the public training pack (`public/llms.txt`, `public/agent.json`) should say the product is in maintenance. Today it describes the live product accurately and says nothing about cadence. The steward did not add that claim.
-- Waiting on Krish: `CLAUDE_CODE_OAUTH_TOKEN` as a repository secret so the steward workflow can run unattended.
 - Optional cleanup, code not docs: `scripts/check-docs.mjs` still excludes `AUDIT_` and `NON_FUNCTIONAL_AUDIT_REPORT` root paths from its placeholder scan. Harmless now the files live under `docs/_archive/`, which is already excluded.
 
 ## Read next
