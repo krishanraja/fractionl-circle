@@ -2,7 +2,7 @@
 
 > Remember anyone. Find the right person when they can help.
 
-Last updated 2026-08-11. This file describes the active product at circle.fractionl.ai. For structured buyer, claim, evidence, limitation, and agent-action data, use https://circle.fractionl.ai/agent.json.
+Last updated 2026-09-07. This file describes the active product at circle.fractionl.ai. For structured buyer, claim, evidence, limitation, and agent-action data, use https://circle.fractionl.ai/agent.json. Repository lifecycle, verified release state, and the latest documentation reconciliation live in `NOW.md` at the root of the source repository.
 
 ## What Circle does
 

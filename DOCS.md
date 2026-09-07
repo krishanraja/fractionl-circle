@@ -1,8 +1,8 @@
 # Circle contributor and operator guide
 
-Last reviewed: 2026-08-16.
+Last reviewed: 2026-09-07.
 
-This file is the map, not a second product specification. Use [docs/PRODUCT.md](docs/PRODUCT.md) for current product truth and [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) for the latest verified release evidence.
+This file is the map, not a second product specification. Use [docs/PRODUCT.md](docs/PRODUCT.md) for current product truth and [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) for the latest verified release evidence. [NOW.md](NOW.md) says where the product is right now and which of these files to read first.
 
 ## Source-of-truth order
 
@@ -86,6 +86,7 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 
 ### Canonical
 
+- `NOW.md` - where the product is right now: lifecycle, verified state, recent changes, open decisions, and the reading order; maintained by the docs steward and reconciled against a named commit
 - `README.md` - quick developer entry
 - `docs/local-development.md` - complete local setup and environment boundary
 - `docs/PRODUCT.md` - product and implementation truth
@@ -124,7 +125,8 @@ Vercel project and rollback identifiers are recorded in `docs/DELIVERY_STATE.md`
 - `docs/mocks/` - rendered design artifacts cited by `docs/DESIGN_DECISIONS.md`; not product routes
 - `docs/VALUE_SHARPENING_2026-07-03.md`
 - `docs/icp-archetype.md`
-- dated root audit reports
+- `docs/_archive/AUDIT_2026-04-24.md` and `docs/_archive/2026-07-02-NON_FUNCTIONAL_AUDIT_REPORT.md` - the April and May 2026 audit reports, moved from the repo root on 2026-09-07
+- `docs/history/LOG.md` - dated, append-only index of every move into `docs/_archive/` and every documentation reconciliation; `docs/history/` holds only this file
 
 Historical files remain for traceability and may contain retired product language. Their directory or dated filename is the warning label.
 
@@ -135,6 +137,7 @@ Historical files remain for traceability and may contain retired product languag
 - `CHANGELOG.md` - user-visible release history
 - `public/agent.json` and `public/llms.txt` - deployed autonomous-agent training surfaces generated from the canonical product and commercial guides
 - `.github/CODEOWNERS` and `.github/PULL_REQUEST_TEMPLATE.md` - review ownership and evidence checklist
+- `.github/workflows/docs-steward.yml` - nightly and on-push documentation steward; the procedure lives in `krishanraja/control-center` under `docs/steward/RUNBOOK.md`
 
 ## Documentation rules
 

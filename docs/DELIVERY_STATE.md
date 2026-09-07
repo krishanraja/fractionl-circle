@@ -1,6 +1,6 @@
 # Fractionl Circle delivery state
 
-Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-08-16.
+Last verified: 2026-08-11 (release evidence below). Documentation reconciled against source: 2026-09-07.
 
 ## Product contract
 
@@ -28,6 +28,7 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - Documentation follow-up: pull request `#150` merged to `main` as `a20ec96074760ab0e9a6a471530f0834b1655b51`, recording the `#149` evidence above. No separate deployment.
 - **Fractionl brand identity: pull request `#151` merged to `main` as `509ed94092c829eb3e4a5811ab795774e38fc1f2`.** This shipped real product changes (wordmark/icon across auth, favicon, and social surfaces; see `docs/PRODUCT.md` and the "Fractionl ownership signature" entry in `docs/DESIGN_DECISIONS.md`). No production deployment ID, preview readback, or post-merge route verification for this release is recorded anywhere in this repository. Treat `#151` as released-but-unverified until someone resolves the live Vercel deployment and repeats the readback in the Release procedure below.
 - Design-mock archive: pull request `#152` merged to `main` as `474d4939dad770b7eeb307a9ca63cc9761950b8d`. Docs-only; adds `docs/mocks/circle-restored-r1.html` as a historical artifact. No release verification required.
+- Front-door fit repair: pull request `#154` merged to `main` as `5ac840e5db13cd927e383d21a9161c1067871760` on 2026-08-19. It fixed five layout faults on the public front door that the fit rule above forbids: a fixed-height composer that clipped its own two-line prompt, a headline that ran over the paragraph beside it at desktop widths, join buttons hanging past the column edge, a misaligned helper line, and a squeezed field between 900px and 1060px. The commit body records them reproduced from 320px through 1920px and re-verified after the fix. Its checks recorded 80 unit tests and 27 pre-existing TypeScript errors, so the `77 passed` and `tsc --noEmit` lines under Verification evidence describe the `#146`/`#147` head, not the current one. No production deployment ID or Release-procedure readback is recorded for `#154`. A read-only readback on 2026-09-07 found the deployed CSS bundle at the production URL carrying the `#154` front-door rules and the `#151` brand asset references, and both brand images served, so both releases are live. Treat both as released-but-not-fully-verified until someone resolves the active Vercel deployment and repeats the full readback. Nothing has merged to `main` since `#154` as of 2026-09-07.
 - Production URL: `https://circle.fractionl.ai`
 - Previous release baseline: `dpl_9jK4JKvqpjrT1Kngg6quprX6aaN5`
 - Production baseline before the unified workspace: `dpl_FTV9maqNCp7yBayZQFSiWCWWBLnB` (READY on 2026-08-11).

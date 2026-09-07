@@ -38,3 +38,6 @@ test-results/
 playwright-report/
 .vercel
 .env*
+
+# Docs steward working files
+.steward/

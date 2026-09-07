@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-09-07 by the docs steward. Not current guidance.
+> Replaced by: `docs/DELIVERY_STATE.md`
+> Reason: a browser audit against commit e788ac4 and the May 2026 production site, whose surfaces were replaced by the August 2026 releases. It sat at the repo root with no status header; the date prefix is its last commit, 2026-07-02.
+
 # Non-Functional Audit - fractionl-circle
 
 **Repository:** `krishanraja/fractionl-circle`  
