@@ -5,6 +5,12 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-09-09
+
+- reconciled at `b2ba929`: five commits since `5ac840e` (2026-09-08, PRs #155, #156, #158, #159, and a header wording fix) added and synced the shared canon block inside `AGENTS.md`, marker-delimited and rendered from `krishanraja/ai-harness`. Canon markers are never edited here; the file's own header (outside the markers) already carried the corrected freshness wording, so nothing there needed a fix.
+- reconciled at `b2ba929`: `DOCS.md` and `README.md` did not list the new `AGENTS.md` in their documentation maps. Both gained one line naming it; no other content in either file needed a check, so only these two files moved.
+- reconciled at `b2ba929`: `NOW.md` head moved to `b2ba929`, `as_of` to 2026-09-09; the dormant lifecycle line now names the five AGENTS.md-only commits instead of reading "no commits since".
+
 ## 2026-09-07
 
 - decision: docs steward adopted for this repo, Krish, 2026-09-07. The history log lives here; superseded files keep moving to the existing `docs/_archive/` (DOCS.md: "Their directory or dated filename is the warning label"), never to a second archive directory.

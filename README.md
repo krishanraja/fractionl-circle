@@ -4,7 +4,7 @@ Circle remembers the people you meet, helps you think through business ideas, an
 
 Live product: [circle.fractionl.ai](https://circle.fractionl.ai)
 
-Last reviewed: 2026-09-07.
+Last reviewed: 2026-09-09.
 
 ## The user flow
 
@@ -69,6 +69,7 @@ Routes under `/preview/*` are unlinked design fixtures. They are not product nav
 ## Documentation
 
 - [NOW.md](NOW.md) - where the product is right now: lifecycle, verified state, recent changes, open decisions, and the reading order; start here
+- [AGENTS.md](AGENTS.md) - entry file for coding agents; carries the shared canon block rendered from `krishanraja/ai-harness`
 - [docs/PRODUCT.md](docs/PRODUCT.md) - canonical product and implementation truth
 - [docs/NORTH_STAR.md](docs/NORTH_STAR.md) - the outcome and metric
 - [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) - release evidence and rollback contract

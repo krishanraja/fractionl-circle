@@ -1,6 +1,6 @@
 # Circle contributor and operator guide
 
-Last reviewed: 2026-09-07.
+Last reviewed: 2026-09-09.
 
 This file is the map, not a second product specification. Use [docs/PRODUCT.md](docs/PRODUCT.md) for current product truth and [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md) for the latest verified release evidence. [NOW.md](NOW.md) says where the product is right now and which of these files to read first.
 
@@ -132,6 +132,7 @@ Historical files remain for traceability and may contain retired product languag
 
 ### Repository governance
 
+- `AGENTS.md` - entry file for coding agents (Codex reads it natively); carries the shared canon block rendered from `krishanraja/ai-harness`, marker-delimited and never edited by hand here
 - `CONTRIBUTING.md` - branch, test, documentation, and pull-request rules
 - `LICENSE.md` - current rights status
 - `CHANGELOG.md` - user-visible release history
