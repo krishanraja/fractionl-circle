@@ -5,6 +5,12 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-09-11
+
+- rolled from NOW.md: 2026-08-11 Fractionl brand identity (PR #151) and restored workspace mock archived (PR #152); wordmark on public and account surfaces, bronze reserved for the ownership seal, violet kept as Circle's only action colour.
+- rolled from NOW.md: 2026-08-11 unified People, Ideas and You workspace (PRs #146 to #150), restoring contact browsing, add and import paths, idea reopen and a first-class profile after the 2026-08-10 release had collapsed Circle to one adaptive surface; #149 shipped the agent training pack and taught `scripts/check-docs.mjs` to catch promise, route and pricing drift.
+- rolled from NOW.md: 2026-08-10 one clue, one useful person (PRs #142 to #145), replacing the dashboard-led experience with one adaptive surface; added shared voice input, the Android share-target route, and DSAR export and erasure over the live user-owned schema.
+
 ## 2026-09-09
 
 - reconciled at `b2ba929`: five commits since `5ac840e` (2026-09-08, PRs #155, #156, #158, #159, and a header wording fix) added and synced the shared canon block inside `AGENTS.md`, marker-delimited and rendered from `krishanraja/ai-harness`. Canon markers are never edited here; the file's own header (outside the markers) already carried the corrected freshness wording, so nothing there needed a fix.
