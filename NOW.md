@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-09-11
+as_of: 2026-09-14
 head: b2ba929
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
@@ -29,7 +29,7 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-09-11)
+## Where it is right now (as of 2026-09-14)
 
 - **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Five commits landed since, on 2026-09-08, and every one of them only added or synced the canon block in `AGENTS.md` (PRs #155, #156, #158, #159, and a header wording fix); none touched `src/`, Supabase, or pricing. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
 - **Live.** `https://circle.fractionl.ai` answered 200 on 2026-09-07 for `/`, `/llms.txt` and `/agent.json`. The deployed CSS bundle carries the #154 front-door rules and the #151 brand asset references, so `main` at `5ac840e` is what is serving. Read-only readback; no Vercel deployment id was resolved.
@@ -45,7 +45,6 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 - 2026-09-07 **Docs steward adopted** (this file, `docs/history/LOG.md`, `.github/workflows/docs-steward.yml`). Why: the repo had been silent for 19 days with two root audit reports carrying no status header, an archive README naming a superseded product as the one that shipped, and no single file saying the repo was dormant. The audits moved to `docs/_archive/`; nothing was deleted.
 - 2026-08-19 **Front door fit repair** (PR #154, `55f2d5a`). Why: five layout faults on the public front door, "all reproduced in a browser from 320px through 1920px". The add-a-person field was a fixed 56px box with `overflow: hidden`, so the two-line prompt "was sliced in half by the underline"; the headline at up to 84px needed about 892px in a 760px column and ran over the paragraph beside it, "worst at 1024px"; in the join state a 172px action column held a Google button whose own minimum is 217px. The fit rule in `docs/DELIVERY_STATE.md` forbids every one of these, and the previous release's responsive evidence had passed.
 - 2026-08-16 **Documentation reconciled with PRs #150 to #152** (PR #153, `21510c1`). Why: `DELIVERY_STATE.md` and `CHANGELOG.md` had stopped at #149 while the brand release #151 had shipped real product changes with no deployment id anywhere in the repo. It was flagged released-but-unverified "rather than backfilled with invented evidence".
-- 2026-08-12 `.vercel.run` hosts allowed on the Vite dev server (`7c6a5b7`).
 
 ## What is next and what is waiting on Krish
 

@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-09-14
+
+- rolled from NOW.md: 2026-08-12 `.vercel.run` hosts allowed on the Vite dev server (`7c6a5b7`). Why: Vite's dev-server Host header check, a DNS-rebinding guard, rejects anything outside its allowlist, and cloud preview sandboxes serve the app through a per-session `sb-<id>.vercel.run` hostname that can never be listed, so every preview failed with "Blocked request". The `.vercel.run` wildcard was allowed rather than setting `allowedHosts: true`, so the check keeps protecting every other host.
+
 ## 2026-09-11
 
 - rolled from NOW.md: 2026-08-11 Fractionl brand identity (PR #151) and restored workspace mock archived (PR #152); wordmark on public and account surfaces, bronze reserved for the ownership seal, violet kept as Circle's only action colour.
