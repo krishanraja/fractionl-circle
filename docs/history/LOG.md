@@ -5,6 +5,11 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-09-22
+
+- rolled from NOW.md: 2026-08-19 front door fit repair (PR #154, `55f2d5a`). Why: five layout faults on the public front door, "all reproduced in a browser from 320px through 1920px". The add-a-person field was a fixed 56px box with `overflow: hidden`, so the two-line prompt "was sliced in half by the underline"; the headline at up to 84px needed about 892px in a 760px column and ran over the paragraph beside it, "worst at 1024px"; in the join state a 172px action column held a Google button whose own minimum is 217px. The fit rule in `docs/DELIVERY_STATE.md` forbids every one of these, and the previous release's responsive evidence had passed.
+- rolled from NOW.md: 2026-08-16 documentation reconciled with PRs #150 to #152 (PR #153, `21510c1`). Why: `DELIVERY_STATE.md` and `CHANGELOG.md` had stopped at #149 while the brand release #151 had shipped real product changes with no deployment id anywhere in the repo. It was flagged released-but-unverified "rather than backfilled with invented evidence".
+
 ## 2026-09-14
 
 - rolled from NOW.md: 2026-08-12 `.vercel.run` hosts allowed on the Vite dev server (`7c6a5b7`). Why: Vite's dev-server Host header check, a DNS-rebinding guard, rejects anything outside its allowlist, and cloud preview sandboxes serve the app through a per-session `sb-<id>.vercel.run` hostname that can never be listed, so every preview failed with "Blocked request". The `.vercel.run` wildcard was allowed rather than setting `allowedHosts: true`, so the check keeps protecting every other host.
