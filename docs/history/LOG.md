@@ -5,6 +5,12 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-10-10
+
+- rolled from NOW.md: 2026-09-08 canon block adopted in `AGENTS.md` (PRs #155, #156, #158, #159, one same-day header fix). Why: "Every AGENTS.md in the fleet now reads off one canon, rendered from krishanraja/ai-harness. Before this, the canon was well governed and had never reached a product repository: this repo referenced it zero times." The header's freshness claim outside the markers was corrected the same day: "the push half was never true: claude-code-action refuses the push event."
+- rolled from NOW.md: 2026-09-07 docs steward adopted (`NOW.md`, `docs/history/LOG.md`, `.github/workflows/docs-steward.yml`). Why: the repo had been silent for 19 days with two root audit reports carrying no status header, an archive README naming a superseded product as the one that shipped, and no single file saying the repo was dormant. The audits moved to `docs/_archive/`; nothing was deleted.
+- reconciled at `fbc2e36`: no commits to the product or docs since 2026-10-06; `NOW.md` `as_of` moved to 2026-10-10 and the two bullets above rolled once they passed 30 days.
+
 ## 2026-09-22
 
 - rolled from NOW.md: 2026-08-19 front door fit repair (PR #154, `55f2d5a`). Why: five layout faults on the public front door, "all reproduced in a browser from 320px through 1920px". The add-a-person field was a fixed 56px box with `overflow: hidden`, so the two-line prompt "was sliced in half by the underline"; the headline at up to 84px needed about 892px in a 760px column and ran over the paragraph beside it, "worst at 1024px"; in the join state a 172px action column held a Google button whose own minimum is 217px. The fit rule in `docs/DELIVERY_STATE.md` forbids every one of these, and the previous release's responsive evidence had passed.
