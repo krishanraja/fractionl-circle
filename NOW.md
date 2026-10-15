@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-10-10
-head: fbc2e36
+as_of: 2026-10-15
+head: 7316aa5
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
 state_doc: docs/DELIVERY_STATE.md
@@ -29,9 +29,9 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-10-10)
+## Where it is right now (as of 2026-10-15)
 
-- **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Five commits landed since, on 2026-09-08, and every one of them only added or synced the canon block in `AGENTS.md` (PRs #155, #156, #158, #159, and a header wording fix); none touched `src/`, Supabase, or pricing. One more landed on 2026-10-06 (`fbc2e36`, PR #160) and touched only `AGENTS.md`. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
+- **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Five commits landed since, on 2026-09-08, and every one of them only added or synced the canon block in `AGENTS.md` (PRs #155, #156, #158, #159, and a header wording fix); none touched `src/`, Supabase, or pricing. One more landed on 2026-10-06 (`fbc2e36`, PR #160) and touched only `AGENTS.md`. A last one on 2026-10-15 (`8aa317a`, PR #162) touched only the docs steward workflow in `.github/workflows/`. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
 - **Live.** `https://circle.fractionl.ai` answered 200 on 2026-09-07 for `/`, `/llms.txt` and `/agent.json`. The deployed CSS bundle carries the #154 front-door rules and the #151 brand asset references, so `main` at `5ac840e` is what is serving. Read-only readback; no Vercel deployment id was resolved.
 - **Last fully verified release:** PRs #146 and #147 (the unified People, Ideas and You workspace, 2026-08-11), with a production deployment id and route, recall, PWA and metadata readback recorded in `docs/DELIVERY_STATE.md`. #151 (brand) and #154 (front-door fit) are live by bundle readback but have no deployment id or full Release-procedure readback recorded.
 - **Built and live per code:** People (add from text, link, email or phone in a note, voice, photo, device contact, Android PWA share; LinkedIn or CRM file import; Google and Microsoft connection entry points; browse, search and plain-English ask), Ideas (saved ideas, new idea, exact-run reopen, relevant saved people), You (profile, connections, reminders, appearance, privacy, account). Routes `/`, `/auth`, `/share-contact`, `/privacy`, `/terms` in `src/App.tsx`; `/preview/*` are unlinked fixtures. Detail: `docs/PRODUCT.md`.
@@ -41,6 +41,7 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 
 ## What changed recently
 
+- 2026-10-15 **Docs steward now called from `krishanraja/ai-harness`** (PR #162, `8aa317a`). The commit body gives the reason: "control-center goes private on 2026-10-15, and a public repository cannot call a reusable workflow in a private one." The steward's workflow, runbook, schema, fleet manifest and scripts moved unchanged, and this repository's caller and the `steward:` link above point there. No product, Supabase or pricing change; the lifecycle stays `dormant`.
 - 2026-10-06 **Canon block resynced in `AGENTS.md`** (PR #160, `fbc2e36`). The block moved through five canon releases in one PR, up to v2026.10.05.1, and the commit body says why it is safe: "Only the text between the krish-canon markers changed; everything outside them is untouched." No product, Supabase or pricing change; the lifecycle stays `dormant`.
 
 ## What is next and what is waiting on Krish
