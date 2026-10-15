@@ -9,7 +9,7 @@ state_doc: docs/DELIVERY_STATE.md
 history_log: docs/history/LOG.md
 truth_files: [public/agent.json, public/llms.txt]
 authority_order: [rendered production behaviour and the deployed source revision, docs/PRODUCT.md, docs/NORTH_STAR.md, current source and tests, docs/MARKETING_AND_SALES.md, AGENT_BRIEFING.md, dated decision and compliance records, docs/_archive/ and _upgrade/ for history only]
-steward: https://github.com/krishanraja/control-center/blob/main/docs/steward/RUNBOOK.md
+steward: https://github.com/krishanraja/ai-harness/blob/main/docs/steward/RUNBOOK.md
 never_publish: [the product name and its domain, any user or contact data including the synthetic test account and its saved people, OAuth client details, the Supabase project id, any credential or secret name, any price or entitlement that does not match src/lib/tiers.ts and the live checkout]
 ---
 # Circle by Fractionl: where it is right now
