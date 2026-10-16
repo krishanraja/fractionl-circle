@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-10-16
+
+- reconciled at `1ce09e5`: only the `AGENTS.md` canon block moved (PR #161, v2026.10.15.2); `NOW.md` head moved to `1ce09e5`, `as_of` to 2026-10-16, one bullet added. No other document needed change.
+
 ## 2026-10-10
 
 - rolled from NOW.md: 2026-09-08 canon block adopted in `AGENTS.md` (PRs #155, #156, #158, #159, one same-day header fix). Why: "Every AGENTS.md in the fleet now reads off one canon, rendered from krishanraja/ai-harness. Before this, the canon was well governed and had never reached a product repository: this repo referenced it zero times." The header's freshness claim outside the markers was corrected the same day: "the push half was never true: claude-code-action refuses the push event."
