@@ -47,8 +47,12 @@ Contacts.Read
 Calendars.Read
 ```
 
-Do **not** add `Mail.Read` or any `Mail.*` scope. We deliberately stay out
-of mail bodies (parallel to Google's restricted Gmail scope).
+Current source still requests `Mail.Read` and `Mail.Send` in
+`supabase/functions/_shared/microsoftOauth.ts`, although the active product
+does not use mail bodies or send mail. This is a known scope gap, parallel
+to the unused Gmail scopes documented in `docs/google-oauth-setup.md`.
+Remove the unused mail scopes before publishing the connector. The intended
+list above does not establish that runtime source requests only that list.
 
 You typically don't need admin consent for these - they're standard user
 scopes.

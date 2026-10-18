@@ -8,7 +8,7 @@ Last reviewed: 2026-09-09.
 
 ## The user flow
 
-1. Open **People** and add anyone from a name, link, email, note, voice memo, photo, supported device contact, Android share, LinkedIn/CRM file, Google, or Microsoft.
+1. Open **People** and add anyone from a name, link, email, note, voice memo, photo, Android share, LinkedIn/CRM file, Google, or Microsoft.
 2. Add where you met or any detail you remember. Circle handles joining, dedupe, and enrichment behind the scenes.
 3. Browse or search everyone at any time, or ask for the kind of person you need in plain English.
 4. Open **Ideas** to talk through a business idea, revisit earlier ideas, and find the people worth speaking to.

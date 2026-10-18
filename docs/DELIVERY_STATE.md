@@ -43,7 +43,7 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - Ideas: recent saved ideas, new idea capture, exact-run reopen, and the existing validation/journey/warm-reach engine.
 - You: profile summary and direct entry to connections, reminders, appearance, AI preferences, privacy, account, and sign out.
 - Front door and account handoff: one clear visual story in plain language with the pending person note carried through sign-in.
-- Contact intake: text, link, email, voice, photo, supported device contacts, Android PWA share, bulk files, Google, and Microsoft.
+- Contact intake: text, link, email, voice, photo, Android PWA share, bulk files, Google, and Microsoft.
 - Meeting context: one optional plain-language field with voice input.
 - Recall: exact saved-name lookup works without an LLM or paid search. Described-person and idea flows recover with grounded local evidence when remote ranking is unavailable.
 - Whole-app consistency: the approved Circle tokens govern the workspace, overlays, deep idea flow, auth, settings, privacy, terms, and share intake. The existing data and feature systems were reused rather than duplicated.
@@ -79,6 +79,7 @@ Last verified: 2026-08-11 (release evidence below). Documentation reconciled aga
 - The production bundle reports a large-chunk warning. It does not block this interaction release; route-level code splitting is a separate performance task.
 - Browserslist data is stale and Vite reports two dependency-option deprecations during tests. Both are build-maintenance tasks, not runtime blockers.
 - The iOS Shortcut transport described in `docs/screenshot-to-contact.md` is not shipped. iOS users can still paste, type, speak, or add a photo inside Circle.
+- Device-contact-picker code exists in `src/pathroom/hinge.ts`, but is not mounted in the active add flow. Earlier documentation that listed it as a live input overstated current source.
 - A real microphone transcription could not run inside the controlled browser because it cannot grant hardware access. The permission, recording, transcription, and error states are covered by component tests; final hardware proof should use one real phone after production promotion.
 - Post-migration schema lint is clean for the repaired export and erasure functions. It still reports three pre-existing orphaned Google Sheets token functions that reference the intentionally removed `sheets_integrations` table; active Circle source does not call them, and their cleanup is recorded in `SECURITY.md` rather than folded into this release.
 - Supabase migration history contains several older local-only rows even though the approved DSAR migration is present remotely. Treat each future migration as an exact, reviewed target and reconcile history separately before relying on a global `up to date` claim.

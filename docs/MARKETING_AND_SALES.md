@@ -152,7 +152,7 @@ No. Circle shows a saved contact action only when a usable channel exists. The u
 
 ### `Can I add everyone I already know?`
 
-Circle has entry points for LinkedIn or CRM files, Google, Microsoft, and supported device contacts. Availability and completeness depend on the source and configured connection.
+Circle has entry points for LinkedIn or CRM files, Google, and Microsoft. Availability and completeness depend on the source and configured connection.
 
 ### `Does it work on iPhone?`
 
