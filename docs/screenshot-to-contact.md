@@ -36,8 +36,9 @@ Current safe paths on iOS are:
 
 - paste a name, link, email, or note into Circle;
 - use the microphone inside Circle;
-- add a profile or business-card photo inside Circle;
-- use a supported device-contact picker when the browser exposes it.
+- add a profile or business-card photo inside Circle.
+
+A device-contact picker exists in `src/pathroom/hinge.ts` but is not mounted in the active add flow on any platform, iOS included.
 
 A future iOS Shortcut should use a short-lived, revocable handoff created by Circle, never a user access token placed in a public URL or Shortcut variable.
 

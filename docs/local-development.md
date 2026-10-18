@@ -96,6 +96,7 @@ All unprefixed variables are server-side references. Do not place real server se
 | Sign-in returns to the wrong host | The OAuth provider does not allow the local callback | Use an approved local redirect or test the deployed preview |
 | Port differs from an old screenshot or command | Vite selected the next free port | Use the URL printed in the current terminal |
 | Microphone input cannot start | Browser or operating-system permission is blocked | Grant permission on the local origin or type the note |
+| Cloud preview sandbox shows "Blocked request" | Vite rejects an unlisted sandbox hostname | Current `vite.config.ts` allows `.vercel.run`; pull the current branch and restart Vite |
 | UI looks stale after an environment change | Vite variables are baked at startup | Stop and restart Vite; rebuild before judging a deployed artifact |
 
 ## Backend work
