@@ -2,6 +2,12 @@
 
 Ratified: 2026-08-10. Canonical.
 
+## Horizon
+
+> Circle is dormant. If it wakes, the aim is that within its first year a thousand operators get a useful recall every week, and none of them ever had to tidy a contact.
+
+Set by Krish on 18 October 2026, and not reached yet. Everything below serves it, every session in this repository works toward it, and only Krish changes it.
+
 ## The outcome
 
 > A busy independent operator can remember anyone they meet, then receive the right saved person at the moment that person can help.
