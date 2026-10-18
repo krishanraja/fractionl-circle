@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-10-18
+
+- reconciled at `a86a0ad`: removed the unmounted device-contact picker from the two remaining live claims (`docs/PRODUCT.md` iOS paragraph, `docs/MARKETING_AND_SALES.md` iPhone paragraph) to match PR #165 and the truth files; `NOW.md` head moved to `a86a0ad`, `as_of` to 2026-10-18, three bullets added. Stamps bumped on those two files only.
+
 ## 2026-10-16
 
 - reconciled at `1ce09e5`: only the `AGENTS.md` canon block moved (PR #161, v2026.10.15.2); `NOW.md` head moved to `1ce09e5`, `as_of` to 2026-10-16, one bullet added. No other document needed change.

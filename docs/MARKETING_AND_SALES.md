@@ -1,6 +1,6 @@
 # Circle marketing and sales operating guide
 
-Last verified: 2026-08-16.
+Last verified: 2026-10-18.
 
 This is the commercial training source for human and autonomous agents. It explains how to market and sell the product without inventing evidence. Product capabilities come from [PRODUCT.md](PRODUCT.md). Release proof comes from [DELIVERY_STATE.md](DELIVERY_STATE.md). If this guide conflicts with either, stop using the conflicting claim and follow the higher source.
 
@@ -156,7 +156,7 @@ Circle has entry points for LinkedIn or CRM files, Google, and Microsoft. Availa
 
 ### `Does it work on iPhone?`
 
-The web app works on iPhone with typed, pasted, voice, and photo input. A device-contact picker appears only when the browser supports it. Native iOS share-sheet intake is not shipped.
+The web app works on iPhone with typed, pasted, voice, and photo input. A device-contact picker is not mounted in the active add flow. Native iOS share-sheet intake is not shipped.
 
 ### `What does it cost?`
 

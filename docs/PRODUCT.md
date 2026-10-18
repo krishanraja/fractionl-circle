@@ -1,6 +1,6 @@
 # Circle by Fractionl: product truth
 
-Last updated: 2026-08-16. This is the canonical product and implementation description. When an older document disagrees, this file and the rendered `main` deployment win.
+Last updated: 2026-10-18. This is the canonical product and implementation description. When an older document disagrees, this file and the rendered `main` deployment win.
 
 ## Promise
 
@@ -69,7 +69,7 @@ The interface says `idea`, `plan`, `people`, and `details`; database and functio
 
 The user sees editable fields and taps `Save person` once. If parsing fails, Circle keeps the raw input and asks only for the missing name. If meeting context fails after the person saves, the interface says the person is saved and reports only the unsaved detail.
 
-iOS does not yet ship an Apple Shortcut. Current iOS paths are paste, voice, and in-app photo. A device-contact picker appears only when the browser exposes the required API. Never place a long-lived Supabase token in a Shortcut or URL.
+iOS does not yet ship an Apple Shortcut. Current iOS paths are paste, voice, and in-app photo. A device-contact picker exists in `src/pathroom/hinge.ts` but is not mounted in the active add flow. Never place a long-lived Supabase token in a Shortcut or URL.
 
 ### Find someone
 
