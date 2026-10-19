@@ -2,7 +2,7 @@
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
 as_of: 2026-10-19
-head: a86a0ad
+head: 3967fe3
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
 state_doc: docs/DELIVERY_STATE.md
@@ -29,7 +29,7 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-10-18)
+## Where it is right now (as of 2026-10-19)
 
 - **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Five commits landed since, on 2026-09-08, and every one of them only added or synced the canon block in `AGENTS.md` (PRs #155, #156, #158, #159, and a header wording fix); none touched `src/`, Supabase, or pricing. One more landed on 2026-10-06 (`fbc2e36`, PR #160) and touched only `AGENTS.md`. A last one on 2026-10-15 (`8aa317a`, PR #162) touched only the docs steward workflow in `.github/workflows/`. The canon block was resynced again on 2026-10-16 (`b50f6a7`, PR #161), touching only `AGENTS.md`. Between 2026-10-17 and 2026-10-18 only documentation, the repository-administration workflow and the canon block moved (see below); `src/`, Supabase and pricing did not. On 2026-10-19 the public footer, `/terms`, `/privacy` and `public/sitemap.xml` changed to name the operating companies (see below); no product behaviour, Supabase or pricing changed. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
 - **Live.** `https://circle.fractionl.ai` answered 200 on 2026-09-07 for `/`, `/llms.txt` and `/agent.json`. The deployed CSS bundle carries the #154 front-door rules and the #151 brand asset references, so `main` at `5ac840e` is what is serving. Read-only readback; no Vercel deployment id was resolved.
