@@ -16,7 +16,7 @@ never_publish: [the product name and its domain, any user or contact data includ
 
 ## What it is
 
-Circle is personal contact memory for independent operators: add a person from whatever you have, remember why they mattered, and get the right saved person back when they can help. A React and TypeScript app on Vercel with Supabase behind it, live at `circle.fractionl.ai`, with one signed-in workspace of three destinations: People, Ideas and You. The promise in `docs/PRODUCT.md` is "Remember anyone. Find the right person when they can help." Circle never sends a message on its own and never invents a relationship fact. Built by Krish Raja under the Fractionl name, and operated by Mindmaker LLC (United States) and Mindmaker Ltd (United Kingdom), which the footer, terms and privacy pages now say. It is not marketed as a Mindmake product.
+Circle is personal contact memory for independent operators: add a person from whatever you have, remember why they mattered, and get the right saved person back when they can help. A React and TypeScript app on Vercel with Supabase behind it, live at `circle.fractionl.ai`, with one signed-in workspace of three destinations: People, Ideas and You. The promise in `docs/PRODUCT.md` is "Remember anyone. Find the right person when they can help." Circle never sends a message on its own and never invents a relationship fact. Built by Krish Raja under the Fractionl name. Circle sits under the Mindmaker LLC (United States) and Mindmaker Ltd (United Kingdom) umbrella with the other businesses, which the footer, terms and privacy pages say.
 
 ## Who it is for and why it matters for Mindmake
 
