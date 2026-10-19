@@ -4,6 +4,14 @@ This file records user-visible and operator-visible releases. Product truth
 lives in [docs/PRODUCT.md](docs/PRODUCT.md); detailed release evidence lives in
 [docs/DELIVERY_STATE.md](docs/DELIVERY_STATE.md).
 
+## 2026-10-19
+
+### Changed
+
+- Footer: the front door and the legal pages now say "Circle is a Mindmaker LLC company. Mindmaker Ltd in the UK." in the existing small, muted footer text.
+- Terms and privacy: both pages open with who operates Circle (Mindmaker LLC in the United States and Mindmaker Ltd in the United Kingdom), give a contact address, and show "Last updated: 19 October 2026". The legal pages gained Privacy and Terms footer links.
+- Sitemap: every listed page carries lastmod 2026-10-19.
+
 ## 2026-08-19
 
 ### Fixed

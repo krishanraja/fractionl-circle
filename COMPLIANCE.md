@@ -3,6 +3,8 @@
 **Last reviewed:** 2026-08-16
 **Status:** Honest, current-state. This document describes controls that are *actually implemented*. It does not claim certifications Circle does not hold. Do not market any framework as "certified" or "compliant" unless this document and an auditor/lawyer say so.
 
+Circle is operated by Mindmaker LLC (United States) and Mindmaker Ltd (United Kingdom); the public terms and privacy pages say so.
+
 Legal publication status and unresolved decisions are tracked in
 [docs/legal/README.md](docs/legal/README.md).
 
