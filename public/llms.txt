@@ -4,6 +4,8 @@
 
 Last updated 2026-09-07. This file describes the active product at circle.fractionl.ai. For structured buyer, claim, evidence, limitation, and agent-action data, use https://circle.fractionl.ai/agent.json. Repository lifecycle, verified release state, and the latest documentation reconciliation live in `NOW.md` at the root of the source repository.
 
+Circle is operated by Mindmaker LLC, a United States company, and Mindmaker Ltd, a United Kingdom company.
+
 ## What Circle does
 
 Circle helps independent operators save people from whatever they have, remember why each person mattered, browse everyone, and bring useful people back while searching or working through a business idea.

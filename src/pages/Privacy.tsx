@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { CircleBrand } from '@/components/circle/CircleBrand';
 import { PrivacySettings } from '@/components/compliance/PrivacySettings';
 import '@/pathroom/circle-system.css';
+import { LegalFooter } from '@/components/legal/LegalFooter';
+import { LegalOperator } from '@/components/legal/LegalOperator';
 import './legal.css';
 
 export default function Privacy() {
@@ -18,9 +20,11 @@ export default function Privacy() {
           <div className="legal-eyebrow">Your data</div>
           <h1>Privacy, made clear.</h1>
           <p>Choose what Circle can use. Download your data or delete it at any time.</p>
+          <LegalOperator />
         </section>
         <PrivacySettings />
       </div>
+      <LegalFooter />
     </main>
   );
 }

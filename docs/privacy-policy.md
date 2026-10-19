@@ -8,10 +8,12 @@
 Last product review: 2026-08-10.
 
 **Effective date:** Not assigned while this draft is unpublished
-**Controller:** Legal entity and address pending owner and counsel confirmation
+**Controller:** Mindmaker LLC (United States) and Mindmaker Ltd (United Kingdom), named by the owner on 2026-10-19. Registered addresses and any split of responsibility pending owner and counsel confirmation
 **Contact:** privacy@fractionl.ai
 
 ## 1. Who we are
+
+Circle is operated by Mindmaker LLC, a United States company, and Mindmaker Ltd, a United Kingdom company (together, "Mindmaker", "we", "us"). Mindmaker LLC and Mindmaker Ltd are responsible for the personal information described in this policy.
 
 Circle is a personal contact-memory and recall service for fractional executives and independent operators at circle.fractionl.ai.
 

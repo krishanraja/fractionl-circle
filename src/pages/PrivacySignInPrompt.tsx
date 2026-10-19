@@ -2,6 +2,8 @@ import { ArrowLeft, ArrowUpRight, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CircleBrand } from '@/components/circle/CircleBrand';
 import '@/pathroom/circle-system.css';
+import { LegalFooter } from '@/components/legal/LegalFooter';
+import { LegalOperator } from '@/components/legal/LegalOperator';
 import './legal.css';
 
 export function PrivacySignInPrompt() {
@@ -17,7 +19,9 @@ export function PrivacySignInPrompt() {
         <h1>Sign in to change it.</h1>
         <p>Manage what Circle can use, download your data, or delete your account.</p>
         <Link to="/" className="legal-primary">Sign in to Circle <ArrowUpRight aria-hidden="true" /></Link>
+        <LegalOperator />
       </section>
+      <LegalFooter />
     </main>
   );
 }

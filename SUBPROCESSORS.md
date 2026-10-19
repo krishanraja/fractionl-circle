@@ -4,6 +4,8 @@ Last reviewed: 2026-08-16. Publication state: internal draft for counsel and
 owner verification. See [docs/legal/README.md](docs/legal/README.md) for the
 publication gate.
 
+Circle is operated by Mindmaker LLC (United States) and Mindmaker Ltd (United Kingdom).
+
 This list describes providers that may process personal data for Circle. Conditional providers process data only when the relevant feature is used and its key or connection is configured. Keep a current DPA and processing purpose for every active provider before publishing a customer-facing list.
 
 | Provider | Purpose | Data that may be processed | Region / status |

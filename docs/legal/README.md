@@ -11,6 +11,11 @@ gate is complete.
 - Privacy controls and plain-language summary: https://circle.fractionl.ai/privacy
 - Terms of use: https://circle.fractionl.ai/terms
 
+Since 2026-10-19 both pages name the operators, Mindmaker LLC (United States)
+and Mindmaker Ltd (United Kingdom), carry "Last updated: 19 October 2026", and
+every public footer carries the note "Circle is a Mindmaker LLC company.
+Mindmaker Ltd in the UK."
+
 Those pages describe the current product. They do not replace a
 counsel-approved privacy notice, DPA, or regulatory record.
 
@@ -18,7 +23,7 @@ counsel-approved privacy notice, DPA, or regulatory record.
 
 | Document | Current state | Publication gate |
 |---|---|---|
-| [Privacy policy](../privacy-policy.md) | Product facts reviewed; unpublished internal draft | Confirm legal entity and address, effective date, age threshold, legal bases, transfer safeguards, provider retention, and any EU representative or DPO requirement |
+| [Privacy policy](../privacy-policy.md) | Product facts reviewed; unpublished internal draft | Confirm registered addresses (the operating entities, Mindmaker LLC in the United States and Mindmaker Ltd in the United Kingdom, were named on 2026-10-19), effective date, age threshold, legal bases, transfer safeguards, provider retention, and any EU representative or DPO requirement |
 | [RoPA](../RoPA.md) | Technical processing map reviewed; internal draft | Counsel confirms lawful bases, retention periods, transfer safeguards, and jurisdiction scope |
 | [Subprocessors](../../SUBPROCESSORS.md) | Provider inventory reviewed; internal draft | Owner verifies active providers and regions; counsel confirms DPAs and publication wording |
 | Customer DPA | Not present in this repository | Counsel drafts and owner approves before any enterprise claim that requires it |
