@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-10-22
+
+- stamped at `d12b40a`: PR #169 added only the repository-administration closeout hook, its settings entry and its workflow change. No product, Supabase, pricing or documentation consequence; `NOW.md` head and date moved, no other document changed.
+
 ## 2026-10-19
 
 - reconciled at `3967fe3`: PRs #167 and #168 named Mindmaker LLC and Mindmaker Ltd on the public footer, terms and privacy pages. The same PRs already updated the `NOW.md` prose, `docs/PRODUCT.md`, `CHANGELOG.md` and `public/llms.txt`, so only the `NOW.md` head (from `a86a0ad`) and the "as of" heading date needed the stamp.
