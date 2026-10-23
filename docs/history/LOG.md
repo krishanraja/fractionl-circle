@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-10-23
+
+- stamped at `423f872`: PR #170 changed only the repository-administration closeout hook and its workflow, and the North Star number commit was already closed out in `NOW.md` by its session. `NOW.md` head moved and its commit summary extended; no other document changed.
+
 ## 2026-10-22
 
 - stamped at `d12b40a`: PR #169 added only the repository-administration closeout hook, its settings entry and its workflow change. No product, Supabase, pricing or documentation consequence; `NOW.md` head and date moved, no other document changed.
