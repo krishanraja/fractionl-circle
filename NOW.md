@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-10-22
+as_of: 2026-10-23
 head: d12b40a
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
@@ -29,7 +29,9 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-10-22)
+## Where it is right now (as of 2026-10-23)
+
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
 - **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Five commits landed since, on 2026-09-08, and every one of them only added or synced the canon block in `AGENTS.md` (PRs #155, #156, #158, #159, and a header wording fix); none touched `src/`, Supabase, or pricing. One more landed on 2026-10-06 (`fbc2e36`, PR #160) and touched only `AGENTS.md`. A last one on 2026-10-15 (`8aa317a`, PR #162) touched only the docs steward workflow in `.github/workflows/`. The canon block was resynced again on 2026-10-16 (`b50f6a7`, PR #161), touching only `AGENTS.md`. Between 2026-10-17 and 2026-10-18 only documentation, the repository-administration workflow and the canon block moved (see below); `src/`, Supabase and pricing did not. On 2026-10-19 the public footer, `/terms`, `/privacy` and `public/sitemap.xml` changed to name the operating companies (see below); no product behaviour, Supabase or pricing changed. On 2026-10-22 only the repository-administration closeout hook, its settings entry and its workflow changed (PR #169, `d12b40a`); `src/`, Supabase and pricing did not. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
 - **Live.** `https://circle.fractionl.ai` answered 200 on 2026-09-07 for `/`, `/llms.txt` and `/agent.json`. The deployed CSS bundle carries the #154 front-door rules and the #151 brand asset references, so `main` at `5ac840e` is what is serving. Read-only readback; no Vercel deployment id was resolved.
@@ -42,6 +44,7 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 
 ## What changed recently
 
+- 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating, so every session knows how far behind it is and how hard to push.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets its intensity. The number and ladder are in `docs/NORTH_STAR.md`; where it stands is the first line under "Where it is right now". Contract: ai-harness `contract/north-star-metric.md`.
 - 2026-10-19 **Operating companies named on every public surface.** Ruling (Krish, 2026-10-19): every business site names Mindmaker LLC (USA) and Mindmaker Ltd (UK) in a subtle footer note and in its terms and privacy. The front-door footer and the legal pages now carry "Circle is a Mindmaker LLC company. Mindmaker Ltd in the UK."; `/terms` and `/privacy` (both the signed-out prompt and the signed-in settings) carry a "Who we are" operator statement, the responsibility line, a contact address and "Last updated: 19 October 2026"; the legal pages gained a Privacy and Terms footer; `public/sitemap.xml` lastmod moved to 2026-10-19. The strings live once in `src/components/legal/company.ts`. No company number, address or jurisdiction was added, and `docs/privacy-policy.md` stays an unpublished draft.
 - 2026-10-18 **Device-contact import removed from every public claim** (PR #165, `5e0c037`). Docs, `public/llms.txt` and `public/agent.json` had listed a "supported device contact" input as live; the cleanup traced it to `src/pathroom/hinge.ts`, which is not mounted in the active add flow in `src/components/circle/AddToCircleSheet.tsx`, and the delivery state now says earlier documentation "overstated current source". The same pass corrected `docs/microsoft-oauth-setup.md`, which told readers not to add `Mail.*` scopes while source still requests them. Superseded audit histories were kept without restoring retired product claims.
 - 2026-10-18 **North Star added** (`c04e881`, `9a548be`). `docs/NORTH_STAR.md` gained a Horizon: Circle is dormant, and if it wakes the aim is a thousand operators getting a useful recall every week within three months. Ruling (Krish, 2026-10-18): "every repository has a North Star, and every session anchors to it"; timeframes assume agents do the work. Set by Krish, not reached.
@@ -56,6 +59,7 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 - Waiting on Krish: is Circle parked, retired, or resuming? The lifecycle stays `dormant` until he says. If retired: `lifecycle: archived` here and a line in `AGENT_BRIEFING.md` and the truth files. If resuming: the first job is the full Release-procedure readback for #151 and #154 and a fresh `tsc` baseline.
 - Waiting on Krish: whether the public training pack (`public/llms.txt`, `public/agent.json`) should say the product is in maintenance. Today it describes the live product accurately and says nothing about cadence. The steward did not add that claim.
 - Optional cleanup, code not docs: `scripts/check-docs.mjs` still excludes `AUDIT_` and `NON_FUNCTIONAL_AUDIT_REPORT` root paths from its placeholder scan. Harmless now the files live under `docs/_archive/`, which is already excluded.
+- North Star check (2026-10-23): holds.
 
 ## Read next
 

@@ -8,6 +8,38 @@ Ratified: 2026-08-10. Canonical.
 
 Set by Krish on 18 October 2026, and not reached yet. Everything below serves it, every session in this repository works toward it, and only Krish changes it.
 
+## The number
+
+**Useful recalls a week, if Circle is woken**: 1,000 by 25 January 2027, on a front-loaded weekly ladder. Checkpoints: 16 Nov 2026: 68; 14 Dec 2026: 240; 11 Jan 2027: 645; 25 Jan 2027: 1,000. Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
+
+```yaml north-star-metric
+metric: "Useful recalls a week, if Circle is woken"
+unit: count
+direction: up
+target: 1000
+deadline: 2027-01-25
+ladder_shape: front-loaded
+source: "Circle events"
+status: paused
+ladder:
+  - [2026-10-26, 10]
+  - [2026-11-02, 27]
+  - [2026-11-09, 45]
+  - [2026-11-16, 68]
+  - [2026-11-23, 97]
+  - [2026-11-30, 134]
+  - [2026-12-07, 181]
+  - [2026-12-14, 240]
+  - [2026-12-21, 312]
+  - [2026-12-28, 402]
+  - [2027-01-04, 511]
+  - [2027-01-11, 645]
+  - [2027-01-18, 806]
+  - [2027-01-25, 1000]
+```
+
+Urgency (U1 to U5) is worked out every week from where the number stands against that week's target, by [the harness contract](https://github.com/krishanraja/ai-harness/blob/main/contract/north-star-metric.md). Set by Krish on 23 October 2026.
+
 ## The outcome
 
 > A busy independent operator can remember anyone they meet, then receive the right saved person at the moment that person can help.
