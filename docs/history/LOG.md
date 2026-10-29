@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-10-29
+
+- reconciled at `749fd5e`: `NOW.md` head moved to `749fd5e` and `as_of` to 2026-10-29; the dormant lifecycle line was cut from a long commit-by-commit history to a short summary (audit rule max_line_chars), a "What changed recently" bullet added for PRs #166 and #171, and a single "- Next" line added (audit rule next_step). The cut text named PRs #155 to #162, #165, #169 and #170 and their commit ids, all recorded in git history and the bullets above.
+
 ## 2026-10-23
 
 - stamped at `423f872`: PR #170 changed only the repository-administration closeout hook and its workflow, and the North Star number commit was already closed out in `NOW.md` by its session. `NOW.md` head moved and its commit summary extended; no other document changed.
