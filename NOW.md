@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-10-29
+as_of: 2026-10-30
 head: 749fd5e
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
@@ -29,7 +29,7 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-10-29)
+## Where it is right now (as of 2026-10-30)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
