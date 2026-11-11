@@ -5,6 +5,10 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-11
+
+- stamped at `287f0c7`: no non-steward commits since. `NOW.md` `as_of` moved to 2026-11-11. The North Star check (2026-10-23) is 19 days old against a limit of 7; the steward never writes `holds`, so it is left for the next session that re-reads the North Star.
+
 ## 2026-11-06
 
 - rolled from NOW.md: 2026-10-06 Canon block resynced in `AGENTS.md` (PR #160, `fbc2e36`); the block moved through five canon releases in one PR, up to v2026.10.05.1, and only the text between the krish-canon markers changed. No product, Supabase or pricing change.
