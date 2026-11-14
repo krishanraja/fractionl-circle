@@ -87,3 +87,4 @@ is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 - reconciled at `5ac840e`: `public/agent.json` and `public/llms.txt` checked against `src/App.tsx` routes, `src/lib/tiers.ts` and the workspace destinations; product content unchanged and accurate. Each gained a pointer to `NOW.md` and a 2026-09-07 date.
 - reconciled at `5ac840e`: `README.md` and `DOCS.md` now list `NOW.md` and `docs/history/LOG.md`; DOCS.md's Historical section names the two archived audits by path instead of "dated root audit reports".
 - reconciled at `5ac840e`: `NOW.md` written for the first time, lifecycle `dormant` (no commit to `main` since 2026-08-19).
+- reconciled at `fb489e0` (2026-11-14): `NOW.md` re-stamped after canon sync #175; no product change. The North Star check line stays dated 2026-10-23 because only a session that re-reads the North Star can re-date it.
