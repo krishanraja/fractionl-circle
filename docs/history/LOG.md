@@ -5,6 +5,11 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-15
+
+- rolled from NOW.md: 2026-10-15 Docs steward now called from `krishanraja/ai-harness` (PR #162, `8aa317a`). The commit body gives the reason: "control-center goes private on 2026-10-15, and a public repository cannot call a reusable workflow in a private one." The steward's workflow, runbook, schema, fleet manifest and scripts moved unchanged. No product, Supabase or pricing change.
+- stamped at `fb489e0`: no non-steward commits since. `NOW.md` `as_of` moved to 2026-11-15. The North Star check (2026-10-23) is 23 days old against a limit of 7; the steward never writes `holds`, so it is left for the next session that re-reads the North Star.
+
 ## 2026-11-11
 
 - stamped at `287f0c7`: no non-steward commits since. `NOW.md` `as_of` moved to 2026-11-11. The North Star check (2026-10-23) is 19 days old against a limit of 7; the steward never writes `holds`, so it is left for the next session that re-reads the North Star.

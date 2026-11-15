@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-11-14
+as_of: 2026-11-15
 head: fb489e0
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
@@ -29,7 +29,7 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-11-14)
+## Where it is right now (as of 2026-11-15)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
@@ -53,7 +53,6 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 - 2026-10-18 **North Star added** (`c04e881`, `9a548be`). `docs/NORTH_STAR.md` gained a Horizon: Circle is dormant, and if it wakes the aim is a thousand operators getting a useful recall every week within three months. Ruling (Krish, 2026-10-18): "every repository has a North Star, and every session anchors to it"; timeframes assume agents do the work. Set by Krish, not reached.
 - 2026-10-17 **Repository administration added** (PR #163, `eddcbde`; canon block to v2026.10.17.1, `461f020`). Adds `docs/HARNESS_CONTEXT.md`, `CLAUDE.md` thinned to `@AGENTS.md` and a hash and budget check workflow. No product, Supabase or pricing change.
 - 2026-10-16 **Canon block resynced in `AGENTS.md`** (PR #161, `b50f6a7`). The block moved to canon release v2026.10.15.2. Only the text between the krish-canon markers changed. No product, Supabase or pricing change; the lifecycle stays `dormant`.
-- 2026-10-15 **Docs steward now called from `krishanraja/ai-harness`** (PR #162, `8aa317a`). The commit body gives the reason: "control-center goes private on 2026-10-15, and a public repository cannot call a reusable workflow in a private one." The steward's workflow, runbook, schema, fleet manifest and scripts moved unchanged, and this repository's caller and the `steward:` link above point there. No product, Supabase or pricing change; the lifecycle stays `dormant`.
 
 ## What is next and what is waiting on Krish
 
