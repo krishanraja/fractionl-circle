@@ -5,6 +5,12 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-17
+
+- rolled from NOW.md: 2026-10-17 **Repository administration added** (PR #163, `eddcbde`; canon block to v2026.10.17.1, `461f020`). Adds `docs/HARNESS_CONTEXT.md`, `CLAUDE.md` thinned to `@AGENTS.md` and a hash and budget check workflow. No product, Supabase or pricing change.
+- rolled from NOW.md: 2026-10-16 **Canon block resynced in `AGENTS.md`** (PR #161, `b50f6a7`). The block moved to canon release v2026.10.15.2. Only the text between the krish-canon markers changed. No product, Supabase or pricing change; the lifecycle stays `dormant`.
+- stamped at `ec83f57`: PR #176 changed only the canon block in `AGENTS.md`. `NOW.md` head and `as_of` moved and one bullet was added. The North Star check (2026-10-23) is 25 days old against a limit of 7; the steward never writes `holds`, so it stays for a session that re-reads the North Star.
+
 ## 2026-11-15
 
 - rolled from NOW.md: 2026-10-15 Docs steward now called from `krishanraja/ai-harness` (PR #162, `8aa317a`). The commit body gives the reason: "control-center goes private on 2026-10-15, and a public repository cannot call a reusable workflow in a private one." The steward's workflow, runbook, schema, fleet manifest and scripts moved unchanged. No product, Supabase or pricing change.
