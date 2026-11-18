@@ -5,6 +5,12 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-18
+
+- rolled from NOW.md: 2026-10-18 **Device-contact import removed from every public claim** (PR #165, `5e0c037`). Docs, `public/llms.txt` and `public/agent.json` had listed a "supported device contact" input as live; the cleanup traced it to `src/pathroom/hinge.ts`, which is not mounted in the active add flow in `src/components/circle/AddToCircleSheet.tsx`, and the delivery state now says earlier documentation "overstated current source". The same pass corrected `docs/microsoft-oauth-setup.md`, which told readers not to add `Mail.*` scopes while source still requests them. Superseded audit histories were kept without restoring retired product claims.
+- rolled from NOW.md: 2026-10-18 **North Star added** (`c04e881`, `9a548be`). `docs/NORTH_STAR.md` gained a Horizon: Circle is dormant, and if it wakes the aim is a thousand operators getting a useful recall every week within three months. Ruling (Krish, 2026-10-18): "every repository has a North Star, and every session anchors to it"; timeframes assume agents do the work. Set by Krish, not reached.
+- stamped at `ec83f57`: no non-steward commits since. `NOW.md` `as_of` moved to 2026-11-18. The North Star check (2026-10-23) is 26 days old against a limit of 7; the steward never writes `holds`, so it is left for the next session that re-reads the North Star.
+
 ## 2026-11-17
 
 - rolled from NOW.md: 2026-10-17 **Repository administration added** (PR #163, `eddcbde`; canon block to v2026.10.17.1, `461f020`). Adds `docs/HARNESS_CONTEXT.md`, `CLAUDE.md` thinned to `@AGENTS.md` and a hash and budget check workflow. No product, Supabase or pricing change.

@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-11-17
+as_of: 2026-11-18
 head: ec83f57
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
@@ -29,7 +29,7 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-11-17)
+## Where it is right now (as of 2026-11-18)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
@@ -50,8 +50,6 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 - 2026-10-28 **Closeout hook and canon block refreshed, no product change** (PRs #166 and #171, `9e24f5d`, `749fd5e`). The canon block in `AGENTS.md` moved to release v2026.10.27.2, and the repository-administration publisher updated `.claude/hooks/harness-closeout.mjs` and `.github/workflows/harness-repository-context.yml`. `src/`, Supabase and pricing did not change; the lifecycle stays `dormant`.
 - 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating, so every session knows how far behind it is and how hard to push.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets its intensity. The number and ladder are in `docs/NORTH_STAR.md`; where it stands is the first line under "Where it is right now". Contract: ai-harness `contract/north-star-metric.md`.
 - 2026-10-19 **Operating companies named on every public surface.** Ruling (Krish, 2026-10-19): every business site names Mindmaker LLC (USA) and Mindmaker Ltd (UK) in a subtle footer note and in its terms and privacy. The front-door footer and the legal pages now carry "Circle is a Mindmaker LLC company. Mindmaker Ltd in the UK."; `/terms` and `/privacy` (both the signed-out prompt and the signed-in settings) carry a "Who we are" operator statement, the responsibility line, a contact address and "Last updated: 19 October 2026"; the legal pages gained a Privacy and Terms footer; `public/sitemap.xml` lastmod moved to 2026-10-19. The strings live once in `src/components/legal/company.ts`. No company number, address or jurisdiction was added, and `docs/privacy-policy.md` stays an unpublished draft.
-- 2026-10-18 **Device-contact import removed from every public claim** (PR #165, `5e0c037`). Docs, `public/llms.txt` and `public/agent.json` had listed a "supported device contact" input as live; the cleanup traced it to `src/pathroom/hinge.ts`, which is not mounted in the active add flow in `src/components/circle/AddToCircleSheet.tsx`, and the delivery state now says earlier documentation "overstated current source". The same pass corrected `docs/microsoft-oauth-setup.md`, which told readers not to add `Mail.*` scopes while source still requests them. Superseded audit histories were kept without restoring retired product claims.
-- 2026-10-18 **North Star added** (`c04e881`, `9a548be`). `docs/NORTH_STAR.md` gained a Horizon: Circle is dormant, and if it wakes the aim is a thousand operators getting a useful recall every week within three months. Ruling (Krish, 2026-10-18): "every repository has a North Star, and every session anchors to it"; timeframes assume agents do the work. Set by Krish, not reached.
 
 ## What is next and what is waiting on Krish
 
