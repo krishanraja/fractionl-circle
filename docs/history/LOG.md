@@ -5,6 +5,11 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-19
+
+- rolled from NOW.md: 2026-10-19 **Operating companies named on every public surface.** Ruling (Krish, 2026-10-19): every business site names Mindmaker LLC (USA) and Mindmaker Ltd (UK) in a subtle footer note and in its terms and privacy. The front-door footer and the legal pages now carry "Circle is a Mindmaker LLC company. Mindmaker Ltd in the UK."; `/terms` and `/privacy` (both the signed-out prompt and the signed-in settings) carry a "Who we are" operator statement, the responsibility line, a contact address and "Last updated: 19 October 2026"; the legal pages gained a Privacy and Terms footer; `public/sitemap.xml` lastmod moved to 2026-10-19. The strings live once in `src/components/legal/company.ts`. No company number, address or jurisdiction was added, and `docs/privacy-policy.md` stays an unpublished draft.
+- reconciled at `bf60227`: PR #177 changed only the canon block in `AGENTS.md`. `NOW.md` head and `as_of` moved and one bullet was added. The North Star check (2026-10-23) is 27 days old against a limit of 7; the steward never writes `holds`, so it stays for a session that re-reads the North Star.
+
 ## 2026-11-18
 
 - rolled from NOW.md: 2026-10-18 **Device-contact import removed from every public claim** (PR #165, `5e0c037`). Docs, `public/llms.txt` and `public/agent.json` had listed a "supported device contact" input as live; the cleanup traced it to `src/pathroom/hinge.ts`, which is not mounted in the active add flow in `src/components/circle/AddToCircleSheet.tsx`, and the delivery state now says earlier documentation "overstated current source". The same pass corrected `docs/microsoft-oauth-setup.md`, which told readers not to add `Mail.*` scopes while source still requests them. Superseded audit histories were kept without restoring retired product claims.
