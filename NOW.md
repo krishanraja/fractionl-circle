@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-11-19
-head: bf60227
+as_of: 2026-11-20
+head: 3aab15e
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
 state_doc: docs/DELIVERY_STATE.md
@@ -29,11 +29,11 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-11-19)
+## Where it is right now (as of 2026-11-20)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
-- **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Every commit since touched only documentation, the canon block in `AGENTS.md`, the docs steward workflow or the repository-administration closeout hook, its settings entry and its workflow (most recently the canon sync #177, 2026-11-18); none touched `src/`, Supabase or pricing. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
+- **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Every commit since touched only documentation, the canon block in `AGENTS.md`, the docs steward workflow or the repository-administration closeout hook, its settings entry and its workflow (most recently the canon sync #178, 2026-11-19); none touched `src/`, Supabase or pricing. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
 - **Live.** `https://circle.fractionl.ai` answered 200 on 2026-09-07 for `/`, `/llms.txt` and `/agent.json`. The deployed CSS bundle carries the #154 front-door rules and the #151 brand asset references, so `main` at `5ac840e` is what is serving. Read-only readback; no Vercel deployment id was resolved.
 - **Last fully verified release:** PRs #146 and #147 (the unified People, Ideas and You workspace, 2026-08-11), with a production deployment id and route, recall, PWA and metadata readback recorded in `docs/DELIVERY_STATE.md`. #151 (brand) and #154 (front-door fit) are live by bundle readback but have no deployment id or full Release-procedure readback recorded.
 - **Built and live per code:** People (add from text, link, email or phone in a note, voice, photo, Android PWA share (the device-contact picker in `src/pathroom/hinge.ts` is not mounted); LinkedIn or CRM file import; Google and Microsoft connection entry points; browse, search and plain-English ask), Ideas (saved ideas, new idea, exact-run reopen, relevant saved people), You (profile, connections, reminders, appearance, privacy, account). Routes `/`, `/auth`, `/share-contact`, `/privacy`, `/terms` in `src/App.tsx`; `/preview/*` are unlinked fixtures. Detail: `docs/PRODUCT.md`.
@@ -44,6 +44,7 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 
 ## What changed recently
 
+- 2026-11-19 **Canon block resynced, no product change** (PR #178, `3aab15e`). The block in `AGENTS.md` moved to canon release v2026.11.18.7. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-18 **Canon block resynced, no product change** (PR #177, `bf60227`). The block in `AGENTS.md` moved to canon release v2026.11.15.2 again. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-16 **Canon block resynced, no product change** (PR #176, `ec83f57`). The block in `AGENTS.md` moved to canon release v2026.11.15.2. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-14 **Canon block resynced, no product change** (PR #175, `fb489e0`). The block in `AGENTS.md` moved to canon release v2026.11.14.5. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
