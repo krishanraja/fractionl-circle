@@ -104,21 +104,9 @@ select cron.schedule(
 -- (~6am PT / ~9am ET) - a start-of-week nudge that lands in the inbox and on
 -- the calendar where senior leaders actually plan.
 -- ---------------------------------------------------------------------------
-select cron.schedule(
-  'cron-warm-digest',
-  '0 13 * * 1',
-  $$
-  select net.http_post(
-    url := (select decrypted_secret from vault.decrypted_secrets where name = 'functions_base_url') || '/cron-warm-digest',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
-    ),
-    body := '{}'::jsonb,
-    timeout_milliseconds := 900000
-  );
-  $$
-);
+-- Stopped (Ruling, Krish, 2026-11-24): Circle is dormant, so the Monday brief
+-- is no longer scheduled. To bring it back, restore this schedule from git history
+-- and set CIRCLE_MONDAY_BRIEF=on on the function.
 
 -- ---------------------------------------------------------------------------
 -- Re-engagement: weekly quiet-contact reminder. Mondays at

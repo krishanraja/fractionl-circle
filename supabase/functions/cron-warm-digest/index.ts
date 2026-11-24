@@ -226,6 +226,13 @@ Deno.serve(async (req) => {
     return new Response('Unauthorized', { status: 401 });
   }
 
+  // Stopped (Ruling, Krish, 2026-11-24): Circle is dormant, so the Monday
+  // brief sends nothing until CIRCLE_MONDAY_BRIEF is set to 'on' again.
+  if ((Deno.env.get('CIRCLE_MONDAY_BRIEF') ?? '') !== 'on') {
+    return new Response(JSON.stringify({ stopped: true, reason: 'Circle is dormant; the Monday brief is off.' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
