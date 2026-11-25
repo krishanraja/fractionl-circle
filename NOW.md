@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-11-20
-head: 3aab15e
+as_of: 2026-11-25
+head: 2b59b06
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
 state_doc: docs/DELIVERY_STATE.md
@@ -29,11 +29,11 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-11-20)
+## Where it is right now (as of 2026-11-25)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
-- **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Every commit since touched only documentation, the canon block in `AGENTS.md`, the docs steward workflow or the repository-administration closeout hook, its settings entry and its workflow (most recently the canon sync #178, 2026-11-19); none touched `src/`, Supabase or pricing. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
+- **Lifecycle: dormant.** The last commit that touched the product is `5ac840e` on 2026-08-19 (PR #154). Every commit since touched only documentation, the canon block in `AGENTS.md`, the docs steward workflow, the repository-administration closeout hook, its settings entry and its workflow, and, on 2026-11-24, the Monday brief cron job and function in `supabase/` (#180, which switches a send off); none touched `src/` or pricing. There is no active roadmap. Nobody has said the product is retired; nobody has shipped to it either.
 - **Live.** `https://circle.fractionl.ai` answered 200 on 2026-09-07 for `/`, `/llms.txt` and `/agent.json`. The deployed CSS bundle carries the #154 front-door rules and the #151 brand asset references, so `main` at `5ac840e` is what is serving. Read-only readback; no Vercel deployment id was resolved.
 - **Last fully verified release:** PRs #146 and #147 (the unified People, Ideas and You workspace, 2026-08-11), with a production deployment id and route, recall, PWA and metadata readback recorded in `docs/DELIVERY_STATE.md`. #151 (brand) and #154 (front-door fit) are live by bundle readback but have no deployment id or full Release-procedure readback recorded.
 - **Built and live per code:** People (add from text, link, email or phone in a note, voice, photo, Android PWA share (the device-contact picker in `src/pathroom/hinge.ts` is not mounted); LinkedIn or CRM file import; Google and Microsoft connection entry points; browse, search and plain-English ask), Ideas (saved ideas, new idea, exact-run reopen, relevant saved people), You (profile, connections, reminders, appearance, privacy, account). Routes `/`, `/auth`, `/share-contact`, `/privacy`, `/terms` in `src/App.tsx`; `/preview/*` are unlinked fixtures. Detail: `docs/PRODUCT.md`.
@@ -44,13 +44,15 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 
 ## What changed recently
 
+- 2026-11-24 **The Monday brief is stopped in code while Circle is dormant** (PR #180, `2b59b06`). The commit body: `cron-warm-digest` "now returns without sending unless CIRCLE_MONDAY_BRIEF is set to 'on', and cron_setup.sql no longer schedules it. Takes effect when the function is deployed, or at once by running select cron.unschedule('cron-warm-digest'); in Circle's SQL editor." Ruling (Krish, 2026-11-24): stop the Circle Monday brief in code. Whether the function is deployed and the job unscheduled in production is not verified here. `src/` and pricing did not change.
+- 2026-11-24 **Canon block resynced, no product change** (PR #179, `3787e0c`). The block in `AGENTS.md` moved to canon release v2026.11.23.2. Only the text between the krish-canon markers changed.
 - 2026-11-19 **Canon block resynced, no product change** (PR #178, `3aab15e`). The block in `AGENTS.md` moved to canon release v2026.11.18.7. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-18 **Canon block resynced, no product change** (PR #177, `bf60227`). The block in `AGENTS.md` moved to canon release v2026.11.15.2 again. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-16 **Canon block resynced, no product change** (PR #176, `ec83f57`). The block in `AGENTS.md` moved to canon release v2026.11.15.2. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-14 **Canon block resynced, no product change** (PR #175, `fb489e0`). The block in `AGENTS.md` moved to canon release v2026.11.14.5. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-10-31 **Canon block resynced twice more, no product change** (PRs #172, #173, #174, `287f0c7`). The block in `AGENTS.md` moved through canon releases up to v2026.10.30.1. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-10-28 **Closeout hook and canon block refreshed, no product change** (PRs #166 and #171, `9e24f5d`, `749fd5e`). The canon block in `AGENTS.md` moved to release v2026.10.27.2, and the repository-administration publisher updated `.claude/hooks/harness-closeout.mjs` and `.github/workflows/harness-repository-context.yml`. `src/`, Supabase and pricing did not change; the lifecycle stays `dormant`.
-- 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating, so every session knows how far behind it is and how hard to push.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets its intensity. The number and ladder are in `docs/NORTH_STAR.md`; where it stands is the first line under "Where it is right now". Contract: ai-harness `contract/north-star-metric.md`.
+
 
 ## What is next and what is waiting on Krish
 

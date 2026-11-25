@@ -5,6 +5,11 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-25
+
+- rolled from NOW.md: 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating, so every session knows how far behind it is and how hard to push.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets its intensity. The number and ladder are in `docs/NORTH_STAR.md`; where it stands is the first line under "Where it is right now". Contract: ai-harness `contract/north-star-metric.md`.
+- reconciled at `2b59b06`: #179 changed the canon block and #180 stopped the Monday brief in `supabase/`. `NOW.md` head and `as_of` moved, two bullets added, the lifecycle bullet corrected. The North Star check (2026-10-23) is 33 days old against a limit of 7; the steward never writes `holds`, so it stays for a session that re-reads the North Star.
+
 ## 2026-11-19
 
 - rolled from NOW.md: 2026-10-19 **Operating companies named on every public surface.** Ruling (Krish, 2026-10-19): every business site names Mindmaker LLC (USA) and Mindmaker Ltd (UK) in a subtle footer note and in its terms and privacy. The front-door footer and the legal pages now carry "Circle is a Mindmaker LLC company. Mindmaker Ltd in the UK."; `/terms` and `/privacy` (both the signed-out prompt and the signed-in settings) carry a "Who we are" operator statement, the responsibility line, a contact address and "Last updated: 19 October 2026"; the legal pages gained a Privacy and Terms footer; `public/sitemap.xml` lastmod moved to 2026-10-19. The strings live once in `src/components/legal/company.ts`. No company number, address or jurisdiction was added, and `docs/privacy-policy.md` stays an unpublished draft.
