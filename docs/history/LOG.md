@@ -116,3 +116,4 @@ is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 - reconciled at `5ac840e`: `NOW.md` written for the first time, lifecycle `dormant` (no commit to `main` since 2026-08-19).
 - reconciled at `fb489e0` (2026-11-14): `NOW.md` re-stamped after canon sync #175; no product change. The North Star check line stays dated 2026-10-23 because only a session that re-reads the North Star can re-date it.
 - reconciled at `3aab15e` (2026-11-20): `NOW.md` re-stamped after canon sync #178; no product change. The North Star check line stays dated 2026-10-23 because only a session that re-reads the North Star can re-date it; the audit finding is left for that session.
+- reconciled at `2b59b06` (2026-11-27): `NOW.md` re-stamped; no product change since #180. The North Star check line stays dated 2026-10-23 because only a session that re-reads the North Star can re-date it; the audit finding is left for that session.
