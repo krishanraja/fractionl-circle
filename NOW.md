@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/fractionl-circle
 product: Circle by Fractionl
-as_of: 2026-11-27
+as_of: 2026-11-28
 head: 2b59b06
 lifecycle: dormant
 production_url: https://circle.fractionl.ai
@@ -29,7 +29,7 @@ Circle's own buyer hypothesis is the fractional executive or independent operato
 
 Angle a writer can use: "the network tool I built for myself, and what it taught me about stopping": a personal-network product, built solo with AI, verified in production, left honestly parked. Objection it answers: "AI-built software is a demo that falls over." Here is one that ran, was verified route by route, and is still serving.
 
-## Where it is right now (as of 2026-11-27)
+## Where it is right now (as of 2026-11-28)
 
 <!-- north-star-state {"week_of": "2026-10-26", "week_target": 10, "current": null, "current_as_of": null, "current_source": null, "urgency": null, "urgency_reason": "paused by Krish"} --> **North Star number: paused.** Circle is dormant. If Krish wakes it, the ladder is redrawn from that week to 1,000 within three months.
 
@@ -51,7 +51,6 @@ Angle a writer can use: "the network tool I built for myself, and what it taught
 - 2026-11-16 **Canon block resynced, no product change** (PR #176, `ec83f57`). The block in `AGENTS.md` moved to canon release v2026.11.15.2. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-11-14 **Canon block resynced, no product change** (PR #175, `fb489e0`). The block in `AGENTS.md` moved to canon release v2026.11.14.5. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
 - 2026-10-31 **Canon block resynced twice more, no product change** (PRs #172, #173, #174, `287f0c7`). The block in `AGENTS.md` moved through canon releases up to v2026.10.30.1. Only the text between the krish-canon markers changed; `src/`, Supabase and pricing did not, and the lifecycle stays `dormant`.
-- 2026-10-28 **Closeout hook and canon block refreshed, no product change** (PRs #166 and #171, `9e24f5d`, `749fd5e`). The canon block in `AGENTS.md` moved to release v2026.10.27.2, and the repository-administration publisher updated `.claude/hooks/harness-closeout.mjs` and `.github/workflows/harness-repository-context.yml`. `src/`, Supabase and pricing did not change; the lifecycle stays `dormant`.
 
 
 ## What is next and what is waiting on Krish

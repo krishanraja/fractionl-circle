@@ -5,6 +5,11 @@ NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do. This repo's archive
 is `docs/_archive/`; this log indexes it. `docs/history/` holds only this file.
 
+## 2026-11-28
+
+- rolled from NOW.md: 2026-10-28 **Closeout hook and canon block refreshed, no product change** (PRs #166 and #171, `9e24f5d`, `749fd5e`). The canon block in `AGENTS.md` moved to release v2026.10.27.2, and the repository-administration publisher updated `.claude/hooks/harness-closeout.mjs` and `.github/workflows/harness-repository-context.yml`. `src/`, Supabase and pricing did not change; the lifecycle stays `dormant`.
+- stamped at `2b59b06`: no non-steward commits since. `NOW.md` `as_of` moved to 2026-11-28. The North Star check (2026-10-23) is 36 days old against a limit of 7; the steward never writes `holds`, so it stays for a session that re-reads the North Star.
+
 ## 2026-11-25
 
 - rolled from NOW.md: 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating, so every session knows how far behind it is and how hard to push.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets its intensity. The number and ladder are in `docs/NORTH_STAR.md`; where it stands is the first line under "Where it is right now". Contract: ai-harness `contract/north-star-metric.md`.
